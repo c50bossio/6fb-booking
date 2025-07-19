@@ -8,7 +8,7 @@ This directory contains the comprehensive service template selection system for 
 The main component that provides a complete interface for browsing, filtering, and selecting service templates.
 
 **Features:**
-- Fetches templates from the `/api/v1/service-templates/` endpoint
+- Fetches templates from the `/api/v2/service-templates/` endpoint
 - Filtering by tier (starter, professional, premium, luxury)
 - Search functionality
 - Single or multi-select modes
@@ -107,11 +107,11 @@ Templates include methodology alignment scores (0-100) indicating how well they 
 ## API Integration
 
 ### Endpoints Used
-- `GET /api/v1/service-templates/` - List templates with filtering
-- `GET /api/v1/service-templates/featured` - Get featured templates
-- `GET /api/v1/service-templates/{id}` - Get specific template
-- `POST /api/v1/service-templates/apply` - Apply template to user's services
-- `GET /api/v1/service-templates/tiers/summary` - Get tier statistics
+- `GET /api/v2/service-templates/` - List templates with filtering
+- `GET /api/v2/service-templates/featured` - Get featured templates
+- `GET /api/v2/service-templates/{id}` - Get specific template
+- `POST /api/v2/service-templates/apply` - Apply template to user's services
+- `GET /api/v2/service-templates/tiers/summary` - Get tier statistics
 
 ### Data Types
 All components use TypeScript interfaces defined in `@/lib/types/service-templates.ts`:

@@ -33,10 +33,10 @@ BookedBarber V2's Marketing Integrations Suite provides comprehensive tools for 
 ## API Endpoints
 
 ### Base URLs
-- Reviews: `/api/v1/reviews`
-- Integrations: `/api/v1/integrations`
-- Tracking: `/api/v1/tracking`
-- Marketing: `/api/v1/marketing`
+- Reviews: `/api/v2/reviews`
+- Integrations: `/api/v2/integrations`
+- Tracking: `/api/v2/tracking`
+- Marketing: `/api/v2/marketing`
 
 ### Authentication
 All endpoints require valid JWT authentication with appropriate role permissions.
@@ -46,7 +46,7 @@ All endpoints require valid JWT authentication with appropriate role permissions
 ### 1. OAuth Connection Setup
 
 ```http
-POST /api/v1/integrations/connect
+POST /api/v2/integrations/connect
 ```
 
 Initiate GMB OAuth flow for business account connection.
@@ -73,7 +73,7 @@ Initiate GMB OAuth flow for business account connection.
 
 #### Fetch Reviews
 ```http
-GET /api/v1/reviews?platform=google_my_business&status=new
+GET /api/v2/reviews?platform=google_my_business&status=new
 ```
 
 **Query Parameters:**
@@ -116,7 +116,7 @@ GET /api/v1/reviews?platform=google_my_business&status=new
 
 #### Generate Smart Response
 ```http
-POST /api/v1/reviews/{review_id}/generate-response
+POST /api/v2/reviews/{review_id}/generate-response
 ```
 
 Generate AI-powered response for a review.
@@ -147,7 +147,7 @@ Generate AI-powered response for a review.
 
 #### Post Response
 ```http
-POST /api/v1/reviews/{review_id}/respond
+POST /api/v2/reviews/{review_id}/respond
 ```
 
 **Request Body:**
@@ -168,7 +168,7 @@ POST /api/v1/reviews/{review_id}/respond
 
 #### Update Business Hours
 ```http
-PUT /api/v1/integrations/google-my-business/hours
+PUT /api/v2/integrations/google-my-business/hours
 ```
 
 **Request Body:**
@@ -195,7 +195,7 @@ PUT /api/v1/integrations/google-my-business/hours
 
 #### Post Business Updates
 ```http
-POST /api/v1/integrations/google-my-business/posts
+POST /api/v2/integrations/google-my-business/posts
 ```
 
 **Request Body:**
@@ -222,7 +222,7 @@ POST /api/v1/integrations/google-my-business/posts
 
 #### Configure Tracking Platforms
 ```http
-POST /api/v1/tracking/config
+POST /api/v2/tracking/config
 ```
 
 **Request Body:**
@@ -262,7 +262,7 @@ POST /api/v1/tracking/config
 ### 2. Track Conversion Events
 
 ```http
-POST /api/v1/tracking/event
+POST /api/v2/tracking/event
 ```
 
 **Request Body:**
@@ -320,7 +320,7 @@ POST /api/v1/tracking/event
 ### 3. Attribution Reporting
 
 ```http
-GET /api/v1/tracking/attribution-report
+GET /api/v2/tracking/attribution-report
 ```
 
 **Query Parameters:**
@@ -374,7 +374,7 @@ GET /api/v1/tracking/attribution-report
 
 #### Create Campaign
 ```http
-POST /api/v1/marketing/campaigns
+POST /api/v2/marketing/campaigns
 ```
 
 **Request Body:**
@@ -422,7 +422,7 @@ POST /api/v1/marketing/campaigns
 
 #### A/B Testing
 ```http
-POST /api/v1/marketing/campaigns/{campaign_id}/ab-test
+POST /api/v2/marketing/campaigns/{campaign_id}/ab-test
 ```
 
 **Request Body:**
@@ -455,7 +455,7 @@ POST /api/v1/marketing/campaigns/{campaign_id}/ab-test
 
 #### Create Template
 ```http
-POST /api/v1/reviews/templates
+POST /api/v2/reviews/templates
 ```
 
 **Request Body:**
@@ -483,7 +483,7 @@ POST /api/v1/reviews/templates
 
 #### Generate Response from Template
 ```http
-POST /api/v1/reviews/templates/{template_id}/generate
+POST /api/v2/reviews/templates/{template_id}/generate
 ```
 
 **Request Body:**
@@ -504,7 +504,7 @@ POST /api/v1/reviews/templates/{template_id}/generate
 
 ### Health Check Dashboard
 ```http
-GET /api/v1/integrations/health
+GET /api/v2/integrations/health
 ```
 
 **Response:**
@@ -599,7 +599,7 @@ GET /api/v1/integrations/health
 
 2. **Initialize Integration Settings**
    ```http
-   POST /api/v1/integrations/init
+   POST /api/v2/integrations/init
    ```
 
 3. **Connect Platforms**
@@ -609,7 +609,7 @@ GET /api/v1/integrations/health
 
 4. **Test Configuration**
    ```http
-   POST /api/v1/integrations/test
+   POST /api/v2/integrations/test
    ```
 
 ## Troubleshooting
@@ -646,17 +646,17 @@ Solution: Check measurement ID and ensure debug mode is enabled
 
 #### Test Event Tracking
 ```http
-POST /api/v1/tracking/test-event
+POST /api/v2/tracking/test-event
 ```
 
 #### Validate Integration
 ```http
-GET /api/v1/integrations/{integration_id}/validate
+GET /api/v2/integrations/{integration_id}/validate
 ```
 
 #### Review Platform Status
 ```http
-GET /api/v1/integrations/platform-status
+GET /api/v2/integrations/platform-status
 ```
 
 ## Performance Optimization

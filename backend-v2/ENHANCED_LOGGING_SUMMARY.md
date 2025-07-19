@@ -1,7 +1,7 @@
 # Enhanced Appointment API Logging Implementation
 
 ## Overview
-Successfully implemented comprehensive request timeout monitoring for the appointment API endpoint (`/api/v1/appointments/`) to complement existing service-level logging.
+Successfully implemented comprehensive request timeout monitoring for the appointment API endpoint (`/api/v2/appointments/`) to complement existing service-level logging.
 
 ## What Was Implemented
 

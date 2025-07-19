@@ -175,10 +175,10 @@ The components use Tailwind CSS with the existing design system:
 
 ### Backend API
 The flow is designed to integrate with these expected endpoints:
-- `POST /api/v1/auth/register` - Create user account
-- `POST /api/v1/organizations` - Create business/organization
-- `POST /api/v1/trials/start` - Start free trial
-- `POST /api/v1/payment-methods` - Add payment method
+- `POST /api/v2/auth/register` - Create user account
+- `POST /api/v2/organizations` - Create business/organization
+- `POST /api/v2/trials/start` - Start free trial
+- `POST /api/v2/payment-methods` - Add payment method
 
 ### PricingCalculator
 Integrates the existing `PricingCalculator` component for dynamic pricing based on chair count with volume discounts.

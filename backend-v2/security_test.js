@@ -16,7 +16,7 @@ async function runSecurityTests() {
         test: async () => {
             // In our mock setup, all requests return the same user's data
             // In real implementation, different users should see different data
-            const response = await fetch('http://localhost:8000/api/v1/integrations/status');
+            const response = await fetch('http://localhost:8000/api/v2/integrations/status');
             const data = await response.json();
             if (response.ok && Array.isArray(data)) {
                 return { success: true, data: 'Mock user data returned consistently (isolation would be tested with real auth)' };
@@ -32,7 +32,7 @@ async function runSecurityTests() {
             const maliciousPayload = {
                 integration_type: "'; DROP TABLE users; --"
             };
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(maliciousPayload)
@@ -53,7 +53,7 @@ async function runSecurityTests() {
             const xssPayload = {
                 integration_type: '<script>alert("xss")</script>'
             };
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(xssPayload)
@@ -77,7 +77,7 @@ async function runSecurityTests() {
     tests.push({
         name: 'CORS Configuration',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/status', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/status', {
                 method: 'GET',
                 headers: {
                     'Origin': 'http://localhost:3000'
@@ -96,7 +96,7 @@ async function runSecurityTests() {
         name: 'Unauthorized Access Protection',
         test: async () => {
             // Test access without proper authentication (our mock bypasses this)
-            const response = await fetch('http://localhost:8000/api/v1/integrations/status', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/status', {
                 headers: {
                     'Authorization': 'Bearer expired_or_invalid_token'
                 }
@@ -131,7 +131,7 @@ async function runSecurityTests() {
                 }
             };
             
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(oversizedPayload)
@@ -151,7 +151,7 @@ async function runSecurityTests() {
         test: async () => {
             // Make rapid consecutive requests
             const promises = Array(20).fill().map(() => 
-                fetch('http://localhost:8000/api/v1/integrations/status')
+                fetch('http://localhost:8000/api/v2/integrations/status')
             );
             
             const responses = await Promise.all(promises);
@@ -173,7 +173,7 @@ async function runSecurityTests() {
     tests.push({
         name: 'Sensitive Data Protection',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/status');
+            const response = await fetch('http://localhost:8000/api/v2/integrations/status');
             const data = await response.json();
             
             if (response.ok && Array.isArray(data)) {
@@ -196,7 +196,7 @@ async function runSecurityTests() {
     tests.push({
         name: 'Content-Type Validation',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: 'not json data'

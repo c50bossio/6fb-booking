@@ -253,7 +253,7 @@ class TestSystemIntegration:
         assert encrypted != sensitive_data
         
         # Test that no credentials are exposed in responses
-        response = self.client.get("/api/v1/integrations/")
+        response = self.client.get("/api/v2/integrations/")
         assert response.status_code in [200, 401]  # Depends on auth
         
         if response.status_code == 200:
@@ -272,7 +272,7 @@ class TestSystemIntegration:
         assert response.json()["status"] == "healthy"
         
         # Test authentication endpoints
-        response = self.client.post("/api/v1/auth/register", json={
+        response = self.client.post("/api/v2/auth/register", json={
             "email": "newuser@test.com",
             "username": "newuser",
             "password": "TestPassword123!",
@@ -281,14 +281,14 @@ class TestSystemIntegration:
         assert response.status_code in [200, 201, 422]  # 422 if user exists
         
         # Test appointment endpoints
-        response = self.client.get("/api/v1/appointments/availability", params={
+        response = self.client.get("/api/v2/appointments/availability", params={
             "barber_id": self.test_user.id,
             "date": datetime.now().date().isoformat()
         })
         assert response.status_code in [200, 401]  # Depends on auth
         
         # Test location endpoints
-        response = self.client.get("/api/v1/locations/")
+        response = self.client.get("/api/v2/locations/")
         assert response.status_code in [200, 401]
     
     def test_database_migrations(self):

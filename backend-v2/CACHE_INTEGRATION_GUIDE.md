@@ -357,13 +357,13 @@ volumes:
 
 ```bash
 # Check cache health
-curl http://localhost:8000/api/v1/cache/health
+curl http://localhost:8000/api/v2/cache/health
 
 # Get performance stats
-curl http://localhost:8000/api/v1/cache/stats
+curl http://localhost:8000/api/v2/cache/stats
 
 # Monitor trends
-curl http://localhost:8000/api/v1/cache/monitoring/trends?hours=24
+curl http://localhost:8000/api/v2/cache/monitoring/trends?hours=24
 ```
 
 ## Migration Checklist
@@ -407,7 +407,7 @@ curl http://localhost:8000/api/v1/cache/monitoring/trends?hours=24
    grep "Redis" application.log
    
    # Test cache health
-   curl http://localhost:8000/api/v1/cache/health
+   curl http://localhost:8000/api/v2/cache/health
    ```
 
 2. **Poor Performance**
@@ -445,6 +445,6 @@ curl http://localhost:8000/api/v1/cache/monitoring/trends?hours=24
 
 For issues or questions:
 1. Check the test suite: `python test_redis_cache_implementation.py`
-2. Review cache health: `GET /api/v1/cache/health`
+2. Review cache health: `GET /api/v2/cache/health`
 3. Check application logs for cache-related errors
 4. Monitor Redis server logs and performance

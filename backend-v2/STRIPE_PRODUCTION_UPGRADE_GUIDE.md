@@ -44,7 +44,7 @@ STRIPE_WEBHOOK_SECRET=whsec_dc1cee6044c5809b3999bcaf61539b19b3141f8dc778b8f9f265
 
 ```bash
 # 1. Verify current test integration works
-curl -X POST http://localhost:8000/api/v1/payments/test \
+curl -X POST http://localhost:8000/api/v2/payments/test \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TEST_TOKEN" \
   -d '{"amount": 100, "currency": "usd", "test_mode": true}'
@@ -78,7 +78,7 @@ curl -X POST http://localhost:8000/api/v1/payments/test \
    ```bash
    # In Stripe Dashboard > Developers > Webhooks
    # Add endpoint:
-   URL: https://yourdomain.com/api/v1/webhooks/stripe
+   URL: https://yourdomain.com/api/v2/webhooks/stripe
    Events: payment_intent.succeeded, payment_intent.payment_failed
    
    # Copy webhook secret:
@@ -131,7 +131,7 @@ cd backend-v2
 uvicorn main:app --reload
 
 # 2. Test payment processing (LIVE - will charge real money!)
-curl -X POST https://yourdomain.com/api/v1/payments/create-intent \
+curl -X POST https://yourdomain.com/api/v2/payments/create-intent \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_PRODUCTION_TOKEN" \
   -d '{"amount": 100, "currency": "usd", "description": "Production test"}'
@@ -167,7 +167,7 @@ curl -X POST https://yourdomain.com/api/v1/payments/create-intent \
    ```bash
    # In Stripe Dashboard > Developers > Webhooks
    # Update endpoint URL to production:
-   https://yourdomain.com/api/v1/webhooks/stripe
+   https://yourdomain.com/api/v2/webhooks/stripe
    ```
 
 ---

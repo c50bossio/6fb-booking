@@ -51,7 +51,7 @@ The `process_barber_payout()` method:
 
 #### Get Payout Summary
 ```http
-GET /api/v1/payments/payouts/summary
+GET /api/v2/payments/payouts/summary
 ```
 Shows pending amounts from all sources:
 - Service payments
@@ -62,7 +62,7 @@ Shows pending amounts from all sources:
 
 #### Get Payout History
 ```http
-GET /api/v1/payments/payouts/history?page=1&page_size=50
+GET /api/v2/payments/payouts/history?page=1&page_size=50
 ```
 Returns paginated payout history with:
 - Payout amounts and dates
@@ -72,7 +72,7 @@ Returns paginated payout history with:
 
 #### Process Payout (Admin Only)
 ```http
-POST /api/v1/payments/payouts
+POST /api/v2/payments/payouts
 {
   "barber_id": 1,
   "start_date": "2025-01-01T00:00:00",
@@ -82,7 +82,7 @@ POST /api/v1/payments/payouts
 
 #### Process Enhanced Payout (Includes Retail)
 ```http
-POST /api/v1/payments/payouts/enhanced?include_retail=true
+POST /api/v2/payments/payouts/enhanced?include_retail=true
 {
   "barber_id": 1,
   "start_date": "2025-01-01T00:00:00", 
@@ -94,7 +94,7 @@ POST /api/v1/payments/payouts/enhanced?include_retail=true
 
 #### Get Commission Analytics
 ```http
-GET /api/v1/analytics/commissions?start_date=2025-01-01&end_date=2025-01-31
+GET /api/v2/analytics/commissions?start_date=2025-01-01&end_date=2025-01-31
 ```
 Returns:
 - Total commissions by type
@@ -104,7 +104,7 @@ Returns:
 
 #### Get Commission Trends
 ```http
-GET /api/v1/analytics/commissions/trends?period=week
+GET /api/v2/analytics/commissions/trends?period=week
 ```
 Parameters:
 - `period`: day, week, or month
@@ -115,12 +115,12 @@ Parameters:
 
 #### Get Barber Commission Rates
 ```http
-GET /api/v1/commission-rates/{barber_id}
+GET /api/v2/commission-rates/{barber_id}
 ```
 
 #### Update Commission Rate (Admin Only)
 ```http
-PUT /api/v1/commission-rates/{barber_id}
+PUT /api/v2/commission-rates/{barber_id}
 {
   "rate": 0.25,
   "commission_type": "service"  // Optional, defaults to general rate
@@ -129,12 +129,12 @@ PUT /api/v1/commission-rates/{barber_id}
 
 #### Get Rate Optimization Suggestions
 ```http
-GET /api/v1/commission-rates/{barber_id}/optimize
+GET /api/v2/commission-rates/{barber_id}/optimize
 ```
 
 #### Simulate Commission Changes
 ```http
-POST /api/v1/commission-rates/simulate
+POST /api/v2/commission-rates/simulate
 {
   "commission_type": "service",
   "new_rate": 0.18,

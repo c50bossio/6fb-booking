@@ -185,7 +185,7 @@ npm test -- --coverage
 1. **API Connection Failed**
    ```bash
    # Check if backend is running
-   curl http://localhost:8000/api/v1/health
+   curl http://localhost:8000/api/v2/health
    ```
 
 2. **Database Errors**
@@ -276,7 +276,7 @@ python create_test_admin.py
 
 ### Stripe Webhook Issues
 - Use Stripe CLI for local testing
-- Configure webhook endpoint: `/api/v1/webhooks/stripe`
+- Configure webhook endpoint: `/api/v2/webhooks/stripe`
 - Sign webhooks with test secret
 
 ---

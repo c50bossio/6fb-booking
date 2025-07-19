@@ -69,9 +69,9 @@ All pages below returned HTTP 200 status:
 
 #### Detected Issues:
 - **Health endpoint** (`/health`) - Not responding
-- **API health endpoint** (`/api/v1/health`) - Not responding
+- **API health endpoint** (`/api/v2/health`) - Not responding
 - **Root endpoint** (`/`) - Not responding
-- **Redis health check** (`/api/v1/health/redis`) - Not responding
+- **Redis health check** (`/api/v2/health/redis`) - Not responding
 
 #### Process Status:
 ```
@@ -107,7 +107,7 @@ All pages below returned HTTP 200 status:
 #### Failed Requests Pattern:
 ```
 ❌ http://localhost:8000/health - net::ERR_ABORTED
-❌ http://localhost:8000/api/v1/health/redis - net::ERR_ABORTED
+❌ http://localhost:8000/api/v2/health/redis - net::ERR_ABORTED
 ❌ http://localhost:3000/finance/analytics - 404 Not Found
 ```
 

@@ -168,7 +168,7 @@ context = {
 
 ### SMS Webhook Endpoint
 
-**URL**: `POST /api/v1/webhooks/sms`
+**URL**: `POST /api/v2/webhooks/sms`
 
 Handles incoming SMS messages from Twilio with automatic response processing.
 
@@ -191,7 +191,7 @@ AccountSid: AC1234567890abcdef
 
 ### SMS Status Webhook
 
-**URL**: `POST /api/v1/webhooks/sms/status`
+**URL**: `POST /api/v2/webhooks/sms/status`
 
 Tracks delivery status of outbound SMS messages.
 
@@ -216,8 +216,8 @@ APP_NAME=BookedBarber
 
 ### Twilio Webhook Setup
 
-1. **SMS Webhook URL**: `https://your-domain.com/api/v1/webhooks/sms`
-2. **Status Webhook URL**: `https://your-domain.com/api/v1/webhooks/sms/status`
+1. **SMS Webhook URL**: `https://your-domain.com/api/v2/webhooks/sms`
+2. **Status Webhook URL**: `https://your-domain.com/api/v2/webhooks/sms/status`
 3. **HTTP Method**: POST
 4. **Content Type**: application/x-www-form-urlencoded
 

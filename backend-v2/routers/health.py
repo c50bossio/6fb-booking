@@ -23,7 +23,7 @@ except ImportError:
     POOL_MONITOR_AVAILABLE = False
 
 router = APIRouter(
-    prefix="/api/v1/health",
+    prefix="/api/v2/health",
     tags=["health"]
 )
 

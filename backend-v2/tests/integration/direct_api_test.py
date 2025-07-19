@@ -75,7 +75,7 @@ def test_auth_bypass():
             for password in test_passwords:
                 try:
                     response = requests.post(
-                        "http://localhost:8000/api/v1/auth/login",
+                        "http://localhost:8000/api/v2/auth/login",
                         json={"email": email, "password": password},
                         timeout=5
                     )
@@ -111,7 +111,7 @@ def test_simple_endpoints():
         ("/", "root"),
         ("/docs", "docs"),
         ("/openapi.json", "openapi"),
-        ("/api/v1/services", "services")  # This might be public
+        ("/api/v2/services", "services")  # This might be public
     ]
     
     for endpoint, name in simple_tests:
@@ -149,10 +149,10 @@ def test_with_auth_token(token):
     headers = {"Authorization": f"Bearer {token}"}
     
     protected_tests = [
-        ("/api/v1/auth/me", "current_user"),
-        ("/api/v1/users", "users_list"),
-        ("/api/v1/appointments", "appointments"),
-        ("/api/v1/clients", "clients")
+        ("/api/v2/auth/me", "current_user"),
+        ("/api/v2/users", "users_list"),
+        ("/api/v2/appointments", "appointments"),
+        ("/api/v2/clients", "clients")
     ]
     
     for endpoint, name in protected_tests:

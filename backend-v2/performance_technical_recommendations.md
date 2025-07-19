@@ -126,7 +126,7 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Apply to endpoints
-@app.get("/api/v1/analytics/dashboard")
+@app.get("/api/v2/analytics/dashboard")
 @limiter.limit("100/minute")  # 100 requests per minute per IP
 async def analytics_dashboard(request: Request):
     # ...
@@ -356,7 +356,7 @@ if __name__ == "__main__":
     suite = LoadTestSuite()
     
     # Test critical endpoints
-    endpoints = ["/health", "/api/v1/analytics/dashboard", "/api/v1/appointments"]
+    endpoints = ["/health", "/api/v2/analytics/dashboard", "/api/v2/appointments"]
     
     for endpoint in endpoints:
         result = asyncio.run(suite.test_endpoint_load(endpoint, 50, 5))

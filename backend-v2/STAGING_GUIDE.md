@@ -271,8 +271,8 @@ alembic upgrade head
 
 ```bash
 # Test API endpoints in staging
-curl http://localhost:8001/api/v1/health
-curl http://localhost:8001/api/v1/appointments
+curl http://localhost:8001/api/v2/health
+curl http://localhost:8001/api/v2/appointments
 curl http://localhost:8001/docs  # API documentation
 
 # Test frontend functionality

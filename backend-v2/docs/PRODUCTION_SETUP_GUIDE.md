@@ -68,7 +68,7 @@ DATABASE_URL="postgresql://..." alembic upgrade head
 2. Switch to live mode
 3. Copy API keys to .env.production
 4. Set up webhook endpoint:
-   - URL: `https://api.yourdomain.com/api/v1/webhooks/stripe`
+   - URL: `https://api.yourdomain.com/api/v2/webhooks/stripe`
    - Events: payment_intent.succeeded, payment_intent.failed
 
 ### SendGrid Setup
@@ -120,7 +120,7 @@ docker-compose -f docker-compose.production.yml up -d
 curl https://api.yourdomain.com/health
 
 # Test authentication
-curl -X POST https://api.yourdomain.com/api/v1/auth/login \
+curl -X POST https://api.yourdomain.com/api/v2/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"test"}'
 ```

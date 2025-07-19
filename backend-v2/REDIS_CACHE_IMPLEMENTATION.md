@@ -143,25 +143,25 @@ print(f"Metrics: {len(health_result.metrics)}")
 
 ### Health and Monitoring
 
-- `GET /api/v1/cache/health` - Current cache health
-- `GET /api/v1/cache/stats` - Detailed statistics
-- `GET /api/v1/cache/monitoring/trends?hours=24` - Health trends
-- `GET /api/v1/cache/monitoring/utilization` - Resource utilization
-- `GET /api/v1/cache/monitoring/report` - Comprehensive report
+- `GET /api/v2/cache/health` - Current cache health
+- `GET /api/v2/cache/stats` - Detailed statistics
+- `GET /api/v2/cache/monitoring/trends?hours=24` - Health trends
+- `GET /api/v2/cache/monitoring/utilization` - Resource utilization
+- `GET /api/v2/cache/monitoring/report` - Comprehensive report
 
 ### Cache Management (Admin Only)
 
-- `POST /api/v1/cache/warm-up` - Warm up cache for date range
-- `POST /api/v1/cache/invalidate/all-slots` - Invalidate all slot caches
-- `POST /api/v1/cache/invalidate/barber/{barber_id}` - Invalidate barber caches
-- `POST /api/v1/cache/invalidate/date-range` - Invalidate date range
-- `POST /api/v1/cache/invalidate/business-settings` - Invalidate settings
-- `POST /api/v1/cache/preload` - Preload common data
+- `POST /api/v2/cache/warm-up` - Warm up cache for date range
+- `POST /api/v2/cache/invalidate/all-slots` - Invalidate all slot caches
+- `POST /api/v2/cache/invalidate/barber/{barber_id}` - Invalidate barber caches
+- `POST /api/v2/cache/invalidate/date-range` - Invalidate date range
+- `POST /api/v2/cache/invalidate/business-settings` - Invalidate settings
+- `POST /api/v2/cache/preload` - Preload common data
 
 ### Information
 
-- `GET /api/v1/cache/availability` - Check if caching is available
-- `GET /api/v1/cache/keys/summary` - Cache key patterns and usage
+- `GET /api/v2/cache/availability` - Check if caching is available
+- `GET /api/v2/cache/keys/summary` - Cache key patterns and usage
 
 ## Performance Benefits
 
@@ -348,7 +348,7 @@ redis-cli info memory
 redis-cli keys "slots:*"
 
 # Get cache statistics
-curl http://localhost:8000/api/v1/cache/stats
+curl http://localhost:8000/api/v2/cache/stats
 ```
 
 ## Security Considerations

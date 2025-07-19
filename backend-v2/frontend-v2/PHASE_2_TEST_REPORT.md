@@ -91,8 +91,8 @@
 ### 4. API Endpoint Testing ✅ PASSED
 
 #### Authentication Behavior
-- ✅ `/api/v1/marketing/analytics/realtime` returns 403 (expected)
-- ✅ `/api/v1/marketing/analytics/overview` returns 403 (expected)
+- ✅ `/api/v2/marketing/analytics/realtime` returns 403 (expected)
+- ✅ `/api/v2/marketing/analytics/overview` returns 403 (expected)
 - ✅ Error message: "Not authenticated" (proper response)
 - ✅ Component handles 403 responses gracefully
 
@@ -257,8 +257,8 @@ interface RealTimeAnalyticsProps {
 ```
 
 ### API Endpoints Tested
-- `/api/v1/marketing/analytics/realtime` - Real-time metrics
-- `/api/v1/marketing/analytics/overview` - Dashboard overview
+- `/api/v2/marketing/analytics/realtime` - Real-time metrics
+- `/api/v2/marketing/analytics/overview` - Dashboard overview
 
 ### Error Handling Strategy
 - Network failures → Connection Error message

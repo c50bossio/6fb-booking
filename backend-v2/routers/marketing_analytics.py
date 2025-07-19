@@ -378,7 +378,7 @@ async def export_marketing_data(
         "format": format,
         "generated_at": datetime.utcnow().isoformat(),
         "data": overview_data,
-        "export_url": f"/api/v1/marketing/analytics/export/download?format={format}",
+        "export_url": f"/api/v2/marketing/analytics/export/download?format={format}",
         "message": f"Marketing analytics data prepared for {format.upper()} export"
     }
 

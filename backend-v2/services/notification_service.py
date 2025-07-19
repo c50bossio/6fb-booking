@@ -340,7 +340,7 @@ class NotificationService:
                 
                 # Add unsubscribe token to context
                 email_context['unsubscribe_token'] = enhanced_preferences.unsubscribe_token
-                email_context['preference_center_url'] = f"{getattr(settings, 'app_url', 'https://app.bookedbarber.com')}/api/v1/notification-preferences/preference-center/{enhanced_preferences.unsubscribe_token}"
+                email_context['preference_center_url'] = f"{getattr(settings, 'app_url', 'https://app.bookedbarber.com')}/api/v2/notification-preferences/preference-center/{enhanced_preferences.unsubscribe_token}"
                 
                 rendered = self.render_template(template_email, email_context, db)
                 notification = NotificationQueue(

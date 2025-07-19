@@ -11,10 +11,10 @@ BookedBarber V2 is now **production-ready** with comprehensive marketing integra
 - **Location Management**: Automatic business location detection and sync
 - **Review Automation**: SEO-optimized automated responses to customer reviews
 - **API Endpoints**:
-  - `POST /api/v1/integrations/connect` - Initiate GMB OAuth
-  - `GET /api/v1/integrations/callback` - Handle OAuth callback
-  - `GET /api/v1/reviews/gmb/locations` - Fetch business locations
-  - `POST /api/v1/reviews/sync` - Sync reviews from GMB
+  - `POST /api/v2/integrations/connect` - Initiate GMB OAuth
+  - `GET /api/v2/integrations/callback` - Handle OAuth callback
+  - `GET /api/v2/reviews/gmb/locations` - Fetch business locations
+  - `POST /api/v2/reviews/sync` - Sync reviews from GMB
 
 ### 📊 Review Management System
 - **Automated Responses**: AI-powered, SEO-optimized review responses
@@ -22,9 +22,9 @@ BookedBarber V2 is now **production-ready** with comprehensive marketing integra
 - **Template System**: Customizable response templates by rating/sentiment
 - **Analytics**: Track response rates, sentiment trends, and performance
 - **API Endpoints**:
-  - `GET /api/v1/reviews/auto-response/stats` - Performance analytics
-  - `POST /api/v1/reviews/bulk/respond` - Bulk response generation
-  - `POST /api/v1/reviews/templates/{id}/generate` - Template-based responses
+  - `GET /api/v2/reviews/auto-response/stats` - Performance analytics
+  - `POST /api/v2/reviews/bulk/respond` - Bulk response generation
+  - `POST /api/v2/reviews/templates/{id}/generate` - Template-based responses
 
 ### 🔐 Production Security
 - **Security Score**: 71/100 (Production Ready)

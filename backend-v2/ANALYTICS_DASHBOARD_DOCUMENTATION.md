@@ -50,7 +50,7 @@ The comprehensive analytics dashboard provides powerful business intelligence an
 
 ## 📊 API Endpoints
 
-### Base URL: `/api/v1/analytics`
+### Base URL: `/api/v2/analytics`
 
 ### 1. Dashboard Summary
 ```
@@ -373,7 +373,7 @@ The system provides actionable recommendations based on:
 ### Basic Dashboard Access
 ```javascript
 // Get dashboard data for current user
-const response = await fetch('/api/v1/analytics/dashboard', {
+const response = await fetch('/api/v2/analytics/dashboard', {
   headers: { 'Authorization': `Bearer ${token}` }
 });
 const dashboard = await response.json();
@@ -382,7 +382,7 @@ const dashboard = await response.json();
 ### Revenue Analysis
 ```javascript
 // Get monthly revenue for last 6 months
-const response = await fetch('/api/v1/analytics/revenue?group_by=month', {
+const response = await fetch('/api/v2/analytics/revenue?group_by=month', {
   headers: { 'Authorization': `Bearer ${token}` }
 });
 const revenue = await response.json();
@@ -391,7 +391,7 @@ const revenue = await response.json();
 ### Six Figure Barber Tracking
 ```javascript
 // Check progress toward $120k annual goal
-const response = await fetch('/api/v1/analytics/six-figure-barber?target_annual_income=120000', {
+const response = await fetch('/api/v2/analytics/six-figure-barber?target_annual_income=120000', {
   headers: { 'Authorization': `Bearer ${token}` }
 });
 const progress = await response.json();

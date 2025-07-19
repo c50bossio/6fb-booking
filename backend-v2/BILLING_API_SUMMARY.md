@@ -1,21 +1,21 @@
 # Billing API Summary - Phase 1.3
 
 ## Overview
-Created a complete billing router for chair-based subscription management at `/api/v1/billing/*`.
+Created a complete billing router for chair-based subscription management at `/api/v2/billing/*`.
 
 ## Endpoints Created
 
-### 1. GET /api/v1/billing/plans
+### 1. GET /api/v2/billing/plans
 - **Purpose**: Get available billing plans with chair-based pricing tiers
 - **Auth Required**: Yes (any authenticated user)
 - **Response**: List of billing plans with features and pricing tiers
 
-### 2. GET /api/v1/billing/current-subscription
+### 2. GET /api/v2/billing/current-subscription
 - **Purpose**: Get user's current subscription details
 - **Auth Required**: Yes (billing access permission required)
 - **Response**: Current subscription info including chairs, pricing, and features
 
-### 3. POST /api/v1/billing/calculate-price
+### 3. POST /api/v2/billing/calculate-price
 - **Purpose**: Calculate price based on number of chairs
 - **Auth Required**: Yes (any authenticated user)
 - **Request Body**:
@@ -27,7 +27,7 @@ Created a complete billing router for chair-based subscription management at `/a
   ```
 - **Response**: Calculated pricing with tier information
 
-### 4. POST /api/v1/billing/create-subscription
+### 4. POST /api/v2/billing/create-subscription
 - **Purpose**: Create a new subscription (mock implementation)
 - **Auth Required**: Yes (billing access permission required)
 - **Request Body**:
@@ -41,7 +41,7 @@ Created a complete billing router for chair-based subscription management at `/a
   ```
 - **Response**: Created subscription details
 
-### 5. PUT /api/v1/billing/update-subscription
+### 5. PUT /api/v2/billing/update-subscription
 - **Purpose**: Update subscription by changing chair count
 - **Auth Required**: Yes (billing access permission required)
 - **Request Body**:
@@ -53,7 +53,7 @@ Created a complete billing router for chair-based subscription management at `/a
   ```
 - **Response**: Updated subscription details with proration info
 
-### 6. POST /api/v1/billing/cancel-subscription
+### 6. POST /api/v2/billing/cancel-subscription
 - **Purpose**: Cancel subscription
 - **Auth Required**: Yes (billing access permission required)
 - **Request Body**:

@@ -59,9 +59,9 @@
 #### API Integration Status
 **Critical Issue**: Multiple 403 and 404 errors from backend API calls:
 ```
-- /api/v1/auth/me: 403 Forbidden
-- /api/v1/auth/login: Network error
-- /api/v1/appointments/slots/next-available: 403 Forbidden
+- /api/v2/auth/me: 403 Forbidden
+- /api/v2/auth/login: Network error
+- /api/v2/appointments/slots/next-available: 403 Forbidden
 ```
 
 ### 🚨 Critical Issues Identified
@@ -135,7 +135,7 @@
    - Ensure backend server is running and accessible
 
 2. **Restore Authentication Flow**
-   - Fix `/api/v1/auth/login` endpoint
+   - Fix `/api/v2/auth/login` endpoint
    - Implement proper session management
    - Test login/logout functionality
 

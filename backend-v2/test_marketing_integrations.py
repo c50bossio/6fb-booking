@@ -15,7 +15,7 @@ def get_auth_token():
         "password": "testpassword123"
     }
     
-    response = requests.post(f"{BASE_URL}/api/v1/auth/login", json=login_data)
+    response = requests.post(f"{BASE_URL}/api/v2/auth/login", json=login_data)
     if response.status_code == 200:
         return response.json().get("access_token")
     
@@ -33,7 +33,7 @@ def get_auth_token():
         "termsAccepted": True
     }
     
-    reg_response = requests.post(f"{BASE_URL}/api/v1/auth/register", json=register_data)
+    reg_response = requests.post(f"{BASE_URL}/api/v2/auth/register", json=register_data)
     if reg_response.status_code in [200, 201]:
         print("✅ Registration successful")
         return reg_response.json().get("access_token")
@@ -47,7 +47,7 @@ def test_integrations_list(token):
     print("=" * 50)
     
     headers = {"Authorization": f"Bearer {token}"}
-    response = requests.get(f"{BASE_URL}/api/v1/integrations/available", headers=headers)
+    response = requests.get(f"{BASE_URL}/api/v2/integrations/available", headers=headers)
     
     if response.status_code == 200:
         integrations = response.json()
@@ -67,7 +67,7 @@ def test_review_templates(token):
     # Initialize templates
     print("1. Initializing review templates...")
     init_response = requests.post(
-        f"{BASE_URL}/api/v1/marketing/reviews/templates/initialize", 
+        f"{BASE_URL}/api/v2/marketing/reviews/templates/initialize", 
         headers=headers
     )
     
@@ -82,7 +82,7 @@ def test_review_templates(token):
     # Get templates
     print("\n2. Fetching review templates...")
     get_response = requests.get(
-        f"{BASE_URL}/api/v1/marketing/reviews/templates",
+        f"{BASE_URL}/api/v2/marketing/reviews/templates",
         headers=headers
     )
     
@@ -101,7 +101,7 @@ def test_marketing_analytics(token):
     
     # Test main analytics endpoint
     print("1. Fetching marketing analytics...")
-    response = requests.get(f"{BASE_URL}/api/v1/marketing/analytics", headers=headers)
+    response = requests.get(f"{BASE_URL}/api/v2/marketing/analytics", headers=headers)
     
     if response.status_code == 200:
         analytics = response.json()
@@ -115,7 +115,7 @@ def test_marketing_analytics(token):
     # Test channels analytics
     print("\n2. Fetching channel analytics...")
     channels_response = requests.get(
-        f"{BASE_URL}/api/v1/marketing/analytics/channels",
+        f"{BASE_URL}/api/v2/marketing/analytics/channels",
         headers=headers
     )
     
@@ -139,7 +139,7 @@ def test_oauth_urls(token):
     print("1. Testing Google My Business OAuth...")
     gmb_data = {"integration_type": "google_my_business"}
     gmb_response = requests.post(
-        f"{BASE_URL}/api/v1/integrations/connect",
+        f"{BASE_URL}/api/v2/integrations/connect",
         headers=headers,
         json=gmb_data
     )
@@ -156,7 +156,7 @@ def test_oauth_urls(token):
     print("\n2. Testing Meta Business OAuth...")
     meta_data = {"integration_type": "email_marketing"}  # Using email_marketing as Meta isn't directly listed
     meta_response = requests.post(
-        f"{BASE_URL}/api/v1/integrations/connect",
+        f"{BASE_URL}/api/v2/integrations/connect",
         headers=headers,
         json=meta_data
     )

@@ -29,19 +29,19 @@ def check_critical_endpoints() -> Dict[str, any]:
     
     # Critical endpoints - core functionality
     critical_patterns = [
-        '/api/v1/auth/',
-        '/api/v1/appointments/',
-        '/api/v1/payments/',
-        '/api/v1/bookings',
-        '/api/v1/users'
+        '/api/v2/auth/',
+        '/api/v2/appointments/',
+        '/api/v2/payments/',
+        '/api/v2/bookings',
+        '/api/v2/users'
     ]
     
     # Important endpoints - significant features
     important_patterns = [
-        '/api/v1/notifications/',
-        '/api/v1/clients/',
-        '/api/v1/services/',
-        '/api/v1/barbers/',
+        '/api/v2/notifications/',
+        '/api/v2/clients/',
+        '/api/v2/services/',
+        '/api/v2/barbers/',
         '/api/calendar/'
     ]
     

@@ -15,28 +15,28 @@ This document maps all features in the 6FB Booking Platform and shows the connec
 ### 1. **User Authentication & Management**
 | Feature | Backend | Frontend | Connection Status | Notes |
 |---------|---------|----------|-------------------|-------|
-| User Registration | ✅ Router: `/api/v1/auth/register` | ✅ Page: `/register` | ✅ Connected | Working properly |
-| User Login | ✅ Router: `/api/v1/auth/login` | ✅ Page: `/login` | ✅ Connected | JWT authentication working |
-| Password Reset | ✅ Router: `/api/v1/auth/forgot-password`, `/reset-password` | ✅ Pages: `/forgot-password`, `/reset-password` | ✅ Connected | Full flow implemented |
-| Profile Management | ✅ Router: `/api/v1/users/profile` | ✅ Page: `/settings` | ✅ Connected | Update profile working |
-| Timezone Management | ✅ Router: `/api/v1/auth/timezone` | ✅ Component: `TimezoneSelector` | ✅ Connected | Timezone sync working |
-| Token Refresh | ✅ Router: `/api/v1/auth/refresh` | ✅ API: `refreshToken()` | ✅ Connected | Auto-refresh implemented |
+| User Registration | ✅ Router: `/api/v2/auth/register` | ✅ Page: `/register` | ✅ Connected | Working properly |
+| User Login | ✅ Router: `/api/v2/auth/login` | ✅ Page: `/login` | ✅ Connected | JWT authentication working |
+| Password Reset | ✅ Router: `/api/v2/auth/forgot-password`, `/reset-password` | ✅ Pages: `/forgot-password`, `/reset-password` | ✅ Connected | Full flow implemented |
+| Profile Management | ✅ Router: `/api/v2/users/profile` | ✅ Page: `/settings` | ✅ Connected | Update profile working |
+| Timezone Management | ✅ Router: `/api/v2/auth/timezone` | ✅ Component: `TimezoneSelector` | ✅ Connected | Timezone sync working |
+| Token Refresh | ✅ Router: `/api/v2/auth/refresh` | ✅ API: `refreshToken()` | ✅ Connected | Auto-refresh implemented |
 
 ### 2. **Booking/Appointment System**
 | Feature | Backend | Frontend | Connection Status | Notes |
 |---------|---------|----------|-------------------|-------|
-| Available Slots | ✅ Router: `/api/v1/bookings/slots` | ✅ API: `getAvailableSlots()` | ✅ Connected | Calendar integration working |
-| Create Booking | ✅ Router: `/api/v1/bookings` | ✅ Page: `/book` | ✅ Connected | Full booking flow |
-| Quick Booking | ✅ Router: `/api/v1/bookings/quick` | ✅ API: `quickBooking()` | ✅ Connected | Next available slot booking |
-| View My Bookings | ✅ Router: `/api/v1/bookings` | ✅ API: `getMyBookings()` | 🔧 Partial | Missing dedicated page |
+| Available Slots | ✅ Router: `/api/v2/bookings/slots` | ✅ API: `getAvailableSlots()` | ✅ Connected | Calendar integration working |
+| Create Booking | ✅ Router: `/api/v2/bookings` | ✅ Page: `/book` | ✅ Connected | Full booking flow |
+| Quick Booking | ✅ Router: `/api/v2/bookings/quick` | ✅ API: `quickBooking()` | ✅ Connected | Next available slot booking |
+| View My Bookings | ✅ Router: `/api/v2/bookings` | ✅ API: `getMyBookings()` | 🔧 Partial | Missing dedicated page |
 | Booking Settings | ✅ Model: `BookingSettings` | ✅ API calls exist | ✅ Connected | Admin configuration |
 | Cancel/Update Booking | ✅ Backend support | ❌ No frontend | ❌ Disconnected | Missing frontend implementation |
 
 ### 3. **Payment Processing**
 | Feature | Backend | Frontend | Connection Status | Notes |
 |---------|---------|----------|-------------------|-------|
-| Payment Intent | ✅ Router: `/api/v1/payments/create-intent` | ✅ Component: `PaymentForm` | ✅ Connected | Stripe integration |
-| Confirm Payment | ✅ Router: `/api/v1/payments/confirm` | ✅ API: `confirmPayment()` | ✅ Connected | Payment confirmation flow |
+| Payment Intent | ✅ Router: `/api/v2/payments/create-intent` | ✅ Component: `PaymentForm` | ✅ Connected | Stripe integration |
+| Confirm Payment | ✅ Router: `/api/v2/payments/confirm` | ✅ API: `confirmPayment()` | ✅ Connected | Payment confirmation flow |
 | Refunds | ✅ Model: `Refund`, Service | ✅ Component: `RefundManager` | 🔧 Partial | Frontend component exists but no page |
 | Payment History | ✅ Backend support | ✅ Page: `/payments` | ✅ Connected | Payment management page |
 | Gift Certificates | ✅ Model: `GiftCertificate` | ✅ Page: `/payments/gift-certificates` | ✅ Connected | Full implementation |
@@ -45,10 +45,10 @@ This document maps all features in the 6FB Booking Platform and shows the connec
 ### 4. **Client Management**
 | Feature | Backend | Frontend | Connection Status | Notes |
 |---------|---------|----------|-------------------|-------|
-| Client CRUD | ✅ Router: `/api/v1/clients` | ✅ Page: `/clients` | ✅ Connected | Full CRUD operations |
-| Client Search | ✅ Router: `/api/v1/clients/search` | ✅ API: `searchClients()` | ✅ Connected | Advanced search working |
-| Client History | ✅ Router: `/api/v1/clients/{id}/history` | ✅ Component: `ClientHistory` | ✅ Connected | History tracking |
-| Client Analytics | ✅ Router: `/api/v1/clients/{id}/analytics` | ✅ Component: `ClientAnalytics` | ✅ Connected | Metrics and insights |
+| Client CRUD | ✅ Router: `/api/v2/clients` | ✅ Page: `/clients` | ✅ Connected | Full CRUD operations |
+| Client Search | ✅ Router: `/api/v2/clients/search` | ✅ API: `searchClients()` | ✅ Connected | Advanced search working |
+| Client History | ✅ Router: `/api/v2/clients/{id}/history` | ✅ Component: `ClientHistory` | ✅ Connected | History tracking |
+| Client Analytics | ✅ Router: `/api/v2/clients/{id}/analytics` | ✅ Component: `ClientAnalytics` | ✅ Connected | Metrics and insights |
 | Client Notes | ✅ Backend support | ✅ Component: `ClientNotes` | ✅ Connected | Note management |
 | Communication Prefs | ✅ Backend support | ✅ Component: `ClientCommunication` | ✅ Connected | Preference management |
 | Import/Export | ✅ Routers: `imports`, `exports` | ✅ Pages: `/import`, `/export` | ✅ Connected | Bulk operations |
@@ -56,16 +56,16 @@ This document maps all features in the 6FB Booking Platform and shows the connec
 ### 5. **Analytics & Reporting**
 | Feature | Backend | Frontend | Connection Status | Notes |
 |---------|---------|----------|-------------------|-------|
-| Dashboard Analytics | ✅ Router: `/api/v1/analytics/dashboard` | ✅ Page: `/dashboard` | ✅ Connected | Main dashboard |
-| Revenue Analytics | ✅ Router: `/api/v1/analytics/revenue` | ✅ Page: `/analytics` | ✅ Connected | Revenue tracking |
-| Performance Analytics | ✅ Router: `/api/v1/analytics/performance` | ✅ API calls | ✅ Connected | Performance metrics |
-| Six Figure Barber | ✅ Router: `/api/v1/analytics/six-figure-barber` | ✅ API: `getSixFigureBarberMetrics()` | ✅ Connected | Methodology metrics |
-| Export Analytics | ✅ Router: `/api/v1/analytics/export` | ✅ API: `exportAnalytics()` | ✅ Connected | Data export |
+| Dashboard Analytics | ✅ Router: `/api/v2/analytics/dashboard` | ✅ Page: `/dashboard` | ✅ Connected | Main dashboard |
+| Revenue Analytics | ✅ Router: `/api/v2/analytics/revenue` | ✅ Page: `/analytics` | ✅ Connected | Revenue tracking |
+| Performance Analytics | ✅ Router: `/api/v2/analytics/performance` | ✅ API calls | ✅ Connected | Performance metrics |
+| Six Figure Barber | ✅ Router: `/api/v2/analytics/six-figure-barber` | ✅ API: `getSixFigureBarberMetrics()` | ✅ Connected | Methodology metrics |
+| Export Analytics | ✅ Router: `/api/v2/analytics/export` | ✅ API: `exportAnalytics()` | ✅ Connected | Data export |
 
 ### 6. **Service Management**
 | Feature | Backend | Frontend | Connection Status | Notes |
 |---------|---------|----------|-------------------|-------|
-| Service CRUD | ✅ Router: `/api/v1/services` | ✅ Page: `/admin/services` | ✅ Connected | Full service management |
+| Service CRUD | ✅ Router: `/api/v2/services` | ✅ Page: `/admin/services` | ✅ Connected | Full service management |
 | Service Categories | ✅ Backend support | ✅ Component: `ServiceCategories` | ✅ Connected | Category management |
 | Pricing Rules | ✅ Model: `ServicePricingRule` | ✅ API calls | 🔧 Partial | API exists but no UI |
 | Booking Rules | ✅ Model: `ServiceBookingRule` | ✅ Page: `/admin/booking-rules` | ✅ Connected | Rule configuration |

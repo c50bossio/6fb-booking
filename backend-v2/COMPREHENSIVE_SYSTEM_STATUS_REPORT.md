@@ -24,15 +24,15 @@ The 6FB Booking Platform V2 is partially functional with the backend infrastruct
 
 ### Available API Endpoints
 The backend exposes 100+ endpoints across multiple domains:
-- **Authentication**: `/api/v1/auth/*` - Complete auth flow implemented
-- **Bookings**: `/api/v1/bookings/*` - Booking management
-- **Appointments**: `/api/v1/appointments/*` - Appointment scheduling
-- **Analytics**: `/api/v1/analytics/*` - Business metrics
-- **Calendar**: `/api/v1/api/calendar/*` - Google Calendar integration
-- **Payments**: `/api/v1/payments/*` - Stripe integration
-- **Clients**: `/api/v1/clients/*` - Client management
-- **Webhooks**: `/api/v1/webhooks/*` - Webhook management
-- **Enterprise**: `/api/v1/enterprise/*` - Multi-location features
+- **Authentication**: `/api/v2/auth/*` - Complete auth flow implemented
+- **Bookings**: `/api/v2/bookings/*` - Booking management
+- **Appointments**: `/api/v2/appointments/*` - Appointment scheduling
+- **Analytics**: `/api/v2/analytics/*` - Business metrics
+- **Calendar**: `/api/v2/api/calendar/*` - Google Calendar integration
+- **Payments**: `/api/v2/payments/*` - Stripe integration
+- **Clients**: `/api/v2/clients/*` - Client management
+- **Webhooks**: `/api/v2/webhooks/*` - Webhook management
+- **Enterprise**: `/api/v2/enterprise/*` - Multi-location features
 
 ### Database
 - **Connection**: ✅ Working

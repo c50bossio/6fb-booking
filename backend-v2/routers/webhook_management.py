@@ -18,7 +18,7 @@ from schemas import WebhookEndpointCreate, WebhookEndpointUpdate, WebhookEndpoin
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/webhooks",
+    prefix="/api/v2/webhooks",
     tags=["webhooks"],
     dependencies=[Depends(get_current_admin_user)]
 )

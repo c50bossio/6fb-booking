@@ -12,7 +12,7 @@ from urllib.parse import urlparse, parse_qs
 
 # Configuration
 BASE_URL = "http://localhost:8000"
-API_VERSION = "/api/v1"
+API_VERSION = "/api/v2"
 
 # Test user credentials
 TEST_USER = {

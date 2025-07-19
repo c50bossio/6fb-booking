@@ -46,18 +46,18 @@ class SentryEnhancementMiddleware(BaseHTTPMiddleware):
         
         # Define endpoints that should have enhanced monitoring
         self.critical_endpoints = {
-            '/api/v1/appointments',
-            '/api/v1/payments',
-            '/api/v1/bookings',
-            '/api/v1/auth/login',
-            '/api/v1/auth/register'
+            '/api/v2/appointments',
+            '/api/v2/payments',
+            '/api/v2/bookings',
+            '/api/v2/auth/login',
+            '/api/v2/auth/register'
         }
         
         # Define sensitive endpoints that need special handling
         self.sensitive_endpoints = {
-            '/api/v1/auth',
-            '/api/v1/payments',
-            '/api/v1/webhooks'
+            '/api/v2/auth',
+            '/api/v2/payments',
+            '/api/v2/webhooks'
         }
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
@@ -297,7 +297,7 @@ class SentryEnhancementMiddleware(BaseHTTPMiddleware):
             )
         
         # Monitor authentication failures
-        if endpoint.startswith("/api/v1/auth") and response.status_code in [401, 403]:
+        if endpoint.startswith("/api/v2/auth") and response.status_code in [401, 403]:
             sentry_sdk.add_breadcrumb(
                 message="Authentication failure",
                 category="auth",

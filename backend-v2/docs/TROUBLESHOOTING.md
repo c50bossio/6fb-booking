@@ -168,7 +168,7 @@ redis-cli ping
 
 # Check current rate limits
 redis-cli KEYS "rate_limit:*"
-redis-cli GET "rate_limit:user:123:endpoint:/api/v1/appointments"
+redis-cli GET "rate_limit:user:123:endpoint:/api/v2/appointments"
 ```
 
 **Solutions:**
@@ -367,7 +367,7 @@ curl -H "Origin: http://localhost:3000" \
      -H "Access-Control-Request-Method: GET" \
      -H "Access-Control-Request-Headers: X-Requested-With" \
      -X OPTIONS \
-     http://localhost:8000/api/v1/users/me
+     http://localhost:8000/api/v2/users/me
 ```
 
 #### Issue: Authentication state issues
@@ -674,7 +674,7 @@ python scripts/check_export_status.py export_id
 #### Issue: Cookie consent not working
 ```bash
 # Test cookie consent API
-curl -X POST http://localhost:8000/api/v1/privacy/cookies \
+curl -X POST http://localhost:8000/api/v2/privacy/cookies \
   -H "Content-Type: application/json" \
   -d '{"preferences": {"essential": "granted", "analytics": "denied"}}'
 ```

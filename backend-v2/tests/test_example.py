@@ -30,7 +30,7 @@ class TestAuthentication:
         }
         
         response = client.post(
-            "/api/v1/auth/login",
+            "/api/v2/auth/login",
             json=login_data
         )
         

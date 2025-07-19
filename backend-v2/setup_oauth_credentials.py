@@ -61,8 +61,8 @@ def setup_oauth_credentials():
     print("   4. Create OAuth 2.0 credentials:")
     print("      - Application type: Web application")
     print("      - Authorized redirect URIs:")
-    print("        • http://localhost:8000/api/v1/integrations/gmb/callback")
-    print("        • https://your-domain.com/api/v1/integrations/gmb/callback")
+    print("        • http://localhost:8000/api/v2/integrations/gmb/callback")
+    print("        • https://your-domain.com/api/v2/integrations/gmb/callback")
     print("   5. Copy Client ID and Client Secret")
     
     print("\n2️⃣  Meta Business Setup:")
@@ -70,8 +70,8 @@ def setup_oauth_credentials():
     print("   2. Create a new app (Business type)")
     print("   3. Add 'Facebook Login' product")
     print("   4. Configure OAuth Redirect URIs:")
-    print("      • http://localhost:8000/api/v1/integrations/meta/callback")
-    print("      • https://your-domain.com/api/v1/integrations/meta/callback")
+    print("      • http://localhost:8000/api/v2/integrations/meta/callback")
+    print("      • https://your-domain.com/api/v2/integrations/meta/callback")
     print("   5. Add required permissions:")
     print("      • pages_manage_posts")
     print("      • pages_read_engagement")
@@ -91,12 +91,12 @@ def setup_oauth_credentials():
 # Google My Business
 GMB_CLIENT_ID="your-client-id.apps.googleusercontent.com"
 GMB_CLIENT_SECRET="your-client-secret"
-GMB_REDIRECT_URI=http://localhost:8000/api/v1/integrations/gmb/callback
+GMB_REDIRECT_URI=http://localhost:8000/api/v2/integrations/gmb/callback
 
 # Meta Business
 META_CLIENT_ID="your-app-id"
 META_CLIENT_SECRET="your-app-secret"
-META_REDIRECT_URI=http://localhost:8000/api/v1/integrations/meta/callback
+META_REDIRECT_URI=http://localhost:8000/api/v2/integrations/meta/callback
 
 # Apple Sign In (Optional)
 APPLE_CLIENT_ID="com.yourcompany.bookedbarber"

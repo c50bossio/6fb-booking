@@ -331,7 +331,7 @@ echo "NEXT_PUBLIC_API_URL=http://localhost:8000" >> .env.local
    ```python
    # Add to tests/test_privacy_api.py
    async def test_new_privacy_feature(self, async_client, auth_headers):
-       response = await async_client.post("/api/v1/privacy/new-feature", 
+       response = await async_client.post("/api/v2/privacy/new-feature", 
                                          headers=auth_headers)
        assert response.status_code == 200
    ```

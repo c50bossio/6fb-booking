@@ -150,30 +150,30 @@ python scripts/populate_notification_templates.py
 ### User Preferences
 
 ```http
-GET /api/v1/notifications/preferences
-PUT /api/v1/notifications/preferences
+GET /api/v2/notifications/preferences
+PUT /api/v2/notifications/preferences
 ```
 
 ### Templates and History
 
 ```http
-GET /api/v1/notifications/templates
-GET /api/v1/notifications/history
-GET /api/v1/notifications/stats
+GET /api/v2/notifications/templates
+GET /api/v2/notifications/history
+GET /api/v2/notifications/stats
 ```
 
 ### Testing
 
 ```http
-POST /api/v1/notifications/test-email
-POST /api/v1/notifications/test-sms
+POST /api/v2/notifications/test-email
+POST /api/v2/notifications/test-sms
 ```
 
 ### Admin Functions
 
 ```http
-POST /api/v1/notifications/process-queue
-DELETE /api/v1/notifications/history/{notification_id}
+POST /api/v2/notifications/process-queue
+DELETE /api/v2/notifications/history/{notification_id}
 ```
 
 ## Usage Examples
@@ -210,15 +210,15 @@ print(f"Processed {result['processed']} notifications")
 
 ```bash
 # Test email notification
-curl -X POST "http://localhost:8000/api/v1/notifications/test-email" \
+curl -X POST "http://localhost:8000/api/v2/notifications/test-email" \
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # Get notification preferences
-curl -X GET "http://localhost:8000/api/v1/notifications/preferences" \
+curl -X GET "http://localhost:8000/api/v2/notifications/preferences" \
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # Update preferences
-curl -X PUT "http://localhost:8000/api/v1/notifications/preferences" \
+curl -X PUT "http://localhost:8000/api/v2/notifications/preferences" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -337,7 +337,7 @@ If Celery is not available, notifications can be processed manually:
 result = notification_service.process_notification_queue(db=db)
 
 # Or via API (admin only)
-POST /api/v1/notifications/process-queue
+POST /api/v2/notifications/process-queue
 ```
 
 ## Error Handling & Retry Logic
@@ -430,11 +430,11 @@ python -m pytest tests/test_notifications.py::TestNotificationAPI -v
 
 ```bash
 # Test email notifications
-curl -X POST "http://localhost:8000/api/v1/notifications/test-email" \
+curl -X POST "http://localhost:8000/api/v2/notifications/test-email" \
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # Test SMS notifications  
-curl -X POST "http://localhost:8000/api/v1/notifications/test-sms" \
+curl -X POST "http://localhost:8000/api/v2/notifications/test-sms" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 

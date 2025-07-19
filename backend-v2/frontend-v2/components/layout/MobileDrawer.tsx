@@ -125,7 +125,7 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
   
   // Handle sign out
   const handleSignOut = async () => {
-    await fetch('/api/v1/auth/logout', { method: 'POST' })
+    await fetch('/api/v2/auth/logout', { method: 'POST' })
     localStorage.removeItem('token')
     localStorage.removeItem('refresh_token')
     router.push('/login')

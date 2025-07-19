@@ -42,10 +42,10 @@ The marketing integrations feature has been comprehensively tested across all cr
 
 #### ✅ Successful Tests
 - Health check endpoint (`/health`)
-- Integration status API (`/api/v1/integrations/status`)
-- OAuth initiation API (`/api/v1/integrations/connect`)
-- Integration health check (`/api/v1/integrations/health/all`)
-- Reviews API (`/api/v1/reviews`)
+- Integration status API (`/api/v2/integrations/status`)
+- OAuth initiation API (`/api/v2/integrations/connect`)
+- Integration health check (`/api/v2/integrations/health/all`)
+- Reviews API (`/api/v2/reviews`)
 - Frontend accessibility test
 - Error handling validation
 

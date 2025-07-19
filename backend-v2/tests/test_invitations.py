@@ -68,7 +68,7 @@ def owner_membership(db_session: Session, organization_owner, barbershop):
 def auth_headers(test_client, organization_owner):
     """Get auth headers for organization owner"""
     response = test_client.post(
-        "/api/v1/auth/login",
+        "/api/v2/auth/login",
         json={"email": organization_owner.email, "password": "testpass123"}
     )
     # For testing, we'll simulate the token
@@ -90,7 +90,7 @@ class TestInvitationCreation:
         }
         
         response = test_client.post(
-            "/api/v1/invitations/",
+            "/api/v2/invitations/",
             json=invitation_data,
             headers=auth_headers
         )
@@ -121,7 +121,7 @@ class TestInvitationCreation:
         }
         
         response = test_client.post(
-            "/api/v1/invitations/",
+            "/api/v2/invitations/",
             json=invitation_data,
             headers=auth_headers
         )
@@ -140,7 +140,7 @@ class TestInvitationCreation:
         }
         
         response1 = test_client.post(
-            "/api/v1/invitations/",
+            "/api/v2/invitations/",
             json=invitation_data,
             headers=auth_headers
         )
@@ -148,7 +148,7 @@ class TestInvitationCreation:
         
         # Try to create duplicate
         response2 = test_client.post(
-            "/api/v1/invitations/",
+            "/api/v2/invitations/",
             json=invitation_data,
             headers=auth_headers
         )
@@ -184,7 +184,7 @@ class TestInvitationCreation:
         }
         
         response = test_client.post(
-            "/api/v1/invitations/",
+            "/api/v2/invitations/",
             json=invitation_data,
             headers=auth_headers
         )
@@ -224,7 +224,7 @@ class TestInvitationList:
         
         # List invitations
         response = test_client.get(
-            f"/api/v1/invitations/?organization_id={barbershop.id}",
+            f"/api/v2/invitations/?organization_id={barbershop.id}",
             headers=auth_headers
         )
         
@@ -260,7 +260,7 @@ class TestInvitationList:
         
         # Filter for pending only
         response = test_client.get(
-            f"/api/v1/invitations/?organization_id={barbershop.id}&status=pending",
+            f"/api/v2/invitations/?organization_id={barbershop.id}&status=pending",
             headers=auth_headers
         )
         
@@ -288,7 +288,7 @@ class TestInvitationAcceptance:
         db_session.commit()
         
         # Get invitation by token (no auth required)
-        response = test_client.get(f"/api/v1/invitations/{invitation.token}")
+        response = test_client.get(f"/api/v2/invitations/{invitation.token}")
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -319,7 +319,7 @@ class TestInvitationAcceptance:
         }
         
         response = test_client.post(
-            f"/api/v1/invitations/{invitation.token}/accept",
+            f"/api/v2/invitations/{invitation.token}/accept",
             json=accept_data
         )
         
@@ -364,7 +364,7 @@ class TestInvitationAcceptance:
         accept_data = {"password": "password123"}
         
         response = test_client.post(
-            f"/api/v1/invitations/{invitation.token}/accept",
+            f"/api/v2/invitations/{invitation.token}/accept",
             json=accept_data
         )
         
@@ -406,7 +406,7 @@ class TestInvitationPermissions:
         }
         
         response = test_client.post(
-            "/api/v1/invitations/",
+            "/api/v2/invitations/",
             json=invitation_data,
             headers=barber_headers
         )
@@ -429,7 +429,7 @@ class TestInvitationManagement:
         db_session.commit()
         
         response = test_client.post(
-            f"/api/v1/invitations/{invitation.id}/resend",
+            f"/api/v2/invitations/{invitation.id}/resend",
             headers=auth_headers
         )
         
@@ -453,7 +453,7 @@ class TestInvitationManagement:
         db_session.commit()
         
         response = test_client.delete(
-            f"/api/v1/invitations/{invitation.id}",
+            f"/api/v2/invitations/{invitation.id}",
             headers=auth_headers
         )
         

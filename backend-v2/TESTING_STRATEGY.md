@@ -86,18 +86,18 @@ class TestFeatureName:
     
     def test_happy_path(self):
         """Test the expected successful scenario"""
-        response = client.post("/api/v1/endpoint", json={"data": "value"})
+        response = client.post("/api/v2/endpoint", json={"data": "value"})
         assert response.status_code == 200
         assert response.json()["success"] == True
     
     def test_validation_error(self):
         """Test input validation"""
-        response = client.post("/api/v1/endpoint", json={"invalid": "data"})
+        response = client.post("/api/v2/endpoint", json={"invalid": "data"})
         assert response.status_code == 422
     
     def test_authentication_required(self):
         """Test auth protection"""
-        response = client.get("/api/v1/protected")
+        response = client.get("/api/v2/protected")
         assert response.status_code == 401
 ```
 
@@ -247,7 +247,7 @@ Before marking any feature complete:
 ### 1. Test User Authentication:
 ```python
 def test_authenticated_endpoint(auth_headers):
-    response = client.get("/api/v1/protected", headers=auth_headers)
+    response = client.get("/api/v2/protected", headers=auth_headers)
     assert response.status_code == 200
 ```
 
@@ -259,7 +259,7 @@ def test_authenticated_endpoint(auth_headers):
     {"name": ""},          # Empty name
 ])
 def test_validation_errors(invalid_data):
-    response = client.post("/api/v1/register", json=invalid_data)
+    response = client.post("/api/v2/register", json=invalid_data)
     assert response.status_code == 422
 ```
 

@@ -229,7 +229,7 @@ Mike's Chair (1 chair)
 ### Authentication
 ```bash
 # Login as shop owner
-curl -X POST http://localhost:8000/api/v1/auth/login \
+curl -X POST http://localhost:8000/api/v2/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "shop.owner@classiccuts.com",
@@ -240,11 +240,11 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 ### Testing Permissions
 ```bash
 # Test billing access (should work for shop owner)
-curl -X GET http://localhost:8000/api/v1/billing/current-subscription \
+curl -X GET http://localhost:8000/api/v2/billing/current-subscription \
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # Test staff invitation (should fail for barber)
-curl -X POST http://localhost:8000/api/v1/invitations/ \
+curl -X POST http://localhost:8000/api/v2/invitations/ \
   -H "Authorization: Bearer BARBER_TOKEN" \
   -d '{"email": "test@example.com", "role": "barber"}'
 ```

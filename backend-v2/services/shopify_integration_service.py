@@ -67,7 +67,7 @@ class ShopifyIntegrationService(BaseIntegrationService):
     
     @property
     def default_redirect_uri(self) -> str:
-        return os.getenv("SHOPIFY_REDIRECT_URI", "http://localhost:8000/api/v1/integrations/shopify/callback")
+        return os.getenv("SHOPIFY_REDIRECT_URI", "http://localhost:8000/api/v2/integrations/shopify/callback")
     
     def build_oauth_url(self, shop_domain: str, state: str, redirect_uri: Optional[str] = None) -> str:
         """Build Shopify OAuth authorization URL for specific shop"""

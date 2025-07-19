@@ -9,14 +9,14 @@ BookedBarber V2 is undergoing a terminology migration from "bookings" to "appoin
 ### ❌ WRONG
 ```javascript
 // This will return 422 Unprocessable Entity
-fetch('/api/v1/bookings/my')
+fetch('/api/v2/bookings/my')
 ```
 
 ### ✅ CORRECT
 ```javascript
 // Get current user's bookings
-fetch('/api/v1/bookings/')  // Deprecated but works
-fetch('/api/v1/appointments/')  // Preferred - use this!
+fetch('/api/v2/bookings/')  // Deprecated but works
+fetch('/api/v2/appointments/')  // Preferred - use this!
 ```
 
 ## Current State (July 2025)
@@ -25,18 +25,18 @@ fetch('/api/v1/appointments/')  // Preferred - use this!
 Both routers are currently active for backward compatibility:
 
 #### Bookings Router (DEPRECATED)
-- `GET /api/v1/bookings/` - Get user's bookings
-- `GET /api/v1/bookings/{id}` - Get specific booking
-- `POST /api/v1/bookings/` - Create booking
-- `PUT /api/v1/bookings/{id}` - Update booking
-- `DELETE /api/v1/bookings/{id}` - Cancel booking
+- `GET /api/v2/bookings/` - Get user's bookings
+- `GET /api/v2/bookings/{id}` - Get specific booking
+- `POST /api/v2/bookings/` - Create booking
+- `PUT /api/v2/bookings/{id}` - Update booking
+- `DELETE /api/v2/bookings/{id}` - Cancel booking
 
 #### Appointments Router (PREFERRED)
-- `GET /api/v1/appointments/` - Get user's appointments
-- `GET /api/v1/appointments/{id}` - Get specific appointment
-- `POST /api/v1/appointments/` - Create appointment
-- `PUT /api/v1/appointments/{id}` - Update appointment
-- `DELETE /api/v1/appointments/{id}` - Cancel appointment
+- `GET /api/v2/appointments/` - Get user's appointments
+- `GET /api/v2/appointments/{id}` - Get specific appointment
+- `POST /api/v2/appointments/` - Create appointment
+- `PUT /api/v2/appointments/{id}` - Update appointment
+- `DELETE /api/v2/appointments/{id}` - Cancel appointment
 
 ### Key Differences
 1. **Response field naming**: Both endpoints return the same data structure
@@ -49,7 +49,7 @@ Both routers are currently active for backward compatibility:
 Always use `/appointments` endpoints:
 ```javascript
 // Frontend API calls
-const appointments = await fetchAPI('/api/v1/appointments/')
+const appointments = await fetchAPI('/api/v2/appointments/')
 
 // Backend imports
 from routers import appointments  // Not bookings!
@@ -64,12 +64,12 @@ from routers import appointments  // Not bookings!
 ```javascript
 // Old pattern (works but deprecated)
 export async function getMyBookings() {
-  return fetchAPI('/api/v1/bookings/')
+  return fetchAPI('/api/v2/bookings/')
 }
 
 // New pattern (preferred)
 export async function getMyAppointments() {
-  return fetchAPI('/api/v1/appointments/')
+  return fetchAPI('/api/v2/appointments/')
 }
 ```
 
@@ -85,15 +85,15 @@ export async function getMyAppointments() {
 ### Quick Test
 ```bash
 # This should return 301 redirect (after our fix)
-curl -X GET "http://localhost:8000/api/v1/bookings/my" \
+curl -X GET "http://localhost:8000/api/v2/bookings/my" \
   -H "Authorization: Bearer $TOKEN"
 
 # This works correctly
-curl -X GET "http://localhost:8000/api/v1/bookings/" \
+curl -X GET "http://localhost:8000/api/v2/bookings/" \
   -H "Authorization: Bearer $TOKEN"
 
 # This is preferred
-curl -X GET "http://localhost:8000/api/v1/appointments/" \
+curl -X GET "http://localhost:8000/api/v2/appointments/" \
   -H "Authorization: Bearer $TOKEN"
 ```
 

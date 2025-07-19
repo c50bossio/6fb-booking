@@ -128,7 +128,7 @@ python -c "import sys; sys.path.append('.'); from config import settings; print(
 1. **Stripe Payment Testing**
    ```bash
    # Test Stripe connection
-   curl -X POST http://localhost:8000/api/v1/payments/test \
+   curl -X POST http://localhost:8000/api/v2/payments/test \
      -H "Content-Type: application/json" \
      -d '{"amount": 100, "currency": "usd"}'
    ```
@@ -136,7 +136,7 @@ python -c "import sys; sys.path.append('.'); from config import settings; print(
 2. **Email Testing**
    ```bash
    # Test SendGrid
-   curl -X POST http://localhost:8000/api/v1/notifications/test-email \
+   curl -X POST http://localhost:8000/api/v2/notifications/test-email \
      -H "Content-Type: application/json" \
      -d '{"to": "test@example.com", "subject": "Test"}'
    ```
@@ -144,7 +144,7 @@ python -c "import sys; sys.path.append('.'); from config import settings; print(
 3. **SMS Testing**
    ```bash
    # Test Twilio
-   curl -X POST http://localhost:8000/api/v1/notifications/test-sms \
+   curl -X POST http://localhost:8000/api/v2/notifications/test-sms \
      -H "Content-Type: application/json" \
      -d '{"to": "+1234567890", "message": "Test"}'
    ```

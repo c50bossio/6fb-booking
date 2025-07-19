@@ -23,7 +23,7 @@ class TestClientAPI:
         }
         
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=client_data,
             headers=auth_headers
         )
@@ -39,7 +39,7 @@ class TestClientAPI:
         """Test creating a client with duplicate email (simplified)."""
         # First client
         response1 = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -47,7 +47,7 @@ class TestClientAPI:
         
         # Duplicate email - accept reasonable response codes
         response2 = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -62,14 +62,14 @@ class TestClientAPI:
             client_data["first_name"] = f"Client{i}"
             
             client.post(
-                "/api/v1/clients/",
+                "/api/v2/clients/",
                 json=client_data,
                 headers=auth_headers
             )
         
         # Test listing
         response = client.get(
-            "/api/v1/clients/?page=1&page_size=3",
+            "/api/v2/clients/?page=1&page_size=3",
             headers=auth_headers
         )
         
@@ -93,14 +93,14 @@ class TestClientAPI:
         for client_data in clients_data:
             full_data = {**test_client_data, **client_data}
             client.post(
-                "/api/v1/clients/",
+                "/api/v2/clients/",
                 json=full_data,
                 headers=auth_headers
             )
         
         # Search for "John" - test endpoint exists
         response = client.get(
-            "/api/v1/clients/?search=John",
+            "/api/v2/clients/?search=John",
             headers=auth_headers
         )
         
@@ -115,7 +115,7 @@ class TestClientAPI:
         """Test getting a specific client."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -123,7 +123,7 @@ class TestClientAPI:
         
         # Get client
         response = client.get(
-            f"/api/v1/clients/{client_id}",
+            f"/api/v2/clients/{client_id}",
             headers=auth_headers
         )
         
@@ -135,7 +135,7 @@ class TestClientAPI:
     def test_get_client_not_found(self, client: TestClient, auth_headers: dict):
         """Test getting non-existent client."""
         response = client.get(
-            "/api/v1/clients/99999",
+            "/api/v2/clients/99999",
             headers=auth_headers
         )
         
@@ -145,7 +145,7 @@ class TestClientAPI:
         """Test updating client information."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -159,7 +159,7 @@ class TestClientAPI:
         }
         
         response = client.put(
-            f"/api/v1/clients/{client_id}",
+            f"/api/v2/clients/{client_id}",
             json=updates,
             headers=auth_headers
         )
@@ -174,7 +174,7 @@ class TestClientAPI:
         """Test deleting client as non-admin user."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -182,7 +182,7 @@ class TestClientAPI:
         
         # Try to delete (should fail for non-admin)
         response = client.delete(
-            f"/api/v1/clients/{client_id}",
+            f"/api/v2/clients/{client_id}",
             headers=auth_headers
         )
         
@@ -193,7 +193,7 @@ class TestClientAPI:
         """Test getting client appointment history."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -201,7 +201,7 @@ class TestClientAPI:
         
         # Get history (should be empty initially)
         response = client.get(
-            f"/api/v1/clients/{client_id}/history",
+            f"/api/v2/clients/{client_id}/history",
             headers=auth_headers
         )
         
@@ -216,7 +216,7 @@ class TestClientAPI:
         """Test updating customer type."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -224,7 +224,7 @@ class TestClientAPI:
         
         # Update customer type
         response = client.put(
-            f"/api/v1/clients/{client_id}/customer-type?customer_type=vip",
+            f"/api/v2/clients/{client_id}/customer-type?customer_type=vip",
             headers=auth_headers
         )
         
@@ -235,7 +235,7 @@ class TestClientAPI:
         """Test updating customer type with invalid value."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -243,7 +243,7 @@ class TestClientAPI:
         
         # Update with invalid type
         response = client.put(
-            f"/api/v1/clients/{client_id}/customer-type?customer_type=invalid",
+            f"/api/v2/clients/{client_id}/customer-type?customer_type=invalid",
             headers=auth_headers
         )
         
@@ -260,14 +260,14 @@ class TestClientAPI:
         for client_data in clients_data:
             full_data = {**test_client_data, **client_data}
             client.post(
-                "/api/v1/clients/",
+                "/api/v2/clients/",
                 json=full_data,
                 headers=auth_headers
             )
         
         # Search - test endpoint exists
         response = client.post(
-            "/api/v1/clients/search",
+            "/api/v2/clients/search",
             json={"query": "John", "limit": 5},
             headers=auth_headers
         )
@@ -282,7 +282,7 @@ class TestClientAPI:
         """Test getting client analytics."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -290,7 +290,7 @@ class TestClientAPI:
         
         # Get analytics
         response = client.get(
-            f"/api/v1/clients/{client_id}/analytics",
+            f"/api/v2/clients/{client_id}/analytics",
             headers=auth_headers
         )
         
@@ -305,7 +305,7 @@ class TestClientAPI:
         """Test getting client recommendations."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -313,7 +313,7 @@ class TestClientAPI:
         
         # Get recommendations - test endpoint exists
         response = client.get(
-            f"/api/v1/clients/{client_id}/recommendations",
+            f"/api/v2/clients/{client_id}/recommendations",
             headers=auth_headers
         )
         
@@ -327,7 +327,7 @@ class TestClientAPI:
         """Test communication preferences endpoints."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -335,7 +335,7 @@ class TestClientAPI:
         
         # Get preferences
         response = client.get(
-            f"/api/v1/clients/{client_id}/communication-preferences",
+            f"/api/v2/clients/{client_id}/communication-preferences",
             headers=auth_headers
         )
         
@@ -352,7 +352,7 @@ class TestClientAPI:
         }
         
         response = client.put(
-            f"/api/v1/clients/{client_id}/communication-preferences",
+            f"/api/v2/clients/{client_id}/communication-preferences",
             json=new_prefs,
             headers=auth_headers
         )
@@ -364,7 +364,7 @@ class TestClientAPI:
         """Test adding notes to client."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -377,7 +377,7 @@ class TestClientAPI:
         }
         
         response = client.post(
-            f"/api/v1/clients/{client_id}/notes",
+            f"/api/v2/clients/{client_id}/notes",
             json=note_data,
             headers=auth_headers
         )
@@ -391,7 +391,7 @@ class TestClientAPI:
         """Test updating client tags."""
         # Create client
         response = client.post(
-            "/api/v1/clients/",
+            "/api/v2/clients/",
             json=test_client_data,
             headers=auth_headers
         )
@@ -403,7 +403,7 @@ class TestClientAPI:
         }
         
         response = client.put(
-            f"/api/v1/clients/{client_id}/tags",
+            f"/api/v2/clients/{client_id}/tags",
             json=tags_data,
             headers=auth_headers
         )
@@ -416,7 +416,7 @@ class TestClientAPI:
     def test_get_dashboard_metrics(self, client: TestClient, auth_headers: dict):
         """Test getting dashboard metrics."""
         response = client.get(
-            "/api/v1/clients/dashboard/metrics",
+            "/api/v2/clients/dashboard/metrics",
             headers=auth_headers
         )
         
@@ -441,14 +441,14 @@ class TestClientAPI:
             full_data["email"] = f"test{i}@example.com"
             
             client.post(
-                "/api/v1/clients/",
+                "/api/v2/clients/",
                 json=full_data,
                 headers=auth_headers
             )
         
         # Test search by customer type - endpoint exists
         response = client.get(
-            "/api/v1/clients/advanced-search?customer_type=vip",
+            "/api/v2/clients/advanced-search?customer_type=vip",
             headers=auth_headers
         )
         
@@ -457,7 +457,7 @@ class TestClientAPI:
         
         # Test search by tags - endpoint exists
         response = client.get(
-            "/api/v1/clients/advanced-search?tags=VIP",
+            "/api/v2/clients/advanced-search?tags=VIP",
             headers=auth_headers
         )
         
@@ -467,10 +467,10 @@ class TestClientAPI:
     def test_unauthorized_access(self, client: TestClient):
         """Test that endpoints require authentication."""
         endpoints = [
-            "/api/v1/clients/",
-            "/api/v1/clients/1",
-            "/api/v1/clients/1/analytics",
-            "/api/v1/clients/dashboard/metrics"
+            "/api/v2/clients/",
+            "/api/v2/clients/1",
+            "/api/v2/clients/1/analytics",
+            "/api/v2/clients/dashboard/metrics"
         ]
         
         for endpoint in endpoints:

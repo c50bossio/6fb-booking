@@ -76,7 +76,7 @@ Create professional email templates in SendGrid:
 Track email opens, clicks, and bounces:
 
 1. Go to **Settings** → **Mail Settings** → **Event Webhook**
-2. Set HTTP Post URL: `https://yourapi.com/api/v1/webhooks/sendgrid`
+2. Set HTTP Post URL: `https://yourapi.com/api/v2/webhooks/sendgrid`
 3. Select events to track:
    - ✓ Opened
    - ✓ Clicked

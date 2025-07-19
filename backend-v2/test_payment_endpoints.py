@@ -36,7 +36,7 @@ def create_test_user_and_login():
             "password": "AdminTest123"
         }
         
-        response = requests.post(f"{BASE_URL}/api/v1/auth/login", 
+        response = requests.post(f"{BASE_URL}/api/v2/auth/login", 
                                json={"email": login_data['email'], "password": login_data['password']})
         
         if response.status_code == 200:
@@ -47,11 +47,11 @@ def create_test_user_and_login():
             print(f"Login failed, trying registration: {response.status_code} - {response.text}")
             
             # Try registration
-            response = requests.post(f"{BASE_URL}/api/v1/auth/register", json=register_data)
+            response = requests.post(f"{BASE_URL}/api/v2/auth/register", json=register_data)
             if response.status_code in [200, 201]:
                 print(f"Registration successful: {response.status_code}")
                 # Now login
-                response = requests.post(f"{BASE_URL}/api/v1/auth/login", 
+                response = requests.post(f"{BASE_URL}/api/v2/auth/login", 
                                        json={"email": login_data['email'], "password": login_data['password']})
                 if response.status_code == 200:
                     token_data = response.json()
@@ -67,11 +67,11 @@ def test_payment_endpoints(token):
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     
     endpoints_to_test = [
-        ("GET", "/api/v1/payments/history", None),
-        ("GET", "/api/v1/payments/gift-certificates", None),
-        ("GET", "/api/v1/payments/stripe-connect/status", None),
+        ("GET", "/api/v2/payments/history", None),
+        ("GET", "/api/v2/payments/gift-certificates", None),
+        ("GET", "/api/v2/payments/stripe-connect/status", None),
         # Test POST endpoints that might be causing 500 errors
-        ("POST", "/api/v1/payments/reports", {
+        ("POST", "/api/v2/payments/reports", {
             "start_date": "2024-01-01T00:00:00Z",
             "end_date": "2024-12-31T23:59:59Z"
         }),

@@ -18,7 +18,7 @@ from utils.auth import require_admin_role
 from services.booking_service import BookingService
 import models
 
-router = APIRouter(prefix="/api/v1/cache", tags=["cache"])
+router = APIRouter(prefix="/api/v2/cache", tags=["cache"])
 
 @router.get("/health")
 async def get_cache_health(

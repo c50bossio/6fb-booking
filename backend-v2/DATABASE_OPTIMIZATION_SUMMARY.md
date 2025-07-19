@@ -123,7 +123,7 @@ def get_user_appointments(db: Session, user_id: int):
 ## 5. Health Check Enhancements
 
 ### Enhanced Health Endpoint
-- **Endpoint**: `/api/v1/health/detailed`
+- **Endpoint**: `/api/v2/health/detailed`
 - **New Features**:
   - Connection pool metrics
   - Database connection statistics
@@ -169,7 +169,7 @@ def get_user_appointments(db: Session, user_id: int):
 ## 7. Monitoring and Maintenance
 
 ### Regular Monitoring
-1. Check `/api/v1/health/detailed` endpoint regularly
+1. Check `/api/v2/health/detailed` endpoint regularly
 2. Monitor connection pool warnings
 3. Review slow query logs
 4. Check index usage statistics

@@ -171,11 +171,11 @@ class SecurityAuditor:
         
         try:
             # Try to register a user
-            response = self.session.post(f"{BASE_URL}/api/v1/auth/register", json=test_data)
+            response = self.session.post(f"{BASE_URL}/api/v2/auth/register", json=test_data)
             
             if response.status_code == 201:
                 # Try to login
-                login_response = self.session.post(f"{BASE_URL}/api/v1/auth/login", json={
+                login_response = self.session.post(f"{BASE_URL}/api/v2/auth/login", json={
                     'email': test_data['email'],
                     'password': test_data['password']
                 })
@@ -284,7 +284,7 @@ class SecurityAuditor:
             test_data['password'] = weak_password
             
             try:
-                response = self.session.post(f"{BASE_URL}/api/v1/auth/register", json=test_data)
+                response = self.session.post(f"{BASE_URL}/api/v2/auth/register", json=test_data)
                 
                 # Registration should fail for weak passwords
                 if response.status_code != 201:
@@ -324,18 +324,18 @@ class SecurityAuditor:
         
         # Test authenticated request
         try:
-            response = self.session.get(f"{BASE_URL}/api/v1/users/me", headers={
+            response = self.session.get(f"{BASE_URL}/api/v2/users/me", headers={
                 'Authorization': f'Bearer {token}'
             })
             
             if response.status_code == 200:
                 # Test logout
-                logout_response = self.session.post(f"{BASE_URL}/api/v1/auth/logout", headers={
+                logout_response = self.session.post(f"{BASE_URL}/api/v2/auth/logout", headers={
                     'Authorization': f'Bearer {token}'
                 })
                 
                 # Try to use token after logout
-                post_logout_response = self.session.get(f"{BASE_URL}/api/v1/users/me", headers={
+                post_logout_response = self.session.get(f"{BASE_URL}/api/v2/users/me", headers={
                     'Authorization': f'Bearer {token}'
                 })
                 
@@ -382,7 +382,7 @@ class SecurityAuditor:
         
         for i in range(max_attempts):
             try:
-                response = self.session.post(f"{BASE_URL}/api/v1/auth/login", json={
+                response = self.session.post(f"{BASE_URL}/api/v2/auth/login", json={
                     'email': test_data['email'],
                     'password': 'wrong_password'
                 })
@@ -496,11 +496,11 @@ class SecurityAuditor:
         # For now, test basic unauthorized access
         
         protected_endpoints = [
-            '/api/v1/admin/users',
-            '/api/v1/admin/analytics',
-            '/api/v1/users/me',
-            '/api/v1/appointments',
-            '/api/v1/payments'
+            '/api/v2/admin/users',
+            '/api/v2/admin/analytics',
+            '/api/v2/users/me',
+            '/api/v2/appointments',
+            '/api/v2/payments'
         ]
         
         unauthorized_access_blocked = 0
@@ -547,9 +547,9 @@ class SecurityAuditor:
             
         token = self.auth_tokens['test_user']
         admin_endpoints = [
-            '/api/v1/admin/users',
-            '/api/v1/admin/analytics',
-            '/api/v1/admin/reports'
+            '/api/v2/admin/users',
+            '/api/v2/admin/analytics',
+            '/api/v2/admin/reports'
         ]
         
         admin_access_blocked = 0
@@ -621,13 +621,13 @@ class SecurityAuditor:
             # Try to update user role
             {
                 'method': 'PUT',
-                'endpoint': '/api/v1/users/me',
+                'endpoint': '/api/v2/users/me',
                 'data': {'role': 'admin'}
             },
             # Try to access other user's data
             {
                 'method': 'GET',
-                'endpoint': '/api/v1/users/1',
+                'endpoint': '/api/v2/users/1',
                 'data': {}
             }
         ]
@@ -688,7 +688,7 @@ class SecurityAuditor:
         # Check if production would enforce HTTPS
         
         try:
-            response = self.session.get(f"{BASE_URL}/api/v1/health")
+            response = self.session.get(f"{BASE_URL}/api/v2/health")
             
             # Check security headers
             security_headers = {
@@ -735,9 +735,9 @@ class SecurityAuditor:
     def test_sensitive_data_exposure(self):
         """Test for sensitive data exposure"""
         sensitive_endpoints = [
-            '/api/v1/users',
-            '/api/v1/payments',
-            '/api/v1/admin/config'
+            '/api/v2/users',
+            '/api/v2/payments',
+            '/api/v2/admin/config'
         ]
         
         data_exposure_detected = False
@@ -826,7 +826,7 @@ class SecurityAuditor:
         
         try:
             # Get user data
-            response = self.session.get(f"{BASE_URL}/api/v1/users/me", headers={
+            response = self.session.get(f"{BASE_URL}/api/v2/users/me", headers={
                 'Authorization': f'Bearer {token}'
             })
             
@@ -917,14 +917,14 @@ class SecurityAuditor:
             test_data['name'] = malicious_input
             
             try:
-                response = self.session.post(f"{BASE_URL}/api/v1/auth/register", json=test_data)
+                response = self.session.post(f"{BASE_URL}/api/v2/auth/register", json=test_data)
                 
                 # Should reject malicious input (400, 422, etc.)
                 if response.status_code in [400, 422]:
                     validation_working += 1
                 elif response.status_code == 201:
                     # Check if malicious input was sanitized
-                    login_response = self.session.post(f"{BASE_URL}/api/v1/auth/login", json={
+                    login_response = self.session.post(f"{BASE_URL}/api/v2/auth/login", json={
                         'email': test_data['email'],
                         'password': test_data['password']
                     })
@@ -932,7 +932,7 @@ class SecurityAuditor:
                     if login_response.status_code == 200:
                         token = login_response.json().get('access_token')
                         if token:
-                            user_response = self.session.get(f"{BASE_URL}/api/v1/users/me", headers={
+                            user_response = self.session.get(f"{BASE_URL}/api/v2/users/me", headers={
                                 'Authorization': f'Bearer {token}'
                             })
                             
@@ -977,7 +977,7 @@ class SecurityAuditor:
         for payload in sql_payloads:
             try:
                 # Test SQL injection in login
-                response = self.session.post(f"{BASE_URL}/api/v1/auth/login", json={
+                response = self.session.post(f"{BASE_URL}/api/v2/auth/login", json={
                     'email': payload,
                     'password': 'test'
                 })
@@ -1024,14 +1024,14 @@ class SecurityAuditor:
             test_data['name'] = payload
             
             try:
-                response = self.session.post(f"{BASE_URL}/api/v1/auth/register", json=test_data)
+                response = self.session.post(f"{BASE_URL}/api/v2/auth/register", json=test_data)
                 
                 # Should sanitize XSS payload
                 if response.status_code in [400, 422]:
                     xss_blocked += 1
                 elif response.status_code == 201:
                     # Check if payload was sanitized
-                    login_response = self.session.post(f"{BASE_URL}/api/v1/auth/login", json={
+                    login_response = self.session.post(f"{BASE_URL}/api/v2/auth/login", json={
                         'email': test_data['email'],
                         'password': test_data['password']
                     })
@@ -1039,7 +1039,7 @@ class SecurityAuditor:
                     if login_response.status_code == 200:
                         token = login_response.json().get('access_token')
                         if token:
-                            user_response = self.session.get(f"{BASE_URL}/api/v1/users/me", headers={
+                            user_response = self.session.get(f"{BASE_URL}/api/v2/users/me", headers={
                                 'Authorization': f'Bearer {token}'
                             })
                             
@@ -1090,7 +1090,7 @@ class SecurityAuditor:
         # Test state-changing operations without CSRF token
         try:
             # Try to update user data without CSRF token
-            response = self.session.put(f"{BASE_URL}/api/v1/users/me", 
+            response = self.session.put(f"{BASE_URL}/api/v2/users/me", 
                                        json={'name': 'CSRF Test'}, 
                                        headers={'Authorization': f'Bearer {token}'})
             
@@ -1140,9 +1140,9 @@ class SecurityAuditor:
         """Test PCI compliance measures"""
         # Check if payment endpoints are properly secured
         payment_endpoints = [
-            '/api/v1/payments/create-intent',
-            '/api/v1/payments/confirm',
-            '/api/v1/payments/webhook'
+            '/api/v2/payments/create-intent',
+            '/api/v2/payments/confirm',
+            '/api/v2/payments/webhook'
         ]
         
         pci_compliant = True
@@ -1184,7 +1184,7 @@ class SecurityAuditor:
         # Test webhook signature verification
         try:
             # Test webhook without signature
-            response = self.session.post(f"{BASE_URL}/api/v1/webhooks/stripe", 
+            response = self.session.post(f"{BASE_URL}/api/v2/webhooks/stripe", 
                                        json={'type': 'payment_intent.succeeded'})
             
             # Should reject webhook without proper signature
@@ -1256,8 +1256,8 @@ class SecurityAuditor:
         privacy_endpoints = [
             '/privacy',
             '/terms',
-            '/api/v1/privacy/policy',
-            '/api/v1/legal/terms'
+            '/api/v2/privacy/policy',
+            '/api/v2/legal/terms'
         ]
         
         privacy_accessible = 0
@@ -1315,9 +1315,9 @@ class SecurityAuditor:
         
         # Test data export endpoint
         export_endpoints = [
-            '/api/v1/users/export',
-            '/api/v1/privacy/export',
-            '/api/v1/users/me/export'
+            '/api/v2/users/export',
+            '/api/v2/privacy/export',
+            '/api/v2/users/me/export'
         ]
         
         export_available = False
@@ -1367,9 +1367,9 @@ class SecurityAuditor:
         
         # Test data deletion endpoint
         deletion_endpoints = [
-            '/api/v1/users/me',
-            '/api/v1/privacy/delete',
-            '/api/v1/users/delete'
+            '/api/v2/users/me',
+            '/api/v2/privacy/delete',
+            '/api/v2/users/delete'
         ]
         
         deletion_available = False
@@ -1406,9 +1406,9 @@ class SecurityAuditor:
         """Test consent management functionality"""
         # Check if consent management is implemented
         consent_endpoints = [
-            '/api/v1/consent',
-            '/api/v1/privacy/consent',
-            '/api/v1/users/consent'
+            '/api/v2/consent',
+            '/api/v2/privacy/consent',
+            '/api/v2/users/consent'
         ]
         
         consent_available = False

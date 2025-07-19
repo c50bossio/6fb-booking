@@ -52,7 +52,7 @@ export default function RealTimeAnalytics({
 
   const fetchRealTimeMetrics = async () => {
     try {
-      const response = await fetch('/api/v1/marketing/analytics/realtime', {
+      const response = await fetch('/api/v2/marketing/analytics/realtime', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }

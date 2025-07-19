@@ -549,7 +549,7 @@ export async function emailExport(
   
   try {
     // TODO: Replace with actual API endpoint
-    const response = await fetch('/api/v1/exports/email', {
+    const response = await fetch('/api/v2/exports/email', {
       method: 'POST',
       body: formData
     })
@@ -585,7 +585,7 @@ export async function scheduleRecurringExport(
 ): Promise<{ success: boolean; scheduleId?: string; message: string }> {
   try {
     // TODO: Replace with actual API endpoint
-    const response = await fetch('/api/v1/exports/schedule', {
+    const response = await fetch('/api/v2/exports/schedule', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config)

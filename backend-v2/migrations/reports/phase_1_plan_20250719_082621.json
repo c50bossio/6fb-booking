@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "total_tasks": 34,
+  "agents": {
+    "agent_1": {
+      "task_count": 0,
+      "task_types": [],
+      "features": []
+    },
+    "agent_2": {
+      "task_count": 0,
+      "task_types": [],
+      "features": []
+    },
+    "agent_3": {
+      "task_count": 0,
+      "task_types": [],
+      "features": []
+    }
+  }
+}

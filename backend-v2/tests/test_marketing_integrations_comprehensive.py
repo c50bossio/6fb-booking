@@ -24,7 +24,7 @@ class TestIntegrationEndpoints:
     
     async def test_get_integration_status_empty(self, async_client, auth_headers: dict, test_user: User):
         """Test getting integration status when no integrations exist"""
-        response = await async_client.get("/api/v1/integrations/status", headers=auth_headers)
+        response = await async_client.get("/api/v2/integrations/status", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
@@ -61,7 +61,7 @@ class TestIntegrationEndpoints:
             db.add(integration)
         db.commit()
         
-        response = await async_client.get("/api/v1/integrations/status", headers=auth_headers)
+        response = await async_client.get("/api/v2/integrations/status", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
@@ -102,7 +102,7 @@ class TestIntegrationEndpoints:
         
         # Filter by Google My Business
         response = await async_client.get(
-            "/api/v1/integrations/status?integration_type=google_my_business", 
+            "/api/v2/integrations/status?integration_type=google_my_business", 
             headers=auth_headers
         )
         assert response.status_code == 200
@@ -126,7 +126,7 @@ class TestIntegrationEndpoints:
         db.commit()
         db.refresh(integration)
         
-        response = await async_client.get(f"/api/v1/integrations/{integration.id}", headers=auth_headers)
+        response = await async_client.get(f"/api/v2/integrations/{integration.id}", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert data["id"] == integration.id
@@ -135,7 +135,7 @@ class TestIntegrationEndpoints:
     
     async def test_get_nonexistent_integration(self, async_client, auth_headers: dict):
         """Test getting a non-existent integration returns 404"""
-        response = await async_client.get("/api/v1/integrations/999", headers=auth_headers)
+        response = await async_client.get("/api/v2/integrations/999", headers=auth_headers)
         assert response.status_code == 404
         data = response.json()
         assert "Integration not found" in data["detail"]
@@ -164,7 +164,7 @@ class TestIntegrationEndpoints:
         }
         
         response = await async_client.put(
-            f"/api/v1/integrations/{integration.id}", 
+            f"/api/v2/integrations/{integration.id}", 
             json=update_data, 
             headers=auth_headers
         )
@@ -177,7 +177,7 @@ class TestIntegrationEndpoints:
     async def test_update_nonexistent_integration(self, async_client, auth_headers: dict):
         """Test updating a non-existent integration returns 404"""
         update_data = {"name": "Updated Name"}
-        response = await async_client.put("/api/v1/integrations/999", json=update_data, headers=auth_headers)
+        response = await async_client.put("/api/v2/integrations/999", json=update_data, headers=auth_headers)
         assert response.status_code == 404
         data = response.json()
         assert "Integration not found" in data["detail"]
@@ -196,7 +196,7 @@ class TestIntegrationEndpoints:
         db.commit()
         db.refresh(integration)
         
-        response = await async_client.delete(f"/api/v1/integrations/{integration.id}", headers=auth_headers)
+        response = await async_client.delete(f"/api/v2/integrations/{integration.id}", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
@@ -204,12 +204,12 @@ class TestIntegrationEndpoints:
         assert "disconnected successfully" in data["message"]
         
         # Verify integration is deleted
-        response = await async_client.get(f"/api/v1/integrations/{integration.id}", headers=auth_headers)
+        response = await async_client.get(f"/api/v2/integrations/{integration.id}", headers=auth_headers)
         assert response.status_code == 404
     
     async def test_delete_nonexistent_integration(self, async_client, auth_headers: dict):
         """Test deleting a non-existent integration returns 404"""
-        response = await async_client.delete("/api/v1/integrations/999", headers=auth_headers)
+        response = await async_client.delete("/api/v2/integrations/999", headers=auth_headers)
         assert response.status_code == 404
         data = response.json()
         assert "Integration not found" in data["detail"]
@@ -239,7 +239,7 @@ class TestOAuthFlows:
             "scopes": ["additional_scope"]
         }
         
-        response = await async_client.post("/api/v1/integrations/connect", json=oauth_data, headers=auth_headers)
+        response = await async_client.post("/api/v2/integrations/connect", json=oauth_data, headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert "authorization_url" in data
@@ -255,7 +255,7 @@ class TestOAuthFlows:
             "redirect_uri": "http://localhost:3000/oauth/callback"
         }
         
-        response = await async_client.post("/api/v1/integrations/connect", json=oauth_data, headers=auth_headers)
+        response = await async_client.post("/api/v2/integrations/connect", json=oauth_data, headers=auth_headers)
         assert response.status_code == 400
         data = response.json()
         assert "Invalid integration type" in data["detail"]
@@ -288,7 +288,7 @@ class TestOAuthFlows:
             "integration_type": "google_my_business"
         }
         
-        response = await async_client.get("/api/v1/integrations/callback", params=params, headers=auth_headers)
+        response = await async_client.get("/api/v2/integrations/callback", params=params, headers=auth_headers)
         # Note: This endpoint doesn't require headers since it's a callback
         
         # We'll check if the endpoint exists and processes correctly
@@ -304,7 +304,7 @@ class TestOAuthFlows:
             "integration_type": "google_my_business"
         }
         
-        response = await async_client.get("/api/v1/integrations/callback", params=params)
+        response = await async_client.get("/api/v2/integrations/callback", params=params)
         # Should handle error gracefully
         assert response.status_code in [200, 422]
     
@@ -335,7 +335,7 @@ class TestOAuthFlows:
         refresh_data = {"force": True}
         
         response = await async_client.post(
-            f"/api/v1/integrations/{integration.id}/refresh-token",
+            f"/api/v2/integrations/{integration.id}/refresh-token",
             json=refresh_data,
             headers=auth_headers
         )
@@ -363,7 +363,7 @@ class TestOAuthFlows:
         refresh_data = {"force": False}
         
         response = await async_client.post(
-            f"/api/v1/integrations/{integration.id}/refresh-token",
+            f"/api/v2/integrations/{integration.id}/refresh-token",
             json=refresh_data,
             headers=auth_headers
         )
@@ -419,7 +419,7 @@ class TestHealthChecks:
         mock_service.perform_health_check = AsyncMock(return_value=mock_health_check)
         mock_factory.return_value = mock_service
         
-        response = await async_client.get("/api/v1/integrations/health/all", headers=auth_headers)
+        response = await async_client.get("/api/v2/integrations/health/all", headers=auth_headers)
         assert response.status_code in [200, 422]  # May need full implementation
     
     @patch('services.integration_service.IntegrationServiceFactory.create')
@@ -454,7 +454,7 @@ class TestHealthChecks:
         mock_service.perform_health_check = AsyncMock(return_value=mock_health_check)
         mock_factory.return_value = mock_service
         
-        response = await async_client.get(f"/api/v1/integrations/health/{integration.id}", headers=auth_headers)
+        response = await async_client.get(f"/api/v2/integrations/health/{integration.id}", headers=auth_headers)
         assert response.status_code in [200, 422]
     
     async def test_health_check_inactive_integration(
@@ -472,7 +472,7 @@ class TestHealthChecks:
         db.commit()
         db.refresh(integration)
         
-        response = await async_client.get(f"/api/v1/integrations/health/{integration.id}", headers=auth_headers)
+        response = await async_client.get(f"/api/v2/integrations/health/{integration.id}", headers=auth_headers)
         assert response.status_code in [200, 422]
 
 
@@ -482,7 +482,7 @@ class TestReviewEndpoints:
     
     async def test_get_reviews_empty(self, async_client, auth_headers: dict, test_user: User):
         """Test getting reviews when none exist"""
-        response = await async_client.get("/api/v1/reviews", headers=auth_headers)
+        response = await async_client.get("/api/v2/reviews", headers=auth_headers)
         assert response.status_code in [200, 404]  # Endpoint may not be fully registered
     
     async def test_get_reviews_with_filters(
@@ -527,7 +527,7 @@ class TestReviewEndpoints:
         ]
         
         for params in filter_params:
-            response = await async_client.get("/api/v1/reviews", params=params, headers=auth_headers)
+            response = await async_client.get("/api/v2/reviews", params=params, headers=auth_headers)
             # May return 404 if router not enabled
             assert response.status_code in [200, 404]
     
@@ -547,7 +547,7 @@ class TestReviewEndpoints:
         db.commit()
         db.refresh(review)
         
-        response = await async_client.get(f"/api/v1/reviews/{review.id}", headers=auth_headers)
+        response = await async_client.get(f"/api/v2/reviews/{review.id}", headers=auth_headers)
         assert response.status_code in [200, 404]
     
     async def test_create_review_response(
@@ -572,7 +572,7 @@ class TestReviewEndpoints:
         }
         
         response = await async_client.post(
-            f"/api/v1/reviews/{review.id}/respond",
+            f"/api/v2/reviews/{review.id}/respond",
             json=response_data,
             headers=auth_headers
         )
@@ -580,7 +580,7 @@ class TestReviewEndpoints:
     
     async def test_review_analytics(self, async_client, auth_headers: dict, test_user: User):
         """Test getting review analytics"""
-        response = await async_client.get("/api/v1/reviews/analytics", headers=auth_headers)
+        response = await async_client.get("/api/v2/reviews/analytics", headers=auth_headers)
         assert response.status_code in [200, 404]
     
     async def test_sync_reviews(self, async_client, auth_headers: dict, test_user: User):
@@ -591,7 +591,7 @@ class TestReviewEndpoints:
             "date_range_days": 30
         }
         
-        response = await async_client.post("/api/v1/reviews/sync", json=sync_data, headers=auth_headers)
+        response = await async_client.post("/api/v2/reviews/sync", json=sync_data, headers=auth_headers)
         assert response.status_code in [200, 404, 422]
 
 
@@ -602,10 +602,10 @@ class TestErrorHandling:
     async def test_unauthorized_access(self, async_client):
         """Test that endpoints require authentication"""
         endpoints = [
-            "/api/v1/integrations/status",
-            "/api/v1/integrations/connect",
-            "/api/v1/integrations/health/all",
-            "/api/v1/reviews"
+            "/api/v2/integrations/status",
+            "/api/v2/integrations/connect",
+            "/api/v2/integrations/health/all",
+            "/api/v2/reviews"
         ]
         
         for endpoint in endpoints:
@@ -622,7 +622,7 @@ class TestErrorHandling:
         
         for payload in invalid_payloads:
             response = await async_client.post(
-                "/api/v1/integrations/connect",
+                "/api/v2/integrations/connect",
                 content=payload,
                 headers={**auth_headers, "Content-Type": "application/json"}
             )
@@ -632,7 +632,7 @@ class TestErrorHandling:
         """Test rate limiting on endpoints"""
         # This would require actual rate limiting to be enabled
         # For now, just verify the endpoint responds
-        response = await async_client.get("/api/v1/integrations/status", headers=auth_headers)
+        response = await async_client.get("/api/v2/integrations/status", headers=auth_headers)
         assert response.status_code in [200, 429]  # 429 if rate limited
     
     async def test_cross_user_access_prevention(
@@ -662,7 +662,7 @@ class TestErrorHandling:
         db.refresh(other_integration)
         
         # Try to access other user's integration
-        response = await async_client.get(f"/api/v1/integrations/{other_integration.id}", headers=auth_headers)
+        response = await async_client.get(f"/api/v2/integrations/{other_integration.id}", headers=auth_headers)
         assert response.status_code == 404  # Should not find it
     
     async def test_malformed_integration_ids(self, async_client, auth_headers: dict):
@@ -671,7 +671,7 @@ class TestErrorHandling:
         
         for bad_id in malformed_ids:
             if bad_id:  # Skip empty string as it would hit different endpoint
-                response = await async_client.get(f"/api/v1/integrations/{bad_id}", headers=auth_headers)
+                response = await async_client.get(f"/api/v2/integrations/{bad_id}", headers=auth_headers)
                 assert response.status_code in [404, 422]
 
 
@@ -691,7 +691,7 @@ class TestRequestValidation:
         
         for invalid_request in invalid_requests:
             response = await async_client.post(
-                "/api/v1/integrations/connect",
+                "/api/v2/integrations/connect",
                 json=invalid_request,
                 headers=auth_headers
             )
@@ -722,7 +722,7 @@ class TestRequestValidation:
         
         for invalid_update in invalid_updates:
             response = await async_client.put(
-                f"/api/v1/integrations/{integration.id}",
+                f"/api/v2/integrations/{integration.id}",
                 json=invalid_update,
                 headers=auth_headers
             )
@@ -753,7 +753,7 @@ class TestIntegrationWorkflows:
             "redirect_uri": "http://localhost:3000/callback"
         }
         
-        response = await async_client.post("/api/v1/integrations/connect", json=oauth_data, headers=auth_headers)
+        response = await async_client.post("/api/v2/integrations/connect", json=oauth_data, headers=auth_headers)
         assert response.status_code == 200
         
         initiate_data = response.json()
@@ -778,13 +778,13 @@ class TestIntegrationWorkflows:
             "integration_type": "google_my_business"
         }
         
-        callback_response = await async_client.get("/api/v1/integrations/callback", params=callback_params)
+        callback_response = await async_client.get("/api/v2/integrations/callback", params=callback_params)
         # Callback may not require auth headers (it's coming from external service)
         assert callback_response.status_code in [200, 422]
         
         # Step 3: Verify integration was created (if callback succeeded)
         if callback_response.status_code == 200:
-            integrations_response = await async_client.get("/api/v1/integrations/status", headers=auth_headers)
+            integrations_response = await async_client.get("/api/v2/integrations/status", headers=auth_headers)
             assert integrations_response.status_code == 200
     
     async def test_integration_lifecycle(
@@ -805,28 +805,28 @@ class TestIntegrationWorkflows:
         db.refresh(integration)
         
         # Step 1: Verify creation
-        response = await async_client.get(f"/api/v1/integrations/{integration.id}", headers=auth_headers)
+        response = await async_client.get(f"/api/v2/integrations/{integration.id}", headers=auth_headers)
         assert response.status_code == 200
         
         # Step 2: Update integration
         update_data = {"name": "Updated Lifecycle Integration", "is_active": False}
         response = await async_client.put(
-            f"/api/v1/integrations/{integration.id}",
+            f"/api/v2/integrations/{integration.id}",
             json=update_data,
             headers=auth_headers
         )
         assert response.status_code == 200
         
         # Step 3: Health check
-        response = await async_client.get(f"/api/v1/integrations/health/{integration.id}", headers=auth_headers)
+        response = await async_client.get(f"/api/v2/integrations/health/{integration.id}", headers=auth_headers)
         assert response.status_code in [200, 422]
         
         # Step 4: Delete integration
-        response = await async_client.delete(f"/api/v1/integrations/{integration.id}", headers=auth_headers)
+        response = await async_client.delete(f"/api/v2/integrations/{integration.id}", headers=auth_headers)
         assert response.status_code == 200
         
         # Step 5: Verify deletion
-        response = await async_client.get(f"/api/v1/integrations/{integration.id}", headers=auth_headers)
+        response = await async_client.get(f"/api/v2/integrations/{integration.id}", headers=auth_headers)
         assert response.status_code == 404
 
 
@@ -836,7 +836,7 @@ class TestAdminEndpoints:
     
     async def test_admin_get_all_integrations_unauthorized(self, async_client, auth_headers: dict):
         """Test that non-admin users cannot access admin endpoints"""
-        response = await async_client.get("/api/v1/integrations/admin/all", headers=auth_headers)
+        response = await async_client.get("/api/v2/integrations/admin/all", headers=auth_headers)
         assert response.status_code in [403, 404]  # 404 if endpoint not registered, 403 if registered but forbidden
     
     async def test_admin_get_all_integrations_authorized(
@@ -873,6 +873,6 @@ class TestAdminEndpoints:
             db.add(integration)
         db.commit()
         
-        response = await async_client.get("/api/v1/integrations/admin/all", headers=admin_auth_headers)
+        response = await async_client.get("/api/v2/integrations/admin/all", headers=admin_auth_headers)
         # May not be implemented yet
         assert response.status_code in [200, 404]

@@ -43,7 +43,7 @@ python scripts/validate_all_services.py
 ### Service Implementation
 - **Payment Processing**: `services/payment_service.py`
 - **Stripe Connect**: `services/stripe_integration_service.py`
-- **API Endpoints**: `/api/v1/payments/*`, `/api/v1/integrations/stripe/*`
+- **API Endpoints**: `/api/v2/payments/*`, `/api/v2/integrations/stripe/*`
 
 ### 1. Get Stripe Credentials
 
@@ -75,7 +75,7 @@ python scripts/configure_stripe.py --validate
 python scripts/configure_stripe.py --test
 
 # Configure webhooks
-python scripts/configure_stripe.py --webhook-url https://your-domain.com/api/v1/webhooks/stripe
+python scripts/configure_stripe.py --webhook-url https://your-domain.com/api/v2/webhooks/stripe
 ```
 
 ### 4. Features Enabled
@@ -91,7 +91,7 @@ python scripts/configure_stripe.py --webhook-url https://your-domain.com/api/v1/
 ### Service Implementation
 - **Email Service**: `services/notification_service.py`
 - **Templates**: `/templates/notifications/`
-- **API Endpoints**: `/api/v1/notifications/*`
+- **API Endpoints**: `/api/v2/notifications/*`
 
 ### 1. Get SendGrid Credentials
 
@@ -140,7 +140,7 @@ python scripts/configure_sendgrid.py --stats
 ### Service Implementation
 - **SMS Service**: `services/notification_service.py`
 - **SMS Responses**: `services/sms_response_handler.py`
-- **API Endpoints**: `/api/v1/notifications/*`, `/api/v1/sms/*`
+- **API Endpoints**: `/api/v2/notifications/*`, `/api/v2/sms/*`
 
 ### 1. Get Twilio Credentials
 
@@ -170,7 +170,7 @@ python scripts/configure_twilio.py --validate
 python scripts/configure_twilio.py --test-sms +1234567890
 
 # Configure webhooks for two-way SMS
-python scripts/configure_twilio.py --webhook-url https://your-domain.com/api/v1/sms/webhook
+python scripts/configure_twilio.py --webhook-url https://your-domain.com/api/v2/sms/webhook
 
 # Check usage statistics
 python scripts/configure_twilio.py --usage
@@ -188,8 +188,8 @@ python scripts/configure_twilio.py --usage
 
 ### Service Implementation
 - **Calendar Service**: `services/google_calendar_service.py`
-- **API Endpoints**: `/api/v1/calendar/*`
-- **OAuth Flow**: `/api/v1/integrations/google-calendar/*`
+- **API Endpoints**: `/api/v2/calendar/*`
+- **OAuth Flow**: `/api/v2/integrations/google-calendar/*`
 
 ### 1. Set Up Google Cloud Project
 

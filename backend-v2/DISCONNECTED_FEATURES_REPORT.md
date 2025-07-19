@@ -18,8 +18,8 @@ This report identifies features that are either disconnected (exist on only one 
 - No appointment modification page
 
 **Required Actions**:
-1. Create `/api/v1/appointments/{id}` PUT endpoint in backend
-2. Create `/api/v1/appointments/{id}/cancel` POST endpoint
+1. Create `/api/v2/appointments/{id}` PUT endpoint in backend
+2. Create `/api/v2/appointments/{id}/cancel` POST endpoint
 3. Build frontend components for appointment management
 4. Add "My Appointments" page with action buttons
 
@@ -80,7 +80,7 @@ This report identifies features that are either disconnected (exist on only one 
 ### 2. **My Bookings View**
 **Status**: API exists, embedded in dashboard  
 **Current State**:
-- Backend: `GET /api/v1/bookings` returns user's bookings
+- Backend: `GET /api/v2/bookings` returns user's bookings
 - Frontend: Data fetched but no dedicated page
 - Dashboard shows limited booking info
 
@@ -97,7 +97,7 @@ This report identifies features that are either disconnected (exist on only one 
 - Missing: API endpoint to fetch notification history
 
 **Required Actions**:
-1. Add `GET /api/v1/notifications/history` endpoint
+1. Add `GET /api/v2/notifications/history` endpoint
 2. Connect NotificationHistory component
 3. Add filtering and search capabilities
 

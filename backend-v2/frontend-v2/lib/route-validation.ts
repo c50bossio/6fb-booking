@@ -37,10 +37,10 @@ export const VALID_ROUTES = {
   'book/success': '/book/success',
   
   // API routes (for reference)
-  'api/auth/login': '/api/v1/auth/login',
-  'api/auth/register': '/api/v1/auth/register',
-  'api/appointments': '/api/v1/appointments',
-  'api/bookings': '/api/v1/bookings'
+  'api/auth/login': '/api/v2/auth/login',
+  'api/auth/register': '/api/v2/auth/register',
+  'api/appointments': '/api/v2/appointments',
+  'api/bookings': '/api/v2/bookings'
 } as const
 
 /**

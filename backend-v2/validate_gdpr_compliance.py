@@ -201,15 +201,15 @@ class GDPRComplianceValidator:
         
         # Required endpoints for GDPR compliance
         required_endpoints = [
-            ("POST", "/api/v1/privacy/cookie-consent", "Cookie consent storage"),
-            ("GET", "/api/v1/privacy/cookie-consent", "Cookie consent retrieval"),
-            ("POST", "/api/v1/privacy/consent/terms", "Legal consent management"),
-            ("POST", "/api/v1/privacy/consent/bulk", "Bulk consent updates"),
-            ("GET", "/api/v1/privacy/export", "Data export request"),
-            ("GET", "/api/v1/privacy/export/{request_id}", "Export status check"),
-            ("DELETE", "/api/v1/privacy/account", "Account deletion"),
-            ("GET", "/api/v1/privacy/status", "Privacy status overview"),
-            ("GET", "/api/v1/privacy/audit-log", "Consent audit trail"),
+            ("POST", "/api/v2/privacy/cookie-consent", "Cookie consent storage"),
+            ("GET", "/api/v2/privacy/cookie-consent", "Cookie consent retrieval"),
+            ("POST", "/api/v2/privacy/consent/terms", "Legal consent management"),
+            ("POST", "/api/v2/privacy/consent/bulk", "Bulk consent updates"),
+            ("GET", "/api/v2/privacy/export", "Data export request"),
+            ("GET", "/api/v2/privacy/export/{request_id}", "Export status check"),
+            ("DELETE", "/api/v2/privacy/account", "Account deletion"),
+            ("GET", "/api/v2/privacy/status", "Privacy status overview"),
+            ("GET", "/api/v2/privacy/audit-log", "Consent audit trail"),
         ]
         
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -654,8 +654,8 @@ class GDPRComplianceValidator:
         # Test API response times for critical endpoints
         async with httpx.AsyncClient(timeout=30.0) as client:
             test_endpoints = [
-                f"{self.api_base_url}/api/v1/privacy/cookie-consent",
-                f"{self.api_base_url}/api/v1/privacy/status",
+                f"{self.api_base_url}/api/v2/privacy/cookie-consent",
+                f"{self.api_base_url}/api/v2/privacy/status",
             ]
             
             for endpoint in test_endpoints:

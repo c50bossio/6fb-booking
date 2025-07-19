@@ -195,7 +195,7 @@ Based on testing results:
    from slowapi import Limiter
    limiter = Limiter(key_func=get_remote_address)
    
-   @app.get("/api/v1/analytics")
+   @app.get("/api/v2/analytics")
    @limiter.limit("100/minute")
    async def analytics_endpoint():
    ```

@@ -16,7 +16,7 @@ async function runLoadTests() {
         test: async () => {
             const startTime = Date.now();
             const promises = Array(50).fill().map((_, i) => 
-                fetch('http://localhost:8000/api/v1/integrations/status')
+                fetch('http://localhost:8000/api/v2/integrations/status')
                     .then(r => ({ status: r.status, index: i, time: Date.now() }))
             );
             
@@ -68,9 +68,9 @@ async function runLoadTests() {
         test: async () => {
             const endpoints = [
                 '/health',
-                '/api/v1/integrations/status',
-                '/api/v1/integrations/health/all',
-                '/api/v1/reviews'
+                '/api/v2/integrations/status',
+                '/api/v2/integrations/health/all',
+                '/api/v2/reviews'
             ];
             
             const startTime = Date.now();
@@ -102,7 +102,7 @@ async function runLoadTests() {
         test: async () => {
             const startTime = Date.now();
             const promises = Array(20).fill().map((_, i) => 
-                fetch('http://localhost:8000/api/v1/integrations/connect', {
+                fetch('http://localhost:8000/api/v2/integrations/connect', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ integration_type: `test_${i}` })
@@ -136,7 +136,7 @@ async function runLoadTests() {
             
             const startTime = Date.now();
             const promises = Array(10).fill().map(() => 
-                fetch('http://localhost:8000/api/v1/integrations/connect', {
+                fetch('http://localhost:8000/api/v2/integrations/connect', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(largePayload)
@@ -166,7 +166,7 @@ async function runLoadTests() {
             
             for (let i = 0; i < 20; i++) {
                 const start = Date.now();
-                const response = await fetch('http://localhost:8000/api/v1/integrations/status');
+                const response = await fetch('http://localhost:8000/api/v2/integrations/status');
                 const end = Date.now();
                 responseTimes.push(end - start);
                 

@@ -59,7 +59,7 @@ class SmartCacheMiddleware(BaseHTTPMiddleware):
         self.cacheable_routes = [
             # User and authentication routes
             CacheableRoute(
-                "/api/v1/users/me",
+                "/api/v2/users/me",
                 methods=["GET"],
                 ttl=60,  # 1 minute for user data
                 vary_headers=["Authorization"]
@@ -67,7 +67,7 @@ class SmartCacheMiddleware(BaseHTTPMiddleware):
             
             # Appointment slots (high-frequency, short TTL)
             CacheableRoute(
-                "/api/v1/appointments/slots",
+                "/api/v2/appointments/slots",
                 methods=["GET"],
                 ttl=300,  # 5 minutes for availability
                 cache_key_generator=self._generate_slots_cache_key,
@@ -76,7 +76,7 @@ class SmartCacheMiddleware(BaseHTTPMiddleware):
             
             # Business analytics (expensive queries, longer TTL)
             CacheableRoute(
-                "/api/v1/analytics/",
+                "/api/v2/analytics/",
                 methods=["GET"],
                 ttl=1800,  # 30 minutes for analytics
                 cache_condition=self._should_cache_analytics,
@@ -85,7 +85,7 @@ class SmartCacheMiddleware(BaseHTTPMiddleware):
             
             # Service listings (rarely changes)
             CacheableRoute(
-                "/api/v1/services",
+                "/api/v2/services",
                 methods=["GET"],
                 ttl=3600,  # 1 hour for services
                 invalidation_patterns=["services"]
@@ -93,7 +93,7 @@ class SmartCacheMiddleware(BaseHTTPMiddleware):
             
             # Location data (rarely changes)
             CacheableRoute(
-                "/api/v1/locations",
+                "/api/v2/locations",
                 methods=["GET"],
                 ttl=3600,  # 1 hour for locations
                 invalidation_patterns=["locations"]
@@ -101,7 +101,7 @@ class SmartCacheMiddleware(BaseHTTPMiddleware):
             
             # Reviews (moderate frequency)
             CacheableRoute(
-                "/api/v1/reviews",
+                "/api/v2/reviews",
                 methods=["GET"],
                 ttl=600,  # 10 minutes for reviews
                 invalidation_patterns=["reviews"]
@@ -109,7 +109,7 @@ class SmartCacheMiddleware(BaseHTTPMiddleware):
             
             # Health checks (very short TTL)
             CacheableRoute(
-                "/api/v1/health",
+                "/api/v2/health",
                 methods=["GET"],
                 ttl=30,  # 30 seconds for health
                 cache_condition=lambda req: True  # Always cache health checks
@@ -118,11 +118,11 @@ class SmartCacheMiddleware(BaseHTTPMiddleware):
         
         # Routes that invalidate cache when modified
         self.cache_invalidating_routes = {
-            "/api/v1/appointments": ["appointments", "slots"],
-            "/api/v1/services": ["services"],
-            "/api/v1/locations": ["locations"],
-            "/api/v1/reviews": ["reviews"],
-            "/api/v1/users": ["users"],
+            "/api/v2/appointments": ["appointments", "slots"],
+            "/api/v2/services": ["services"],
+            "/api/v2/locations": ["locations"],
+            "/api/v2/reviews": ["reviews"],
+            "/api/v2/users": ["users"],
         }
         
         # Headers to exclude from caching
@@ -308,12 +308,12 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
         
         # Define cache control policies by route pattern
         self.cache_policies = {
-            "/api/v1/health": "public, max-age=30",
-            "/api/v1/services": "public, max-age=3600",
-            "/api/v1/locations": "public, max-age=3600",
-            "/api/v1/users/me": "private, max-age=60",
-            "/api/v1/appointments/slots": "private, max-age=300",
-            "/api/v1/analytics": "private, max-age=1800",
+            "/api/v2/health": "public, max-age=30",
+            "/api/v2/services": "public, max-age=3600",
+            "/api/v2/locations": "public, max-age=3600",
+            "/api/v2/users/me": "private, max-age=60",
+            "/api/v2/appointments/slots": "private, max-age=300",
+            "/api/v2/analytics": "private, max-age=1800",
         }
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
@@ -349,9 +349,9 @@ class CacheWarmer:
             
             base_url = settings.backend_url
             common_endpoints = [
-                "/api/v1/health",
-                "/api/v1/services",
-                "/api/v1/locations",
+                "/api/v2/health",
+                "/api/v2/services",
+                "/api/v2/locations",
             ]
             
             async with httpx.AsyncClient() as client:

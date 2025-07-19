@@ -54,7 +54,7 @@ The V2 payment processing system is a comprehensive, secure solution that handle
 
 #### Create Payment Intent
 ```http
-POST /api/v1/payments/create-intent
+POST /api/v2/payments/create-intent
 ```
 ```json
 {
@@ -77,7 +77,7 @@ POST /api/v1/payments/create-intent
 
 #### Confirm Payment
 ```http
-POST /api/v1/payments/confirm
+POST /api/v2/payments/confirm
 ```
 ```json
 {
@@ -90,7 +90,7 @@ POST /api/v1/payments/confirm
 
 #### Process Refund
 ```http
-POST /api/v1/payments/refund
+POST /api/v2/payments/refund
 ```
 ```json
 {
@@ -114,7 +114,7 @@ POST /api/v1/payments/refund
 
 #### Create Gift Certificate
 ```http
-POST /api/v1/payments/gift-certificates
+POST /api/v2/payments/gift-certificates
 ```
 ```json
 {
@@ -130,7 +130,7 @@ POST /api/v1/payments/gift-certificates
 
 #### Validate Gift Certificate
 ```http
-POST /api/v1/payments/gift-certificates/validate
+POST /api/v2/payments/gift-certificates/validate
 ```
 ```json
 {
@@ -152,12 +152,12 @@ POST /api/v1/payments/gift-certificates/validate
 
 #### Get Payment History
 ```http
-GET /api/v1/payments/history?page=1&page_size=50&start_date=2024-01-01&status=completed
+GET /api/v2/payments/history?page=1&page_size=50&start_date=2024-01-01&status=completed
 ```
 
 #### Generate Payment Report
 ```http
-POST /api/v1/payments/reports
+POST /api/v2/payments/reports
 ```
 ```json
 {
@@ -171,7 +171,7 @@ POST /api/v1/payments/reports
 
 #### Process Barber Payout
 ```http
-POST /api/v1/payments/payouts
+POST /api/v2/payments/payouts
 ```
 ```json
 {
@@ -185,7 +185,7 @@ POST /api/v1/payments/payouts
 
 #### Stripe Webhook Handler
 ```http
-POST /api/v1/webhooks/stripe
+POST /api/v2/webhooks/stripe
 ```
 Handles Stripe webhook events for payment confirmations, failures, and disputes.
 

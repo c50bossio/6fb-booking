@@ -31,7 +31,7 @@ class BookedBarberCorrectedTester:
         """Login with test admin credentials"""
         print("🔐 Logging in as test admin...")
         response = self.session.post(
-            f"{BASE_URL}/api/v1/auth/login",
+            f"{BASE_URL}/api/v2/auth/login",
             json={
                 "email": TEST_ADMIN_EMAIL,
                 "password": TEST_ADMIN_PASSWORD
@@ -58,25 +58,25 @@ class BookedBarberCorrectedTester:
         # Corrected API endpoints based on actual router definitions
         endpoints = [
             # Basic endpoints
-            ("/api/v1/auth/me", "GET", "User Profile"),
-            ("/api/v1/appointments", "GET", "Appointments List"),
-            ("/api/v1/services", "GET", "Services"),
-            ("/api/v1/clients", "GET", "Clients List"),
-            ("/api/v1/notifications/stats", "GET", "Notification Stats"),
-            ("/api/v1/barbers", "GET", "Barbers List"),
-            ("/api/v1/reviews", "GET", "Reviews"),
-            ("/api/v1/marketing/campaigns", "GET", "Marketing Campaigns"),
+            ("/api/v2/auth/me", "GET", "User Profile"),
+            ("/api/v2/appointments", "GET", "Appointments List"),
+            ("/api/v2/services", "GET", "Services"),
+            ("/api/v2/clients", "GET", "Clients List"),
+            ("/api/v2/notifications/stats", "GET", "Notification Stats"),
+            ("/api/v2/barbers", "GET", "Barbers List"),
+            ("/api/v2/reviews", "GET", "Reviews"),
+            ("/api/v2/marketing/campaigns", "GET", "Marketing Campaigns"),
             
             # Corrected analytics endpoints
-            ("/api/v1/analytics/dashboard", "GET", "Analytics Dashboard"),
-            ("/api/v1/analytics/appointments", "GET", "Appointment Analytics"),
-            ("/api/v1/analytics/revenue", "GET", "Revenue Analytics"),
+            ("/api/v2/analytics/dashboard", "GET", "Analytics Dashboard"),
+            ("/api/v2/analytics/appointments", "GET", "Appointment Analytics"),
+            ("/api/v2/analytics/revenue", "GET", "Revenue Analytics"),
             
             # Corrected payments endpoint
-            ("/api/v1/payments/history", "GET", "Payment History"),
+            ("/api/v2/payments/history", "GET", "Payment History"),
             
             # Corrected bookings endpoint
-            ("/api/v1/bookings/my", "GET", "My Bookings"),
+            ("/api/v2/bookings/my", "GET", "My Bookings"),
             
             # Corrected integrations endpoints (no prefix)
             ("/available", "GET", "Available Integrations"),
@@ -84,20 +84,20 @@ class BookedBarberCorrectedTester:
             ("/health/all", "GET", "Integration Health"),
             
             # Additional important endpoints
-            ("/api/v1/dashboard", "GET", "Dashboard Data"),
-            ("/api/v1/calendar/events", "GET", "Calendar Events"),
-            ("/api/v1/barber-availability", "GET", "Barber Availability"),
-            ("/api/v1/booking-rules", "GET", "Booking Rules"),
-            ("/api/v1/recurring", "GET", "Recurring Appointments"),
-            ("/api/v1/imports", "GET", "Import Data"),
-            ("/api/v1/exports", "GET", "Export Data"),
-            ("/api/v1/admin/services", "GET", "Admin Services"),
-            ("/api/v1/admin/webhooks", "GET", "Admin Webhooks"),
-            ("/api/v1/organizations", "GET", "Organizations"),
-            ("/api/v1/trial-monitoring", "GET", "Trial Monitoring"),
-            ("/api/v1/ai-analytics/insights", "GET", "AI Analytics"),
-            ("/api/v1/mfa/status", "GET", "MFA Status"),
-            ("/api/v1/tracking/pixels", "GET", "Tracking Pixels"),
+            ("/api/v2/dashboard", "GET", "Dashboard Data"),
+            ("/api/v2/calendar/events", "GET", "Calendar Events"),
+            ("/api/v2/barber-availability", "GET", "Barber Availability"),
+            ("/api/v2/booking-rules", "GET", "Booking Rules"),
+            ("/api/v2/recurring", "GET", "Recurring Appointments"),
+            ("/api/v2/imports", "GET", "Import Data"),
+            ("/api/v2/exports", "GET", "Export Data"),
+            ("/api/v2/admin/services", "GET", "Admin Services"),
+            ("/api/v2/admin/webhooks", "GET", "Admin Webhooks"),
+            ("/api/v2/organizations", "GET", "Organizations"),
+            ("/api/v2/trial-monitoring", "GET", "Trial Monitoring"),
+            ("/api/v2/ai-analytics/insights", "GET", "AI Analytics"),
+            ("/api/v2/mfa/status", "GET", "MFA Status"),
+            ("/api/v2/tracking/pixels", "GET", "Tracking Pixels"),
         ]
         
         working_count = 0
@@ -152,8 +152,8 @@ class BookedBarberCorrectedTester:
         print("\n🔍 Deep Dive: Testing 500 Error Endpoints...")
         
         problem_endpoints = [
-            ("/api/v1/analytics/appointments", "Appointment Analytics"),
-            ("/api/v1/payments/history", "Payment History"),
+            ("/api/v2/analytics/appointments", "Appointment Analytics"),
+            ("/api/v2/payments/history", "Payment History"),
         ]
         
         for endpoint, name in problem_endpoints:

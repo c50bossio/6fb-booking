@@ -78,7 +78,7 @@ class TestWebhookSignatureVerification:
                 })
             )):
                 response = client.post(
-                    "/api/v1/webhooks/stripe",
+                    "/api/v2/webhooks/stripe",
                     content=payload,
                     headers={"stripe-signature": "valid_signature"}
                 )
@@ -93,7 +93,7 @@ class TestWebhookSignatureVerification:
         
         # Invalid signature
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             content=payload,
             headers={"stripe-signature": "invalid_signature"}
         )
@@ -107,7 +107,7 @@ class TestWebhookSignatureVerification:
         payload = json.dumps(event).encode('utf-8')
         
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             content=payload
         )
         
@@ -126,7 +126,7 @@ class TestWebhookSignatureVerification:
         
         with patch('config.settings.stripe_webhook_secret', webhook_secret):
             response = client.post(
-                "/api/v1/webhooks/stripe",
+                "/api/v2/webhooks/stripe",
                 content=payload,
                 headers={"stripe-signature": signature}
             )
@@ -191,7 +191,7 @@ class TestWebhookEventHandlers:
             )
             
             response = client.post(
-                "/api/v1/webhooks/stripe",
+                "/api/v2/webhooks/stripe",
                 json=event,
                 headers={"stripe-signature": "valid_signature"}
             )
@@ -234,7 +234,7 @@ class TestWebhookEventHandlers:
         }
         
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             json=event,
             headers={"stripe-signature": "valid_signature"}
         )
@@ -271,7 +271,7 @@ class TestWebhookEventHandlers:
         }
         
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             json=event,
             headers={"stripe-signature": "valid_signature"}
         )
@@ -313,7 +313,7 @@ class TestWebhookEventHandlers:
         }
         
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             json=event,
             headers={"stripe-signature": "valid_signature"}
         )
@@ -352,7 +352,7 @@ class TestWebhookEventHandlers:
         }
         
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             json=event,
             headers={"stripe-signature": "valid_signature"}
         )
@@ -377,7 +377,7 @@ class TestWebhookErrorHandling:
     def test_invalid_json_payload(self, client: TestClient, valid_signature):
         """Test handling of invalid JSON in webhook payload."""
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             content=b"invalid json",
             headers={"stripe-signature": "valid_signature"}
         )
@@ -394,7 +394,7 @@ class TestWebhookErrorHandling:
         }
         
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             json=event,
             headers={"stripe-signature": "valid_signature"}
         )
@@ -418,7 +418,7 @@ class TestWebhookErrorHandling:
         }
         
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             json=event,
             headers={"stripe-signature": "valid_signature"}
         )
@@ -468,7 +468,7 @@ class TestWebhookErrorHandling:
             # Mock the handle_payment_intent_succeeded to raise an error
             with patch('routers.webhooks.handle_payment_intent_succeeded', side_effect=Exception("Database error")):
                 response = client.post(
-                    "/api/v1/webhooks/stripe",
+                    "/api/v2/webhooks/stripe",
                     json=event,
                     headers={"stripe-signature": "valid_signature"}
                 )
@@ -484,7 +484,7 @@ class TestWebhookSecurity:
     def test_invalid_signature_audit_log(self, mock_log, client: TestClient):
         """Test that invalid signatures are logged as security violations."""
         response = client.post(
-            "/api/v1/webhooks/stripe",
+            "/api/v2/webhooks/stripe",
             json={"type": "test"},
             headers={"stripe-signature": "invalid"}
         )
@@ -505,7 +505,7 @@ class TestWebhookSecurity:
         responses = []
         for _ in range(100):
             response = client.post(
-                "/api/v1/webhooks/stripe",
+                "/api/v2/webhooks/stripe",
                 json=event,
                 headers=headers
             )
@@ -542,7 +542,7 @@ class TestWebhookSecurity:
             # Process webhook multiple times
             for _ in range(3):
                 response = client.post(
-                    "/api/v1/webhooks/stripe",
+                    "/api/v2/webhooks/stripe",
                     json=event,
                     headers={"stripe-signature": "valid"}
                 )
@@ -597,7 +597,7 @@ class TestWebhookIntegration:
             }
             
             response = client.post(
-                "/api/v1/webhooks/stripe",
+                "/api/v2/webhooks/stripe",
                 json=event,
                 headers={"stripe-signature": "valid"}
             )
@@ -651,7 +651,7 @@ class TestWebhookIntegration:
             }
             
             response = client.post(
-                "/api/v1/webhooks/stripe",
+                "/api/v2/webhooks/stripe",
                 json=event,
                 headers={"stripe-signature": "valid"}
             )

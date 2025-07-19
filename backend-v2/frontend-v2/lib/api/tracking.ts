@@ -44,7 +44,7 @@ export const trackingAPI = {
    * @returns The tracked event response
    */
   async trackEvent(eventData: ConversionEventCreate): Promise<ConversionEventResponse> {
-    return fetchAPI('/api/v1/tracking/event', {
+    return fetchAPI('/api/v2/tracking/event', {
       method: 'POST',
       body: JSON.stringify(eventData),
     })
@@ -64,7 +64,7 @@ export const trackingAPI = {
       throw new Error('Maximum 100 events per batch')
     }
     
-    return fetchAPI('/api/v1/tracking/events/batch', {
+    return fetchAPI('/api/v2/tracking/events/batch', {
       method: 'POST',
       body: JSON.stringify(events),
     })
@@ -87,7 +87,7 @@ export const trackingAPI = {
     if (query?.group_by) params.append('group_by', query.group_by)
     
     const queryString = params.toString()
-    return fetchAPI(`/api/v1/tracking/analytics${queryString ? `?${queryString}` : ''}`)
+    return fetchAPI(`/api/v2/tracking/analytics${queryString ? `?${queryString}` : ''}`)
   },
 
   /**
@@ -107,7 +107,7 @@ export const trackingAPI = {
     if (query?.end_date) params.append('end_date', query.end_date)
     
     const queryString = params.toString()
-    return fetchAPI(`/api/v1/tracking/attribution${queryString ? `?${queryString}` : ''}`)
+    return fetchAPI(`/api/v2/tracking/attribution${queryString ? `?${queryString}` : ''}`)
   },
 
   /**
@@ -116,7 +116,7 @@ export const trackingAPI = {
    * @returns Current tracking configuration or default if not set
    */
   async getConfig(): Promise<TrackingConfigResponse> {
-    return fetchAPI('/api/v1/tracking/config')
+    return fetchAPI('/api/v2/tracking/config')
   },
 
   /**
@@ -128,7 +128,7 @@ export const trackingAPI = {
    * @returns Updated configuration
    */
   async updateConfig(config: TrackingConfigUpdate): Promise<TrackingConfigResponse> {
-    return fetchAPI('/api/v1/tracking/config', {
+    return fetchAPI('/api/v2/tracking/config', {
       method: 'PUT',
       body: JSON.stringify(config),
     })
@@ -143,7 +143,7 @@ export const trackingAPI = {
    * @returns Test results
    */
   async testPlatformConnection(testRequest: PlatformTestRequest): Promise<PlatformTestResponse> {
-    return fetchAPI('/api/v1/tracking/config/test', {
+    return fetchAPI('/api/v2/tracking/config/test', {
       method: 'POST',
       body: JSON.stringify(testRequest),
     })
@@ -167,7 +167,7 @@ export const trackingAPI = {
       }
       
       const queryString = params.toString()
-      return fetchAPI(`/api/v1/tracking/goals${queryString ? `?${queryString}` : ''}`)
+      return fetchAPI(`/api/v2/tracking/goals${queryString ? `?${queryString}` : ''}`)
     },
 
     /**
@@ -177,7 +177,7 @@ export const trackingAPI = {
      * @returns Created goal
      */
     async create(goalData: ConversionGoalCreate): Promise<ConversionGoalResponse> {
-      return fetchAPI('/api/v1/tracking/goals', {
+      return fetchAPI('/api/v2/tracking/goals', {
         method: 'POST',
         body: JSON.stringify(goalData),
       })
@@ -191,7 +191,7 @@ export const trackingAPI = {
      * @returns Updated goal
      */
     async update(goalId: number, goalData: ConversionGoalCreate): Promise<ConversionGoalResponse> {
-      return fetchAPI(`/api/v1/tracking/goals/${goalId}`, {
+      return fetchAPI(`/api/v2/tracking/goals/${goalId}`, {
         method: 'PUT',
         body: JSON.stringify(goalData),
       })
@@ -204,7 +204,7 @@ export const trackingAPI = {
      * @returns Success message
      */
     async delete(goalId: number): Promise<{ message: string }> {
-      return fetchAPI(`/api/v1/tracking/goals/${goalId}`, {
+      return fetchAPI(`/api/v2/tracking/goals/${goalId}`, {
         method: 'DELETE',
       })
     },
@@ -231,7 +231,7 @@ export const trackingAPI = {
       if (query?.end_date) params.append('end_date', query.end_date)
       
       const queryString = params.toString()
-      return fetchAPI(`/api/v1/tracking/campaigns${queryString ? `?${queryString}` : ''}`)
+      return fetchAPI(`/api/v2/tracking/campaigns${queryString ? `?${queryString}` : ''}`)
     },
 
     /**
@@ -241,7 +241,7 @@ export const trackingAPI = {
      * @returns Created campaign
      */
     async create(campaignData: CampaignTrackingCreate): Promise<CampaignTrackingResponse> {
-      return fetchAPI('/api/v1/tracking/campaigns', {
+      return fetchAPI('/api/v2/tracking/campaigns', {
         method: 'POST',
         body: JSON.stringify(campaignData),
       })
@@ -273,7 +273,7 @@ export const trackingAPI = {
         params.append('total_cost', String(metrics.total_cost))
       }
       
-      return fetchAPI(`/api/v1/tracking/campaigns/${campaignId}/metrics?${params.toString()}`, {
+      return fetchAPI(`/api/v2/tracking/campaigns/${campaignId}/metrics?${params.toString()}`, {
         method: 'PUT',
       })
     },
@@ -293,7 +293,7 @@ export const trackingAPI = {
       if (query?.source) params.append('source', query.source)
       
       const queryString = params.toString()
-      return fetchAPI(`/api/v1/tracking/campaigns/sync${queryString ? `?${queryString}` : ''}`, {
+      return fetchAPI(`/api/v2/tracking/campaigns/sync${queryString ? `?${queryString}` : ''}`, {
         method: 'POST',
       })
     },
@@ -305,7 +305,7 @@ export const trackingAPI = {
    * @returns Health status and recent activity
    */
   async getHealthStatus(): Promise<TrackingHealthStatus> {
-    return fetchAPI('/api/v1/tracking/health')
+    return fetchAPI('/api/v2/tracking/health')
   },
 }
 

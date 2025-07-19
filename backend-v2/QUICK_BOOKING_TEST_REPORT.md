@@ -22,7 +22,7 @@ The quick booking functionality has been thoroughly tested and is working correc
 
 ## API Endpoint Details
 
-**Endpoint:** `POST /api/v1/bookings/quick`  
+**Endpoint:** `POST /api/v2/bookings/quick`  
 **Authentication:** Required (Bearer Token)  
 **Request Format:** JSON  
 **Response Format:** JSON (Booking Details)

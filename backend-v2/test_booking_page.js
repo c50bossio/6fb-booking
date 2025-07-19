@@ -6,7 +6,7 @@ async function testBookingPage() {
   try {
     // Test 1: Organization API endpoint
     console.log('📡 Testing organization API endpoint...');
-    const orgResponse = await fetch('http://localhost:8000/api/v1/public/booking/organization/test-pixel-shop');
+    const orgResponse = await fetch('http://localhost:8000/api/v2/public/booking/organization/test-pixel-shop');
     
     if (orgResponse.ok) {
       const orgData = await orgResponse.json();
@@ -45,7 +45,7 @@ async function testBookingPage() {
     
     // Test 3: Customer pixels endpoint
     console.log('\n🎯 Testing customer pixels API...');
-    const pixelsResponse = await fetch('http://localhost:8000/api/v1/public/customer-pixels/test-pixel-shop');
+    const pixelsResponse = await fetch('http://localhost:8000/api/v2/public/customer-pixels/test-pixel-shop');
     
     if (pixelsResponse.ok) {
       const pixelData = await pixelsResponse.json();

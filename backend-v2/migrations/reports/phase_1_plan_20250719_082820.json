@@ -1,0 +1,51 @@
+{
+  "phase": 1,
+  "total_tasks": 24,
+  "agents": {
+    "agent_1": {
+      "task_count": 8,
+      "task_types": [
+        "service_migration",
+        "model_migration",
+        "documentation",
+        "test_creation",
+        "endpoint_migration"
+      ],
+      "features": [
+        "enhanced_auth",
+        "client_management",
+        "advanced_booking"
+      ]
+    },
+    "agent_2": {
+      "task_count": 8,
+      "task_types": [
+        "service_migration",
+        "model_migration",
+        "documentation",
+        "test_creation",
+        "endpoint_migration"
+      ],
+      "features": [
+        "enhanced_auth",
+        "client_management",
+        "advanced_booking"
+      ]
+    },
+    "agent_3": {
+      "task_count": 8,
+      "task_types": [
+        "service_migration",
+        "model_migration",
+        "documentation",
+        "test_creation",
+        "endpoint_migration"
+      ],
+      "features": [
+        "enhanced_auth",
+        "client_management",
+        "advanced_booking"
+      ]
+    }
+  }
+}

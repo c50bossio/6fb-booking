@@ -80,23 +80,23 @@ backend-v2/
 ## API Endpoints
 
 ### Admin Endpoints
-- `POST /api/v1/cancellation/policies` - Create new policy
-- `GET /api/v1/cancellation/policies` - List all policies
-- `PUT /api/v1/cancellation/policies/{id}` - Update policy
-- `DELETE /api/v1/cancellation/policies/{id}` - Delete/deactivate policy
-- `POST /api/v1/cancellation/policies/default` - Create default policies
+- `POST /api/v2/cancellation/policies` - Create new policy
+- `GET /api/v2/cancellation/policies` - List all policies
+- `PUT /api/v2/cancellation/policies/{id}` - Update policy
+- `DELETE /api/v2/cancellation/policies/{id}` - Delete/deactivate policy
+- `POST /api/v2/cancellation/policies/default` - Create default policies
 
 ### Client Endpoints
-- `POST /api/v1/cancellation/appointments/{id}/preview` - Preview cancellation terms
-- `POST /api/v1/cancellation/appointments/{id}/cancel` - Cancel appointment
-- `POST /api/v1/cancellation/waitlist` - Join waitlist
-- `GET /api/v1/cancellation/waitlist` - Get user's waitlist entries
-- `DELETE /api/v1/cancellation/waitlist/{id}` - Leave waitlist
+- `POST /api/v2/cancellation/appointments/{id}/preview` - Preview cancellation terms
+- `POST /api/v2/cancellation/appointments/{id}/cancel` - Cancel appointment
+- `POST /api/v2/cancellation/waitlist` - Join waitlist
+- `GET /api/v2/cancellation/waitlist` - Get user's waitlist entries
+- `DELETE /api/v2/cancellation/waitlist/{id}` - Leave waitlist
 
 ### Administrative Management
-- `GET /api/v1/cancellation/cancellations` - List all cancellations
-- `POST /api/v1/cancellation/cancellations/{id}/process-refund` - Manual refund processing
-- `GET /api/v1/cancellation/waitlist/admin` - Admin waitlist overview
+- `GET /api/v2/cancellation/cancellations` - List all cancellations
+- `POST /api/v2/cancellation/cancellations/{id}/process-refund` - Manual refund processing
+- `GET /api/v2/cancellation/waitlist/admin` - Admin waitlist overview
 
 ## Key Services
 

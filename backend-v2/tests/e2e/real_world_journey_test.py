@@ -41,7 +41,7 @@ class RealWorldJourneyTester:
         try:
             # 1. Customer browses services (public endpoint)
             print("1. Browsing available services...")
-            services_response = await self.client.get("/api/v1/services")
+            services_response = await self.client.get("/api/v2/services")
             if services_response.status_code == 200:
                 services = services_response.json()
                 print(f"   ✅ Found {len(services)} services available")
@@ -54,7 +54,7 @@ class RealWorldJourneyTester:
             print("2. Checking barber availability...")
             tomorrow = (datetime.now() + timedelta(days=1)).date()
             availability_response = await self.client.get(
-                "/api/v1/appointments/availability",
+                "/api/v2/appointments/availability",
                 params={"date": tomorrow.isoformat()}
             )
             if availability_response.status_code == 200:
@@ -69,7 +69,7 @@ class RealWorldJourneyTester:
             print("3. Creating customer account...")
             customer_email = f"customer_{int(time.time())}@test.com"
             register_response = await self.client.post(
-                "/api/v1/auth/register",
+                "/api/v2/auth/register",
                 json={
                     "email": customer_email,
                     "password": "TestCustomer123!",
@@ -84,7 +84,7 @@ class RealWorldJourneyTester:
                 # 4. Customer logs in
                 print("4. Logging in...")
                 login_response = await self.client.post(
-                    "/api/v1/auth/login",
+                    "/api/v2/auth/login",
                     data={
                         "username": customer_email,
                         "password": "TestCustomer123!"
@@ -100,7 +100,7 @@ class RealWorldJourneyTester:
                     # 5. Customer books appointment
                     print("5. Booking appointment...")
                     booking_response = await self.client.post(
-                        "/api/v1/appointments",
+                        "/api/v2/appointments",
                         headers=headers,
                         json={
                             "service_id": 1,
@@ -117,7 +117,7 @@ class RealWorldJourneyTester:
                         # 6. Customer receives confirmation
                         print("6. Checking appointment confirmation...")
                         confirmation_response = await self.client.get(
-                            f"/api/v1/appointments/{appointment.get('id', 1)}",
+                            f"/api/v2/appointments/{appointment.get('id', 1)}",
                             headers=headers
                         )
                         
@@ -168,7 +168,7 @@ class RealWorldJourneyTester:
             print("1. Creating shop owner account...")
             owner_email = f"owner_{int(time.time())}@barbershop.com"
             register_response = await self.client.post(
-                "/api/v1/auth/register",
+                "/api/v2/auth/register",
                 json={
                     "email": owner_email,
                     "password": "ShopOwner123!",
@@ -184,7 +184,7 @@ class RealWorldJourneyTester:
                 # 2. Owner logs in
                 print("2. Owner logging in...")
                 login_response = await self.client.post(
-                    "/api/v1/auth/login",
+                    "/api/v2/auth/login",
                     data={
                         "username": owner_email,
                         "password": "ShopOwner123!"
@@ -200,7 +200,7 @@ class RealWorldJourneyTester:
                     # 3. Create business profile
                     print("3. Setting up business profile...")
                     business_response = await self.client.post(
-                        "/api/v1/businesses",
+                        "/api/v2/businesses",
                         headers=headers,
                         json={
                             "name": "Premium Cuts Barbershop",
@@ -228,7 +228,7 @@ class RealWorldJourneyTester:
                         services_added = 0
                         for service in services:
                             service_response = await self.client.post(
-                                f"/api/v1/businesses/{business_id}/services",
+                                f"/api/v2/businesses/{business_id}/services",
                                 headers=headers,
                                 json=service
                             )
@@ -248,7 +248,7 @@ class RealWorldJourneyTester:
                         barbers_added = 0
                         for barber in barbers:
                             barber_response = await self.client.post(
-                                f"/api/v1/businesses/{business_id}/barbers",
+                                f"/api/v2/businesses/{business_id}/barbers",
                                 headers=headers,
                                 json=barber
                             )
@@ -261,7 +261,7 @@ class RealWorldJourneyTester:
                         # 6. Configure business hours
                         print("6. Setting business hours...")
                         hours_response = await self.client.put(
-                            f"/api/v1/businesses/{business_id}",
+                            f"/api/v2/businesses/{business_id}",
                             headers=headers,
                             json={
                                 "hours": {
@@ -326,7 +326,7 @@ class RealWorldJourneyTester:
             # Create user
             test_email = f"payment_test_{int(time.time())}@test.com"
             register_response = await self.client.post(
-                "/api/v1/auth/register",
+                "/api/v2/auth/register",
                 json={
                     "email": test_email,
                     "password": "PaymentTest123!",
@@ -338,7 +338,7 @@ class RealWorldJourneyTester:
             if register_response.status_code in [200, 201]:
                 # Login
                 login_response = await self.client.post(
-                    "/api/v1/auth/login",
+                    "/api/v2/auth/login",
                     data={
                         "username": test_email,
                         "password": "PaymentTest123!"
@@ -352,7 +352,7 @@ class RealWorldJourneyTester:
                     # 2. Create payment intent
                     print("2. Creating payment intent...")
                     payment_response = await self.client.post(
-                        "/api/v1/payments/create-intent",
+                        "/api/v2/payments/create-intent",
                         headers=headers,
                         json={
                             "amount": 3500,
@@ -369,7 +369,7 @@ class RealWorldJourneyTester:
                         # 3. Simulate payment confirmation
                         print("3. Processing payment...")
                         confirm_response = await self.client.post(
-                            "/api/v1/payments/confirm",
+                            "/api/v2/payments/confirm",
                             headers=headers,
                             json={
                                 "payment_intent_id": payment_intent.get('id', 'test'),
@@ -384,7 +384,7 @@ class RealWorldJourneyTester:
                             # 4. Check payment history
                             print("4. Verifying payment in history...")
                             history_response = await self.client.get(
-                                "/api/v1/payments/history",
+                                "/api/v2/payments/history",
                                 headers=headers
                             )
                             
@@ -398,7 +398,7 @@ class RealWorldJourneyTester:
                             # 5. Test notification preferences
                             print("5. Setting notification preferences...")
                             prefs_response = await self.client.put(
-                                "/api/v1/users/me/notification-preferences",
+                                "/api/v2/users/me/notification-preferences",
                                 headers=headers,
                                 json={
                                     "email_enabled": True,
@@ -451,7 +451,7 @@ class RealWorldJourneyTester:
         
         async def browse_services():
             start = time.time()
-            response = await self.client.get("/api/v1/services")
+            response = await self.client.get("/api/v2/services")
             return time.time() - start, response.status_code
             
         # Run concurrent requests
@@ -477,7 +477,7 @@ class RealWorldJourneyTester:
             
             # Quick registration
             await self.client.post(
-                "/api/v1/auth/register",
+                "/api/v2/auth/register",
                 json={
                     "email": test_email,
                     "password": "Test123!",
@@ -488,7 +488,7 @@ class RealWorldJourneyTester:
             
             # Login
             login_response = await self.client.post(
-                "/api/v1/auth/login",
+                "/api/v2/auth/login",
                 data={
                     "username": test_email,
                     "password": "Test123!"
@@ -502,7 +502,7 @@ class RealWorldJourneyTester:
                 # Book appointment
                 start = time.time()
                 booking_response = await self.client.post(
-                    "/api/v1/appointments",
+                    "/api/v2/appointments",
                     headers=headers,
                     json={
                         "service_id": 1,

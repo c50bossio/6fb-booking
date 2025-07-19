@@ -202,7 +202,7 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
     
     def _is_security_relevant(self, request: Request) -> bool:
         """Check if request is security-relevant"""
-        sensitive_paths = ['/api/v1/auth/', '/api/v1/payments/', '/api/v1/admin/']
+        sensitive_paths = ['/api/v2/auth/', '/api/v2/payments/', '/api/v2/admin/']
         return any(request.url.path.startswith(path) for path in sensitive_paths)
     
     async def _validate_request(self, request: Request) -> bool:
@@ -264,11 +264,11 @@ class RateLimitSecurityMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.request_counts = {}
         self.max_requests_per_minute = {
-            "/api/v1/auth/login": 5,
-            "/api/v1/auth/register": 3,
-            "/api/v1/auth/forgot-password": 3,
-            "/api/v1/payments/": 10,
-            "/api/v1/admin/": 20
+            "/api/v2/auth/login": 5,
+            "/api/v2/auth/register": 3,
+            "/api/v2/auth/forgot-password": 3,
+            "/api/v2/payments/": 10,
+            "/api/v2/admin/": 20
         }
         
     async def dispatch(self, request: Request, call_next):
@@ -348,11 +348,11 @@ class AuditLogMiddleware(BaseHTTPMiddleware):
     def _should_audit(self, request: Request) -> bool:
         """Determine if request should be audited"""
         audit_paths = [
-            "/api/v1/auth/",
-            "/api/v1/payments/",
-            "/api/v1/admin/",
-            "/api/v1/users/",
-            "/api/v1/webhooks/"
+            "/api/v2/auth/",
+            "/api/v2/payments/",
+            "/api/v2/admin/",
+            "/api/v2/users/",
+            "/api/v2/webhooks/"
         ]
         
         return any(request.url.path.startswith(path) for path in audit_paths)
@@ -372,7 +372,7 @@ class IPWhitelistMiddleware(BaseHTTPMiddleware):
         
     async def dispatch(self, request: Request, call_next):
         # Check if this is an admin endpoint
-        if request.url.path.startswith("/api/v1/admin/") and self.admin_whitelist:
+        if request.url.path.startswith("/api/v2/admin/") and self.admin_whitelist:
             client_ip = request.client.host
             
             # Check if IP is whitelisted

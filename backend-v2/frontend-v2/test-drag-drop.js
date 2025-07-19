@@ -20,7 +20,7 @@ async function testDragAndDrop() {
   
   // Log network requests
   page.on('response', response => {
-    if (response.url().includes('/api/v1/appointments')) {
+    if (response.url().includes('/api/v2/appointments')) {
       console.log('API Response:', response.status(), response.url());
     }
   });

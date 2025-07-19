@@ -54,8 +54,8 @@ The Google Calendar integration provides seamless two-way synchronization betwee
    - Go to "Credentials" → "Create Credentials" → "OAuth 2.0 Client IDs"
    - Choose "Web application"
    - Add authorized redirect URIs:
-     - `http://localhost:8000/api/v1/calendar/callback` (development)
-     - `https://yourdomain.com/api/v1/calendar/callback` (production)
+     - `http://localhost:8000/api/v2/calendar/callback` (development)
+     - `https://yourdomain.com/api/v2/calendar/callback` (production)
 
 ### 2. Configuration
 
@@ -65,7 +65,7 @@ Update your `config.py` or environment variables:
 # Google Calendar OAuth2 settings
 google_client_id: str = "your_google_client_id"
 google_client_secret: str = "your_google_client_secret"
-google_redirect_uri: str = "http://localhost:8000/api/v1/calendar/callback"
+google_redirect_uri: str = "http://localhost:8000/api/v2/calendar/callback"
 google_calendar_scopes: list = [
     "https://www.googleapis.com/auth/calendar",
     "https://www.googleapis.com/auth/calendar.events"
@@ -86,35 +86,35 @@ alembic upgrade head
 ### Authentication
 
 #### Connect Google Calendar
-- **Endpoint**: `GET /api/v1/calendar/auth`
+- **Endpoint**: `GET /api/v2/calendar/auth`
 - **Description**: Initiate Google Calendar OAuth2 flow
 - **Response**: Authorization URL for user to visit
 
 #### OAuth Callback
-- **Endpoint**: `GET /api/v1/calendar/callback`
+- **Endpoint**: `GET /api/v2/calendar/callback`
 - **Description**: Handle OAuth2 callback from Google
 - **Parameters**: `code`, `state`
 - **Response**: Redirect to frontend with status
 
 #### Check Connection Status
-- **Endpoint**: `GET /api/v1/calendar/status`
+- **Endpoint**: `GET /api/v2/calendar/status`
 - **Description**: Check if user's Google Calendar is connected and valid
 - **Response**: Connection status information
 
 #### Disconnect Calendar
-- **Endpoint**: `DELETE /api/v1/calendar/disconnect`
+- **Endpoint**: `DELETE /api/v2/calendar/disconnect`
 - **Description**: Disconnect Google Calendar integration
 - **Response**: Success message
 
 ### Calendar Management
 
 #### List Calendars
-- **Endpoint**: `GET /api/v1/calendar/list`
+- **Endpoint**: `GET /api/v2/calendar/list`
 - **Description**: List user's available Google Calendars
 - **Response**: Array of calendar objects
 
 #### Select Calendar
-- **Endpoint**: `POST /api/v1/calendar/select-calendar`
+- **Endpoint**: `POST /api/v2/calendar/select-calendar`
 - **Body**: `{\"calendar_id\": \"calendar_id_here\"}`
 - **Description**: Select which calendar to use for syncing
 - **Response**: Success message
@@ -122,13 +122,13 @@ alembic upgrade head
 ### Availability Checking
 
 #### Check Time Slot Availability
-- **Endpoint**: `GET /api/v1/calendar/availability`
+- **Endpoint**: `GET /api/v2/calendar/availability`
 - **Parameters**: `start_time`, `end_time`
 - **Description**: Check if a time slot is available in Google Calendar
 - **Response**: `{\"available\": true/false}`
 
 #### Get Free/Busy Information
-- **Endpoint**: `GET /api/v1/calendar/free-busy`
+- **Endpoint**: `GET /api/v2/calendar/free-busy`
 - **Parameters**: `start_date`, `end_date`
 - **Description**: Get detailed free/busy information
 - **Response**: List of busy periods
@@ -136,40 +136,40 @@ alembic upgrade head
 ### Appointment Synchronization
 
 #### Sync Single Appointment
-- **Endpoint**: `POST /api/v1/calendar/sync-appointment/{appointment_id}`
+- **Endpoint**: `POST /api/v2/calendar/sync-appointment/{appointment_id}`
 - **Description**: Manually sync a specific appointment to Google Calendar
 - **Response**: Google event ID
 
 #### Bulk Sync Appointments
-- **Endpoint**: `POST /api/v1/calendar/sync-appointments`
+- **Endpoint**: `POST /api/v2/calendar/sync-appointments`
 - **Body**: `{\"start_date\": \"2025-07-01\", \"end_date\": \"2025-07-31\"}`
 - **Description**: Sync all appointments in a date range
 - **Response**: Sync results with counts
 
 #### Remove Appointment Sync
-- **Endpoint**: `DELETE /api/v1/calendar/unsync-appointment/{appointment_id}`
+- **Endpoint**: `DELETE /api/v2/calendar/unsync-appointment/{appointment_id}`
 - **Description**: Remove appointment from Google Calendar sync
 - **Response**: Success message
 
 ### Maintenance and Monitoring
 
 #### Validate Integration
-- **Endpoint**: `POST /api/v1/calendar/validate`
+- **Endpoint**: `POST /api/v2/calendar/validate`
 - **Description**: Comprehensive validation of calendar integration
 - **Response**: Detailed validation results
 
 #### Get Sync Status
-- **Endpoint**: `GET /api/v1/calendar/sync-status`
+- **Endpoint**: `GET /api/v2/calendar/sync-status`
 - **Description**: Get sync status for user's appointments
 - **Response**: Sync statistics and percentages
 
 #### Check Conflicts
-- **Endpoint**: `POST /api/v1/calendar/check-conflicts/{appointment_id}`
+- **Endpoint**: `POST /api/v2/calendar/check-conflicts/{appointment_id}`
 - **Description**: Check for calendar conflicts for an appointment
 - **Response**: List of detected conflicts
 
 #### Cleanup Orphaned Events
-- **Endpoint**: `POST /api/v1/calendar/cleanup-orphaned`
+- **Endpoint**: `POST /api/v2/calendar/cleanup-orphaned`
 - **Description**: Remove Google Calendar events with no corresponding V2 appointments
 - **Response**: Cleanup results
 
@@ -180,7 +180,7 @@ alembic upgrade head
 ```javascript
 // 1. Check if user has calendar connected
 const checkCalendarStatus = async () => {
-  const response = await fetch('/api/v1/calendar/status', {
+  const response = await fetch('/api/v2/calendar/status', {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   const status = await response.json();
@@ -189,7 +189,7 @@ const checkCalendarStatus = async () => {
 
 // 2. Initiate calendar connection
 const connectCalendar = async () => {
-  const response = await fetch('/api/v1/calendar/auth', {
+  const response = await fetch('/api/v2/calendar/auth', {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   const data = await response.json();
@@ -203,7 +203,7 @@ const checkAvailability = async (startTime, endTime) => {
     end_time: endTime
   });
   
-  const response = await fetch(`/api/v1/calendar/availability?${params}`, {
+  const response = await fetch(`/api/v2/calendar/availability?${params}`, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   const data = await response.json();
@@ -213,7 +213,7 @@ const checkAvailability = async (startTime, endTime) => {
 // 4. Get user's calendars and let them select one
 const setupCalendar = async () => {
   // List calendars
-  const response = await fetch('/api/v1/calendar/list', {
+  const response = await fetch('/api/v2/calendar/list', {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   const { calendars } = await response.json();
@@ -222,7 +222,7 @@ const setupCalendar = async () => {
   const selectedCalendarId = await showCalendarSelector(calendars);
   
   // Set the selected calendar
-  await fetch('/api/v1/calendar/select-calendar', {
+  await fetch('/api/v2/calendar/select-calendar', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -401,7 +401,7 @@ Check sync status:
 
 ```bash
 curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:8000/api/v1/calendar/sync-status
+     http://localhost:8000/api/v2/calendar/sync-status
 ```
 
 ## Performance Considerations

@@ -63,8 +63,8 @@ There's no advantage to artificially splitting locations:
 - Supports headquarters with child locations
 
 #### 3. API Endpoints
-- `POST /api/v1/billing/calculate-price` - Returns progressive pricing with breakdown
-- `GET /api/v1/billing/plans` - Shows progressive pricing tiers
+- `POST /api/v2/billing/calculate-price` - Returns progressive pricing with breakdown
+- `GET /api/v2/billing/plans` - Shows progressive pricing tiers
 - All subscription endpoints updated for new model
 
 ### Frontend Changes

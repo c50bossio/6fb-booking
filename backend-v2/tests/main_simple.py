@@ -48,7 +48,7 @@ async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "mode": "simple"}
 
-@app.post("/api/v1/auth/login-simple")
+@app.post("/api/v2/auth/login-simple")
 async def login_simple(user_credentials: UserLogin):
     """Simplified login endpoint without SQLAlchemy"""
     try:
@@ -108,7 +108,7 @@ async def login_simple(user_credentials: UserLogin):
             "error_type": type(e).__name__
         }
 
-@app.get("/api/v1/services-simple")
+@app.get("/api/v2/services-simple")
 async def get_services_simple():
     """Simplified services endpoint"""
     try:

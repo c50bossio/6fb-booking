@@ -1,0 +1,425 @@
+{
+  "generated_at": "2025-07-19T08:28:20.338563",
+  "agents": {
+    "agent_1": {
+      "total_tasks": 8,
+      "tasks": [
+        {
+          "id": "enhanced_auth_model_User",
+          "feature": "enhanced_auth",
+          "type": "model_migration",
+          "description": "Migrate User model for enhanced_auth",
+          "dependencies": [],
+          "affected_files": [
+            "models/user.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_1",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "advanced_booking_model_Booking",
+          "feature": "advanced_booking",
+          "type": "model_migration",
+          "description": "Migrate Booking model for advanced_booking",
+          "dependencies": [],
+          "affected_files": [
+            "models/booking.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_1",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "client_management_model_Client",
+          "feature": "client_management",
+          "type": "model_migration",
+          "description": "Migrate Client model for client_management",
+          "dependencies": [],
+          "affected_files": [
+            "models/client.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_1",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "enhanced_auth_service_AuthService",
+          "feature": "enhanced_auth",
+          "type": "service_migration",
+          "description": "Migrate AuthService for enhanced_auth",
+          "dependencies": [
+            "enhanced_auth_model_User",
+            "enhanced_auth_model_Role",
+            "enhanced_auth_model_Permission"
+          ],
+          "affected_files": [
+            "services/authservice.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_1",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "advanced_booking_service_SchedulingService",
+          "feature": "advanced_booking",
+          "type": "service_migration",
+          "description": "Migrate SchedulingService for advanced_booking",
+          "dependencies": [
+            "advanced_booking_model_Booking",
+            "advanced_booking_model_BookingRule",
+            "advanced_booking_model_TimeSlot"
+          ],
+          "affected_files": [
+            "services/schedulingservice.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_1",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "enhanced_auth_endpoints",
+          "feature": "enhanced_auth",
+          "type": "endpoint_migration",
+          "description": "Create API endpoints for enhanced_auth",
+          "dependencies": [
+            "enhanced_auth_service_AuthService",
+            "enhanced_auth_service_RoleService"
+          ],
+          "affected_files": [
+            "routers/enhanced_auth.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_1",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "enhanced_auth_tests",
+          "feature": "enhanced_auth",
+          "type": "test_creation",
+          "description": "Create tests for enhanced_auth",
+          "dependencies": [
+            "enhanced_auth_endpoints"
+          ],
+          "affected_files": [
+            "tests/test_enhanced_auth.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_1",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "enhanced_auth_docs",
+          "feature": "enhanced_auth",
+          "type": "documentation",
+          "description": "Create documentation for enhanced_auth",
+          "dependencies": [
+            "enhanced_auth_tests"
+          ],
+          "affected_files": [
+            "docs/enhanced_auth.md"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_1",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        }
+      ]
+    },
+    "agent_2": {
+      "total_tasks": 8,
+      "tasks": [
+        {
+          "id": "enhanced_auth_model_Role",
+          "feature": "enhanced_auth",
+          "type": "model_migration",
+          "description": "Migrate Role model for enhanced_auth",
+          "dependencies": [],
+          "affected_files": [
+            "models/role.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_2",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "advanced_booking_model_BookingRule",
+          "feature": "advanced_booking",
+          "type": "model_migration",
+          "description": "Migrate BookingRule model for advanced_booking",
+          "dependencies": [],
+          "affected_files": [
+            "models/bookingrule.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_2",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "client_management_model_ClientPreference",
+          "feature": "client_management",
+          "type": "model_migration",
+          "description": "Migrate ClientPreference model for client_management",
+          "dependencies": [],
+          "affected_files": [
+            "models/clientpreference.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_2",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "enhanced_auth_service_RoleService",
+          "feature": "enhanced_auth",
+          "type": "service_migration",
+          "description": "Migrate RoleService for enhanced_auth",
+          "dependencies": [
+            "enhanced_auth_model_User",
+            "enhanced_auth_model_Role",
+            "enhanced_auth_model_Permission"
+          ],
+          "affected_files": [
+            "services/roleservice.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_2",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "client_management_service_ClientService",
+          "feature": "client_management",
+          "type": "service_migration",
+          "description": "Migrate ClientService for client_management",
+          "dependencies": [
+            "client_management_model_Client",
+            "client_management_model_ClientPreference",
+            "client_management_model_ClientHistory"
+          ],
+          "affected_files": [
+            "services/clientservice.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_2",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "advanced_booking_endpoints",
+          "feature": "advanced_booking",
+          "type": "endpoint_migration",
+          "description": "Create API endpoints for advanced_booking",
+          "dependencies": [
+            "advanced_booking_service_BookingService",
+            "advanced_booking_service_SchedulingService"
+          ],
+          "affected_files": [
+            "routers/advanced_booking.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_2",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "advanced_booking_tests",
+          "feature": "advanced_booking",
+          "type": "test_creation",
+          "description": "Create tests for advanced_booking",
+          "dependencies": [
+            "advanced_booking_endpoints"
+          ],
+          "affected_files": [
+            "tests/test_advanced_booking.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_2",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "advanced_booking_docs",
+          "feature": "advanced_booking",
+          "type": "documentation",
+          "description": "Create documentation for advanced_booking",
+          "dependencies": [
+            "advanced_booking_tests"
+          ],
+          "affected_files": [
+            "docs/advanced_booking.md"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_2",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        }
+      ]
+    },
+    "agent_3": {
+      "total_tasks": 8,
+      "tasks": [
+        {
+          "id": "enhanced_auth_model_Permission",
+          "feature": "enhanced_auth",
+          "type": "model_migration",
+          "description": "Migrate Permission model for enhanced_auth",
+          "dependencies": [],
+          "affected_files": [
+            "models/permission.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_3",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "advanced_booking_model_TimeSlot",
+          "feature": "advanced_booking",
+          "type": "model_migration",
+          "description": "Migrate TimeSlot model for advanced_booking",
+          "dependencies": [],
+          "affected_files": [
+            "models/timeslot.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_3",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "client_management_model_ClientHistory",
+          "feature": "client_management",
+          "type": "model_migration",
+          "description": "Migrate ClientHistory model for client_management",
+          "dependencies": [],
+          "affected_files": [
+            "models/clienthistory.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_3",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "advanced_booking_service_BookingService",
+          "feature": "advanced_booking",
+          "type": "service_migration",
+          "description": "Migrate BookingService for advanced_booking",
+          "dependencies": [
+            "advanced_booking_model_Booking",
+            "advanced_booking_model_BookingRule",
+            "advanced_booking_model_TimeSlot"
+          ],
+          "affected_files": [
+            "services/bookingservice.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_3",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "client_management_service_PreferenceService",
+          "feature": "client_management",
+          "type": "service_migration",
+          "description": "Migrate PreferenceService for client_management",
+          "dependencies": [
+            "client_management_model_Client",
+            "client_management_model_ClientPreference",
+            "client_management_model_ClientHistory"
+          ],
+          "affected_files": [
+            "services/preferenceservice.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_3",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "client_management_endpoints",
+          "feature": "client_management",
+          "type": "endpoint_migration",
+          "description": "Create API endpoints for client_management",
+          "dependencies": [
+            "client_management_service_ClientService",
+            "client_management_service_PreferenceService"
+          ],
+          "affected_files": [
+            "routers/client_management.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_3",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "client_management_tests",
+          "feature": "client_management",
+          "type": "test_creation",
+          "description": "Create tests for client_management",
+          "dependencies": [
+            "client_management_endpoints"
+          ],
+          "affected_files": [
+            "tests/test_client_management.py"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_3",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        },
+        {
+          "id": "client_management_docs",
+          "feature": "client_management",
+          "type": "documentation",
+          "description": "Create documentation for client_management",
+          "dependencies": [
+            "client_management_tests"
+          ],
+          "affected_files": [
+            "docs/client_management.md"
+          ],
+          "status": "assigned",
+          "assigned_agent": "agent_3",
+          "started_at": null,
+          "completed_at": null,
+          "result": null
+        }
+      ]
+    }
+  }
+}

@@ -35,7 +35,7 @@ The BookedBarber V2 integration infrastructure provides a secure, extensible fra
 
 1. **Initiate Connection**
    ```
-   POST /api/v1/integrations/connect
+   POST /api/v2/integrations/connect
    {
      "integration_type": "google_calendar",
      "redirect_uri": "https://app.bookedbarber.com/integrations/callback",
@@ -46,7 +46,7 @@ The BookedBarber V2 integration infrastructure provides a secure, extensible fra
 
 2. **Handle Callback**
    ```
-   GET /api/v1/integrations/callback?code=...&state=...&integration_type=google_calendar
+   GET /api/v2/integrations/callback?code=...&state=...&integration_type=google_calendar
    ```
    Returns: `{ "success": true, "integration_id": 123, "redirect_url": "..." }`
 
@@ -54,17 +54,17 @@ The BookedBarber V2 integration infrastructure provides a secure, extensible fra
 
 3. **List Integrations**
    ```
-   GET /api/v1/integrations/status?integration_type=stripe
+   GET /api/v2/integrations/status?integration_type=stripe
    ```
 
 4. **Get Integration Details**
    ```
-   GET /api/v1/integrations/{integration_id}
+   GET /api/v2/integrations/{integration_id}
    ```
 
 5. **Update Integration**
    ```
-   PUT /api/v1/integrations/{integration_id}
+   PUT /api/v2/integrations/{integration_id}
    {
      "name": "My Google Calendar",
      "config": { "sync_enabled": true },
@@ -74,24 +74,24 @@ The BookedBarber V2 integration infrastructure provides a secure, extensible fra
 
 6. **Disconnect Integration**
    ```
-   DELETE /api/v1/integrations/{integration_id}
+   DELETE /api/v2/integrations/{integration_id}
    ```
 
 ### Health Monitoring
 
 7. **Check All Integrations Health**
    ```
-   GET /api/v1/integrations/health/all
+   GET /api/v2/integrations/health/all
    ```
 
 8. **Check Specific Integration Health**
    ```
-   GET /api/v1/integrations/health/{integration_id}
+   GET /api/v2/integrations/health/{integration_id}
    ```
 
 9. **Refresh Token**
    ```
-   POST /api/v1/integrations/{integration_id}/refresh-token
+   POST /api/v2/integrations/{integration_id}/refresh-token
    {
      "integration_id": 123,
      "force": false
@@ -218,7 +218,7 @@ Health status values:
 
 ```typescript
 // 1. Initiate OAuth connection
-const response = await fetch('/api/v1/integrations/connect', {
+const response = await fetch('/api/v2/integrations/connect', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ const state = urlParams.get('state');
 const integration_type = urlParams.get('integration_type');
 
 // 4. Complete OAuth flow
-const callbackResponse = await fetch(`/api/v1/integrations/callback?code=${code}&state=${state}&integration_type=${integration_type}`);
+const callbackResponse = await fetch(`/api/v2/integrations/callback?code=${code}&state=${state}&integration_type=${integration_type}`);
 const { success, integration_id } = await callbackResponse.json();
 
 if (success) {
@@ -305,13 +305,13 @@ Test the integration endpoints:
 
 ```bash
 # Test OAuth initiation
-curl -X POST http://localhost:8000/api/v1/integrations/connect \
+curl -X POST http://localhost:8000/api/v2/integrations/connect \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"integration_type": "google_calendar"}'
 
 # Check integration health
-curl http://localhost:8000/api/v1/integrations/health/all \
+curl http://localhost:8000/api/v2/integrations/health/all \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 

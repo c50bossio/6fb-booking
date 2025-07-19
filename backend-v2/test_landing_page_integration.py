@@ -234,9 +234,9 @@ def main():
         
         print("\n🚀 Ready for frontend integration!")
         print("Frontend can now call:")
-        print("- GET /api/v1/public/booking/landing/{slug}")
-        print("- GET /api/v1/public/booking/landing/presets")
-        print("- POST /api/v1/public/booking/landing/{slug}/track")
+        print("- GET /api/v2/public/booking/landing/{slug}")
+        print("- GET /api/v2/public/booking/landing/presets")
+        print("- POST /api/v2/public/booking/landing/{slug}/track")
         
     except Exception as e:
         print(f"\n❌ Test failed: {e}")

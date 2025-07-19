@@ -1,0 +1,140 @@
+{
+  "environment": "production",
+  "debug": false,
+  "database": {
+    "path": "bookedbarber_production.db",
+    "pool": {
+      "min_connections": 10,
+      "max_connections": 50,
+      "connection_timeout_seconds": 30,
+      "idle_timeout_seconds": 300,
+      "max_connection_age_seconds": 3600,
+      "health_check_interval_seconds": 60,
+      "enable_metrics": true,
+      "enable_query_logging": false
+    }
+  },
+  "error_handling": {
+    "circuit_breakers": {
+      "database": {
+        "failure_threshold": 5,
+        "recovery_timeout": 60,
+        "success_threshold": 3
+      },
+      "openai_api": {
+        "failure_threshold": 10,
+        "recovery_timeout": 120,
+        "success_threshold": 5
+      },
+      "email_service": {
+        "failure_threshold": 3,
+        "recovery_timeout": 30,
+        "success_threshold": 2
+      },
+      "sms_service": {
+        "failure_threshold": 3,
+        "recovery_timeout": 30,
+        "success_threshold": 2
+      }
+    },
+    "retry_configs": {
+      "agent_conversation": {
+        "strategy": "exponential",
+        "max_attempts": 3,
+        "base_delay": 1.0,
+        "max_delay": 60.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true
+      },
+      "database_operation": {
+        "strategy": "exponential",
+        "max_attempts": 5,
+        "base_delay": 0.5,
+        "max_delay": 30.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true
+      },
+      "external_api": {
+        "strategy": "exponential",
+        "max_attempts": 3,
+        "base_delay": 2.0,
+        "max_delay": 120.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true
+      }
+    }
+  },
+  "authentication": {
+    "secret_key": null,
+    "token_expiry_hours": 24,
+    "max_sessions_per_agent": 5,
+    "enable_ip_restrictions": true,
+    "enable_rate_limiting": true,
+    "default_rate_limit_per_hour": 1000
+  },
+  "monitoring": {
+    "enabled": true,
+    "interval_seconds": 60,
+    "health_checks": {
+      "database_connectivity": {
+        "enabled": true,
+        "interval_seconds": 60,
+        "timeout_seconds": 10
+      },
+      "error_handler_status": {
+        "enabled": true,
+        "interval_seconds": 120,
+        "timeout_seconds": 15
+      },
+      "agent_response_times": {
+        "enabled": true,
+        "interval_seconds": 300,
+        "timeout_seconds": 20
+      }
+    },
+    "alerting": {
+      "enabled": true,
+      "email_notifications": false,
+      "slack_notifications": false,
+      "webhook_url": null
+    }
+  },
+  "agent_system": {
+    "max_concurrent_conversations": 100,
+    "conversation_timeout_minutes": 30,
+    "enable_conversation_logging": true,
+    "enable_performance_metrics": true,
+    "default_agent_roles": [
+      {
+        "agent_id": "conversation_agent_001",
+        "role": "conversation_agent",
+        "rate_limit": 2000
+      },
+      {
+        "agent_id": "analytics_agent_001",
+        "role": "analytics_agent",
+        "rate_limit": 500
+      },
+      {
+        "agent_id": "support_agent_001",
+        "role": "support_agent",
+        "rate_limit": 1000
+      }
+    ]
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file_logging": {
+      "enabled": true,
+      "file_path": "logs/agent_system.log",
+      "max_file_size_mb": 100,
+      "backup_count": 5,
+      "rotation": "time"
+    },
+    "structured_logging": {
+      "enabled": true,
+      "format": "json"
+    }
+  }
+}

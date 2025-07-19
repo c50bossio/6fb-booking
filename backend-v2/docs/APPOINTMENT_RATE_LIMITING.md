@@ -85,7 +85,7 @@ The BookedBarber platform implements comprehensive rate limiting and CAPTCHA pro
 
 ##### CAPTCHA Status Check
 ```http
-POST /api/v1/appointments/guest/captcha-status
+POST /api/v2/appointments/guest/captcha-status
 Content-Type: application/json
 
 {
@@ -116,7 +116,7 @@ Response:
 ```typescript
 // Check if CAPTCHA is required
 const checkCaptchaStatus = async (guestInfo: GuestInfo) => {
-  const response = await fetch('/api/v1/appointments/guest/captcha-status', {
+  const response = await fetch('/api/v2/appointments/guest/captcha-status', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(guestInfo)
@@ -135,7 +135,7 @@ const createGuestBooking = async (bookingData: GuestBooking) => {
     bookingData.captcha_token = captchaToken;
   }
   
-  const response = await fetch('/api/v1/appointments/guest', {
+  const response = await fetch('/api/v2/appointments/guest', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(bookingData)

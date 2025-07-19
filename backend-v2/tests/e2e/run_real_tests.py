@@ -115,7 +115,7 @@ class RealWorldTestRunner:
             
             # Note: In production, you'd verify the webhook signature
             webhook_response = await self.client.post(
-                "/api/v1/webhooks/stripe",
+                "/api/v2/webhooks/stripe",
                 json=webhook_payload,
                 headers={"Stripe-Signature": "test_signature"}
             )
@@ -170,7 +170,7 @@ class RealWorldTestRunner:
         
         # Get test user token (create one if needed)
         auth_response = await self.client.post(
-            "/api/v1/auth/login",
+            "/api/v2/auth/login",
             data={
                 "username": "test@bookedbarber.com",
                 "password": "TestPassword123!"
@@ -180,7 +180,7 @@ class RealWorldTestRunner:
         if auth_response.status_code != 200:
             # Create test user
             register_response = await self.client.post(
-                "/api/v1/auth/register",
+                "/api/v2/auth/register",
                 json={
                     "email": "test@bookedbarber.com",
                     "password": "TestPassword123!",
@@ -192,7 +192,7 @@ class RealWorldTestRunner:
             
             if register_response.status_code == 201:
                 auth_response = await self.client.post(
-                    "/api/v1/auth/login",
+                    "/api/v2/auth/login",
                     data={
                         "username": "test@bookedbarber.com",
                         "password": "TestPassword123!"
@@ -205,7 +205,7 @@ class RealWorldTestRunner:
             
             # 1. Test email notification
             email_response = await self.client.post(
-                "/api/v1/notifications/test-email",
+                "/api/v2/notifications/test-email",
                 headers=headers,
                 json={
                     "to": self.test_credentials['sendgrid']['test_email'],
@@ -230,7 +230,7 @@ class RealWorldTestRunner:
             
             # 2. Test SMS notification (Twilio test mode)
             sms_response = await self.client.post(
-                "/api/v1/notifications/test-sms",
+                "/api/v2/notifications/test-sms",
                 headers=headers,
                 json={
                     "to": self.test_credentials['twilio']['test_to_number'],
@@ -265,7 +265,7 @@ class RealWorldTestRunner:
         # Here we test the API endpoints are properly configured
         
         # 1. Test OAuth initiation
-        oauth_response = await self.client.get("/api/v1/calendar/auth")
+        oauth_response = await self.client.get("/api/v2/calendar/auth")
         
         if oauth_response.status_code == 200:
             oauth_data = oauth_response.json()
@@ -281,7 +281,7 @@ class RealWorldTestRunner:
         
         # 2. Test calendar list endpoint
         calendar_response = await self.client.get(
-            "/api/v1/calendar/list",
+            "/api/v2/calendar/list",
             headers=headers
         )
         
@@ -303,7 +303,7 @@ class RealWorldTestRunner:
         }
         
         # 1. Test OAuth configuration
-        gmb_oauth_response = await self.client.get("/api/v1/integrations/gmb/auth")
+        gmb_oauth_response = await self.client.get("/api/v2/integrations/gmb/auth")
         
         if gmb_oauth_response.status_code == 200:
             oauth_data = gmb_oauth_response.json()
@@ -313,9 +313,9 @@ class RealWorldTestRunner:
         
         # 2. Test API endpoints
         endpoints = [
-            "/api/v1/integrations/gmb/locations",
-            "/api/v1/integrations/gmb/reviews",
-            "/api/v1/integrations/gmb/insights"
+            "/api/v2/integrations/gmb/locations",
+            "/api/v2/integrations/gmb/reviews",
+            "/api/v2/integrations/gmb/insights"
         ]
         
         all_endpoints_ok = True
@@ -330,7 +330,7 @@ class RealWorldTestRunner:
             test_results['api_endpoints'] = True
             
         # 3. Test review response templates
-        template_response = await self.client.get("/api/v1/integrations/gmb/review-templates")
+        template_response = await self.client.get("/api/v2/integrations/gmb/review-templates")
         
         if template_response.status_code == 200:
             templates = template_response.json()
@@ -341,7 +341,7 @@ class RealWorldTestRunner:
         # 4. Test SEO optimization in responses
         seo_keywords = ['barber', 'haircut', 'appointment', 'service']
         seo_check_response = await self.client.post(
-            "/api/v1/integrations/gmb/validate-response",
+            "/api/v2/integrations/gmb/validate-response",
             json={
                 "response_text": "Thank you for visiting our barbershop! We offer great haircuts.",
                 "rating": 5
@@ -361,9 +361,9 @@ class RealWorldTestRunner:
         print("\n⚡ Testing Real-World Performance...")
         
         endpoints = [
-            ("/api/v1/health", "Health Check"),
-            ("/api/v1/services", "Service List"),
-            ("/api/v1/barbers/search?location=test", "Barber Search"),
+            ("/api/v2/health", "Health Check"),
+            ("/api/v2/services", "Service List"),
+            ("/api/v2/barbers/search?location=test", "Barber Search"),
             ("/", "Frontend Homepage")
         ]
         
@@ -415,7 +415,7 @@ class RealWorldTestRunner:
         async def book_appointment(session_num: int):
             try:
                 response = await self.client.post(
-                    "/api/v1/appointments",
+                    "/api/v2/appointments",
                     json={
                         "barber_id": 1,
                         "service_id": 1,
@@ -439,7 +439,7 @@ class RealWorldTestRunner:
         # 2. Test rate limiting
         rate_limit_hit = False
         for i in range(150):
-            response = await self.client.get("/api/v1/health")
+            response = await self.client.get("/api/v2/health")
             if response.status_code == 429:
                 rate_limit_hit = True
                 break

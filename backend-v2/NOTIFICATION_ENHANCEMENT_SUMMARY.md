@@ -138,21 +138,21 @@ backend-v2/
 ## 🔗 API Endpoints
 
 ### Email Analytics
-- `GET /api/v1/email-analytics/metrics` - Email performance metrics
-- `GET /api/v1/email-analytics/campaigns` - Campaign list with performance
-- `GET /api/v1/email-analytics/top-urls` - Most clicked URLs
-- `POST /api/v1/email-analytics/webhook/sendgrid` - SendGrid webhook
+- `GET /api/v2/email-analytics/metrics` - Email performance metrics
+- `GET /api/v2/email-analytics/campaigns` - Campaign list with performance
+- `GET /api/v2/email-analytics/top-urls` - Most clicked URLs
+- `POST /api/v2/email-analytics/webhook/sendgrid` - SendGrid webhook
 
 ### Notification Preferences
-- `GET /api/v1/notification-preferences/preferences` - User preferences
-- `PUT /api/v1/notification-preferences/preferences` - Update preferences
-- `POST /api/v1/notification-preferences/unsubscribe` - One-click unsubscribe
-- `GET /api/v1/notification-preferences/preference-center/{token}` - Public preference page
+- `GET /api/v2/notification-preferences/preferences` - User preferences
+- `PUT /api/v2/notification-preferences/preferences` - Update preferences
+- `POST /api/v2/notification-preferences/unsubscribe` - One-click unsubscribe
+- `GET /api/v2/notification-preferences/preference-center/{token}` - Public preference page
 
 ### URL Shortener
 - `GET /{short_code}` - Redirect with tracking
-- `POST /api/v1/short-urls/create` - Create short URL
-- `GET /api/v1/short-urls/stats` - Analytics and statistics
+- `POST /api/v2/short-urls/create` - Create short URL
+- `GET /api/v2/short-urls/stats` - Analytics and statistics
 
 ## 🧪 Testing & Verification
 
@@ -180,7 +180,7 @@ backend-v2/
 
 ### Configuration Required
 1. **SendGrid Setup**:
-   - Event webhook configured to `/api/v1/email-analytics/webhook/sendgrid`
+   - Event webhook configured to `/api/v2/email-analytics/webhook/sendgrid`
    - Sender authentication verified
    - API key with full mail send permissions
 

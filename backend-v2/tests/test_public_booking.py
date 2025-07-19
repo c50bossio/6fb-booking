@@ -289,7 +289,7 @@ class TestPublicBookingAPI:
         test_organization: Organization
     ):
         """Test getting organization by slug."""
-        response = client.get(f"/api/v1/public/booking/organization/{test_organization.slug}")
+        response = client.get(f"/api/v2/public/booking/organization/{test_organization.slug}")
         
         assert response.status_code == 200
         data = response.json()
@@ -299,7 +299,7 @@ class TestPublicBookingAPI:
     
     def test_get_organization_not_found(self, client: TestClient):
         """Test getting non-existent organization."""
-        response = client.get("/api/v1/public/booking/organization/non-existent")
+        response = client.get("/api/v2/public/booking/organization/non-existent")
         
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
@@ -311,7 +311,7 @@ class TestPublicBookingAPI:
         test_service: Service
     ):
         """Test getting organization services."""
-        response = client.get(f"/api/v1/public/booking/organization/{test_organization.slug}/services")
+        response = client.get(f"/api/v2/public/booking/organization/{test_organization.slug}/services")
         
         assert response.status_code == 200
         services = response.json()
@@ -341,7 +341,7 @@ class TestPublicBookingAPI:
         }
         
         response = client.post(
-            f"/api/v1/public/booking/organization/{test_organization.slug}/book",
+            f"/api/v2/public/booking/organization/{test_organization.slug}/book",
             json=booking_data
         )
         
@@ -387,7 +387,7 @@ class TestPublicBookingAPI:
         }
         
         response = client.post(
-            "/api/v1/public/booking/booking/lookup",
+            "/api/v2/public/booking/booking/lookup",
             json=lookup_data
         )
         

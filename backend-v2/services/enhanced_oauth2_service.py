@@ -137,7 +137,7 @@ class EnhancedOAuth2Service:
         self.db = db
         self.client_id = getattr(settings, 'GOOGLE_CLIENT_ID', None)
         self.client_secret = getattr(settings, 'GOOGLE_CLIENT_SECRET', None)
-        self.base_redirect_uri = getattr(settings, 'GOOGLE_REDIRECT_URI', 'http://localhost:8000/api/v1/calendar/callback')
+        self.base_redirect_uri = getattr(settings, 'GOOGLE_REDIRECT_URI', 'http://localhost:8000/api/v2/calendar/callback')
         
         # Enhanced scopes for comprehensive calendar access
         self.scopes = [

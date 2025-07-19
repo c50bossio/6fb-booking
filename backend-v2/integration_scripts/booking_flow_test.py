@@ -14,7 +14,7 @@ ADMIN_PASSWORD = "admin123"
 def get_token():
     """Get admin access token"""
     response = requests.post(
-        f"{BACKEND_URL}/api/v1/auth/login",
+        f"{BACKEND_URL}/api/v2/auth/login",
         json={"username": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
     )
     return response.json().get("access_token") if response.status_code == 200 else None
@@ -36,7 +36,7 @@ def test_booking_workflow():
     
     try:
         response = requests.get(
-            f"{BACKEND_URL}/api/v1/bookings/available-slots?date={tomorrow}",
+            f"{BACKEND_URL}/api/v2/bookings/available-slots?date={tomorrow}",
             headers=headers
         )
         
@@ -53,7 +53,7 @@ def test_booking_workflow():
     # 2. Test services endpoint
     print("\n2. Testing services...")
     try:
-        response = requests.get(f"{BACKEND_URL}/api/v1/services/", headers=headers)
+        response = requests.get(f"{BACKEND_URL}/api/v2/services/", headers=headers)
         if response.status_code == 200:
             services = response.json()
             print(f"✓ Services retrieved: {len(services)} services")
@@ -67,7 +67,7 @@ def test_booking_workflow():
     # 3. Test clients endpoint
     print("\n3. Testing clients...")
     try:
-        response = requests.get(f"{BACKEND_URL}/api/v1/clients/", headers=headers)
+        response = requests.get(f"{BACKEND_URL}/api/v2/clients/", headers=headers)
         if response.status_code == 200:
             data = response.json()
             clients = data.get('clients', [])
@@ -93,7 +93,7 @@ def test_booking_workflow():
         }
         
         response = requests.post(
-            f"{BACKEND_URL}/api/v1/bookings/",
+            f"{BACKEND_URL}/api/v2/bookings/",
             json=booking_data,
             headers=headers
         )
@@ -126,7 +126,7 @@ def test_booking_management(booking_id):
     print("\n1. Testing booking retrieval...")
     try:
         response = requests.get(
-            f"{BACKEND_URL}/api/v1/bookings/{booking_id}",
+            f"{BACKEND_URL}/api/v2/bookings/{booking_id}",
             headers=headers
         )
         
@@ -149,7 +149,7 @@ def test_booking_management(booking_id):
         }
         
         response = requests.patch(
-            f"{BACKEND_URL}/api/v1/bookings/{booking_id}",
+            f"{BACKEND_URL}/api/v2/bookings/{booking_id}",
             json=update_data,
             headers=headers
         )
@@ -169,7 +169,7 @@ def test_timezone_functionality():
     headers = {"Authorization": f"Bearer {token}"}
     
     try:
-        response = requests.get(f"{BACKEND_URL}/api/v1/timezones", headers=headers)
+        response = requests.get(f"{BACKEND_URL}/api/v2/timezones", headers=headers)
         
         if response.status_code == 200:
             data = response.json()
@@ -201,7 +201,7 @@ def test_business_hours_functionality():
         
         try:
             response = requests.get(
-                f"{BACKEND_URL}/api/v1/bookings/available-slots?date={test_date}",
+                f"{BACKEND_URL}/api/v2/bookings/available-slots?date={test_date}",
                 headers=headers
             )
             

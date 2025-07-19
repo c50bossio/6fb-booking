@@ -31,9 +31,9 @@ BookedBarber V2 represents a **complete platform rewrite** designed to help barb
 
 ```bash
 # New MFA endpoints
-POST /api/v1/auth/mfa/setup     # Initialize MFA setup
-POST /api/v1/auth/mfa/verify    # Verify TOTP codes
-GET  /api/v1/auth/mfa/backup    # Generate backup codes
+POST /api/v2/auth/mfa/setup     # Initialize MFA setup
+POST /api/v2/auth/mfa/verify    # Verify TOTP codes
+GET  /api/v2/auth/mfa/backup    # Generate backup codes
 ```
 
 ### 📱 Mobile-First Calendar System
@@ -205,12 +205,12 @@ uvicorn main:app --port 8001 # Start backend on port 8001
 
 ```bash
 # V2 API structure
-/api/v1/auth/*           # Authentication endpoints
-/api/v1/appointments/*   # Booking management
-/api/v1/payments/*       # Payment processing
-/api/v1/analytics/*      # Business intelligence
-/api/v1/marketing/*      # Marketing automation
-/api/v1/integrations/*   # Third-party services
+/api/v2/auth/*           # Authentication endpoints
+/api/v2/appointments/*   # Booking management
+/api/v2/payments/*       # Payment processing
+/api/v2/analytics/*      # Business intelligence
+/api/v2/marketing/*      # Marketing automation
+/api/v2/integrations/*   # Third-party services
 ```
 
 **Breaking Changes:**

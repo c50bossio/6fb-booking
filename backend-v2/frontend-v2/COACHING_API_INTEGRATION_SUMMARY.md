@@ -59,10 +59,10 @@ _getResourcesForCategory()      // Resource mapping for action items
 ### 🔗 Backend Integration Points
 
 #### Connected Analytics Endpoints
-- `/api/v1/analytics/dashboard` - Core business metrics
-- `/api/v1/analytics/six-figure-barber` - Six Figure Barber methodology
-- `/api/v1/analytics/insights` - Existing business insights
-- `/api/v1/analytics/barber-performance` - Performance metrics
+- `/api/v2/analytics/dashboard` - Core business metrics
+- `/api/v2/analytics/six-figure-barber` - Six Figure Barber methodology
+- `/api/v2/analytics/insights` - Existing business insights
+- `/api/v2/analytics/barber-performance` - Performance metrics
 
 #### Data Flow
 ```

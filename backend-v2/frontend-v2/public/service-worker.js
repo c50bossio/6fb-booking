@@ -188,7 +188,7 @@ async function syncAppointments() {
     
     if (pendingData && pendingData.length > 0) {
       // Send to server
-      const response = await fetch('/api/v1/appointments/sync', {
+      const response = await fetch('/api/v2/appointments/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +225,7 @@ self.addEventListener('periodicsync', (event) => {
 
 async function checkUpcomingAppointments() {
   try {
-    const response = await fetch('/api/v1/appointments/upcoming');
+    const response = await fetch('/api/v2/appointments/upcoming');
     if (response.ok) {
       const appointments = await response.json();
       // Process and potentially show notifications for upcoming appointments

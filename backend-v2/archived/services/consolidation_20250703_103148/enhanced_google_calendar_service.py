@@ -185,7 +185,7 @@ class EnhancedGoogleCalendarService:
             service = build('calendar', 'v3', credentials=credentials)
             
             # Create webhook channel
-            webhook_url = f"{getattr(settings, 'BASE_URL', 'http://localhost:8000')}/api/v1/calendar/webhook"
+            webhook_url = f"{getattr(settings, 'BASE_URL', 'http://localhost:8000')}/api/v2/calendar/webhook"
             
             channel_request = {
                 'id': f"bookedbarber_{user_id}_{int(datetime.utcnow().timestamp())}",

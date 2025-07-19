@@ -1,0 +1,17 @@
+{
+  "generated_at": "2025-07-19T08:26:43.323772",
+  "agents": {
+    "agent_1": {
+      "total_tasks": 0,
+      "tasks": []
+    },
+    "agent_2": {
+      "total_tasks": 0,
+      "tasks": []
+    },
+    "agent_3": {
+      "total_tasks": 0,
+      "tasks": []
+    }
+  }
+}

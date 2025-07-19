@@ -126,7 +126,7 @@ async function setupTestData() {
     
     // Create test barber account
     try {
-      await axios.post('http://localhost:8000/api/v1/auth/register', {
+      await axios.post('http://localhost:8000/api/v2/auth/register', {
         email: 'barber@test.com',
         password: 'testpass123',
         first_name: 'Test',

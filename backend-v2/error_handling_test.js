@@ -14,7 +14,7 @@ async function runErrorHandlingTests() {
     tests.push({
         name: 'Invalid JSON Handling',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: 'invalid json{'
@@ -30,7 +30,7 @@ async function runErrorHandlingTests() {
     tests.push({
         name: 'Missing Required Fields',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
@@ -47,7 +47,7 @@ async function runErrorHandlingTests() {
     tests.push({
         name: 'Invalid Integration Type',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ integration_type: 'invalid_type' })
@@ -65,7 +65,7 @@ async function runErrorHandlingTests() {
     tests.push({
         name: 'Non-existent Endpoint',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/nonexistent');
+            const response = await fetch('http://localhost:8000/api/v2/integrations/nonexistent');
             if (response.status === 404) {
                 return { success: true, data: 'Correctly returns 404 for non-existent endpoints' };
             }
@@ -77,7 +77,7 @@ async function runErrorHandlingTests() {
     tests.push({
         name: 'Invalid HTTP Method',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/status', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/status', {
                 method: 'DELETE'
             });
             if (response.status === 405 || response.status === 404) {
@@ -92,7 +92,7 @@ async function runErrorHandlingTests() {
         name: 'Concurrent Request Handling',
         test: async () => {
             const promises = Array(10).fill().map(() => 
-                fetch('http://localhost:8000/api/v1/integrations/status')
+                fetch('http://localhost:8000/api/v2/integrations/status')
             );
             const responses = await Promise.all(promises);
             const successCount = responses.filter(r => r.ok).length;
@@ -113,7 +113,7 @@ async function runErrorHandlingTests() {
                     large_data: 'x'.repeat(10000) // 10KB of data
                 }
             };
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(largePayload)
@@ -130,7 +130,7 @@ async function runErrorHandlingTests() {
         name: 'Authentication Security',
         test: async () => {
             // Since we're using mock auth, this will pass, but in real scenario should fail
-            const response = await fetch('http://localhost:8000/api/v1/integrations/status', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/status', {
                 headers: {
                     'Authorization': 'Bearer invalid_token'
                 }
@@ -148,7 +148,7 @@ async function runErrorHandlingTests() {
         name: 'System Recovery After Error',
         test: async () => {
             // First, cause an error
-            await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: 'invalid'
@@ -171,7 +171,7 @@ async function runErrorHandlingTests() {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 100); // Very short timeout
                 
-                const response = await fetch('http://localhost:8000/api/v1/integrations/health/all', {
+                const response = await fetch('http://localhost:8000/api/v2/integrations/health/all', {
                     signal: controller.signal
                 });
                 

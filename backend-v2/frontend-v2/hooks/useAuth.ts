@@ -55,7 +55,7 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       
       try {
-        const response = await fetch(`${API_URL}/api/v1/auth/me`, {
+        const response = await fetch(`${API_URL}/api/v2/auth/me`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
       }
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+      const response = await fetch(`${API_URL}/api/v2/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

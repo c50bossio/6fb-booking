@@ -40,9 +40,9 @@ All Google services (Calendar, My Business, Ads) share the same OAuth credential
    - Name: "BookedBarber OAuth"
    - Add Authorized redirect URIs:
      ```
-     http://localhost:8000/api/v1/integrations/callback
+     http://localhost:8000/api/v2/integrations/callback
      http://localhost:8000/api/calendar/callback
-     https://yourdomain.com/api/v1/integrations/callback
+     https://yourdomain.com/api/v2/integrations/callback
      https://yourdomain.com/api/calendar/callback
      ```
    - Save and copy:
@@ -221,14 +221,14 @@ cd backend-v2
 uvicorn main:app --reload
 
 # Visit in browser
-http://localhost:8000/api/v1/integrations/available
+http://localhost:8000/api/v2/integrations/available
 ```
 
 ### 2. Verify Analytics Tracking
 ```bash
 # Check GA4 real-time reports
 # Send test event via API
-curl -X POST http://localhost:8000/api/v1/tracking/event \
+curl -X POST http://localhost:8000/api/v2/tracking/event \
   -H "Content-Type: application/json" \
   -d '{"event_type": "test_event"}'
 ```

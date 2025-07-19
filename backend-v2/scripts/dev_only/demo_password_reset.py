@@ -86,7 +86,7 @@ def demo_password_reset():
         
         # Show how to test via API
         print(f"\n🧪 To test via API:")
-        print(f"   curl -X POST http://localhost:8000/api/v1/auth/reset-password \\")
+        print(f"   curl -X POST http://localhost:8000/api/v2/auth/reset-password \\")
         print(f"     -H 'Content-Type: application/json' \\")
         print(f"     -d '{{\"token\": \"{reset_token.token}\", \"new_password\": \"NewPassword123!\"}}'")
         

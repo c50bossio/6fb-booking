@@ -231,26 +231,26 @@ Organization (franchise headquarters)
 
 ### Organization Management
 ```
-POST   /api/v1/organizations                    # Create organization
-GET    /api/v1/organizations                    # List user's organizations
-GET    /api/v1/organizations/{id}               # Get organization details
-PUT    /api/v1/organizations/{id}               # Update organization
-DELETE /api/v1/organizations/{id}               # Delete organization
+POST   /api/v2/organizations                    # Create organization
+GET    /api/v2/organizations                    # List user's organizations
+GET    /api/v2/organizations/{id}               # Get organization details
+PUT    /api/v2/organizations/{id}               # Update organization
+DELETE /api/v2/organizations/{id}               # Delete organization
 ```
 
 ### User-Organization Management
 ```
-POST   /api/v1/organizations/{id}/users         # Add user to organization
-GET    /api/v1/organizations/{id}/users         # List organization users
-PUT    /api/v1/organizations/{id}/users/{uid}   # Update user role/permissions
-DELETE /api/v1/organizations/{id}/users/{uid}   # Remove user from organization
+POST   /api/v2/organizations/{id}/users         # Add user to organization
+GET    /api/v2/organizations/{id}/users         # List organization users
+PUT    /api/v2/organizations/{id}/users/{uid}   # Update user role/permissions
+DELETE /api/v2/organizations/{id}/users/{uid}   # Remove user from organization
 ```
 
 ### Analytics and Statistics
 ```
-GET    /api/v1/organizations/{id}/stats         # Organization statistics
-GET    /api/v1/organizations/billing-plans/features # Feature comparison
-GET    /api/v1/organizations/my/organizations   # Current user's organizations
+GET    /api/v2/organizations/{id}/stats         # Organization statistics
+GET    /api/v2/organizations/billing-plans/features # Feature comparison
+GET    /api/v2/organizations/my/organizations   # Current user's organizations
 ```
 
 ## Migration Strategy

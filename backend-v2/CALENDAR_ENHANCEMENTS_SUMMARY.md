@@ -76,10 +76,10 @@
 - `useCalendarApiEnhanced()` - For API calls with retry logic
 
 ### API Endpoints
-- `GET /api/v1/appointments/slots` - Available time slots
-- `POST /api/v1/appointments/quick-booking` - Quick booking
-- `GET /api/v1/appointments/next-available` - Next available slot
-- `GET /api/v1/bookings/my` - User's bookings
+- `GET /api/v2/appointments/slots` - Available time slots
+- `POST /api/v2/appointments/quick-booking` - Quick booking
+- `GET /api/v2/appointments/next-available` - Next available slot
+- `GET /api/v2/bookings/my` - User's bookings
 
 ## Performance Optimizations
 

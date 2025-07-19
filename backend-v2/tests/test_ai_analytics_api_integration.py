@@ -69,7 +69,7 @@ class TestAIAnalyticsAPIEndpoints:
             }
             
             response = self.client.post(
-                "/api/v1/ai-analytics/consent",
+                "/api/v2/ai-analytics/consent",
                 json=consent_data,
                 headers=self.headers
             )
@@ -93,7 +93,7 @@ class TestAIAnalyticsAPIEndpoints:
             }
             
             response = self.client.post(
-                "/api/v1/ai-analytics/consent",
+                "/api/v2/ai-analytics/consent",
                 json=consent_data,
                 headers=self.headers
             )
@@ -127,7 +127,7 @@ class TestAIAnalyticsAPIEndpoints:
             mock_service.get_revenue_benchmark.return_value = mock_benchmark
             
             response = self.client.get(
-                "/api/v1/ai-analytics/benchmarks/revenue",
+                "/api/v2/ai-analytics/benchmarks/revenue",
                 headers=self.headers
             )
             
@@ -163,7 +163,7 @@ class TestAIAnalyticsAPIEndpoints:
         mock_consent_check.return_value = False
         
         response = self.client.get(
-            "/api/v1/ai-analytics/benchmarks/revenue",
+            "/api/v2/ai-analytics/benchmarks/revenue",
             headers=self.headers
         )
         
@@ -175,7 +175,7 @@ class TestAIAnalyticsAPIEndpoints:
         with patch('dependencies.get_current_user', return_value=self._mock_user_with_consent()):
             with patch('routers.ai_analytics.check_ai_analytics_consent', return_value=True):
                 response = self.client.get(
-                    "/api/v1/ai-analytics/benchmarks/invalid_metric",
+                    "/api/v2/ai-analytics/benchmarks/invalid_metric",
                     headers=self.headers
                 )
                 
@@ -210,7 +210,7 @@ class TestAIAnalyticsAPIEndpoints:
             mock_service.generate_comprehensive_benchmark_report.return_value = mock_report
             
             response = self.client.get(
-                "/api/v1/ai-analytics/benchmarks/comprehensive",
+                "/api/v2/ai-analytics/benchmarks/comprehensive",
                 headers=self.headers
             )
             
@@ -258,7 +258,7 @@ class TestAIAnalyticsAPIEndpoints:
             }
             
             response = self.client.post(
-                "/api/v1/ai-analytics/predictions",
+                "/api/v2/ai-analytics/predictions",
                 json=prediction_request,
                 headers=self.headers
             )
@@ -307,7 +307,7 @@ class TestAIAnalyticsAPIEndpoints:
             }
             
             response = self.client.post(
-                "/api/v1/ai-analytics/predictions",
+                "/api/v2/ai-analytics/predictions",
                 json=prediction_request,
                 headers=self.headers
             )
@@ -371,7 +371,7 @@ class TestAIAnalyticsAPIEndpoints:
                                 with patch('routers.ai_analytics._get_success_patterns_for_segment', return_value=["Success pattern 1"]):
                                     
                                     response = self.client.get(
-                                        "/api/v1/ai-analytics/insights/coaching",
+                                        "/api/v2/ai-analytics/insights/coaching",
                                         headers=self.headers
                                     )
                                     
@@ -424,7 +424,7 @@ class TestAIAnalyticsAPIEndpoints:
                                 mock_seasonal.return_value = {"peak_months": ["November", "December"]}
                                 
                                 response = self.client.get(
-                                    "/api/v1/ai-analytics/insights/market-intelligence",
+                                    "/api/v2/ai-analytics/insights/market-intelligence",
                                     headers=self.headers
                                 )
                                 
@@ -468,7 +468,7 @@ class TestAIAnalyticsAPIEndpoints:
             mock_db.query.return_value.filter.return_value.all.return_value = mock_consents
             
             response = self.client.get(
-                "/api/v1/ai-analytics/privacy/report",
+                "/api/v2/ai-analytics/privacy/report",
                 headers=self.headers
             )
             
@@ -498,12 +498,12 @@ class TestAIAnalyticsAPIEndpoints:
     def test_unauthenticated_access(self):
         """Test that unauthenticated requests are rejected"""
         endpoints = [
-            "/api/v1/ai-analytics/benchmarks/revenue",
-            "/api/v1/ai-analytics/benchmarks/comprehensive",
-            "/api/v1/ai-analytics/predictions",
-            "/api/v1/ai-analytics/insights/coaching",
-            "/api/v1/ai-analytics/insights/market-intelligence",
-            "/api/v1/ai-analytics/privacy/report"
+            "/api/v2/ai-analytics/benchmarks/revenue",
+            "/api/v2/ai-analytics/benchmarks/comprehensive",
+            "/api/v2/ai-analytics/predictions",
+            "/api/v2/ai-analytics/insights/coaching",
+            "/api/v2/ai-analytics/insights/market-intelligence",
+            "/api/v2/ai-analytics/privacy/report"
         ]
         
         for endpoint in endpoints:
@@ -516,7 +516,7 @@ class TestAIAnalyticsAPIEndpoints:
         with patch('dependencies.get_current_user', return_value=self._mock_user_with_consent()):
             # Test invalid JSON for consent update
             response = self.client.post(
-                "/api/v1/ai-analytics/consent",
+                "/api/v2/ai-analytics/consent",
                 data="invalid json",
                 headers={**self.headers, "Content-Type": "application/json"}
             )
@@ -525,7 +525,7 @@ class TestAIAnalyticsAPIEndpoints:
             
             # Test missing required fields for predictions
             response = self.client.post(
-                "/api/v1/ai-analytics/predictions",
+                "/api/v2/ai-analytics/predictions",
                 json={},  # Missing prediction_type
                 headers=self.headers
             )
@@ -555,7 +555,7 @@ class TestAIAnalyticsAPIEndpoints:
                     
                     # Test with date range parameters
                     response = self.client.get(
-                        "/api/v1/ai-analytics/benchmarks/revenue",
+                        "/api/v2/ai-analytics/benchmarks/revenue",
                         params={
                             "date_range_start": "2024-06-01",
                             "date_range_end": "2024-06-30"

@@ -87,9 +87,9 @@ class SimpleStagingValidator {
         
         const endpoints = [
             '/docs',
-            '/api/v1/auth/test',
-            '/api/v1/appointments',
-            '/api/v1/users/me'
+            '/api/v2/auth/test',
+            '/api/v2/appointments',
+            '/api/v2/users/me'
         ];
 
         for (const endpoint of endpoints) {

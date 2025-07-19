@@ -32,7 +32,7 @@ from routers.meta_tracking import router as meta_tracking_router
 
 
 router = APIRouter(
-    prefix="/api/v1/tracking",
+    prefix="/api/v2/tracking",
     tags=["tracking"],
     responses={404: {"description": "Not found"}},
 )

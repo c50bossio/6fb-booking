@@ -374,7 +374,7 @@ python scripts/health_check_all.py --fail-on-warn
 
 # Check all endpoints
 curl -f http://localhost:8000/health
-curl -f http://localhost:8000/api/v1/health
+curl -f http://localhost:8000/api/v2/health
 curl -f http://localhost:3000
 
 # Verify database connectivity
@@ -429,7 +429,7 @@ python scripts/monitor_error_rate.py --duration 60  # Monitor for 60 minutes
 ### 2. Performance Monitoring
 ```bash
 # Check response times
-python scripts/performance_monitor.py --endpoints /health,/api/v1/appointments
+python scripts/performance_monitor.py --endpoints /health,/api/v2/appointments
 
 # Monitor database performance
 python scripts/db_performance_monitor.py

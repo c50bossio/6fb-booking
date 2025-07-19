@@ -488,7 +488,7 @@ class TouchpointTracker {
     }
     
     sendTouchpoint(touchpoint) {
-        fetch('/api/v1/attribution/touchpoint', {
+        fetch('/api/v2/attribution/touchpoint', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1622,7 +1622,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 from datetime import datetime, timedelta
 
-router = APIRouter(prefix="/api/v1/attribution", tags=["attribution"])
+router = APIRouter(prefix="/api/v2/attribution", tags=["attribution"])
 
 @router.post("/touchpoint")
 async def create_touchpoint(

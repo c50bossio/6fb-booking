@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Optional
 
 # API configuration
 BASE_URL = "http://localhost:8000"
-API_V1_BASE = f"{BASE_URL}/api/v1"
+API_V1_BASE = f"{BASE_URL}/api/v2"
 
 # Test credentials
 TEST_EMAIL = "testadmin@test.com"

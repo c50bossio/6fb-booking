@@ -39,51 +39,51 @@ class MFAEnforcementMiddleware(BaseHTTPMiddleware):
     # Endpoints that require MFA verification
     MFA_REQUIRED_PATHS = {
         # User management - high risk
-        "/api/v1/users/delete",
-        "/api/v1/users/bulk-delete",
-        "/api/v1/users/role",
-        "/api/v1/users/permissions",
+        "/api/v2/users/delete",
+        "/api/v2/users/bulk-delete",
+        "/api/v2/users/role",
+        "/api/v2/users/permissions",
         
         # Payment operations - critical
-        "/api/v1/payments/refunds",
-        "/api/v1/payments/payouts",
-        "/api/v1/payments/manual-capture",
-        "/api/v1/payments/bulk-refund",
+        "/api/v2/payments/refunds",
+        "/api/v2/payments/payouts",
+        "/api/v2/payments/manual-capture",
+        "/api/v2/payments/bulk-refund",
         
         # Commission management
-        "/api/v1/commissions/payout",
-        "/api/v1/commissions/bulk-payout",
-        "/api/v1/commissions/adjust",
+        "/api/v2/commissions/payout",
+        "/api/v2/commissions/bulk-payout",
+        "/api/v2/commissions/adjust",
         
         # System configuration
-        "/api/v1/config",
-        "/api/v1/settings/security",
-        "/api/v1/settings/payment",
+        "/api/v2/config",
+        "/api/v2/settings/security",
+        "/api/v2/settings/payment",
         
         # Integration management
-        "/api/v1/integrations/admin",
-        "/api/v1/integrations/disconnect-all",
+        "/api/v2/integrations/admin",
+        "/api/v2/integrations/disconnect-all",
         
         # Audit and compliance
-        "/api/v1/audit/export",
-        "/api/v1/privacy/data-export",
-        "/api/v1/privacy/data-deletion",
+        "/api/v2/audit/export",
+        "/api/v2/privacy/data-export",
+        "/api/v2/privacy/data-deletion",
         
         # API key management
-        "/api/v1/api-keys/create",
-        "/api/v1/api-keys/revoke",
+        "/api/v2/api-keys/create",
+        "/api/v2/api-keys/revoke",
         
         # Webhook management
-        "/api/v1/webhooks/admin",
-        "/api/v1/webhooks/test-all",
+        "/api/v2/webhooks/admin",
+        "/api/v2/webhooks/test-all",
     }
     
     # Path prefixes that always require MFA for admins
     MFA_REQUIRED_PREFIXES = {
-        "/api/v1/admin/",
-        "/api/v1/super-admin/",
-        "/api/v1/system/",
-        "/api/v1/database/",
+        "/api/v2/admin/",
+        "/api/v2/super-admin/",
+        "/api/v2/system/",
+        "/api/v2/database/",
     }
     
     def __init__(self, app):
@@ -312,7 +312,7 @@ class MFAEnforcementMiddleware(BaseHTTPMiddleware):
                 "detail": "Multi-Factor Authentication (MFA) is required for admin accounts",
                 "error_code": "MFA_SETUP_REQUIRED",
                 "action_required": "setup_mfa",
-                "setup_url": "/api/v1/mfa/setup",
+                "setup_url": "/api/v2/mfa/setup",
                 "documentation": "/docs/security/mfa-setup"
             }
         )
@@ -325,7 +325,7 @@ class MFAEnforcementMiddleware(BaseHTTPMiddleware):
                 "detail": "MFA verification required for this operation",
                 "error_code": "MFA_VERIFICATION_REQUIRED",
                 "action_required": "verify_mfa",
-                "verification_url": "/api/v1/mfa/verify",
+                "verification_url": "/api/v2/mfa/verify",
                 "mfa_session_duration": self.mfa_session_duration
             },
             headers={

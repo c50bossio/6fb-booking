@@ -33,7 +33,7 @@ export function useCustomerPixels(organizationSlug: string | undefined) {
     const loadPixels = async () => {
       try {
         // Fetch customer's tracking pixels
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/customer-pixels/public/${organizationSlug}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v2/customer-pixels/public/${organizationSlug}`)
         if (!response.ok) {
           throw new Error(`Failed to fetch pixels: ${response.status}`)
         }

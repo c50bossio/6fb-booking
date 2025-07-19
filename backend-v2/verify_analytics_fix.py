@@ -13,7 +13,7 @@ def verify_analytics_fix():
     
     # Login
     login_data = {"email": "admin@sixfb.com", "password": "admin123"}
-    login_response = requests.post(f"{base_url}/api/v1/auth/login", json=login_data)
+    login_response = requests.post(f"{base_url}/api/v2/auth/login", json=login_data)
     
     if login_response.status_code != 200:
         print("❌ Login failed - cannot verify fix")
@@ -24,9 +24,9 @@ def verify_analytics_fix():
     
     # Test the main endpoints that were failing
     critical_endpoints = [
-        "/api/v1/analytics/dashboard",
-        "/api/v1/analytics/revenue", 
-        "/api/v1/analytics/appointments"
+        "/api/v2/analytics/dashboard",
+        "/api/v2/analytics/revenue", 
+        "/api/v2/analytics/appointments"
     ]
     
     all_working = True

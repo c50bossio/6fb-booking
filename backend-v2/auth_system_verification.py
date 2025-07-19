@@ -26,9 +26,9 @@ def check_backend_endpoints():
     base_url = "http://localhost:8000"
     endpoints = [
         ("/health", "GET", "Health Check"),
-        ("/api/v1/auth/me", "GET", "Auth Protected Endpoint"),
-        ("/api/v1/auth/login", "POST", "Login Endpoint"),
-        ("/api/v1/auth/register", "POST", "Register Endpoint"),
+        ("/api/v2/auth/me", "GET", "Auth Protected Endpoint"),
+        ("/api/v2/auth/login", "POST", "Login Endpoint"),
+        ("/api/v2/auth/register", "POST", "Register Endpoint"),
     ]
     
     working_endpoints = 0
@@ -40,10 +40,10 @@ def check_backend_endpoints():
                 response = requests.post(f"{base_url}{endpoint}", json={}, timeout=5)
                 
             # For auth endpoints, we expect specific error codes
-            if endpoint == "/api/v1/auth/me" and response.status_code in [401, 403]:
+            if endpoint == "/api/v2/auth/me" and response.status_code in [401, 403]:
                 print(f"✅ {description}: Properly secured")
                 working_endpoints += 1
-            elif endpoint in ["/api/v1/auth/login", "/api/v1/auth/register"] and response.status_code in [400, 422, 429]:
+            elif endpoint in ["/api/v2/auth/login", "/api/v2/auth/register"] and response.status_code in [400, 422, 429]:
                 print(f"✅ {description}: Endpoint exists (validation/rate limit working)")
                 working_endpoints += 1
             elif endpoint == "/health" and response.status_code == 200:

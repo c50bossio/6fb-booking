@@ -2,172 +2,172 @@
 
 ## Executive Summary
 
-The BookedBarber V2 backend provides a comprehensive REST API with **370+ endpoints** across **43 active routers**. The API is well-structured with consistent versioning (`/api/v1/`) and follows RESTful conventions.
+The BookedBarber V2 backend provides a comprehensive REST API with **370+ endpoints** across **43 active routers**. The API is well-structured with consistent versioning (`/api/v2/`) and follows RESTful conventions.
 
 ## API Statistics
 
 - **Total Active Routers**: 43
 - **Total Endpoints**: 378+
 - **Disabled Routers**: 5 (email_analytics, locations, cache, products, shopify_webhooks)
-- **API Version**: v1 (`/api/v1/` prefix)
+- **API Version**: v1 (`/api/v2/` prefix)
 
 ## Core API Categories
 
 ### 1. Authentication & Security (31 endpoints)
-- **Auth Router** (`/api/v1/auth`): 10 endpoints
+- **Auth Router** (`/api/v2/auth`): 10 endpoints
   - Login, registration, password reset, email verification
   - Support for complete business registration flow
-- **Auth Simple Router** (`/api/v1/auth-simple`): 2 endpoints
+- **Auth Simple Router** (`/api/v2/auth-simple`): 2 endpoints
   - Simplified login for mobile/lightweight clients
-- **MFA Router** (`/api/v1/mfa`): 9 endpoints
+- **MFA Router** (`/api/v2/mfa`): 9 endpoints
   - Multi-factor authentication setup and management
   - Trusted device management
-- **API Keys Router** (`/api/v1/api-keys`): 4 endpoints
+- **API Keys Router** (`/api/v2/api-keys`): 4 endpoints
   - API key management for third-party integrations
-- **Privacy Router** (`/api/v1/privacy`): 9 endpoints
+- **Privacy Router** (`/api/v2/privacy`): 9 endpoints
   - GDPR compliance, data export/deletion
 
 ### 2. Booking & Appointments (32 endpoints)
-- **Appointments Router** (`/api/v1/appointments`): 15 endpoints
+- **Appointments Router** (`/api/v2/appointments`): 15 endpoints
   - Modern appointment CRUD operations
   - Guest booking support with CAPTCHA
   - Slot availability checking
-- **Bookings Router** (`/api/v1/bookings`): 17 endpoints
+- **Bookings Router** (`/api/v2/bookings`): 17 endpoints
   - Legacy booking endpoints (being phased out)
   - Enhanced booking with buffer times
   - Quick booking (next available slot)
 
 ### 3. Payment & Financial (26 endpoints)
-- **Payments Router** (`/api/v1/payments`): 8 endpoints
+- **Payments Router** (`/api/v2/payments`): 8 endpoints
   - Stripe payment intent creation/confirmation
   - Gift certificates
   - Refunds and payouts
-- **Billing Router** (`/api/v1/billing`): 10 endpoints
+- **Billing Router** (`/api/v2/billing`): 10 endpoints
   - Subscription management
   - Chair-based pricing
   - Payment method management
-- **Commissions Router** (`/api/v1/commissions`): 8 endpoints
+- **Commissions Router** (`/api/v2/commissions`): 8 endpoints
   - Commission tracking and reporting
   - Payout preview and export
   - Rate management and optimization
 
 ### 4. User & Client Management (25 endpoints)
-- **Users Router** (`/api/v1/users`): 7 endpoints
+- **Users Router** (`/api/v2/users`): 7 endpoints
   - User profile management
   - Onboarding status tracking
   - Role management
-- **Clients Router** (`/api/v1/clients`): 16 endpoints
+- **Clients Router** (`/api/v2/clients`): 16 endpoints
   - Client CRUD operations
   - Advanced search and analytics
   - Communication preferences
   - Customer lifetime value tracking
-- **Barbers Router** (`/api/v1/barbers`): 2 endpoints
+- **Barbers Router** (`/api/v2/barbers`): 2 endpoints
   - Barber listing and details
 
 ### 5. Service & Availability Management (29 endpoints)
-- **Services Router** (`/api/v1/services`): 18 endpoints
+- **Services Router** (`/api/v2/services`): 18 endpoints
   - Service catalog management
   - Pricing rules and calculations
   - Booking rules per service
-- **Barber Availability Router** (`/api/v1/barber-availability`): 11 endpoints
+- **Barber Availability Router** (`/api/v2/barber-availability`): 11 endpoints
   - Schedule management
   - Time-off requests
   - Special availability
 
 ### 6. Calendar Integration (25 endpoints)
-- **Calendar Router** (`/api/v1/api/calendar`): 16 endpoints
+- **Calendar Router** (`/api/v2/api/calendar`): 16 endpoints
   - Generic calendar integration
   - Sync status and conflict detection
-- **Google Calendar Router** (`/api/v1/api/google-calendar`): 9 endpoints
+- **Google Calendar Router** (`/api/v2/api/google-calendar`): 9 endpoints
   - Google-specific OAuth flow
   - Event synchronization
   - Settings management
 
 ### 7. Communication & Marketing (48 endpoints)
-- **Marketing Router** (`/api/v1/marketing`): 24 endpoints
+- **Marketing Router** (`/api/v2/marketing`): 24 endpoints
   - Campaign management
   - Email/SMS marketing
   - Review automation
   - Response templates
-- **Notifications Router** (`/api/v1/notifications`): 9 endpoints
+- **Notifications Router** (`/api/v2/notifications`): 9 endpoints
   - Notification preferences
   - Template management
   - Queue processing
-- **SMS Conversations Router** (`/api/v1/sms`): 8 endpoints
+- **SMS Conversations Router** (`/api/v2/sms`): 8 endpoints
   - Two-way SMS messaging
   - Conversation threading
-- **Notification Preferences Router** (`/api/v1/notification-preferences`): 7 endpoints
+- **Notification Preferences Router** (`/api/v2/notification-preferences`): 7 endpoints
   - Granular preference management
   - Unsubscribe handling
 
 ### 8. Analytics & Reporting (19 endpoints)
-- **Analytics Router** (`/api/v1/analytics`): 12 endpoints
+- **Analytics Router** (`/api/v2/analytics`): 12 endpoints
   - Revenue analytics
   - Client retention metrics
   - Six Figure Barber methodology metrics
   - Appointment patterns
-- **Dashboard Router** (`/api/v1/dashboard`): 2 endpoints
+- **Dashboard Router** (`/api/v2/dashboard`): 2 endpoints
   - Overview metrics
   - Client metrics
-- **AI Analytics Router** (`/api/v1/ai-analytics`): 7 endpoints
+- **AI Analytics Router** (`/api/v2/ai-analytics`): 7 endpoints
   - AI-powered insights
   - Cross-user analytics
 
 ### 9. Enterprise & Multi-Location (24 endpoints)
-- **Enterprise Router** (`/api/v1/enterprise`): 11 endpoints
+- **Enterprise Router** (`/api/v2/enterprise`): 11 endpoints
   - Multi-location management
   - Executive dashboards
   - Performance matrix
-- **Organizations Router** (`/api/v1/organizations`): 13 endpoints
+- **Organizations Router** (`/api/v2/organizations`): 13 endpoints
   - Organization CRUD
   - User-organization relationships
   - Billing plan management
 
 ### 10. Automation & AI (45 endpoints)
-- **Agents Router** (`/api/v1/agents`): 21 endpoints
+- **Agents Router** (`/api/v2/agents`): 21 endpoints
   - AI agent management
   - Task automation
   - Agent permissions
-- **Recurring Appointments Router** (`/api/v1/recurring-appointments`): 24 endpoints
+- **Recurring Appointments Router** (`/api/v2/recurring-appointments`): 24 endpoints
   - Pattern-based scheduling
   - Series management
   - Blackout dates
 
 ### 11. Integration & Webhooks (30 endpoints)
-- **Integrations Router** (`/api/v1/integrations`): 11 endpoints
+- **Integrations Router** (`/api/v2/integrations`): 11 endpoints
   - Third-party service connections
   - OAuth flow management
   - Health monitoring
-- **Reviews Router** (`/api/v1/reviews`): 15 endpoints
+- **Reviews Router** (`/api/v2/reviews`): 15 endpoints
   - Google My Business integration
   - Review response automation
   - SEO-optimized templates
-- **Webhooks Router** (`/api/v1/webhooks`): 4 endpoints
+- **Webhooks Router** (`/api/v2/webhooks`): 4 endpoints
   - Stripe webhook handling
   - SMS webhook processing
 
 ### 12. Tracking & Attribution (22 endpoints)
-- **Tracking Router** (`/api/v1/tracking`): 16 endpoints
+- **Tracking Router** (`/api/v2/tracking`): 16 endpoints
   - Conversion tracking
   - Attribution modeling
   - UTM parameter handling
-- **Customer Pixels Router** (`/api/v1/customer-pixels`): 6 endpoints
+- **Customer Pixels Router** (`/api/v2/customer-pixels`): 6 endpoints
   - Facebook/Meta pixel management
   - Google Tag Manager integration
 
 ### 13. Administrative & Support (15 endpoints)
-- **Test Data Router** (`/api/v1/test-data`): 4 endpoints
+- **Test Data Router** (`/api/v2/test-data`): 4 endpoints
   - Test data generation
   - Demo environment setup
-- **Imports Router** (`/api/v1/imports`): 6 endpoints
+- **Imports Router** (`/api/v2/imports`): 6 endpoints
   - Bulk data import
   - CSV processing
-- **Trial Monitoring Router** (`/api/v1/trial-monitoring`): 5 endpoints
+- **Trial Monitoring Router** (`/api/v2/trial-monitoring`): 5 endpoints
   - Trial expiration tracking
   - Conversion monitoring
 
 ### 14. Public & Guest Access (9 endpoints)
-- **Public Booking Router** (`/api/v1/public-booking`): 4 endpoints
+- **Public Booking Router** (`/api/v2/public-booking`): 4 endpoints
   - Organization-specific booking pages
   - Public service listing
 - **Short URLs Router** (`/s`): 5 endpoints
@@ -196,7 +196,7 @@ The BookedBarber V2 backend provides a comprehensive REST API with **370+ endpoi
 - HTTP status codes follow REST conventions
 
 ### 5. API Versioning
-- All endpoints under `/api/v1/`
+- All endpoints under `/api/v2/`
 - Backward compatibility maintained
 - Deprecation notices for legacy endpoints
 

@@ -37,21 +37,21 @@ class MultiTenancyMiddleware:
         "/docs",
         "/redoc",
         "/openapi.json",
-        "/api/v1/auth/login",
-        "/api/v1/auth/register",
-        "/api/v1/auth/refresh",
-        "/api/v1/auth/forgot-password",
-        "/api/v1/auth/reset-password",
-        "/api/v1/health",
-        "/api/v1/webhooks",  # Webhooks need special handling
+        "/api/v2/auth/login",
+        "/api/v2/auth/register",
+        "/api/v2/auth/refresh",
+        "/api/v2/auth/forgot-password",
+        "/api/v2/auth/reset-password",
+        "/api/v2/health",
+        "/api/v2/webhooks",  # Webhooks need special handling
     }
     
     # Endpoints that require special handling
     ADMIN_ONLY_PATHS = {
-        "/api/v1/admin",
-        "/api/v1/locations/create",
-        "/api/v1/locations/update",
-        "/api/v1/locations/delete",
+        "/api/v2/admin",
+        "/api/v2/locations/create",
+        "/api/v2/locations/update",
+        "/api/v2/locations/delete",
     }
     
     async def __call__(self, scope, receive, send):

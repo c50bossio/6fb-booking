@@ -70,8 +70,8 @@ If tests fail:
 
 ```bash
 # Test today's slots
-curl 'http://localhost:8000/api/v1/bookings/slots?booking_date=2025-06-28'
+curl 'http://localhost:8000/api/v2/bookings/slots?booking_date=2025-06-28'
 
 # Test tomorrow's slots
-curl 'http://localhost:8000/api/v1/bookings/slots?booking_date=2025-06-29'
+curl 'http://localhost:8000/api/v2/bookings/slots?booking_date=2025-06-29'
 ```

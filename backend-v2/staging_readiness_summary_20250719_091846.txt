@@ -1,0 +1,20 @@
+BookedBarber V2 Staging Readiness Report
+Generated: 2025-07-19T09:18:46.318798
+==================================================
+
+Overall Score: 89.8/100
+Readiness Level: READY
+Message: All systems validated and ready for staging
+
+Summary:
+- Total Checks: 8
+- Passed: 5
+- Critical Failures: 0
+- Warnings: 3
+- Success Rate: 62.5%
+
+Warnings:
+- production_config: Production config: 50.0/100 - Issues: Production config test failed: name 'datetime' is not defined
+- agent_operations: Agent operations: 70.0/100 - Issues: Task creation failed: asyncio.run() cannot be called from a running event loop; Error handling integration test failed: asyncio.run() cannot be called from a running event loop
+- security_validation: Security measures: 56.0/100 - Issues: Exposed sensitive files: force_reset_password.py, demo_password_reset.py, reset_test_user_password.py, verify_password_reset_integration.py; Database file agent_errors.db is world-readable; Database file agent_auth.db is world-readable; Database file 6fb_booking.db is world-readable; Database file bookedbarber_production.db is world-readable; Database file agent_rate_limits.db is world-readable; Database file agent_metrics.db is world-readable; Sensitive data in logs: [(PosixPath('logs/agent_system.log'), 'secret')]; Hardcoded secrets in production_config.json
+

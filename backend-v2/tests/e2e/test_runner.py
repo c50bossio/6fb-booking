@@ -221,8 +221,8 @@ class E2ETestRunner:
             "user_type": "barber"
         }
         
-        response = await self.test_client.post("/api/v1/auth/register", json=register_data)
-        self.metrics.record_api_response("/api/v1/auth/register", time.time() - start_time)
+        response = await self.test_client.post("/api/v2/auth/register", json=register_data)
+        self.metrics.record_api_response("/api/v2/auth/register", time.time() - start_time)
         
         if response.status_code == 201:
             user_data = response.json()
@@ -230,13 +230,13 @@ class E2ETestRunner:
             
             # 2. Verify email (simulate)
             verify_response = await self.test_client.post(
-                f"/api/v1/auth/verify-email/{user_data['id']}",
+                f"/api/v2/auth/verify-email/{user_data['id']}",
                 json={"token": "test-verification-token"}
             )
             
             # 3. Login
             login_response = await self.test_client.post(
-                "/api/v1/auth/login",
+                "/api/v2/auth/login",
                 data={"username": register_data["email"], "password": register_data["password"]}
             )
             
@@ -263,15 +263,15 @@ class E2ETestRunner:
         start_time = time.time()
         
         # 1. Initiate OAuth flow
-        oauth_response = await self.test_client.get("/api/v1/auth/google/login")
-        self.metrics.record_api_response("/api/v1/auth/google/login", time.time() - start_time)
+        oauth_response = await self.test_client.get("/api/v2/auth/google/login")
+        self.metrics.record_api_response("/api/v2/auth/google/login", time.time() - start_time)
         
         if oauth_response.status_code == 200:
             oauth_data = oauth_response.json()
             
             # 2. Simulate OAuth callback with test code
             callback_response = await self.test_client.get(
-                "/api/v1/auth/google/callback",
+                "/api/v2/auth/google/callback",
                 params={"code": "test-oauth-code", "state": oauth_data.get('state')}
             )
             
@@ -299,7 +299,7 @@ class E2ETestRunner:
         
         # 1. Connect calendar (simulate)
         connect_response = await self.test_client.post(
-            "/api/v1/calendar/connect",
+            "/api/v2/calendar/connect",
             headers=headers,
             json={"auth_code": "test-calendar-auth-code"}
         )
@@ -307,7 +307,7 @@ class E2ETestRunner:
         if connect_response.status_code == 200:
             # 2. Test calendar sync
             sync_response = await self.test_client.post(
-                "/api/v1/calendar/sync",
+                "/api/v2/calendar/sync",
                 headers=headers
             )
             
@@ -320,7 +320,7 @@ class E2ETestRunner:
             }
             
             create_response = await self.test_client.post(
-                "/api/v1/calendar/events",
+                "/api/v2/calendar/events",
                 headers=headers,
                 json=event_data
             )
@@ -357,11 +357,11 @@ class E2ETestRunner:
         
         start_time = time.time()
         intent_response = await self.test_client.post(
-            "/api/v1/payments/create-intent",
+            "/api/v2/payments/create-intent",
             headers=headers,
             json=payment_data
         )
-        self.metrics.record_api_response("/api/v1/payments/create-intent", time.time() - start_time)
+        self.metrics.record_api_response("/api/v2/payments/create-intent", time.time() - start_time)
         
         if intent_response.status_code == 200:
             intent_data = intent_response.json()
@@ -373,7 +373,7 @@ class E2ETestRunner:
             }
             
             confirm_response = await self.test_client.post(
-                "/api/v1/payments/confirm",
+                "/api/v2/payments/confirm",
                 headers=headers,
                 json=confirm_data
             )
@@ -391,14 +391,14 @@ class E2ETestRunner:
             }
             
             webhook_response = await self.test_client.post(
-                "/api/v1/webhooks/stripe",
+                "/api/v2/webhooks/stripe",
                 json=webhook_data,
                 headers={"Stripe-Signature": "test-signature"}
             )
             
             # 4. Test refund
             refund_response = await self.test_client.post(
-                f"/api/v1/payments/{intent_data['id']}/refund",
+                f"/api/v2/payments/{intent_data['id']}/refund",
                 headers=headers,
                 json={"amount": 2500}  # Partial refund
             )
@@ -448,7 +448,7 @@ class E2ETestRunner:
         }
         
         email_response = await self.test_client.post(
-            "/api/v1/notifications/email",
+            "/api/v2/notifications/email",
             headers=headers,
             json=email_data
         )
@@ -460,14 +460,14 @@ class E2ETestRunner:
         }
         
         sms_response = await self.test_client.post(
-            "/api/v1/notifications/sms",
+            "/api/v2/notifications/sms",
             headers=headers,
             json=sms_data
         )
         
         # 3. Test notification preferences
         prefs_response = await self.test_client.put(
-            "/api/v1/users/me/notification-preferences",
+            "/api/v2/users/me/notification-preferences",
             headers=headers,
             json={
                 "email_enabled": True,
@@ -511,7 +511,7 @@ class E2ETestRunner:
         
         # 3. User searches for barbers
         search_response = await self.test_client.get(
-            "/api/v1/barbers/search",
+            "/api/v2/barbers/search",
             headers=headers,
             params={"location": "New York", "service": "haircut"}
         )
@@ -523,13 +523,13 @@ class E2ETestRunner:
             if barbers:
                 barber_id = barbers[0]['id']
                 profile_response = await self.test_client.get(
-                    f"/api/v1/barbers/{barber_id}",
+                    f"/api/v2/barbers/{barber_id}",
                     headers=headers
                 )
                 
                 # 5. User checks availability
                 availability_response = await self.test_client.get(
-                    f"/api/v1/barbers/{barber_id}/availability",
+                    f"/api/v2/barbers/{barber_id}/availability",
                     headers=headers,
                     params={"date": (datetime.now() + timedelta(days=1)).date().isoformat()}
                 )
@@ -546,7 +546,7 @@ class E2ETestRunner:
                         }
                         
                         booking_response = await self.test_client.post(
-                            "/api/v1/appointments",
+                            "/api/v2/appointments",
                             headers=headers,
                             json=booking_data
                         )
@@ -557,14 +557,14 @@ class E2ETestRunner:
                             
                             # 7. User pays for appointment
                             payment_response = await self.test_client.post(
-                                f"/api/v1/appointments/{appointment['id']}/pay",
+                                f"/api/v2/appointments/{appointment['id']}/pay",
                                 headers=headers,
                                 json={"payment_method": "pm_card_visa"}
                             )
                             
                             # 8. Simulate appointment completion
                             complete_response = await self.test_client.post(
-                                f"/api/v1/appointments/{appointment['id']}/complete",
+                                f"/api/v2/appointments/{appointment['id']}/complete",
                                 headers=headers
                             )
                             
@@ -603,12 +603,12 @@ class E2ETestRunner:
             "user_type": "shop_owner"
         }
         
-        register_response = await self.test_client.post("/api/v1/auth/register", json=owner_data)
+        register_response = await self.test_client.post("/api/v2/auth/register", json=owner_data)
         
         if register_response.status_code == 201:
             # Login
             login_response = await self.test_client.post(
-                "/api/v1/auth/login",
+                "/api/v2/auth/login",
                 data={"username": owner_data["email"], "password": owner_data["password"]}
             )
             
@@ -633,7 +633,7 @@ class E2ETestRunner:
             }
             
             business_response = await self.test_client.post(
-                "/api/v1/businesses",
+                "/api/v2/businesses",
                 headers=headers,
                 json=business_data
             )
@@ -643,7 +643,7 @@ class E2ETestRunner:
                 
                 # 3. Connect Google My Business (simulate)
                 gmb_response = await self.test_client.post(
-                    f"/api/v1/businesses/{business['id']}/gmb/connect",
+                    f"/api/v2/businesses/{business['id']}/gmb/connect",
                     headers=headers,
                     json={"auth_code": "test-gmb-auth-code"}
                 )
@@ -657,7 +657,7 @@ class E2ETestRunner:
                 
                 for service in services:
                     await self.test_client.post(
-                        f"/api/v1/businesses/{business['id']}/services",
+                        f"/api/v2/businesses/{business['id']}/services",
                         headers=headers,
                         json=service
                     )
@@ -670,14 +670,14 @@ class E2ETestRunner:
                 }
                 
                 barber_response = await self.test_client.post(
-                    f"/api/v1/businesses/{business['id']}/barbers",
+                    f"/api/v2/businesses/{business['id']}/barbers",
                     headers=headers,
                     json=barber_data
                 )
                 
                 # 6. Check analytics
                 analytics_response = await self.test_client.get(
-                    f"/api/v1/businesses/{business['id']}/analytics",
+                    f"/api/v2/businesses/{business['id']}/analytics",
                     headers=headers
                 )
                 
@@ -710,13 +710,13 @@ class E2ETestRunner:
         # 1. Test network timeout
         try:
             timeout_client = httpx.AsyncClient(base_url=self.base_url, timeout=0.001)
-            await timeout_client.get("/api/v1/health")
+            await timeout_client.get("/api/v2/health")
         except httpx.TimeoutException:
             errors_handled.append("network_timeout")
         
         # 2. Test invalid authentication
         invalid_response = await self.test_client.get(
-            "/api/v1/appointments",
+            "/api/v2/appointments",
             headers={"Authorization": "Bearer invalid-token"}
         )
         if invalid_response.status_code == 401:
@@ -726,7 +726,7 @@ class E2ETestRunner:
         rate_limit_hit = False
         for i in range(150):  # Exceed rate limit
             response = await self.test_client.post(
-                "/api/v1/auth/login",
+                "/api/v2/auth/login",
                 data={"username": "test@test.com", "password": "wrong"}
             )
             if response.status_code == 429:
@@ -736,7 +736,7 @@ class E2ETestRunner:
         
         # 4. Test invalid data
         invalid_data_response = await self.test_client.post(
-            "/api/v1/auth/register",
+            "/api/v2/auth/register",
             json={"email": "invalid-email", "password": "123"}  # Invalid format
         )
         if invalid_data_response.status_code == 422:
@@ -748,7 +748,7 @@ class E2ETestRunner:
             
             # Simulate Google API quota exceeded
             quota_response = await self.test_client.get(
-                "/api/v1/calendar/sync",
+                "/api/v2/calendar/sync",
                 headers={**headers, "X-Test-Scenario": "quota-exceeded"}
             )
             if quota_response.status_code in [429, 503]:
@@ -788,9 +788,9 @@ class E2ETestRunner:
         
         # Test endpoints under load
         endpoints = [
-            ("/api/v1/health", "GET"),
-            ("/api/v1/barbers/search?location=test", "GET"),
-            ("/api/v1/services", "GET")
+            ("/api/v2/health", "GET"),
+            ("/api/v2/barbers/search?location=test", "GET"),
+            ("/api/v2/services", "GET")
         ]
         
         load_results = {}
@@ -850,7 +850,7 @@ class E2ETestRunner:
         
         # 1. Test GMB OAuth initiation
         gmb_oauth_response = await self.test_client.get(
-            "/api/v1/integrations/gmb/auth",
+            "/api/v2/integrations/gmb/auth",
             headers=headers
         )
         
@@ -859,14 +859,14 @@ class E2ETestRunner:
             
             # 2. Simulate OAuth callback
             callback_response = await self.test_client.get(
-                "/api/v1/integrations/gmb/callback",
+                "/api/v2/integrations/gmb/callback",
                 headers=headers,
                 params={"code": "test-gmb-code", "state": oauth_data.get('state')}
             )
             
             # 3. Test location fetching
             locations_response = await self.test_client.get(
-                "/api/v1/integrations/gmb/locations",
+                "/api/v2/integrations/gmb/locations",
                 headers=headers
             )
             
@@ -875,7 +875,7 @@ class E2ETestRunner:
                 locations = locations_response.json()
                 if locations:
                     reviews_response = await self.test_client.get(
-                        f"/api/v1/integrations/gmb/locations/{locations[0]['id']}/reviews",
+                        f"/api/v2/integrations/gmb/locations/{locations[0]['id']}/reviews",
                         headers=headers
                     )
                     
@@ -889,7 +889,7 @@ class E2ETestRunner:
                             }
                             
                             reply_response = await self.test_client.post(
-                                "/api/v1/integrations/gmb/reviews/respond",
+                                "/api/v2/integrations/gmb/reviews/respond",
                                 headers=headers,
                                 json=response_data
                             )

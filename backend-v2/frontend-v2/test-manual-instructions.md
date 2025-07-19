@@ -36,4 +36,4 @@
 ## Debugging Tips
 - If drag doesn't start, check if appointment has `draggable="true"` attribute
 - If drop doesn't work, check if preventDefault is being called
-- Check Network tab for API calls to `/api/v1/appointments/{id}/reschedule`
+- Check Network tab for API calls to `/api/v2/appointments/{id}/reschedule`

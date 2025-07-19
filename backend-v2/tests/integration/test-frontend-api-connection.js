@@ -20,7 +20,7 @@ async function testFrontendAPIConnection() {
         
         // Test CORS headers (what frontend would encounter)
         console.log('2. Testing CORS configuration...');
-        const corsResponse = await axios.get(`${API_BASE_URL}/api/v1/appointments`, {
+        const corsResponse = await axios.get(`${API_BASE_URL}/api/v2/appointments`, {
             headers: {
                 'Origin': 'http://localhost:3002',
                 'Referer': 'http://localhost:3002'
@@ -36,10 +36,10 @@ async function testFrontendAPIConnection() {
         // Test API endpoints that frontend would use
         console.log('3. Testing key API endpoints...');
         const endpoints = [
-            '/api/v1/analytics/dashboard',
-            '/api/v1/appointments',
-            '/api/v1/users/me',
-            '/api/v1/integrations/status'
+            '/api/v2/analytics/dashboard',
+            '/api/v2/appointments',
+            '/api/v2/users/me',
+            '/api/v2/integrations/status'
         ];
         
         for (const endpoint of endpoints) {

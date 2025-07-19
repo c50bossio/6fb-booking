@@ -9,10 +9,10 @@ def test_api_connectivity():
     print("Testing API connectivity...")
     
     endpoints = [
-        "http://localhost:8000/api/v1/health",
+        "http://localhost:8000/api/v2/health",
         "http://localhost:8000/docs",
         "http://localhost:8000/",
-        "http://localhost:8000/api/v1/",
+        "http://localhost:8000/api/v2/",
     ]
     
     for endpoint in endpoints:

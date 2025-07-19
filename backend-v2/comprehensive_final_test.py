@@ -58,32 +58,32 @@ def main():
     api_endpoints = [
         # Core endpoints
         "/",
-        "/api/v1/health",
+        "/api/v2/health",
         
         # Authentication endpoints  
-        "/api/v1/auth/check",
+        "/api/v2/auth/check",
         
         # Analytics endpoints (recently fixed)
-        "/api/v1/analytics/dashboard-stats",
-        "/api/v1/analytics/revenue",
-        "/api/v1/analytics/bookings",
-        "/api/v1/analytics/client-stats",
+        "/api/v2/analytics/dashboard-stats",
+        "/api/v2/analytics/revenue",
+        "/api/v2/analytics/bookings",
+        "/api/v2/analytics/client-stats",
         
         # Financial analytics (new page)
-        "/api/v1/analytics/financial",
-        "/api/v1/analytics/commission-summary",
+        "/api/v2/analytics/financial",
+        "/api/v2/analytics/commission-summary",
         
         # User management
-        "/api/v1/users/me",
+        "/api/v2/users/me",
         
         # Appointment management
-        "/api/v1/appointments",
+        "/api/v2/appointments",
         
         # Commission management
-        "/api/v1/commissions",
+        "/api/v2/commissions",
         
         # Client management
-        "/api/v1/clients"
+        "/api/v2/clients"
     ]
     
     for endpoint in api_endpoints:

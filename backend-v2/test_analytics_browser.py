@@ -52,7 +52,7 @@ def test_analytics_with_auth():
     }
     
     try:
-        login_response = requests.post(f"{base_url}/api/v1/auth/login", json=login_data)
+        login_response = requests.post(f"{base_url}/api/v2/auth/login", json=login_data)
         print(f"Login response: {login_response.status_code}")
         
         if login_response.status_code != 200:
@@ -66,13 +66,13 @@ def test_analytics_with_auth():
         
         # Test specific endpoints that commonly cause 500 errors
         test_endpoints = [
-            ("/api/v1/analytics/dashboard", "Dashboard Analytics"),
-            ("/api/v1/analytics/revenue", "Revenue Analytics"),
-            ("/api/v1/analytics/appointments", "Appointment Analytics"),
-            ("/api/v1/analytics/six-figure-barber", "Six Figure Barber"),
-            ("/api/v1/analytics/client-retention", "Client Retention"),
-            ("/api/v1/analytics/barber-performance", "Barber Performance"),
-            ("/api/v1/analytics/insights", "Business Insights")
+            ("/api/v2/analytics/dashboard", "Dashboard Analytics"),
+            ("/api/v2/analytics/revenue", "Revenue Analytics"),
+            ("/api/v2/analytics/appointments", "Appointment Analytics"),
+            ("/api/v2/analytics/six-figure-barber", "Six Figure Barber"),
+            ("/api/v2/analytics/client-retention", "Client Retention"),
+            ("/api/v2/analytics/barber-performance", "Barber Performance"),
+            ("/api/v2/analytics/insights", "Business Insights")
         ]
         
         for endpoint, name in test_endpoints:
