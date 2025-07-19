@@ -18,6 +18,7 @@ const CalendarAnalyticsSidebar = lazy(() => import('@/components/calendar/Calend
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import TimePickerModal from '@/components/modals/TimePickerModal'
 import RescheduleModal from '@/components/modals/RescheduleModal'
+import { TimeSlotContextMenu } from '@/components/calendar/TimeSlotContextMenu'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -91,6 +92,17 @@ export default function CalendarPage() {
   const [showHeatmap, setShowHeatmap] = useState(false)
   const [revenueCollapsed, setRevenueCollapsed] = useState(false)
   const [showAnalytics, setShowAnalytics] = useState(false)
+  
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<{
+    isOpen: boolean
+    position: { x: number; y: number }
+    timeSlot: { date: Date; hour: number; minute: number }
+  }>({
+    isOpen: false,
+    position: { x: 0, y: 0 },
+    timeSlot: { date: new Date(), hour: 0, minute: 0 }
+  })
 
   // Enhanced API integration with optimistic updates
   const {
@@ -627,6 +639,63 @@ export default function CalendarPage() {
     }
   }
 
+  // Context menu handler functions
+  const handleContextMenuClose = () => {
+    setContextMenu(prev => ({ ...prev, isOpen: false }))
+  }
+
+  const handleBlockSlot = async (date: Date, hour: number, minute: number) => {
+    try {
+      const blockDate = new Date(date)
+      blockDate.setHours(hour, minute, 0, 0)
+      
+      const endTime = new Date(blockDate)
+      endTime.setMinutes(endTime.getMinutes() + 30) // Default 30-minute block
+      
+      const blackoutData = {
+        blackout_date: format(blockDate, 'yyyy-MM-dd'),
+        start_time: format(blockDate, 'HH:mm'),
+        end_time: format(endTime, 'HH:mm'),
+        blackout_type: 'partial_day',
+        reason: 'Manually blocked slot',
+        description: `Blocked via calendar context menu on ${format(blockDate, 'PPpp')}`,
+        is_recurring: false,
+        allow_emergency_bookings: false,
+        affects_existing_appointments: false,
+        auto_reschedule: false
+      }
+      
+      // Make API call to create blackout
+      const response = await fetch('/api/v2/blackouts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(blackoutData)
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to block slot: ${response.statusText}`)
+      }
+      
+      toastSuccess('Slot Blocked', `Time slot ${format(blockDate, 'h:mm a')} has been blocked`)
+      
+      // Refresh calendar to show the blocked slot
+      await refreshOptimistic(() => getMyBookings())
+      
+    } catch (error) {
+      console.error('Failed to block slot:', error)
+      toastError('Block Failed', 'Failed to block time slot. Please try again.')
+    }
+  }
+
+  const handleContextMenuCreateAppointment = (date: Date) => {
+    setSelectedDate(date)
+    setPreselectedTime(format(date, 'HH:mm'))
+    setShowCreateModal(true)
+  }
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -714,39 +783,6 @@ export default function CalendarPage() {
         </div>
         
         <div className="order-2 lg:order-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-          {/* View Mode Switcher - Mobile Optimized */}
-          <div className="calendar-view-switcher flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-full sm:w-auto">
-            <button
-              onClick={() => setViewMode('day')}
-              className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
-                viewMode === 'day' 
-                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Day
-            </button>
-            <button
-              onClick={() => setViewMode('week')}
-              className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
-                viewMode === 'week' 
-                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Week
-            </button>
-            <button
-              onClick={() => setViewMode('month')}
-              className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
-                viewMode === 'month' 
-                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Month
-            </button>
-          </div>
           
           {/* Action Buttons - Mobile Optimized */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
@@ -911,6 +947,36 @@ export default function CalendarPage() {
                   setSelectedDate(date)
                   setPreselectedTime(format(date, 'HH:mm'))
                   setShowCreateModal(true)
+                }}
+                onTimeSlotContextMenu={(date, event) => {
+                  // Calculate position adjustments to prevent menu from going off-screen
+                  const menuWidth = 192 // min-w-48 = 12rem = 192px
+                  const menuHeight = 120 // approximate height
+                  const viewportWidth = window.innerWidth
+                  const viewportHeight = window.innerHeight
+                  
+                  let x = event.clientX
+                  let y = event.clientY
+                  
+                  // Adjust if menu would go off right edge
+                  if (x + menuWidth > viewportWidth) {
+                    x = viewportWidth - menuWidth - 10
+                  }
+                  
+                  // Adjust if menu would go off bottom edge
+                  if (y + menuHeight > viewportHeight) {
+                    y = viewportHeight - menuHeight - 10
+                  }
+                  
+                  setContextMenu({
+                    isOpen: true,
+                    position: { x, y },
+                    timeSlot: {
+                      date: date,
+                      hour: date.getHours(),
+                      minute: date.getMinutes()
+                    }
+                  })
                 }}
                 onAppointmentUpdate={handleAppointmentUpdate}
                 onDayClick={(date) => {
@@ -1154,6 +1220,16 @@ export default function CalendarPage() {
           position="right"
         />
       </Suspense>
+
+      {/* Time Slot Context Menu */}
+      <TimeSlotContextMenu
+        isOpen={contextMenu.isOpen}
+        position={contextMenu.position}
+        timeSlot={contextMenu.timeSlot}
+        onClose={handleContextMenuClose}
+        onBlockSlot={handleBlockSlot}
+        onCreateAppointment={handleContextMenuCreateAppointment}
+      />
       
       </div>
     </ErrorBoundary>

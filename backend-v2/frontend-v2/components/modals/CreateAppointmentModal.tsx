@@ -16,6 +16,7 @@ import {
   getBarbers,
   getAvailableSlots,
   appointmentsAPI,
+  createRecurringPattern,
   type Client,
   type Service,
   type User,
@@ -363,22 +364,42 @@ export default function CreateAppointmentModal({
       setLoading(true)
       setError(null)
 
-      {
-        // Use standardized appointment API that matches backend schema
-        const appointmentData: AppointmentCreate = {
-          date: formatDateForAPI(selectedDate),
-          time: selectedTime,
-          service: selectedService.name,
-          notes: notes || undefined,
-          barber_id: selectedBarber?.id
-        }
+      // Use standardized appointment API that matches backend schema
+      const appointmentData: AppointmentCreate = {
+        date: formatDateForAPI(selectedDate),
+        time: selectedTime,
+        service: selectedService.name,
+        notes: notes || undefined,
+        barber_id: selectedBarber?.id
+      }
 
-        const result = await appointmentsAPI.create(appointmentData)
-        }
+      const result = await appointmentsAPI.create(appointmentData)
 
-      // TODO: If recurring, create recurring pattern
+      // Create recurring pattern if enabled
       if (isRecurring) {
-        // This would call a recurring appointments API
+        try {
+          const recurringData: import('@/lib/api').RecurringPatternCreate = {
+            pattern_type: recurringPattern,
+            preferred_time: time.format('HH:mm'),
+            duration_minutes: selectedService?.duration || 30,
+            start_date: selectedDate.toISOString().split('T')[0],
+            end_date: undefined, // Could add UI for end date later
+            occurrences: 10, // Default to 10 occurrences, could make this configurable
+            days_of_week: recurringPattern === 'weekly' || recurringPattern === 'biweekly' ? 
+              [selectedDate.getDay()] : undefined,
+            barber_id: selectedBarber?.id,
+            service_id: selectedService?.id
+          }
+          
+          const pattern = await createRecurringPattern(recurringData)
+          
+          // Optional: Generate appointments from the pattern
+          // await generateAppointmentsFromPattern(pattern.id, { count: 5 })
+          
+        } catch (error) {
+          // Don't fail the whole operation if recurring creation fails
+          // The user still gets their single appointment
+        }
       }
 
       onSuccess?.()

@@ -68,6 +68,7 @@ interface UnifiedCalendarProps {
   onAppointmentClick?: (appointment: Appointment) => void
   onClientClick?: (client: any) => void
   onTimeSlotClick?: (date: Date, barberId?: number) => void
+  onTimeSlotContextMenu?: (date: Date, event: React.MouseEvent, barberId?: number) => void
   onAppointmentUpdate?: (appointmentId: number, newStartTime: string, isDragDrop?: boolean) => void
   onDayClick?: (date: Date) => void
   onDayDoubleClick?: (date: Date) => void
@@ -99,6 +100,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
   onAppointmentClick,
   onClientClick,
   onTimeSlotClick,
+  onTimeSlotContextMenu,
   onAppointmentUpdate,
   onDayClick,
   onDayDoubleClick,
@@ -411,6 +413,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
       optimisticUpdates: state.optimisticUpdates,
       selectedAppointmentId: state.selectedAppointmentId,
       onTimeSlotClick,
+      onTimeSlotContextMenu,
       onAppointmentClick,
       onAppointmentUpdate,
       onDragOver: dragHandlers.handleDragOver,
@@ -475,6 +478,8 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
         }}
         onRefresh={onRefresh}
         isLoading={isLoading}
+        onViewChange={onViewChange}
+        showViewSwitcher={true}
       />
       
       {/* View content with loading manager */}

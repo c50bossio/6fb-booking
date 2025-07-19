@@ -292,12 +292,17 @@ export class CalendarOptimisticManager {
 
     const originalAppointments = [...this.currentState.appointments]
 
+    // Convert ISO datetime to date/time format expected by backend
+    const startDate = new Date(newStartTime)
+    const date = startDate.toISOString().split('T')[0]  // YYYY-MM-DD
+    const time = startDate.toTimeString().split(' ')[0].substring(0, 5)  // HH:MM
+
     return requestDeduplicationManager.executeRequest<BookingResponse>(
       {
         key: `reschedule-appointment-${appointmentId}`,
         endpoint: `/appointments/${appointmentId}/reschedule`,
         method: 'POST',
-        data: { start_time: newStartTime, end_time: newEndTime },
+        data: { date, time },
         optimistic: true
       },
       apiCall,
