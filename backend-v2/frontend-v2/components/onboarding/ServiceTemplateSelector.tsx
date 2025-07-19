@@ -114,7 +114,6 @@ export const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = (
       setTemplates(fetchedTemplates)
       setFilteredTemplates(fetchedTemplates)
     } catch (err) {
-      console.error('Error fetching templates:', err)
       setError('Failed to load service templates. Please try again.')
     } finally {
       setLoading(false)
@@ -127,8 +126,7 @@ export const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = (
       const summary = await getSixFBTierSummary()
       setTierSummary(summary)
     } catch (err) {
-      console.error('Error fetching tier summary:', err)
-    }
+      }
   }, [])
 
   // Initial load
@@ -196,8 +194,7 @@ export const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = (
       await onApply([template])
       setPreviewTemplate(null)
     } catch (err) {
-      console.error('Error applying template:', err)
-    } finally {
+      } finally {
       setApplyingTemplate(null)
     }
   }

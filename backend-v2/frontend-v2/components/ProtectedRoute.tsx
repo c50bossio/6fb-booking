@@ -28,7 +28,6 @@ export function ProtectedRoute({ children, user, loading }: ProtectedRouteProps)
     const permission = hasRoutePermission(pathname, user, isPublicRoute)
 
     if (!permission.allowed && permission.redirectTo) {
-      console.log(`Access denied to ${pathname}: ${permission.reason}`)
       setRedirecting(true)
       
       // Add a small delay to prevent flash

@@ -96,19 +96,15 @@ function DashboardContent() {
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        console.log('Dashboard: Fetching user profile...')
         // Check authentication first
         const userData = await getProfile()
-        console.log('Dashboard: User data received:', userData)
         if (!userData) {
-          console.log('Dashboard: No user data, will redirect to login')
           return
         }
         setUser(userData)
         
         // Check if user needs onboarding
         if (!userData.onboarding_completed && userData.is_new_user !== false) {
-          console.log('Dashboard: Redirecting new user to welcome page')
           router.push('/dashboard/welcome')
           return
         }
@@ -158,14 +154,12 @@ function DashboardContent() {
         }
 
         try {
-          console.log(`Dashboard: Batching ${dashboardRequests.length} requests...`)
           const results = await batchDashboardData(dashboardRequests)
           
           // Process bookings data
           if (results[0]) {
             setBookings(results[0].bookings || [])
           } else {
-            console.warn('Failed to load bookings from batch')
             setBookings([])
           }
 
@@ -175,7 +169,6 @@ function DashboardContent() {
             if (results[1]) {
               setClientMetrics(results[1])
             } else {
-              console.warn('Failed to load client metrics from batch')
               setClientMetrics(null)
             }
 
@@ -183,18 +176,15 @@ function DashboardContent() {
             if (results[2]) {
               setAnalytics(results[2])
             } else {
-              console.warn('Failed to load analytics from batch')
               setAnalytics(null)
             }
           }
         } catch (batchError) {
-          console.error('Dashboard: Batch request failed:', batchError)
           // Fallback to individual requests
           try {
             const bookingsData = await getMyBookings()
             setBookings(bookingsData.bookings || [])
           } catch (bookingError) {
-            console.warn('Failed to load bookings:', bookingError)
             setBookings([])
           }
 
@@ -207,21 +197,17 @@ function DashboardContent() {
             if (metricsResult.status === 'fulfilled') {
               setClientMetrics(metricsResult.value)
             } else {
-              console.warn('Failed to load client metrics:', metricsResult.reason)
               setClientMetrics(null)
             }
             
             if (analyticsResult.status === 'fulfilled') {
               setAnalytics(analyticsResult.value)
             } else {
-              console.warn('Failed to load analytics:', analyticsResult.reason)
               setAnalytics(null)
             }
           }
         }
       } catch (error) {
-        console.error('Dashboard: Failed to load data:', error)
-        
         // Use centralized auth error handling
         if (handleAuthError(error, router)) {
           // Auth error handled, clear state and let redirect happen
@@ -254,11 +240,8 @@ function DashboardContent() {
   useEffect(() => {
     // Check if we have a token in localStorage
     const token = localStorage.getItem('token')
-    console.log('Dashboard: Checking auth - token exists:', !!token, 'loading:', loading, 'user:', !!user)
-    
     if (!loading && !user && !token) {
       // Only redirect if we truly have no authentication
-      console.log('Dashboard: No token and no user, redirecting to login')
       const redirectTimer = setTimeout(() => {
         router.push('/login')
       }, 500) // Increased delay to allow for profile fetch
@@ -464,7 +447,7 @@ function DashboardContent() {
               user_type: user.user_type || user.role || 'barber'
             }}
             onUpgrade={() => router.push('/billing/plans')}
-            onDismiss={(warningId) => console.log('Dismissed warning:', warningId)}
+            onDismiss={(warningId) => }
           />
         )}
 

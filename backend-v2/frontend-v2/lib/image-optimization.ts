@@ -119,7 +119,6 @@ export class ImageOptimizer {
       
       return canvas.toDataURL('image/jpeg', quality / 100)
     } catch (error) {
-      console.warn('Failed to generate blur placeholder:', error)
       return ImageOptimizer.generatePlaceholder(
         imageConfig.placeholder.size.width,
         imageConfig.placeholder.size.height
@@ -293,10 +292,7 @@ export class ImagePerformanceMonitor {
         if (lastEntry.entryType === 'largest-contentful-paint') {
           const element = (lastEntry as any).element
           if (element && element.tagName === 'IMG') {
-            console.log('🖼️ LCP Image:', {
-              src: element.src,
-              loadTime: lastEntry.startTime,
-              size: (lastEntry as any).size,
+            .size,
             })
             callback?.(lastEntry)
           }
@@ -306,8 +302,7 @@ export class ImagePerformanceMonitor {
       observer.observe({ entryTypes: ['largest-contentful-paint'] })
       this.observers.set('lcp', observer)
     } catch (error) {
-      console.warn('LCP monitoring not supported:', error)
-    }
+      }
   }
 
   /**
@@ -320,10 +315,7 @@ export class ImagePerformanceMonitor {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
           if ((entry as any).initiatorType === 'img') {
-            console.log('🖼️ Image loaded:', {
-              src: entry.name,
-              duration: entry.duration,
-              transferSize: (entry as any).transferSize,
+            .transferSize,
               encodedBodySize: (entry as any).encodedBodySize,
             })
           }
@@ -333,8 +325,7 @@ export class ImagePerformanceMonitor {
       observer.observe({ entryTypes: ['resource'] })
       this.observers.set('images', observer)
     } catch (error) {
-      console.warn('Image loading monitoring not supported:', error)
-    }
+      }
   }
 
   /**

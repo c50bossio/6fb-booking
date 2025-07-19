@@ -94,7 +94,6 @@ export default function TestDataPage() {
       const data = await fetchAPI('/api/v1/test-data/status')
       setStatus(data)
     } catch (error) {
-      console.error('Failed to fetch test data status:', error)
       toast({
         title: 'Error',
         description: 'Failed to load test data status',
@@ -124,7 +123,6 @@ export default function TestDataPage() {
       })
       await fetchTestDataStatus()
     } catch (error) {
-      console.error('Failed to create test data:', error)
       toast({
         title: 'Error',
         description: 'Failed to create test data',
@@ -151,7 +149,6 @@ export default function TestDataPage() {
       })
       await fetchTestDataStatus()
     } catch (error) {
-      console.error('Failed to delete test data:', error)
       toast({
         title: 'Error',
         description: 'Failed to delete test data',
@@ -181,7 +178,6 @@ export default function TestDataPage() {
       })
       await fetchTestDataStatus()
     } catch (error) {
-      console.error('Failed to refresh test data:', error)
       toast({
         title: 'Error',
         description: 'Failed to refresh test data',

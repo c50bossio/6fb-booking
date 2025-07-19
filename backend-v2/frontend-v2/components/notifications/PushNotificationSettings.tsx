@@ -84,8 +84,7 @@ export function PushNotificationSettings() {
         }
       }
     } catch (error) {
-      console.error('Failed to check notification status:', error)
-    } finally {
+      } finally {
       setIsLoading(false)
     }
   }

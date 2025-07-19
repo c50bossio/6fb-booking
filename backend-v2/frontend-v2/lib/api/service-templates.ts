@@ -42,7 +42,6 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}): Promise<an
     
     return await response.json()
   } catch (error) {
-    console.error(`API Error [${endpoint}]:`, error)
     throw error
   }
 }

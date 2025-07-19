@@ -27,7 +27,6 @@ const allIncludedFeatures = [
   'Data export tools'
 ]
 
-
 export default function PricingPlansPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
@@ -50,12 +49,10 @@ export default function PricingPlansPage() {
             setSelectedChairs(trialData.chairs_count)
             setSelectedMonthlyTotal(trialData.monthly_cost)
           } catch (trialError) {
-            console.warn('Failed to fetch trial status:', trialError)
             // Continue without trial data
           }
         }
       } catch (error) {
-        console.error('Failed to fetch user profile:', error)
         router.push('/login')
       } finally {
         setLoading(false)

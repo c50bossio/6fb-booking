@@ -92,8 +92,7 @@ class GA4Analytics {
     this.logEvents = this.debugMode || process.env.NEXT_PUBLIC_GA4_LOG_EVENTS === 'true'
 
     if (this.debugMode) {
-      console.log('GA4Analytics initialized with config:', this.config)
-    }
+      }
   }
 
   /**
@@ -106,13 +105,11 @@ class GA4Analytics {
 
     // Check if measurement ID is provided
     if (!this.config.measurementId) {
-      console.warn('GA4 Measurement ID not provided. Analytics tracking disabled.')
       return
     }
 
     // Check Do Not Track
     if (this.config.respectDnt && this.isDntEnabled()) {
-      console.log('Do Not Track enabled. Analytics tracking disabled.')
       return
     }
 
@@ -141,12 +138,10 @@ class GA4Analytics {
       this.processEventQueue()
 
       if (this.debugMode) {
-        console.log('GA4Analytics successfully initialized')
-      }
+        }
 
     } catch (error) {
-      console.error('Failed to initialize GA4Analytics:', error)
-    }
+      }
   }
 
   /**
@@ -228,8 +223,7 @@ class GA4Analytics {
       })
 
       if (this.debugMode) {
-        console.log('GA4 consent updated:', consent)
-      }
+        }
     }
   }
 
@@ -681,7 +675,6 @@ class GA4Analytics {
     if (!this.shouldTrack()) return
 
     if (!this.validateEventName(eventName)) {
-      console.warn(`Invalid GA4 event name: ${eventName}`)
       return
     }
 
@@ -784,8 +777,7 @@ class GA4Analytics {
    */
   private logEvent(eventName: string, parameters: Record<string, any>): void {
     if (this.logEvents) {
-      console.log(`🔍 GA4 Event: ${eventName}`, parameters)
-    }
+      }
   }
 
   /**
@@ -831,7 +823,6 @@ export function autoInitializeAnalytics(): GA4Analytics | null {
   const measurementId = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID
 
   if (!measurementId) {
-    console.warn('NEXT_PUBLIC_GA4_MEASUREMENT_ID not found. GA4 analytics disabled.')
     return null
   }
 
@@ -852,8 +843,7 @@ export function autoInitializeAnalytics(): GA4Analytics | null {
     try {
       config.customDimensions = JSON.parse(customDimensionsStr)
     } catch (error) {
-      console.warn('Failed to parse NEXT_PUBLIC_GA4_CUSTOM_DIMENSIONS:', error)
-    }
+      }
   }
 
   return initializeAnalytics(config)

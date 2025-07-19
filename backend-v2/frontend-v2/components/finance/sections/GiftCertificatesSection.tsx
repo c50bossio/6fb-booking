@@ -61,8 +61,7 @@ export default function GiftCertificatesSection({ userRole }: GiftCertificatesSe
         ]
         setCertificates(mockData)
       } catch (error) {
-        console.error('Error fetching gift certificates:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }

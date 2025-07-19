@@ -70,7 +70,6 @@ export default function SocialAuthCallbackPage({
         }, 1500)
       }
     } catch (err: any) {
-      console.error('OAuth callback error:', err)
       setStatus('error')
       setError(err.message || 'Failed to complete authentication')
     }

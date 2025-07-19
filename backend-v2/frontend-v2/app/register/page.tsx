@@ -20,10 +20,7 @@ export default function RegisterPage() {
   
   // Debug: Log when component mounts
   React.useEffect(() => {
-    console.log('[RegisterPage] Component mounted successfully')
-    console.log('[RegisterPage] handleComplete function exists:', !!handleComplete)
-    console.log('[RegisterPage] handleCancel function exists:', !!handleCancel)
-  }, [])
+    }, [])
 
   const handleComplete = async (data: RegistrationData) => {
     setLoading(true)
@@ -69,8 +66,6 @@ export default function RegisterPage() {
       // Apply service templates if any were selected
       if (data.serviceTemplates && data.serviceTemplates.length > 0) {
         try {
-          console.log('[RegisterPage] Applying service templates:', data.serviceTemplates)
-          
           // Apply each template
           for (const template of data.serviceTemplates) {
             await applyServiceTemplate({
@@ -84,9 +79,7 @@ export default function RegisterPage() {
             })
           }
           
-          console.log('[RegisterPage] Service templates applied successfully')
-        } catch (templateError) {
-          console.error('[RegisterPage] Error applying service templates:', templateError)
+          } catch (templateError) {
           // Don't fail registration if template application fails
           // Templates can be applied later from the dashboard
         }
@@ -107,9 +100,7 @@ export default function RegisterPage() {
       // Also show toast with enhanced error
       toast(formatErrorForToast(enhancedError))
       
-      console.error('Registration failed:', err)
-      console.error('Enhanced registration error:', enhancedError)
-    } finally {
+      } finally {
       setLoading(false)
     }
   }

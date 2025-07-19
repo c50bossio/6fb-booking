@@ -52,7 +52,6 @@ export default function WelcomePage() {
           setCompletedSteps(userData.onboarding_status.completed_steps)
         }
       } catch (error) {
-        console.error('Failed to fetch user data:', error)
         router.push('/login')
       } finally {
         setLoading(false)
@@ -122,8 +121,7 @@ export default function WelcomePage() {
         current_step: currentStep + 1
       })
     } catch (error) {
-      console.error('Failed to update onboarding status:', error)
-    }
+      }
   }
 
   const handleSkipOnboarding = async () => {
@@ -138,7 +136,6 @@ export default function WelcomePage() {
       
       router.push('/dashboard')
     } catch (error) {
-      console.error('Failed to skip onboarding:', error)
       setError('Failed to skip onboarding. Please try again or contact support if the problem persists.')
     } finally {
       setSkipping(false)

@@ -61,7 +61,6 @@ export async function generateQRCodeDataUrl(
       return await QRCode.toDataURL(text, qrOptions);
     }
   } catch (error) {
-    console.error('Failed to generate QR code:', error);
     throw new Error('Failed to generate QR code');
   }
 }
@@ -87,7 +86,6 @@ export async function generateQRCodeForDownload(
       size,
     };
   } catch (error) {
-    console.error('Failed to generate QR code for download:', error);
     throw new Error('Failed to generate QR code for download');
   }
 }
@@ -107,7 +105,6 @@ export function downloadQRCode(
     link.click();
     document.body.removeChild(link);
   } catch (error) {
-    console.error('Failed to download QR code:', error);
     throw new Error('Failed to download QR code');
   }
 }

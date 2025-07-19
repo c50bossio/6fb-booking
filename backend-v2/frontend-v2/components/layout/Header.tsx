@@ -78,7 +78,6 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
       await logout()
       router.push('/login')
     } catch (error) {
-      console.error('Logout failed:', error)
       // Force redirect even if logout API fails
       router.push('/login')
     }
@@ -159,7 +158,6 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
     navigator.clipboard.writeText(text)
     // You could show a toast notification here
   }
-
 
   return (
     <header className={`
@@ -400,7 +398,6 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
               </Portal>
             )}
           </div>
-
 
           {/* User Menu */}
           <div className="relative" ref={userMenuRef}>

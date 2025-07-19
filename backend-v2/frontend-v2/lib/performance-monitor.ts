@@ -57,7 +57,7 @@ class ProductionPerformanceMonitor {
 
     // Alert on slow renders
     if (time > this.config.renderThreshold && this.config.enableLogging) {
-      console.warn(`🐌 Slow render detected: ${component} took ${time.toFixed(2)}ms`);
+      }ms`);
     }
   }
 
@@ -67,7 +67,7 @@ class ProductionPerformanceMonitor {
       const usageInMB = memInfo.usedJSHeapSize / 1024 / 1024;
       
       if (usageInMB > this.config.memoryThreshold && this.config.enableLogging) {
-        console.warn(`🧠 High memory usage: ${usageInMB.toFixed(2)}MB`);
+        }MB`);
       }
       
       return usageInMB;
@@ -125,11 +125,10 @@ class ProductionPerformanceMonitor {
       
       if (this.config.enableLogging) {
         console.group('📊 Performance Report');
-        console.log('⏱️ Render Performance:', report.metrics.renderTimes.slice(0, 5));
-        console.log('🧠 Memory Usage:', `${report.metrics.memoryUsage.toFixed(2)}MB`);
+        );
+        }MB`);
         if (report.recommendations.length > 0) {
-          console.log('💡 Recommendations:', report.recommendations);
-        }
+          }
         console.groupEnd();
       }
 

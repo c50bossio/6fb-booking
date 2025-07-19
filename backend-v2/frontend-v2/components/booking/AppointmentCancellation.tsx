@@ -19,9 +19,11 @@ import {
   X,
   RefreshCw,
   Users,
-  Info
+  Info,
+  Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface Appointment {
   id: number;
@@ -224,7 +226,41 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className={cn(
+      "max-w-2xl mx-auto space-y-6 relative",
+      loading && "pointer-events-none"
+    )}>
+      {/* Loading Overlay */}
+      {loading && step !== 'complete' && (
+        <div className="fixed inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center space-y-4 p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+            <div className="relative">
+              <div className="absolute inset-0 bg-red-500/20 rounded-full blur-xl animate-pulse" />
+              <Loader2 className="w-12 h-12 text-red-600 dark:text-red-400 relative animate-spin" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                {step === 'preview' ? 'Processing Cancellation...' : 'Confirming Cancellation...'}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Please wait while we {step === 'preview' ? 'calculate your refund' : 'cancel your appointment'}
+              </p>
+            </div>
+            {step === 'confirm' && (
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Cancellation policy verified</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
+                  <span>Processing refund...</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* Appointment Details */}
       <Card>
         <CardHeader>
@@ -354,11 +390,14 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <RadioGroup value={selectedReason} onValueChange={setSelectedReason}>
+            <RadioGroup value={selectedReason} onValueChange={setSelectedReason} disabled={loading}>
               {cancellationReasons.map((reason) => (
                 <div key={reason.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={reason.value} id={reason.value} />
-                  <Label htmlFor={reason.value} className="cursor-pointer">
+                  <RadioGroupItem value={reason.value} id={reason.value} disabled={loading} />
+                  <Label htmlFor={reason.value} className={cn(
+                    "cursor-pointer",
+                    loading && "cursor-not-allowed opacity-50"
+                  )}>
                     <div>
                       <div className="font-medium">{reason.label}</div>
                       <div className="text-sm text-gray-600">{reason.description}</div>
@@ -374,6 +413,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
                   id="emergency" 
                   checked={isEmergency}
                   onCheckedChange={setIsEmergency}
+                  disabled={loading}
                 />
                 <Label htmlFor="emergency" className="text-sm">
                   This is a genuine emergency (may qualify for additional refund)
@@ -389,6 +429,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
                 onChange={(e) => setReasonDetails(e.target.value)}
                 placeholder="Please provide any additional information..."
                 rows={3}
+                disabled={loading}
               />
             </div>
 
@@ -397,6 +438,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
                 id="waitlist" 
                 checked={joinWaitlist}
                 onCheckedChange={setJoinWaitlist}
+                disabled={loading}
               />
               <Label htmlFor="waitlist" className="text-sm">
                 Add me to the waitlist for similar appointments
@@ -415,7 +457,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
 
       {/* Action Buttons */}
       <div className="flex justify-end space-x-3">
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} disabled={loading}>
           <X className="h-4 w-4 mr-2" />
           Keep Appointment
         </Button>
@@ -433,7 +475,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
 
         {step === 'confirm' && (
           <>
-            <Button variant="outline" onClick={() => setStep('preview')}>
+            <Button variant="outline" onClick={() => setStep('preview')} disabled={loading}>
               Back
             </Button>
             <Button 

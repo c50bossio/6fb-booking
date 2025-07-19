@@ -86,11 +86,7 @@ export class ErrorBoundaryWithRetry extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     const enhancedError = ErrorBoundaryWithRetry.enhanceError(error)
     
-    console.error('ErrorBoundaryWithRetry caught an error:', {
-      error: enhancedError,
-      errorInfo,
-      context: this.props.context,
-      timestamp: new Date().toISOString()
+    .toISOString()
     })
 
     // Update error history
@@ -266,8 +262,6 @@ export class ErrorBoundaryWithRetry extends Component<Props, State> {
   private scheduleAutoRetry(error: EnhancedError) {
     const delay = this.calculateRetryDelay(error)
     
-    console.log(`Scheduling auto-retry in ${delay}ms`)
-    
     this.retryTimeoutId = setTimeout(() => {
       this.handleRetry()
     }, delay)
@@ -293,13 +287,11 @@ export class ErrorBoundaryWithRetry extends Component<Props, State> {
 
   private async handleRetry() {
     if (this.state.retryCount >= this.maxRetries) {
-      console.warn('Max retries reached')
       return
     }
 
     // Check network status first
     if (!isOnline() && this.state.error?.type === 'network') {
-      console.log('Still offline, skipping retry')
       return
     }
 
@@ -320,7 +312,6 @@ export class ErrorBoundaryWithRetry extends Component<Props, State> {
         isRetrying: false
       }))
     } catch (retryError) {
-      console.error('Retry failed:', retryError)
       this.setState(prev => ({
         isRetrying: false,
         retryCount: prev.retryCount + 1
@@ -401,8 +392,7 @@ export class ErrorBoundaryWithRetry extends Component<Props, State> {
       
       localStorage.setItem('error_logs', JSON.stringify(existingLogs))
     } catch (storageError) {
-      console.warn('Failed to store error log:', storageError)
-    }
+      }
   }
 
   render() {

@@ -124,6 +124,10 @@ from .six_fb_compliance import (
 from .guest_booking import (
     GuestBooking, GuestBookingNotification
 )
+# Webhook Models
+from .webhook import (
+    WebhookEvent, WebhookRetry, WebhookDeadLetter
+)
 
 __all__ = [
     # Main models from parent models.py
@@ -172,5 +176,7 @@ __all__ = [
     'SixFBComplianceScore', 'SixFBComplianceCheck', 'SixFBImprovementTask',
     'SixFBBenchmark', 'SixFBComplianceHistory',
     # Guest Booking Models
-    'GuestBooking', 'GuestBookingNotification'
+    'GuestBooking', 'GuestBookingNotification',
+    # Webhook Models
+    'WebhookEvent', 'WebhookRetry', 'WebhookDeadLetter'
 ]

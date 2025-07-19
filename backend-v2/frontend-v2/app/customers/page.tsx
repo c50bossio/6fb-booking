@@ -135,10 +135,8 @@ function UnifiedCustomersContent() {
             activeCampaigns: contactsResponse?.active_campaigns || 0
           })
         } catch (err) {
-          console.error('Failed to load customer summary:', err)
-        }
+          }
       } catch (err) {
-        console.error('Failed to load customer data:', err)
         setError(err instanceof Error ? err.message : 'Failed to load data')
       } finally {
         setLoading(false)

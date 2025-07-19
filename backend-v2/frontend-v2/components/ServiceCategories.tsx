@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { type Service, type ServiceCategory } from '../lib/api'
+import { useToast } from '@/hooks/use-toast'
 
 interface ServiceCategoriesProps {
   categories: ServiceCategory[]
@@ -14,6 +15,7 @@ export default function ServiceCategories({
   services, 
   onCategoriesChange 
 }: ServiceCategoriesProps) {
+  const { toast } = useToast()
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [showMoveDialog, setShowMoveDialog] = useState(false)
   const [servicesToMove, setServicesToMove] = useState<Service[]>([])
@@ -54,15 +56,17 @@ export default function ServiceCategories({
     try {
       // Note: This would require implementing a bulk update endpoint
       // For now, we'll show a message about the limitation
-      alert(`This feature would move ${servicesToMove.length} services from "${selectedCategory}" to "${targetCategory}". Implementation requires a bulk update API endpoint.`)
+      toast({
+        title: "Feature Not Yet Implemented",
+        description: `This feature would move ${servicesToMove.length} services from "${selectedCategory}" to "${targetCategory}". Implementation requires a bulk update API endpoint.`,
+      })
       
       setShowMoveDialog(false)
       setServicesToMove([])
       setSelectedCategory('')
       setTargetCategory('')
     } catch (error) {
-      console.error('Failed to move services:', error)
-    }
+      }
   }
 
   const getCategoryUsageColor = (count: number, total: number) => {

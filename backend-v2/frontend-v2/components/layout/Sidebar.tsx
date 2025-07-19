@@ -38,7 +38,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   }
 
   const toggleSection = (sectionName: string) => {
-    console.log('Sidebar: Toggling section', sectionName) // Debug log
+    // Debug log
     const newExpanded = new Set(expandedSections)
     if (newExpanded.has(sectionName)) {
       newExpanded.delete(sectionName)
@@ -175,7 +175,6 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
         
         <button
           onClick={() => {
-            console.log('Sidebar: Toggle collapse clicked')
             onToggleCollapse()
           }}
           type="button"

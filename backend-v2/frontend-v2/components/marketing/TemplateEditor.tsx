@@ -16,6 +16,7 @@ import {
   CodeBracketIcon,
   AtSymbolIcon
 } from '@heroicons/react/24/outline'
+import { useToast } from '@/hooks/use-toast'
 
 interface TemplateEditorProps {
   template?: {
@@ -31,6 +32,7 @@ interface TemplateEditorProps {
 }
 
 export default function TemplateEditor({ template, onSave, onCancel }: TemplateEditorProps) {
+  const { toast } = useToast()
   const [name, setName] = useState(template?.name || '')
   const [type, setType] = useState<'email' | 'sms'>(template?.type || 'email')
   const [subject, setSubject] = useState(template?.subject || '')
@@ -97,7 +99,11 @@ export default function TemplateEditor({ template, onSave, onCancel }: TemplateE
 
   const handleSave = () => {
     if (!name || !content) {
-      alert('Please provide a template name and content')
+      toast({
+        title: "Validation Error",
+        description: 'Please provide a template name and content',
+        variant: "destructive",
+      })
       return
     }
 
@@ -289,7 +295,10 @@ export default function TemplateEditor({ template, onSave, onCancel }: TemplateE
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => alert('Image upload would be implemented here')}
+                    onClick={() => toast({
+                      title: "Coming Soon",
+                      description: 'Image upload would be implemented here',
+                    })}
                     title="Insert Image"
                   >
                     <PhotoIcon className="w-4 h-4" />

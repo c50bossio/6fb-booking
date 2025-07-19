@@ -59,8 +59,7 @@ export default function MarketingAnalyticsSection({ userRole, dateRange }: Marke
         }
         setMarketingData(mockData)
       } catch (error) {
-        console.error('Failed to load marketing data:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }

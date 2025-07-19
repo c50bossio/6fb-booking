@@ -123,7 +123,6 @@ export default function MarketingAnalyticsPage() {
 
         setAnalyticsData(mockData)
       } catch (err) {
-        console.error('Failed to load marketing analytics:', err)
         setError(err instanceof Error ? err.message : 'Failed to load analytics')
       } finally {
         setLoading(false)
@@ -192,8 +191,7 @@ export default function MarketingAnalyticsPage() {
   ]
 
   const handleExport = () => {
-    console.log('Exporting marketing analytics...')
-  }
+    }
 
   return (
     <AnalyticsLayout

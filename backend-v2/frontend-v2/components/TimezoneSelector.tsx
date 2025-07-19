@@ -81,7 +81,6 @@ export default function TimezoneSelector({
           }
         }
       } catch (error) {
-        console.error('Failed to load timezones:', error)
         setError('Failed to load timezones')
         // Keep fallback timezones
       } finally {
@@ -195,7 +194,6 @@ export default function TimezoneSelector({
         setError('Could not detect timezone from browser')
       }
     } catch (error) {
-      console.error('Auto-detection failed:', error)
       setError('Failed to auto-detect timezone')
     } finally {
       setIsDetecting(false)

@@ -199,7 +199,6 @@ export default function AppointmentWizard({
         setPopularServices(servicesData.slice(0, 3))
       }
     } catch (err) {
-      console.error('Failed to load services:', err)
       toast({
         title: 'Error',
         description: 'Failed to load services.',
@@ -216,7 +215,6 @@ export default function AppointmentWizard({
       const barberUsers = await getBarbers()
       setBarbers(barberUsers)
     } catch (err) {
-      console.error('Failed to load barbers:', err)
       // Don't show error for barbers as it's optional
     } finally {
       setLoadingBarbers(false)
@@ -239,7 +237,6 @@ export default function AppointmentWizard({
       const available = response.slots?.filter(slot => slot.available) || []
       setAvailableSlots(available)
     } catch (err) {
-      console.error('Failed to load time slots:', err)
       toast({
         title: 'Error',
         description: 'Failed to load available times.',
@@ -256,8 +253,7 @@ export default function AppointmentWizard({
       const response = await searchClients(searchTerm)
       setClients(response.clients || [])
     } catch (err) {
-      console.error('Failed to search clients:', err)
-    } finally {
+      } finally {
       setLoadingClients(false)
     }
   }
@@ -271,7 +267,6 @@ export default function AppointmentWizard({
       setNewClientData({ first_name: '', last_name: '', email: '', phone: '' })
       handleNext()
     } catch (err) {
-      console.error('Failed to create client:', err)
       toast({
         title: 'Error',
         description: 'Failed to create client.',
@@ -345,7 +340,6 @@ export default function AppointmentWizard({
       
       onSuccess?.(result)
     } catch (err: any) {
-      console.error('Failed to create appointment:', err)
       toast({
         title: 'Error',
         description: err.message || 'Failed to create appointment.',

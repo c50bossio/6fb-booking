@@ -175,8 +175,6 @@ export default function ClientCommunication({ clientId, preferences, client, onR
       content = content.replace('{{appointment_time}}', '2:00 PM')
       
       // Mock sending - in real app, this would call an API
-      console.log('Sending message:', { ...newMessage, content })
-      
       // Add to message history
       const newHistoryItem = {
         id: Date.now(),

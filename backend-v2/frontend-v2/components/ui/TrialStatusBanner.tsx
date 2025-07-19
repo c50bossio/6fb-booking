@@ -23,8 +23,7 @@ export function TrialStatusBanner({ organizationId, className = '' }: TrialStatu
         setTrialStatus(status)
       } catch (err: any) {
         setError('Failed to load trial status')
-        console.error('Trial status error:', err)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }

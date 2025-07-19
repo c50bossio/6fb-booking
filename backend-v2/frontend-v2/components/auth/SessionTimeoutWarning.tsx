@@ -138,7 +138,6 @@ export function SessionTimeoutWarning({
         description: `Your session has been extended for another ${sessionDurationMinutes} minutes.`
       })
     } catch (error) {
-      console.error('Failed to extend session:', error)
       toast({
         variant: 'destructive',
         title: 'Extension Failed',

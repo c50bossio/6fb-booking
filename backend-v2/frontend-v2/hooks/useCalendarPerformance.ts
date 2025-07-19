@@ -71,7 +71,7 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
         // Throttle console warnings to max once per 10 seconds for critical performance issues
         const lastWarn = renderTimersRef.current.get(`${componentName}_lastWarn`) || 0
         if (now - lastWarn > 10000) {
-          console.warn(`Critical render performance: ${componentName} took ${renderTime.toFixed(2)}ms (Cache hit rate: ${cacheHitRate.toFixed(1)}%)`)
+          }ms (Cache hit rate: ${cacheHitRate.toFixed(1)}%)`)
           renderTimersRef.current.set(`${componentName}_lastWarn`, now)
         }
       }
@@ -248,13 +248,12 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
             const now = Date.now()
             const lastMemWarn = renderTimersRef.current.get('memory_warn') || 0
             if (now - lastMemWarn > 60000) {
-              console.warn('High memory usage detected:', Math.round(memInfo.usedJSHeapSize / 1024 / 1024), 'MB')
+              , 'MB')
               renderTimersRef.current.set('memory_warn', now)
             }
             
             // Trigger emergency cleanup if memory usage is critical
             if (memInfo.usedJSHeapSize > 200 * 1024 * 1024) { // 200MB critical threshold
-              console.warn('Critical memory usage - triggering emergency cleanup')
               clearCache()
             }
           }

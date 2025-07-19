@@ -109,15 +109,13 @@ export function useThemePersistence(storageKey: string = 'theme') {
     try {
       localStorage.setItem(storageKey, theme);
     } catch (error) {
-      console.warn('Failed to save theme to localStorage:', error);
-    }
+      }
   };
   
   const loadTheme = (): 'light' | 'dark' | 'system' | null => {
     try {
       return localStorage.getItem(storageKey) as 'light' | 'dark' | 'system' | null;
     } catch (error) {
-      console.warn('Failed to load theme from localStorage:', error);
       return null;
     }
   };
@@ -126,8 +124,7 @@ export function useThemePersistence(storageKey: string = 'theme') {
     try {
       localStorage.removeItem(storageKey);
     } catch (error) {
-      console.warn('Failed to clear theme from localStorage:', error);
-    }
+      }
   };
   
   return {

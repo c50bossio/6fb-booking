@@ -83,8 +83,7 @@ export class BookingLinkGenerator {
     if (finalOptions.includeDefaults) {
       const validation = this.validateParams(params)
       if (!validation.isValid) {
-        console.warn('Invalid parameters detected:', validation.errors)
-      }
+        }
     }
 
     // Clean and prepare parameters
@@ -138,8 +137,7 @@ export class BookingLinkGenerator {
       try {
         shortUrl = await this.urlShortener.shorten(url)
       } catch (error) {
-        console.warn('Failed to generate short URL:', error)
-      }
+        }
     }
 
     // Generate QR code data URL (always generate for now)
@@ -585,7 +583,6 @@ export class BookingLinkGenerator {
         (params as any)[key] = value === 'true'
         return
       }
-
 
       // Default to string
       (params as any)[key] = value

@@ -561,13 +561,10 @@ export class PricingAnalyticsService {
   private async sendToAnalytics(event: PricingAnalyticsEvent): Promise<void> {
     try {
       // In a real implementation, this would send to analytics backend
-      console.log('Analytics event:', event);
-      
       // Mark as sent
       event.sentToAnalytics = true;
     } catch (error) {
-      console.error('Failed to send analytics event:', error);
-    }
+      }
   }
   
   private loadEvents(): void {

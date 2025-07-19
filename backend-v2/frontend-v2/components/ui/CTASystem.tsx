@@ -194,7 +194,6 @@ export function CTAButton({
   
   if (!config) {
     if (process.env.NODE_ENV === 'development') {
-      console.error(`CTA '${ctaId}' is not enabled or does not exist`)
       return (
         <div className="p-2 bg-red-100 text-red-700 rounded text-sm">
           Error: CTA '{ctaId}' not found
@@ -420,8 +419,7 @@ export function trackCTAClick(ctaId: string, additionalData?: Record<string, any
   
   // Console log for development
   if (process.env.NODE_ENV === 'development') {
-    console.log('CTA Click:', { ctaId, config, additionalData })
-  }
+    }
 }
 
 // ==================== EXPORTS ====================

@@ -18,8 +18,7 @@ export function TestDataIndicator() {
         const data = await fetchAPI('/api/v1/test-data/status')
         setHasTestData(data.has_test_data)
       } catch (error) {
-        console.error('Failed to check test data status:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }

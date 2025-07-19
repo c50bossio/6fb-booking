@@ -52,7 +52,6 @@ export default function ServiceRevenueChart({
       
       setAnalytics(data)
     } catch (err) {
-      console.error('Failed to fetch service revenue analytics:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to load service revenue data'
       setError(errorMessage)
     } finally {

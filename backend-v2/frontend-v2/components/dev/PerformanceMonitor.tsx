@@ -233,9 +233,7 @@ export const withPerformanceTracking = <P extends object>(
           
           // Log slow renders
           if (renderTime > 16) { // More than one frame (16ms)
-            console.warn(
-              `[Performance] ${componentName} slow render:`,
-              `${renderTime.toFixed(2)}ms (render #${renderCount.current})`
+            }ms (render #${renderCount.current})`
             )
           }
         }

@@ -107,8 +107,7 @@ export default function PullToRefresh({
       try {
         await onRefresh()
       } catch (error) {
-        console.error('Refresh failed:', error)
-      } finally {
+        } finally {
         setIsRefreshingInternal(false)
       }
     }

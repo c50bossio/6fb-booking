@@ -150,7 +150,6 @@ class MetaPixelService {
     try {
       // Check DNT (Do Not Track) setting
       if (this.config.respectDNT && navigator.doNotTrack === '1') {
-        console.log('[Meta Pixel] Do Not Track is enabled, skipping initialization')
         return
       }
 
@@ -166,14 +165,8 @@ class MetaPixelService {
       this.isInitialized = true
       
       if (this.debugMode) {
-        console.log('[Meta Pixel] Initialized successfully', {
-          pixelId: this.config.pixelId,
-          testMode: this.testMode,
-          deduplicationEnabled: this.deduplicationEnabled
-        })
-      }
+        }
     } catch (error) {
-      console.error('[Meta Pixel] Initialization failed:', error)
       throw error
     }
   }
@@ -269,8 +262,7 @@ class MetaPixelService {
     }
 
     if (this.debugMode) {
-      console.log('[Meta Pixel] Consent updated:', hasConsent)
-    }
+      }
   }
 
   /**
@@ -312,8 +304,7 @@ class MetaPixelService {
   ): void {
     if (!this.canTrack()) {
       if (this.debugMode) {
-        console.log('[Meta Pixel] Tracking blocked by consent/DNT:', eventName)
-      }
+        }
       return
     }
 
@@ -341,22 +332,14 @@ class MetaPixelService {
 
       // Track the event
       if (this.testMode) {
-        console.log('[Meta Pixel] Test event:', eventName, eventParams)
-      } else {
+        } else {
         window.fbq('track', eventName, eventParams, { eventID: eventId })
       }
 
       if (this.debugMode) {
-        console.log('[Meta Pixel] Event tracked:', {
-          eventName,
-          eventId,
-          parameters: eventParams,
-          testMode: this.testMode
-        })
-      }
+        }
     } catch (error) {
-      console.error('[Meta Pixel] Error tracking event:', eventName, error)
-    }
+      }
   }
 
   /**
@@ -370,8 +353,7 @@ class MetaPixelService {
   ): void {
     if (!this.canTrack()) {
       if (this.debugMode) {
-        console.log('[Meta Pixel] Custom tracking blocked by consent/DNT:', eventName)
-      }
+        }
       return
     }
 
@@ -399,22 +381,14 @@ class MetaPixelService {
 
       // Track the custom event
       if (this.testMode) {
-        console.log('[Meta Pixel] Test custom event:', eventName, eventParams)
-      } else {
+        } else {
         window.fbq('trackCustom', eventName, eventParams, { eventID: eventId })
       }
 
       if (this.debugMode) {
-        console.log('[Meta Pixel] Custom event tracked:', {
-          eventName,
-          eventId,
-          parameters: eventParams,
-          testMode: this.testMode
-        })
-      }
+        }
     } catch (error) {
-      console.error('[Meta Pixel] Error tracking custom event:', eventName, error)
-    }
+      }
   }
 
   /**
@@ -429,18 +403,12 @@ class MetaPixelService {
     })
 
     if (this.testMode) {
-      console.log('[Meta Pixel] Test page view:', eventParams)
-    } else if (window.fbq) {
+      } else if (window.fbq) {
       window.fbq('track', 'PageView', eventParams)
     }
 
     if (this.debugMode) {
-      console.log('[Meta Pixel] Page view tracked:', {
-        pageName,
-        url: window.location.href,
-        parameters: eventParams
-      })
-    }
+      }
   }
 
   /**

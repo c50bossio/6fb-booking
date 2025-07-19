@@ -42,7 +42,6 @@ export default function StripeConnectOnboarding({ onComplete }: StripeConnectOnb
         onComplete();
       }
     } catch (error) {
-      console.error('Error checking Stripe Connect status:', error);
       setError('Failed to check account status');
     } finally {
       setLoading(false);

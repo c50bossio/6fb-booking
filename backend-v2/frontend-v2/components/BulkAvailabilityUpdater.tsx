@@ -90,7 +90,6 @@ export default function BulkAvailabilityUpdater({
       const availability = await getBarberAvailability(barberId)
       setCurrentAvailability(availability)
     } catch (error) {
-      console.error('Failed to load availability:', error)
       onError('Failed to load current availability')
     } finally {
       setLoading(false)
@@ -148,7 +147,6 @@ export default function BulkAvailabilityUpdater({
       onSuccess(`Applied template "${template.name}" successfully`)
       loadCurrentAvailability()
     } catch (error: any) {
-      console.error('Error applying template:', error)
       const errorMessage = error?.message || 'Failed to apply template'
       onError(errorMessage)
     }
@@ -164,7 +162,6 @@ export default function BulkAvailabilityUpdater({
       await copyWeeklyAvailability(barberId, sourceWeek, targetWeek)
       onSuccess('Weekly availability copied successfully')
     } catch (error: any) {
-      console.error('Error copying week:', error)
       const errorMessage = error?.message || 'Failed to copy weekly availability'
       onError(errorMessage)
     }
@@ -190,7 +187,6 @@ export default function BulkAvailabilityUpdater({
       onSuccess('All availability cleared successfully')
       loadCurrentAvailability()
     } catch (error: any) {
-      console.error('Error clearing availability:', error)
       const errorMessage = error?.message || 'Failed to clear availability'
       onError(errorMessage)
     }

@@ -150,10 +150,7 @@ export default function SixFigureAnalyticsDashboard({
       setLoading(true)
       setError(null)
       
-      console.log('🔍 Fetching Six Figure Barber metrics...', { targetIncome, userId })
       const data = await getSixFigureBarberMetrics(targetIncome, userId)
-      
-      console.log('📊 Received metrics data:', data)
       
       // Validate data structure before setting state
       if (!data || typeof data !== 'object') {
@@ -174,13 +171,11 @@ export default function SixFigureAnalyticsDashboard({
         const newInsights = generateInsights(todayStats, data)
         setInsights(newInsights)
       } catch (insightError) {
-        console.warn('Failed to generate insights:', insightError)
         setInsights([])
       }
       
       setRetryCount(0)
     } catch (err) {
-      console.error('Failed to fetch Six Figure Barber metrics:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to load analytics data'
       setError(errorMessage)
     } finally {

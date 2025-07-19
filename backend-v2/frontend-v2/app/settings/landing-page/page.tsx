@@ -114,7 +114,6 @@ export default function LandingPageSettings() {
         })
       }
     } catch (error) {
-      console.error('Failed to load landing page settings:', error)
       // Use defaults on error
       setSettings({
         enabled: false,

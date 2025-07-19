@@ -22,8 +22,6 @@ export const ServiceTemplateIntegrationExample: React.FC = () => {
   // Handle template selection
   const handleTemplatesSelect = (templates: ServiceTemplate[]) => {
     setSelectedTemplates(templates)
-    console.log('Selected templates:', templates)
-    
     // Show user feedback
     if (templates.length > 0) {
       toast({
@@ -62,7 +60,6 @@ export const ServiceTemplateIntegrationExample: React.FC = () => {
       // router.push('/services')
       
     } catch (error) {
-      console.error('Error applying templates:', error)
       toast({
         title: "Error Applying Templates",
         description: "Failed to create services from templates. Please try again.",

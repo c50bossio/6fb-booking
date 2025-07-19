@@ -310,7 +310,7 @@ export default function CalendarPage() {
           // Barbers loaded successfully
           setBarbers(allBarbers || [])
         } catch (barberErr) {
-          console.error('⚠️ Failed to load barbers (non-critical):', barberErr)
+          :', barberErr)
           // Don't fail the whole loading process if barbers can't be loaded
           setBarbers([])
         }
@@ -323,8 +323,6 @@ export default function CalendarPage() {
         
         // Calendar data loaded successfully
       } catch (err) {
-        console.error('❌ Failed to load calendar data:', err)
-        
         // Check if it's an authentication error
         if (handleAuthError(err, router)) {
           // Auth error handled, redirect will happen
@@ -582,7 +580,6 @@ export default function CalendarPage() {
         setShowRescheduleModal(true)
       }
     } catch (err) {
-      console.error('❌ Failed to update appointment:', err)
       const error = await CalendarErrorHandler.handleError(err, isDragDrop ? 'appointment-drag-drop' : 'appointment-update')
       
       if (!navigator.onLine) {
@@ -860,8 +857,7 @@ export default function CalendarPage() {
               appointments={bookings as any}
               selectedAppointments={filteredBookings as any}
               onExport={(format) => {
-                console.log(`Exported appointments in ${format} format`)
-              }}
+                }}
             />
             
             {/* Mobile menu for additional options */}
@@ -1005,8 +1001,7 @@ export default function CalendarPage() {
                 await refreshOptimistic(() => getMyBookings())
                 toastSuccess('Calendar Updated', 'Your new appointment has been added.')
               } catch (error) {
-                console.error('Failed to refresh calendar:', error)
-              }
+                }
             }}
           />
         </Suspense>
@@ -1056,7 +1051,6 @@ export default function CalendarPage() {
             // Show success notification
             toastSuccess('Appointment Created', 'Your appointment has been successfully created and added to the calendar.')
           } catch (err) {
-            console.error('❌ Failed to refresh bookings:', err)
             toastError('Refresh Failed', 'Appointment was created but calendar refresh failed. Please refresh the page.')
           }
         }}
@@ -1144,8 +1138,7 @@ export default function CalendarPage() {
               await refreshOptimistic(() => getMyBookings())
               toastSuccess('Calendar Updated', 'Your new appointment has been added.')
             } catch (error) {
-              console.error('Failed to refresh calendar:', error)
-            }
+              }
           }}
         />
       </Suspense>

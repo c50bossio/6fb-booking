@@ -271,8 +271,7 @@ function detectAppointmentConflicts(
 
       } catch (error) {
         // Skip invalid existing appointments
-        console.warn('Invalid existing appointment date:', existing.start_time)
-      }
+        }
     })
 
   } catch (error) {
@@ -410,8 +409,7 @@ export function generateAppointmentSuggestions(
     }
 
   } catch (error) {
-    console.error('Error generating appointment suggestions:', error)
-  }
+    }
 
   return suggestions
 }

@@ -98,7 +98,6 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
     try {
       return linkGenerator.generateURL(cleanParams)
     } catch (error) {
-      console.error('Failed to generate URL:', error)
       return 'https://book.6fb.com/your-business'
     }
   }, [linkParams, selectedServices, selectedBarbers, dateRange, timeRange, linkGenerator])
@@ -162,8 +161,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
       setCopiedUrl(true)
       setTimeout(() => setCopiedUrl(false), 2000)
     } catch (error) {
-      console.error('Failed to copy URL:', error)
-    }
+      }
   }
 
   // Validate form
@@ -212,14 +210,6 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
   const applyConfiguration = () => {
     if (validateForm()) {
       // Here you would typically save the configuration or trigger a callback
-      console.log('Applying configuration:', {
-        params: linkParams,
-        services: selectedServices,
-        barbers: selectedBarbers,
-        dateRange,
-        timeRange,
-        url: generatedUrl
-      })
       onClose()
     }
   }

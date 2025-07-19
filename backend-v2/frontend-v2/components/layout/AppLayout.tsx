@@ -56,8 +56,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         setUser(userData)
         setError(null)
       } catch (err: any) {
-        console.log('AppLayout: Auth failed for protected route:', pathname)
-        
         // Don't provide fake user data - leave as null for proper state management
         setUser(null)
         setError('Authentication required')
@@ -95,7 +93,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     const paths = pathname.split('/').filter(Boolean)
     const breadcrumbs = [{ label: 'Dashboard', href: '/dashboard' }]
 
-    
     // Find matching navigation items for better labels
     const findNavItem = (href: string) => {
       for (const item of navigationItems) {

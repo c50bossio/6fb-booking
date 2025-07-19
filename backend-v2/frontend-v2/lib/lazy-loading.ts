@@ -282,15 +282,11 @@ export const BundleUtils = {
     if (process.env.NODE_ENV !== 'development') return
 
     console.group('📦 Bundle Information')
-    console.log('React version:', React.version)
-    console.log('Environment:', process.env.NODE_ENV)
-    console.log('Build target:', process.env.NEXT_PUBLIC_VERCEL_ENV || 'local')
-    
     // Performance metrics
     if (typeof window !== 'undefined' && 'performance' in window) {
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
-      console.log('Page load time:', `${Math.round(navigation.loadEventEnd - navigation.fetchStart)}ms`)
-      console.log('DOM content loaded:', `${Math.round(navigation.domContentLoadedEventEnd - navigation.fetchStart)}ms`)
+      }ms`)
+      }ms`)
     }
     console.groupEnd()
   },
@@ -304,8 +300,7 @@ export const BundleUtils = {
     let renderCount = 0
     return () => {
       renderCount++
-      console.log(`🔄 ${componentName} rendered ${renderCount} times`)
-    }
+      }
   },
 
   /**
@@ -316,8 +311,7 @@ export const BundleUtils = {
 
     if ('memory' in performance) {
       const memory = (performance as any).memory
-      console.log(`💾 Memory usage for ${label}:`, {
-        used: `${Math.round(memory.usedJSHeapSize / 1024 / 1024)}MB`,
+      }MB`,
         total: `${Math.round(memory.totalJSHeapSize / 1024 / 1024)}MB`,
         limit: `${Math.round(memory.jsHeapSizeLimit / 1024 / 1024)}MB`
       })
@@ -382,7 +376,6 @@ export const Preloader = {
       try {
         return component()
       } catch (error) {
-        console.warn('Failed to preload component:', error)
         return Promise.resolve()
       }
     })
@@ -421,7 +414,7 @@ export const PerformanceMonitor = {
     const start = performance.now()
     fn()
     const end = performance.now()
-    console.log(`⏱️ ${name} render time: ${(end - start).toFixed(2)}ms`)
+    .toFixed(2)}ms`)
   },
 
   /**
@@ -433,7 +426,7 @@ export const PerformanceMonitor = {
     new PerformanceObserver((list) => {
       const entries = list.getEntries()
       const lastEntry = entries[entries.length - 1]
-      console.log('🎯 LCP:', lastEntry.startTime.toFixed(2), 'ms')
+      , 'ms')
     }).observe({ entryTypes: ['largest-contentful-paint'] })
   },
 
@@ -450,7 +443,7 @@ export const PerformanceMonitor = {
           clsValue += (entry as any).value
         }
       }
-      console.log('📏 CLS:', clsValue.toFixed(4))
+      )
     }).observe({ entryTypes: ['layout-shift'] })
   }
 }
@@ -469,7 +462,6 @@ if (typeof window !== 'undefined') {
     PerformanceMonitor.monitorCLS()
   }
 }
-
 
 export default {
   LazyComponents,

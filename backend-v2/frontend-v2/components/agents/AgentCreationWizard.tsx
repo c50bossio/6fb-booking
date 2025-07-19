@@ -64,7 +64,6 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
       const templatesData = await getAgentTemplates()
       setTemplates(templatesData)
     } catch (error) {
-      console.error('Failed to load templates:', error)
       toast({
         title: 'Error',
         description: 'Failed to load agent templates. Please try again.',
@@ -80,7 +79,6 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
       const providersData = await getAIProviders()
       setProviders(providersData.available_providers || [])
     } catch (error) {
-      console.error('Failed to load providers:', error)
       toast({
         title: 'Warning',
         description: 'Failed to load AI providers. Using defaults.',
@@ -133,7 +131,6 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
 
       onSuccess()
     } catch (error) {
-      console.error('Failed to create agent:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to create agent'
       
       toast({

@@ -51,8 +51,7 @@ export default function NotificationsPage() {
       const notificationStats = await getNotificationStats(days)
       setStats(notificationStats)
     } catch (err: any) {
-      console.error('Failed to load notification stats:', err)
-    } finally {
+      } finally {
       setStatsLoading(false)
     }
   }

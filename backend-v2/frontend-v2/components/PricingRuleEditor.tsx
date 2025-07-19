@@ -65,8 +65,7 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
       setRules(data.sort((a, b) => b.priority - a.priority))
     } catch (err: any) {
       setError('Failed to load pricing rules')
-      console.error('Error loading pricing rules:', err)
-    } finally {
+      } finally {
       setLoading(false)
     }
   }

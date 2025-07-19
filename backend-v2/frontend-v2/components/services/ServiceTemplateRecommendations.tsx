@@ -57,8 +57,7 @@ export default function ServiceTemplateRecommendations({
       
       setRecommendations(filtered.slice(0, 4))
     } catch (error) {
-      console.error('Error loading recommendations:', error)
-    } finally {
+      } finally {
       setLoading(false)
     }
   }
@@ -69,8 +68,7 @@ export default function ServiceTemplateRecommendations({
       await applyServiceTemplate(template.id)
       await onApplyTemplate()
     } catch (error) {
-      console.error('Error applying template:', error)
-    } finally {
+      } finally {
       setApplying(null)
     }
   }

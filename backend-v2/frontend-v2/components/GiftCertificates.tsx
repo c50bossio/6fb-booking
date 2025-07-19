@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { format, parseISO, addMonths } from 'date-fns';
 import { Gift, Plus, Search, Download, Mail, Copy, CheckCircle, AlertCircle, X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface GiftCertificate {
   id: number;
@@ -27,6 +28,7 @@ interface GiftCertificatesProps {
 }
 
 export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
+  const { toast } = useToast();
   const [certificates, setCertificates] = useState<GiftCertificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -60,8 +62,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
       const response = await fetchAPI('/api/v1/payments/gift-certificates');
       setCertificates(response);
     } catch (error) {
-      console.error('Error fetching gift certificates:', error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -129,10 +130,16 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
       await fetchAPI(`/api/v1/payments/gift-certificates/${certificate.id}/send`, {
         method: 'POST',
       });
-      alert('Gift certificate email sent successfully!');
+      toast({
+        title: "Success",
+        description: 'Gift certificate email sent successfully!',
+      });
     } catch (error) {
-      console.error('Error sending email:', error);
-      alert('Failed to send email');
+      toast({
+        title: "Error",
+        description: 'Failed to send email',
+        variant: "destructive",
+      });
     }
   };
 
@@ -156,8 +163,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Error exporting certificates:', error);
-    }
+      }
   };
 
   const filteredCertificates = certificates.filter(cert => {

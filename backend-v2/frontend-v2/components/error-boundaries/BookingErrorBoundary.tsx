@@ -64,8 +64,6 @@ export class BookingErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('BookingErrorBoundary caught an error:', error, errorInfo)
-    
     // Enhanced error reporting for booking-specific issues
     const sentryEventId = reportApiError(error, {
       component: 'BookingErrorBoundary',
