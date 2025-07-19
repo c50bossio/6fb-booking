@@ -19,7 +19,8 @@ from utils.auth import SECRET_KEY, ALGORITHM
 TEST_USER_DATA = {
     "email": "test@example.com",
     "password": "Test123!",
-    "name": "Test User"
+    "name": "Test User",
+    "user_type": "barber"  # Use 'barber' instead of 'client' to allow dashboard registration
 }
 
 WEAK_PASSWORDS = [
@@ -48,7 +49,7 @@ class TestAuthentication:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["message"] == "User successfully registered"
+        assert "User successfully registered" in data["message"]  # Updated to handle email verification message
         assert data["user"]["email"] == TEST_USER_DATA["email"]
         assert data["user"]["name"] == TEST_USER_DATA["name"]
         assert "id" in data["user"]

@@ -305,7 +305,7 @@ class DetailedAPITester:
         response_times = []
         for i in range(10):
             start = time.time()
-            response = requests.get(f"{BASE_URL}/health")
+            response = requests.get(f"{BASE_URL}/health", timeout=10)
             end = time.time()
             response_times.append(end - start)
             
@@ -352,7 +352,7 @@ class DetailedAPITester:
                     "Origin": origin,
                     "Access-Control-Request-Method": "GET",
                     "Access-Control-Request-Headers": "Authorization"
-                })
+                }, timeout=10)
                 
                 if response.status_code == 200:
                     cors_headers = {

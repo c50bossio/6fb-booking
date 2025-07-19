@@ -320,7 +320,7 @@ def get_payment_history(
     barber_id: Optional[int] = Query(None, description="Filter by barber ID"),
     start_date: Optional[datetime] = Query(None, description="Start date filter"),
     end_date: Optional[datetime] = Query(None, description="End date filter"),
-    status: Optional[str] = Query(None, description="Payment status filter"),
+    payment_status: Optional[str] = Query(None, description="Payment status filter"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
     current_user: User = Depends(get_current_user),
@@ -345,7 +345,7 @@ def get_payment_history(
             barber_id=barber_id,
             start_date=start_date,
             end_date=end_date,
-            status=status,
+            status=payment_status,
             page=page,
             page_size=page_size,
             db=db

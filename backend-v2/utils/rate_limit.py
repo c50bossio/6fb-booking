@@ -12,7 +12,11 @@ from config import settings
 # Create limiter instance using client IP address with in-memory storage
 # Using in-memory storage to avoid Redis connection timeouts that were causing 120s hangs
 def get_rate_limit_key(request: Request) -> str:
-    """Get rate limit key. Use simple approach to avoid Redis timeouts."""
+    """Get rate limit key. Returns None in test environment to disable rate limiting."""
+    # Disable rate limiting in test environment
+    if settings.environment == "test" or os.environ.get("TESTING", "").lower() == "true":
+        return None  # Disable rate limiting in test environment
+    
     try:
         return get_remote_address(request)
     except Exception as e:

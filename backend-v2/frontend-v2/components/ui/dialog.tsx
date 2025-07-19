@@ -10,7 +10,8 @@ import {
   ariaHelpers, 
   keyboardHelpers, 
   SkipLink, 
-  VisuallyHidden
+  VisuallyHidden,
+  useAccessibilityPreferences
 } from '@/lib/accessibility'
 
 const Dialog = DialogPrimitive.Root
