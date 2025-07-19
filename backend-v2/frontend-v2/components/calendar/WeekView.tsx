@@ -26,6 +26,7 @@ interface WeekViewProps {
   optimisticUpdates: Map<number, { originalStartTime: string; newStartTime: string }>
   selectedAppointmentId: string | null
   onTimeSlotClick?: (date: Date) => void
+  onTimeSlotContextMenu?: (date: Date, event: React.MouseEvent) => void
   onAppointmentClick?: (appointment: Appointment) => void
   onAppointmentUpdate?: (appointmentId: number, newStartTime: string) => void
   onDragOver: (e: React.DragEvent, day: Date, hour: number, minute: number) => void
@@ -47,6 +48,7 @@ export const WeekView = React.memo(function WeekView({
   optimisticUpdates,
   selectedAppointmentId,
   onTimeSlotClick,
+  onTimeSlotContextMenu,
   onAppointmentClick,
   onAppointmentUpdate,
   onDragOver,
@@ -134,6 +136,13 @@ export const WeekView = React.memo(function WeekView({
                     // Only trigger if clicked on empty slot, not appointment
                     if (e.target === e.currentTarget) {
                       onTimeSlotClick?.(slotDate)
+                    }
+                  }}
+                  onContextMenu={(e) => {
+                    // Only trigger if right-clicked on empty slot, not appointment
+                    if (e.target === e.currentTarget) {
+                      e.preventDefault()
+                      onTimeSlotContextMenu?.(slotDate, e)
                     }
                   }}
                   onDragOver={(e) => onDragOver(e, day, hour, minute)}

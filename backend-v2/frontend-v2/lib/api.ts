@@ -948,7 +948,7 @@ export async function updateBooking(bookingId: number, data: {
 
 export async function rescheduleBooking(bookingId: number, date: string, time: string): Promise<BookingResponse> {
   const appointment = await retryOperation(
-    () => fetchAPI(`/api/v1/appointments/${bookingId}/reschedule`, {
+    () => fetchAPI(`/api/v2/appointments/${bookingId}/reschedule`, {
       method: 'POST',
       body: JSON.stringify({ date, time }),
     }),
@@ -2607,7 +2607,7 @@ export interface UpcomingRecurringAppointment {
 
 // Recurring appointments endpoints
 export async function createRecurringPattern(patternData: RecurringPatternCreate): Promise<RecurringPattern> {
-  return fetchAPI('/api/v1/recurring-appointments/patterns', {
+  return fetchAPI('/api/v2/recurring-appointments/patterns', {
     method: 'POST',
     body: JSON.stringify(patternData),
   })
@@ -2618,25 +2618,25 @@ export async function getRecurringPatterns(isActive?: boolean): Promise<Recurrin
   if (isActive !== undefined) params.append('is_active', isActive.toString())
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/recurring-appointments/patterns${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/recurring-appointments/patterns${query ? '?' + query : ''}`)
 }
 
 export async function getRecurringPattern(patternId: number): Promise<RecurringPattern> {
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}`)
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}`)
 }
 
 export async function updateRecurringPattern(
   patternId: number,
   updates: RecurringPatternUpdate
 ): Promise<RecurringPattern> {
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}`, {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
 }
 
 export async function deleteRecurringPattern(patternId: number) {
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}`, {
     method: 'DELETE',
   })
 }
@@ -2650,7 +2650,7 @@ export async function generateAppointmentsFromPattern(
   params.append('preview_only', previewOnly.toString())
   params.append('max_appointments', maxAppointments.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}/generate?${params.toString()}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}/generate?${params.toString()}`, {
     method: 'POST',
   })
 }
@@ -2659,14 +2659,14 @@ export async function getUpcomingRecurringAppointments(daysAhead: number = 30) {
   const params = new URLSearchParams()
   params.append('days_ahead', daysAhead.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/upcoming?${params.toString()}`)
+  return fetchAPI(`/api/v2/recurring-appointments/upcoming?${params.toString()}`)
 }
 
 export async function cancelRecurringSeries(patternId: number, cancelFutureOnly: boolean = true) {
   const params = new URLSearchParams()
   params.append('cancel_future_only', cancelFutureOnly.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}/cancel?${params.toString()}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}/cancel?${params.toString()}`, {
     method: 'POST',
   })
 }
@@ -2684,7 +2684,7 @@ export async function modifySingleOccurrence(
   if (newBarberId) params.append('new_barber_id', newBarberId.toString())
   params.append('cancel', cancel.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/appointments/${appointmentId}/modify?${params.toString()}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/appointments/${appointmentId}/modify?${params.toString()}`, {
     method: 'PUT',
   })
 }
@@ -2693,7 +2693,7 @@ export async function previewPatternOccurrences(patternId: number, limit: number
   const params = new URLSearchParams()
   params.append('limit', limit.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}/preview?${params.toString()}`)
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}/preview?${params.toString()}`)
 }
 
 // ============================================================================
@@ -5736,7 +5736,7 @@ export const appointmentsAPI = {
 
   // Reschedule appointment
   async reschedule(appointmentId: number, rescheduleData: AppointmentReschedule): Promise<AppointmentResponse> {
-    return fetchAPI(`/api/v1/appointments/${appointmentId}/reschedule`, {
+    return fetchAPI(`/api/v2/appointments/${appointmentId}/reschedule`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(rescheduleData)

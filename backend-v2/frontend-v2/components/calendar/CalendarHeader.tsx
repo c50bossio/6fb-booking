@@ -15,6 +15,8 @@ interface CalendarHeaderProps {
   onTodayClick: () => void
   onRefresh?: () => void
   isLoading?: boolean
+  onViewChange?: (view: CalendarView) => void
+  showViewSwitcher?: boolean
 }
 
 export const CalendarHeader = React.memo(function CalendarHeader({
@@ -23,7 +25,9 @@ export const CalendarHeader = React.memo(function CalendarHeader({
   onNavigate,
   onTodayClick,
   onRefresh,
-  isLoading = false
+  isLoading = false,
+  onViewChange,
+  showViewSwitcher = false
 }: CalendarHeaderProps) {
   const { isMobile } = useResponsive()
 
@@ -85,6 +89,45 @@ export const CalendarHeader = React.memo(function CalendarHeader({
         >
           Today
         </Button>
+        
+        {/* View Switcher */}
+        {showViewSwitcher && onViewChange && (
+          <div className="calendar-view-switcher flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => onViewChange('day')}
+              className={`calendar-nav-button px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded transition-colors ${
+                view === 'day' 
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              disabled={isLoading}
+            >
+              Day
+            </button>
+            <button
+              onClick={() => onViewChange('week')}
+              className={`calendar-nav-button px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded transition-colors ${
+                view === 'week' 
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              disabled={isLoading}
+            >
+              Week
+            </button>
+            <button
+              onClick={() => onViewChange('month')}
+              className={`calendar-nav-button px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded transition-colors ${
+                view === 'month' 
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              disabled={isLoading}
+            >
+              Month
+            </button>
+          </div>
+        )}
         
         {onRefresh && (
           <Button
