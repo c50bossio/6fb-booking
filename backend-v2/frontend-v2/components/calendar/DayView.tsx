@@ -28,6 +28,7 @@ interface DayViewProps {
   optimisticUpdates: Map<number, { originalStartTime: string; newStartTime: string }>
   selectedAppointmentId: string | null
   onTimeSlotClick?: (date: Date) => void
+  onTimeSlotContextMenu?: (date: Date, event: React.MouseEvent) => void
   onAppointmentClick?: (appointment: Appointment) => void
   onAppointmentUpdate?: (appointmentId: number, newStartTime: string) => void
   onDragOver: (e: React.DragEvent, day: Date, hour: number, minute: number) => void
@@ -49,6 +50,7 @@ export const DayView = React.memo(function DayView({
   optimisticUpdates,
   selectedAppointmentId,
   onTimeSlotClick,
+  onTimeSlotContextMenu,
   onAppointmentClick,
   onAppointmentUpdate,
   onDragOver,
@@ -128,6 +130,10 @@ export const DayView = React.memo(function DayView({
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
                 onClick={() => onTimeSlotClick?.(slotDate)}
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  onTimeSlotContextMenu?.(slotDate, e)
+                }}
                 onDragOver={(e) => onDragOver(e, currentDate, hour, minute)}
                 onDragLeave={onDragLeave}
                 onDrop={(e) => onDrop(e, currentDate, hour, minute)}
