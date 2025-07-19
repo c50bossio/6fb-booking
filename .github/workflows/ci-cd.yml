@@ -325,7 +325,7 @@ jobs:
           -x
 
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: backend-test-results
@@ -466,7 +466,7 @@ jobs:
         GENERATE_SOURCEMAP: false
 
     - name: Upload frontend test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: frontend-test-results
@@ -490,7 +490,7 @@ jobs:
         GENERATE_SOURCEMAP: false
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: frontend-build
         path: |
@@ -909,7 +909,7 @@ jobs:
         cat hook-status-report.md >> $GITHUB_STEP_SUMMARY
     
     - name: Upload hook status report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: hook-status-report
         path: hook-status-report.md
@@ -938,7 +938,7 @@ jobs:
         echo "- ✅ Emergency bypass mechanisms available" >> $GITHUB_STEP_SUMMARY
         
     - name: Upload optimization report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: hook-optimization-report
