@@ -318,7 +318,6 @@ export class CalendarApiEnhanced {
     try {
       await this.batchFetchAppointments(requests)
     } catch (error) {
-      console.warn('Preloading failed:', error)
       // Preloading failures should not impact the main calendar functionality
     }
   }

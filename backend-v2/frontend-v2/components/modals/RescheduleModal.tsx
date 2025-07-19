@@ -143,7 +143,6 @@ export default function RescheduleModal({
         setNote('')
         setErrors({})
       } catch (error) {
-        console.error('Error parsing appointment date:', error)
         setErrors({ general: 'Unable to load appointment data' })
       }
     }
@@ -232,7 +231,6 @@ export default function RescheduleModal({
       announceToScreenReader('Appointment successfully rescheduled')
       
     } catch (error: any) {
-      console.error('Error rescheduling appointment:', error)
       setErrors({ 
         general: error.message || 'Failed to reschedule appointment. Please try again.' 
       })
@@ -375,7 +373,27 @@ export default function RescheduleModal({
         </div>
 
         {/* Scrollable Content */}
-        <ModalBody className="flex-1 overflow-y-auto p-6 space-y-6">
+        <ModalBody className={cn(
+          "flex-1 overflow-y-auto p-6 space-y-6 relative",
+          loading && "pointer-events-none"
+        )}>
+          {/* Loading Overlay */}
+          {loading && (
+            <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="text-center space-y-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary-500/20 rounded-full blur-xl animate-pulse" />
+                  <ClockIcon className="w-12 h-12 text-primary-600 dark:text-primary-400 relative animate-bounce" />
+                </div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  Rescheduling your appointment...
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Please wait while we update your booking
+                </p>
+              </div>
+            </div>
+          )}
           {/* Error Display */}
           {errors.general && (
             <ErrorDisplay 
@@ -449,6 +467,7 @@ export default function RescheduleModal({
                 onChange={(e) => setNewDate(e.target.value)}
                 min={format(new Date(), 'yyyy-MM-dd')}
                 error={errors.date}
+                disabled={loading}
                 className="w-full"
                 aria-describedby="date-help"
                 aria-required="true"
@@ -467,6 +486,7 @@ export default function RescheduleModal({
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
                 error={errors.time}
+                disabled={loading}
                 className="w-full"
                 aria-describedby="time-help"
                 aria-required="true"
@@ -510,6 +530,7 @@ export default function RescheduleModal({
                 <Switch
                   checked={isRecurring}
                   onCheckedChange={setIsRecurring}
+                  disabled={loading}
                   id="recurring-toggle"
                   aria-describedby="recurring-description"
                 />
@@ -535,6 +556,7 @@ export default function RescheduleModal({
                       key={option.value}
                       type="button"
                       onClick={() => setRecurringPattern(option.value)}
+                      disabled={loading}
                       className={cn(
                         "p-3 rounded-lg border text-left transition-all duration-200",
                         recurringPattern === option.value
@@ -591,6 +613,7 @@ export default function RescheduleModal({
                 <Switch
                   checked={sendSMSNotification}
                   onCheckedChange={setSendSMSNotification}
+                  disabled={loading}
                   id="sms-notification"
                 />
               </label>
@@ -611,6 +634,7 @@ export default function RescheduleModal({
                 <Switch
                   checked={sendEmailNotification}
                   onCheckedChange={setSendEmailNotification}
+                  disabled={loading}
                   id="email-notification"
                 />
               </label>
@@ -628,6 +652,7 @@ export default function RescheduleModal({
               placeholder="Add a note about why you're rescheduling (optional)..."
               rows={3}
               error={errors.note}
+              disabled={loading}
               className="resize-none"
               maxLength={500}
               aria-describedby="note-help"
@@ -672,7 +697,7 @@ export default function RescheduleModal({
             <Button
               ref={submitButtonRef}
               onClick={handleSubmit}
-              disabled={!newDate || !newTime || Object.keys(errors).length > 0}
+              disabled={!newDate || !newTime || Object.keys(errors).length > 0 || loading}
               variant="primary"
               size="lg"
               className={cn(

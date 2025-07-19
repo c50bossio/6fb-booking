@@ -134,8 +134,7 @@ export default function CalendarAnalyticsSidebar({
       )
       setAnalyticsData(data)
     } catch (error) {
-      console.error('Failed to load analytics:', error)
-    } finally {
+      } finally {
       setLoading(false)
     }
   }

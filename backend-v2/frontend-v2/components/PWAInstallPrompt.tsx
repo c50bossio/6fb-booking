@@ -54,11 +54,9 @@ export function PWAInstallPrompt() {
     const { outcome } = await deferredPrompt.userChoice
 
     if (outcome === 'accepted') {
-      console.log('User accepted the install prompt')
       setIsInstalled(true)
     } else {
-      console.log('User dismissed the install prompt')
-    }
+      }
 
     // Clear the deferredPrompt for reuse
     setDeferredPrompt(null)
@@ -130,7 +128,6 @@ export function useServiceWorker() {
       navigator.serviceWorker
         .register('/service-worker.js')
         .then((registration) => {
-          console.log('Service Worker registered:', registration)
           setIsRegistered(true)
 
           // Check for updates
@@ -147,8 +144,7 @@ export function useServiceWorker() {
           })
         })
         .catch((error) => {
-          console.error('Service Worker registration failed:', error)
-        })
+          })
 
       // Handle controller change (when service worker updates)
       let refreshing = false

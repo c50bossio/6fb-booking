@@ -110,20 +110,15 @@ export default function CreateAppointmentModal({
         barber_id: formData.barber?.id
       }
 
-      console.log('Creating appointment:', appointmentData)
       const result = await appointmentsAPI.create(appointmentData)
-      console.log('Appointment created:', result)
-
       // TODO: Handle recurring appointments
       if (formData.isRecurring) {
-        console.log('Creating recurring pattern:', formData.recurringPattern)
-      }
+        }
 
       onSuccess?.()
       onClose()
       resetModal()
     } catch (err: any) {
-      console.error('Failed to create appointment:', err)
       setError(err.response?.data?.detail || err.message || 'Failed to create appointment')
     } finally {
       setLoading(false)

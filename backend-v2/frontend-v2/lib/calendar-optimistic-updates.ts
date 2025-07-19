@@ -66,8 +66,7 @@ export class CalendarOptimisticManager {
       try {
         callback(this.currentState)
       } catch (error) {
-        console.error('Error in state subscriber:', error)
-      }
+        }
     })
   }
 
@@ -132,8 +131,7 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log('✨ Applied optimistic create for appointment')
-      },
+        },
       // Rollback
       () => {
         this.updateState({ 
@@ -141,8 +139,7 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to create appointment'
         })
-        console.log('🔄 Rolled back optimistic create')
-      }
+        }
     ).then(result => {
       // Replace optimistic appointment with real one
       const updatedAppointments = this.currentState.appointments.map(apt => 
@@ -196,8 +193,7 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log(`✨ Applied optimistic update for appointment ${appointmentId}`)
-      },
+        },
       // Rollback
       () => {
         this.updateState({ 
@@ -205,8 +201,7 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to update appointment'
         })
-        console.log(`🔄 Rolled back optimistic update for appointment ${appointmentId}`)
-      }
+        }
     ).then(result => {
       // Update with real result
       const updatedAppointments = this.currentState.appointments.map(apt =>
@@ -254,8 +249,7 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log(`✨ Applied optimistic delete for appointment ${appointmentId}`)
-      },
+        },
       // Rollback
       () => {
         this.updateState({ 
@@ -263,8 +257,7 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to delete appointment'
         })
-        console.log(`🔄 Rolled back optimistic delete for appointment ${appointmentId}`)
-      }
+        }
     ).then(() => {
       // Confirm deletion
       this.updateState({ 
@@ -323,8 +316,7 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log(`✨ Applied optimistic reschedule for appointment ${appointmentId}`)
-      },
+        },
       // Rollback
       () => {
         this.updateState({ 
@@ -332,8 +324,7 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to reschedule appointment'
         })
-        console.log(`🔄 Rolled back optimistic reschedule for appointment ${appointmentId}`)
-      }
+        }
     ).then(result => {
       // Update with real result
       const updatedAppointments = this.currentState.appointments.map(apt =>
@@ -390,8 +381,7 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log(`✨ Applied optimistic cancel for appointment ${appointmentId}`)
-      },
+        },
       // Rollback
       () => {
         this.updateState({ 
@@ -399,8 +389,7 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to cancel appointment'
         })
-        console.log(`🔄 Rolled back optimistic cancel for appointment ${appointmentId}`)
-      }
+        }
     ).then(result => {
       // Update with real result
       const updatedAppointments = this.currentState.appointments.map(apt =>
@@ -439,7 +428,6 @@ export class CalendarOptimisticManager {
         error: null
       })
     } catch (error) {
-      console.error('Failed to refresh appointments:', error)
       this.updateState({
         loading: false,
         error: 'Failed to refresh appointments'
@@ -499,7 +487,6 @@ export class CalendarOptimisticManager {
           const result = await operation.apiCall()
           results.push(result)
         } catch (error) {
-          console.error('Batch operation failed:', error)
           // Rollback all changes on any failure
           this.updateState({ 
             appointments: originalAppointments,

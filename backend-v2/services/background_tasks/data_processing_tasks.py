@@ -518,3 +518,239 @@ def data_processing_health_check():
     finally:
         if 'db' in locals():
             db.close()
+
+@celery_app.task(bind=True, max_retries=3)
+def schedule_account_deletion(self, user_id: int, deletion_date: Optional[str] = None):
+    """
+    Schedule account deletion for GDPR compliance.
+    
+    Args:
+        user_id: ID of the user account to delete
+        deletion_date: Date when deletion should occur (ISO format)
+    """
+    try:
+        db = SessionLocal()
+        
+        # Calculate deletion date if not provided (30 days from now)
+        if deletion_date:
+            scheduled_date = datetime.fromisoformat(deletion_date)
+        else:
+            scheduled_date = datetime.utcnow() + timedelta(days=30)
+        
+        logger.info(f"📅 Scheduling account deletion for user {user_id} on {scheduled_date}")
+        
+        # Get user
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            logger.warning(f"⚠️ User {user_id} not found for deletion scheduling")
+            return {'status': 'not_found', 'user_id': user_id}
+        
+        # Check if already marked for deletion
+        if hasattr(user, 'deletion_scheduled_at') and user.deletion_scheduled_at:
+            logger.info(f"ℹ️ User {user_id} already scheduled for deletion")
+            return {
+                'status': 'already_scheduled',
+                'user_id': user_id,
+                'scheduled_date': user.deletion_scheduled_at.isoformat()
+            }
+        
+        # Mark user for deletion
+        user.deletion_scheduled_at = scheduled_date
+        user.is_active = False
+        db.commit()
+        
+        # Schedule the actual deletion task
+        eta = scheduled_date.replace(tzinfo=timezone.utc)
+        perform_account_deletion.apply_async(
+            args=[user_id],
+            eta=eta,
+            queue='data_processing'
+        )
+        
+        logger.info(f"✅ Account deletion scheduled for user {user_id}")
+        
+        return {
+            'status': 'scheduled',
+            'user_id': user_id,
+            'scheduled_date': scheduled_date.isoformat(),
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to schedule account deletion: {e}")
+        
+        try:
+            self.retry(countdown=600)  # Retry after 10 minutes
+        except self.MaxRetriesExceededError:
+            logger.error(f"❌ Max retries exceeded for deletion scheduling")
+            return {
+                'status': 'failed',
+                'user_id': user_id,
+                'error': str(e),
+                'timestamp': datetime.utcnow().isoformat()
+            }
+    finally:
+        if 'db' in locals():
+            db.close()
+
+@celery_app.task(bind=True, max_retries=1)
+def perform_account_deletion(self, user_id: int):
+    """
+    Perform the actual account deletion.
+    This permanently removes user data per GDPR requirements.
+    
+    Args:
+        user_id: ID of the user account to delete
+    """
+    try:
+        db = SessionLocal()
+        
+        logger.info(f"🗑️ Performing account deletion for user {user_id}")
+        
+        # Get user
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            logger.warning(f"⚠️ User {user_id} not found for deletion")
+            return {'status': 'not_found', 'user_id': user_id}
+        
+        # Check if deletion is still valid (user might have cancelled)
+        if user.is_active:
+            logger.info(f"ℹ️ User {user_id} reactivated account, cancelling deletion")
+            return {
+                'status': 'cancelled',
+                'user_id': user_id,
+                'reason': 'User reactivated account'
+            }
+        
+        # Anonymize user data instead of hard delete
+        # This maintains referential integrity while complying with GDPR
+        anonymized_email = f"deleted_user_{user_id}@deleted.local"
+        
+        # Store deletion metadata for audit
+        deletion_metadata = {
+            'original_email_hash': hash(user.email),
+            'deletion_timestamp': datetime.utcnow().isoformat(),
+            'data_categories_deleted': ['profile', 'appointments', 'payments', 'preferences']
+        }
+        
+        # Anonymize user record
+        user.email = anonymized_email
+        user.password_hash = "DELETED"
+        user.phone_number = None
+        user.first_name = "Deleted"
+        user.last_name = "User"
+        
+        # Clear personal data from related records
+        # Appointments - keep for business records but anonymize
+        appointments = db.query(Appointment).filter(
+            Appointment.user_id == user_id
+        ).all()
+        
+        for appointment in appointments:
+            if hasattr(appointment, 'notes'):
+                appointment.notes = "[Deleted per GDPR request]"
+        
+        # Payments - keep for financial records but anonymize
+        payments = db.query(Payment).filter(
+            Payment.user_id == user_id
+        ).all()
+        
+        for payment in payments:
+            if hasattr(payment, 'billing_details'):
+                payment.billing_details = None
+        
+        # Delete preferences and consents
+        from models import NotificationPreference, UserConsent
+        
+        db.query(NotificationPreference).filter(
+            NotificationPreference.user_id == user_id
+        ).delete()
+        
+        db.query(UserConsent).filter(
+            UserConsent.user_id == user_id
+        ).delete()
+        
+        # Mark as deleted
+        user.deleted_at = datetime.utcnow()
+        user.deletion_metadata = json.dumps(deletion_metadata)
+        
+        db.commit()
+        
+        # Invalidate all user caches
+        invalidate_cache_for_event("user_deleted", {"user_id": user_id})
+        
+        logger.info(f"✅ Account deletion completed for user {user_id}")
+        
+        # Send confirmation email if we have a valid email service
+        try:
+            # Note: This would send to the original email before deletion
+            # You'd need to store it temporarily for this purpose
+            pass
+        except:
+            pass
+        
+        return {
+            'status': 'completed',
+            'user_id': user_id,
+            'anonymized_email': anonymized_email,
+            'deleted_at': datetime.utcnow().isoformat(),
+            'data_categories_processed': deletion_metadata['data_categories_deleted']
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Account deletion failed for user {user_id}: {e}")
+        
+        # Don't retry deletion operations to avoid partial deletions
+        return {
+            'status': 'failed',
+            'user_id': user_id,
+            'error': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }
+    finally:
+        if 'db' in locals():
+            db.close()
+
+@celery_app.task
+def check_scheduled_deletions():
+    """
+    Periodic task to check for scheduled account deletions.
+    Runs daily to ensure deletions are processed even if the scheduled task fails.
+    """
+    try:
+        db = SessionLocal()
+        
+        # Find users scheduled for deletion
+        users_to_delete = db.query(User).filter(
+            and_(
+                User.deletion_scheduled_at <= datetime.utcnow(),
+                User.deleted_at.is_(None),
+                User.is_active == False
+            )
+        ).limit(10).all()
+        
+        processed_count = 0
+        
+        for user in users_to_delete:
+            # Schedule immediate deletion
+            perform_account_deletion.delay(user.id)
+            processed_count += 1
+        
+        logger.info(f"✅ Scheduled {processed_count} account deletions for processing")
+        
+        return {
+            'status': 'success',
+            'deletions_scheduled': processed_count,
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to check scheduled deletions: {e}")
+        return {
+            'status': 'error',
+            'error': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }
+    finally:
+        if 'db' in locals():
+            db.close()

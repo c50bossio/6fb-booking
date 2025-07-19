@@ -51,7 +51,6 @@ export default function PerformanceMetrics({ userId, timeRange }: PerformanceMet
         )
         setAnalytics(data)
       } catch (err) {
-        console.error('Failed to fetch performance analytics:', err)
         const errorMessage = err instanceof Error ? err.message : 'Failed to load performance data'
         setError(errorMessage)
       } finally {
@@ -91,7 +90,6 @@ export default function PerformanceMetrics({ userId, timeRange }: PerformanceMet
   if (!analytics) {
     return null
   }
-
 
   // Performance scoring
   const getScoreColor = (score: number) => {

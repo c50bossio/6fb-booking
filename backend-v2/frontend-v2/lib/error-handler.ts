@@ -13,8 +13,6 @@ export class ErrorHandler {
     const appError = this.normalizeError(error)
     
     // Log error for debugging
-    console.error(`Error${context ? ` in ${context}` : ''}:`, appError)
-    
     // Show user-friendly notification
     this.showNotification(appError, context)
     

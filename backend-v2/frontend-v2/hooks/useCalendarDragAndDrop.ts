@@ -59,8 +59,7 @@ export function useCalendarDragAndDrop({
         e.preventDefault()
       }
     } catch (error) {
-      console.error('Drag start error:', error)
-    }
+      }
   }, [updateDragState])
 
   const handleDragEnd = useCallback(() => {
@@ -115,7 +114,6 @@ export function useCalendarDragAndDrop({
         })
       }
     } catch (error) {
-      console.error('Drop error:', error)
       // Clear drag state on error
       updateDragState({ 
         draggedAppointment: null,

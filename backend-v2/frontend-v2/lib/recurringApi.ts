@@ -382,7 +382,6 @@ export async function getServices(): Promise<Service[]> {
     })
 
     if (!response.ok) {
-      console.error('Failed to fetch services:', response.status)
       return []
     }
 
@@ -394,7 +393,6 @@ export async function getServices(): Promise<Service[]> {
       duration: service.duration_minutes || 30
     }))
   } catch (error) {
-    console.error('Error fetching services:', error)
     return []
   }
 }
@@ -407,7 +405,6 @@ export async function getBarbers(): Promise<Barber[]> {
     })
 
     if (!response.ok) {
-      console.error('Failed to fetch barbers:', response.status)
       return []
     }
 
@@ -418,7 +415,6 @@ export async function getBarbers(): Promise<Barber[]> {
       email: barber.email
     }))
   } catch (error) {
-    console.error('Error fetching barbers:', error)
     return []
   }
 }

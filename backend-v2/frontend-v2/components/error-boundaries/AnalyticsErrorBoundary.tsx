@@ -61,8 +61,6 @@ export class AnalyticsErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('AnalyticsErrorBoundary caught an error:', error, errorInfo)
-    
     // Enhanced error reporting for analytics-specific issues
     const sentryEventId = reportApiError(error, {
       component: 'AnalyticsErrorBoundary',

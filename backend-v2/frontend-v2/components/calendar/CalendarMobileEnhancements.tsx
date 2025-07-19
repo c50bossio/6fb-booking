@@ -53,8 +53,7 @@ export function CalendarMobileEnhancements({
       await Haptics.impact({ style })
     } catch (error) {
       // Haptics not available on this device
-      console.debug('Haptics not available:', error)
-    }
+      }
   }, [enableHaptics, isMobile])
 
   // Handle touch gestures

@@ -11,8 +11,7 @@ export function DeleteButtonExample() {
 
   const handleDelete = async () => {
     // Your delete logic here
-    console.log('Item deleted!')
-  }
+    }
 
   return (
     <>
@@ -50,7 +49,6 @@ export function DeleteWithHookExample() {
     })
 
     if (confirmed) {
-      console.log('Client deleted!')
       // Perform delete action
     }
   }
@@ -86,8 +84,7 @@ export function ReplaceConfirmExample() {
 
     if (confirmed) {
       // cancelAppointment()
-      console.log('Appointment cancelled')
-    }
+      }
   }
 
   return (

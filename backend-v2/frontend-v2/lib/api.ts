@@ -122,19 +122,10 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
 
   let response: Response
   const fullUrl = `${API_URL}${endpoint}`
-  console.log('🌐 Making API request to:', fullUrl)
-  console.log('🔧 API_URL:', API_URL)
-  console.log('🔧 endpoint:', endpoint)
-  
   try {
     response = await fetch(fullUrl, config)
-    console.log('✅ Response status:', response.status)
-  } catch (error) {
+    } catch (error) {
     // Network error or CORS issue
-    console.error(`Network error calling ${endpoint}:`, error)
-    console.error('API URL:', API_URL)
-    console.error('Full URL:', fullUrl)
-    console.error('Token present:', !!token)
     const errorMessage = 'Failed to connect to server. Please check your connection and try again.'
     // Note: Toast should be called from components, not here in the API layer
     throw new Error(`${errorMessage} (${error})`)
@@ -244,10 +235,12 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
   // Validate response data structure
   const responseValidation = validateAPIResponse(endpoint, responseData)
   if (!responseValidation.isValid) {
-    console.warn(`Response validation failed for ${endpoint}:`, responseValidation.errors)
     // Don't throw error for response validation - just log warning
   }
   
+  // Record successful request and timing
+  const duration = performance.now() - startTime
+  SlowEndpointMonitor.recordRequest(endpoint, duration)
   endTiming()
   return responseData
 }
@@ -255,8 +248,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
 // Auth functions with retry logic for critical operations
 export async function login(email: string, password: string) {
   const requestBody = { email, password };
-  console.log('🚀 Login request body:', requestBody);
-  console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
+  );
   
   const response = await retryOperation(
     () => fetchAPI('/api/v1/auth/login', {
@@ -742,7 +734,7 @@ export async function getAvailableSlots(params: { date: string; service_id?: num
   if (params.barber_id) {
     queryParams.append('barber_id', params.barber_id.toString())
   }
-  console.log('🔗 Calling slots API:', `/api/v1/appointments/slots?${queryParams.toString()}`)
+  }`)
   return fetchAPI(`/api/v1/appointments/slots?${queryParams.toString()}`)
 }
 
@@ -893,7 +885,6 @@ export async function getMyBookings(): Promise<BookingListResponse> {
     }
   } catch (error) {
     // Fallback to user appointments if profile fetch fails
-    console.warn('Failed to get user profile, falling back to user appointments:', error)
     response = await fetchAPI('/api/v1/appointments/')
   }
   
@@ -903,7 +894,6 @@ export async function getMyBookings(): Promise<BookingListResponse> {
       try {
         return normalizeAppointmentData(appointment)
       } catch (error) {
-        console.warn(`Failed to normalize appointment at index ${index}:`, error, appointment)
         return null // Filter out invalid appointments
       }
     })
@@ -926,7 +916,6 @@ export async function cancelBooking(bookingId: number): Promise<BookingResponse>
       const shouldRetry = !error.message?.includes('404') && 
                          !error.message?.includes('already') &&
                          !error.message?.includes('canceled')
-      console.log(`Cancel booking error retry decision: ${shouldRetry}`, error.message)
       return shouldRetry
     }
   )
@@ -958,7 +947,6 @@ export async function rescheduleBooking(bookingId: number, date: string, time: s
       const shouldRetry = !error.message?.includes('422') && 
                          !error.message?.includes('404') &&
                          !error.message?.includes('unavailable')
-      console.log(`Reschedule booking error retry decision: ${shouldRetry}`, error.message)
       return shouldRetry
     }
   )
@@ -1879,7 +1867,6 @@ export async function getEnterpriseAnalytics(
   } catch (error) {
     // If API is not yet implemented, return mock data for development
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Enterprise analytics API not available, using mock data')
       return {
         metrics: {
           total_revenue: 185750,
@@ -2135,7 +2122,6 @@ export async function getLocationAnalytics(
   } catch (error) {
     // If API is not yet implemented, return mock data for development
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Location analytics API not available, using mock data')
       const dashboardData = await getDashboardAnalytics()
       
       return {
@@ -2168,16 +2154,9 @@ export async function getLocationAnalytics(
   }
 }
 
-
 // ============================================================================
 // SERVICES API
 // ============================================================================
-
-
-
-
-
-
 
 export interface ServicePricingRuleCreate {
   rule_type: string
@@ -2190,7 +2169,6 @@ export interface ServicePricingRuleCreate {
   price_modifier_type: string
   price_modifier_value: number
 }
-
 
 export interface BarberService {
   id: number
@@ -2395,15 +2373,6 @@ export async function getServiceMetrics(serviceId: number, params?: {
 // ============================================================================
 // BARBER AVAILABILITY API
 // ============================================================================
-
-
-
-
-
-
-
-
-
 
 export interface AvailabilityCheck {
   barber_id: number
@@ -2728,9 +2697,6 @@ export interface NotificationPreferenceUpdate {
   reminder_hours?: number[]
 }
 
-
-
-
 // Notifications endpoints
 export async function getNotificationPreferences(): Promise<NotificationPreference> {
   return fetchAPI('/api/v1/notifications/preferences')
@@ -2959,9 +2925,6 @@ export async function deleteBarberWeeklyAvailability(availabilityId: number) {
   })
 }
 
-
-
-
 // Create special availability for a specific date
 export async function createSpecialAvailabilityV2(
   barberId: number,
@@ -3155,7 +3118,6 @@ export interface ServicePricingRule {
   is_active: boolean
   created_at: string
 }
-
 
 export interface ServiceListParams {
   category?: string
@@ -3400,7 +3362,6 @@ export async function getRuleTypes() {
 export async function webhookHealth() {
   return fetchAPI('/api/v1/webhooks/health')
 }
-
 
 // ============================================================================
 // TIMEZONES API
@@ -3924,7 +3885,6 @@ export const analyticsAPI = {
         }
         results[`${request.type}_${index}`] = result
       } catch (error) {
-        console.error(`Error fetching ${request.type} analytics:`, error)
         results[`${request.type}_${index}`] = { error: error instanceof Error ? error.message : 'Unknown error' }
       }
     })
@@ -4017,7 +3977,6 @@ export async function getSixFigureCoachingData(userId: number): Promise<Coaching
 
     return coachingData
   } catch (error) {
-    console.error('Error fetching coaching data:', error)
     throw new Error('Failed to load coaching data. Please try again.')
   }
 }
@@ -4039,7 +3998,6 @@ export async function getBusinessHealthScore(userId: number): Promise<HealthScor
       performance: performanceData
     })
   } catch (error) {
-    console.error('Error calculating health score:', error)
     throw new Error('Failed to calculate business health score. Please try again.')
   }
 }
@@ -4064,7 +4022,6 @@ export async function getCoachingInsights(metrics: any): Promise<CoachingInsight
 
     return _generateCoachingInsights(analyticsData)
   } catch (error) {
-    console.error('Error generating coaching insights:', error)
     throw new Error('Failed to generate coaching insights. Please try again.')
   }
 }
@@ -4379,9 +4336,6 @@ function _getResourcesForCategory(category: string): string[] {
 // EXTENDED PAYMENTS API
 // ============================================================================
 
-
-
-
 export interface GiftCertificateResponse {
   id: number
   code: string
@@ -4397,9 +4351,6 @@ export interface GiftCertificateResponse {
 export interface GiftCertificateValidate {
   code: string
 }
-
-
-
 
 export interface PayoutCreate {
   barber_id: number
@@ -4452,7 +4403,6 @@ export async function validateGiftCertificate(validationData: GiftCertificateVal
     body: JSON.stringify(validationData),
   })
 }
-
 
 export async function generatePaymentReport(reportRequest: PaymentReportRequest): Promise<PaymentReportResponse> {
   return fetchAPI('/api/v1/payments/reports', {
@@ -4811,7 +4761,6 @@ export async function createRefund(refundData: RefundCreate): Promise<RefundResp
 export async function getGiftCertificates(): Promise<GiftCertificate[]> {
   return fetchAPI('/api/v1/payments/gift-certificates')
 }
-
 
 export async function sendGiftCertificateEmail(certificateId: number): Promise<{ message: string }> {
   return fetchAPI(`/api/v1/payments/gift-certificates/${certificateId}/send`, {
@@ -5842,7 +5791,6 @@ export async function createGuestBooking(bookingData: GuestBookingCreate): Promi
       const shouldRetry = !error.message?.includes('422') && 
                          !error.message?.includes('401') && 
                          !error.message?.includes('403')
-      console.log(`Guest booking error retry decision: ${shouldRetry}`, error.message)
       return shouldRetry
     }
   )
@@ -5864,7 +5812,6 @@ export async function createGuestQuickBooking(bookingData: GuestQuickBookingCrea
       const shouldRetry = !error.message?.includes('422') && 
                          !error.message?.includes('401') && 
                          !error.message?.includes('403')
-      console.log(`Guest quick booking error retry decision: ${shouldRetry}`, error.message)
       return shouldRetry
     }
   )
@@ -5881,8 +5828,6 @@ export async function markSMSMessagesAsRead(conversationId: string): Promise<{ m
     method: 'POST',
   })
 }
-
-
 
 // ============================================================================
 // PERFORMANCE ANALYTICS API
@@ -5911,7 +5856,6 @@ export async function getLocations(): Promise<Location[]> {
   } catch (error) {
     // If API is not yet implemented, return mock data for development
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Locations API not available, using mock data')
       return [
         {
           id: '1',
@@ -6100,7 +6044,6 @@ export async function getAgentTemplates(): Promise<AgentTemplate[]> {
   } catch (error) {
     // Return mock data for development
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Agent templates API not available, using mock data')
       return [
         {
           agent_type: 'rebooking',
@@ -6175,7 +6118,6 @@ export async function getAgentInstances(status?: string): Promise<AgentInstance[
     return await fetchAPI(`/api/v1/agents/instances${params.toString() ? '?' + params.toString() : ''}`)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Agent instances API not available, using mock data')
       return [
         {
           id: 1,
@@ -6278,7 +6220,6 @@ export async function getAgentAnalytics(params?: {
     return await fetchAPI(`/api/v1/agents/analytics${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Agent analytics API not available, using mock data')
       return {
         total_agents: 2,
         active_agents: 1,
@@ -6315,7 +6256,6 @@ export async function getAgentSubscription(): Promise<AgentSubscription> {
     return await fetchAPI('/api/v1/agents/subscription')
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Agent subscription API not available, using mock data')
       return {
         id: 1,
         user_id: 1,
@@ -6357,7 +6297,6 @@ export async function getAIProviders(): Promise<{
     return await fetchAPI('/api/v1/agents/providers')
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('AI providers API not available, using mock data')
       return {
         available_providers: ['anthropic', 'openai', 'google', 'mock'],
         provider_info: {
@@ -6500,5 +6439,4 @@ export const apiClient = {
   verifyEmail,
   refreshToken
 }
-
 

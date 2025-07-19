@@ -75,8 +75,7 @@ export default function ReviewsAnalyticsSection({ userRole, dateRange }: Reviews
         }
         setReviewData(mockData)
       } catch (error) {
-        console.error('Failed to load review data:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }

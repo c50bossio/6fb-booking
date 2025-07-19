@@ -171,7 +171,6 @@ export default function ExportBuilder() {
         filename: result.filename || `${selectedType}_export_${new Date().toISOString().split('T')[0]}.${selectedFormat}`
       })
     } catch (error) {
-      console.error('Export error:', error)
       setExportProgress({
         status: 'error',
         progress: 0,

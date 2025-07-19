@@ -110,8 +110,7 @@ export async function batchLoadTimeSlots(
       const slots = await getCachedTimeSlots(date, service)
       results.set(date, slots)
     } catch (error) {
-      console.warn(`Failed to load slots for ${date}:`, error)
-    }
+      }
   })
   
   await Promise.all(promises)

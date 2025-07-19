@@ -111,8 +111,7 @@ export default function AppointmentExportPage() {
   }, [])
 
   const handleExport = (format: string, count: number) => {
-    console.log(`Exported ${count} appointments in ${format} format`)
-  }
+    }
 
   const handleStatusChange = (id: number, status: Appointment['status']) => {
     setAppointments(prev => 

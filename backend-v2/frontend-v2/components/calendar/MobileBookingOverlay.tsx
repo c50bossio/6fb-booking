@@ -146,7 +146,6 @@ export default function MobileBookingOverlay({
       triggerHapticFeedback('heavy')
       onClose()
     } catch (error) {
-      console.error('Booking failed:', error)
       setErrors({ submit: 'Failed to create booking. Please try again.' })
       triggerHapticFeedback('heavy')
     } finally {

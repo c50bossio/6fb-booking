@@ -66,8 +66,6 @@ export class PaymentErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('PaymentErrorBoundary caught an error:', error, errorInfo)
-    
     // Enhanced error reporting for payment-specific issues
     const sentryEventId = reportApiError(error, {
       component: 'PaymentErrorBoundary',

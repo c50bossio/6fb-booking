@@ -43,7 +43,6 @@ export default function CalendarSync() {
       const status = await calendarAPI.getSyncStatus()
       setSyncStatus(status)
     } catch (error) {
-      console.error('Error fetching sync status:', error)
       setSyncStatus({
         connected: false,
         total_appointments: 0,
@@ -77,7 +76,6 @@ export default function CalendarSync() {
       // Refresh sync status
       await fetchSyncStatus()
     } catch (error) {
-      console.error('Error syncing appointments:', error)
       setSyncResult({
         success: 0,
         failed: 0,
@@ -108,8 +106,7 @@ export default function CalendarSync() {
 
       await fetchSyncStatus()
     } catch (error) {
-      console.error('Error cleaning up orphaned events:', error)
-    } finally {
+      } finally {
       setSyncing(false)
     }
   }

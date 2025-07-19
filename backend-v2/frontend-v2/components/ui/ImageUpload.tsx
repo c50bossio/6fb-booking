@@ -11,6 +11,7 @@ import {
   imageConfig 
 } from '@/lib/image-optimization'
 import { Upload, X, Image as ImageIcon, AlertCircle, CheckCircle } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 interface ImageUploadProps {
   value?: string[]
@@ -49,6 +50,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   compress = true,
   children,
 }) => {
+  const { toast } = useToast()
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([])
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -58,7 +60,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     
     // Check file count limit
     if (value.length + filesArray.length > maxFiles) {
-      alert(`Maximum ${maxFiles} files allowed`)
+      toast({
+        title: "File Limit Exceeded",
+        description: `Maximum ${maxFiles} files allowed`,
+        variant: "destructive",
+      })
       return
     }
 

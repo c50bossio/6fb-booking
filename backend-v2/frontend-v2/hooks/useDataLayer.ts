@@ -325,7 +325,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
         }
         
       } catch (error) {
-        console.error('Error initializing DataLayer:', error);
         setState(prev => ({
           ...prev,
           isLoading: false,
@@ -335,8 +334,7 @@ export const useDataLayer = (config?: DataLayerConfig) => {
         
         // Fallback to GA4 if available
         if (config?.enableFallback !== false && analytics) {
-          console.warn('Falling back to GA4 analytics');
-        }
+          }
       }
     };
     
@@ -410,7 +408,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
       
       return success;
     } catch (error) {
-      console.error('Error tracking page view:', error);
       return false;
     }
   }, []);
@@ -444,7 +441,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
       
       return success;
     } catch (error) {
-      console.error('Error tracking appointment booked:', error);
       return false;
     }
   }, []);
@@ -475,7 +471,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
       
       return success;
     } catch (error) {
-      console.error('Error tracking payment completed:', error);
       return false;
     }
   }, []);
@@ -505,7 +500,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
       
       return success;
     } catch (error) {
-      console.error('Error tracking user registration:', error);
       return false;
     }
   }, []);
@@ -540,7 +534,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
       
       return success;
     } catch (error) {
-      console.error(`Error tracking event ${eventName}:`, error);
       return false;
     }
   }, []);
@@ -608,7 +601,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
       }));
       return true;
     } catch (error) {
-      console.error('Error updating consent:', error);
       return false;
     }
   }, []);
@@ -623,7 +615,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
       }));
       return true;
     } catch (error) {
-      console.error('Error setting custom dimension:', error);
       return false;
     }
   }, []);
@@ -637,7 +628,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
       }));
       return true;
     } catch (error) {
-      console.error('Error setting custom metric:', error);
       return false;
     }
   }, []);
@@ -663,7 +653,6 @@ export const useDataLayer = (config?: DataLayerConfig) => {
     try {
       return flushGTMEvents();
     } catch (error) {
-      console.error('Error flushing events:', error);
       return false;
     }
   }, []);

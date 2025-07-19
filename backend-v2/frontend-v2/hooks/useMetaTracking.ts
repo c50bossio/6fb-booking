@@ -104,15 +104,9 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
         setIsInitialized(true)
         
         if (config.debugMode) {
-          console.log('[Meta Tracking] Initialized successfully', {
-            enableClientSide: config.enableClientSide,
-            enableServerSide: config.enableServerSide,
-            hasConsent
-          })
-        }
+          }
       } catch (error) {
-        console.error('[Meta Tracking] Initialization failed:', error)
-      }
+        }
     }
 
     initPixel()
@@ -181,8 +175,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
   ): Promise<boolean> => {
     if (!config.enableServerSide || config.testMode) {
       if (config.debugMode && config.testMode) {
-        console.log('[Meta Tracking] Test server-side event:', eventData)
-      }
+        }
       return true
     }
 
@@ -202,12 +195,10 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
       const result = await response.json()
       
       if (config.debugMode) {
-        console.log('[Meta Tracking] Server-side event sent successfully:', result)
-      }
+        }
       
       return true
     } catch (error) {
-      console.error('[Meta Tracking] Server-side event failed:', error)
       return false
     }
   }, [config.enableServerSide, config.testMode, config.debugMode])
@@ -267,11 +258,8 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
       }
 
       if (config.debugMode) {
-        console.log('[Meta Tracking] Batch processed successfully:', batchToProcess.length, 'events')
-      }
+        }
     } catch (error) {
-      console.error('[Meta Tracking] Batch processing failed:', error)
-      
       // Retry failed events (up to 3 times)
       const retryEvents = batchToProcess
         .filter(event => event.retryCount < 3)
@@ -301,8 +289,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
   ) => {
     if (!canTrack || !hasConsent) {
       if (config.debugMode) {
-        console.log('[Meta Tracking] Event blocked by consent:', eventName)
-      }
+        }
       return
     }
 
@@ -342,19 +329,11 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
         }
 
         if (config.debugMode) {
-          console.log('[Meta Tracking] Client-side event sent:', {
-            eventName,
-            eventId,
-            source: 'pixel'
-          })
-        }
+          }
       } catch (error) {
-        console.error('[Meta Tracking] Client-side event failed:', error)
-        
         // Fallback to server-side if client-side fails and fallback is enabled
         if (options.fallbackToPixel !== false && shouldTrackServerSide) {
-          console.log('[Meta Tracking] Falling back to server-side tracking')
-        }
+          }
       }
     }
 
@@ -384,13 +363,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
       addToBatch(serverEventData)
 
       if (config.debugMode) {
-        console.log('[Meta Tracking] Server-side event queued:', {
-          eventName,
-          eventId,
-          source: 'conversions_api',
-          deduplicationEnabled: config.enableDeduplication
-        })
-      }
+        }
     }
 
     if (shouldTrackServerSide) {
@@ -398,18 +371,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
     }
 
     if (config.debugMode) {
-      console.log('[Meta Tracking] Event tracking initiated:', {
-        eventType,
-        eventName,
-        eventId,
-        clientSide: shouldTrackClientSide,
-        serverSide: shouldTrackServerSide,
-        deduplicationEnabled: config.enableDeduplication,
-        parameters,
-        userData: combinedUserData,
-        deduplicationInfo: config.enableDeduplication ? deduplicationInfo : null
-      })
-    }
+      }
   }, [
     canTrack, 
     hasConsent, 

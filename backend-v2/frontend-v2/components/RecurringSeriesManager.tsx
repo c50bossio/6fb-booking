@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { LoadingButton, LoadingSpinner, ErrorDisplay } from '@/components/LoadingStates'
 import Calendar from '@/components/Calendar'
 import TimeSlots from '@/components/TimeSlots'
+import { useToast } from '@/hooks/use-toast'
 import {
   updateRecurringPattern,
   deleteRecurringPattern,
@@ -25,6 +26,7 @@ interface RecurringSeriesManagerProps {
 }
 
 export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: RecurringSeriesManagerProps) {
+  const { toast } = useToast()
   const [activeTab, setActiveTab] = useState<'overview' | 'occurrences' | 'modify'>('overview')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -48,7 +50,6 @@ export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: R
       const data = await getUpcomingAppointments(pattern.id)
       setAppointments(data.appointments)
     } catch (err) {
-      console.error('Failed to fetch appointments:', err)
       setError('Failed to load appointments')
     } finally {
       setLoading(false)
@@ -66,17 +67,23 @@ export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: R
         await fetchUpcomingAppointments()
         // Show success message
         if (result.total_generated > 0) {
-          alert(`Successfully generated ${result.total_generated} appointments!`)
+          toast({
+            title: "Success",
+            description: `Successfully generated ${result.total_generated} appointments!`,
+          })
         }
         if (result.total_conflicts > 0) {
-          alert(`Note: ${result.total_conflicts} appointments had conflicts and need to be rescheduled.`)
+          toast({
+            title: "Warning",
+            description: `Note: ${result.total_conflicts} appointments had conflicts and need to be rescheduled.`,
+            variant: "destructive",
+          })
         }
       } else {
         // Show preview
         setAppointments(result.appointments)
       }
     } catch (err: any) {
-      console.error('Failed to generate appointments:', err)
       setError(err.message || 'Failed to generate appointments')
     } finally {
       setLoading(false)
@@ -91,7 +98,6 @@ export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: R
       setShowConfirmDialog(null)
       onUpdate()
     } catch (err: any) {
-      console.error('Failed to cancel series:', err)
       setError(err.message || 'Failed to cancel series')
     } finally {
       setLoading(false)
@@ -106,7 +112,6 @@ export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: R
       setShowConfirmDialog(null)
       onUpdate()
     } catch (err: any) {
-      console.error('Failed to delete pattern:', err)
       setError(err.message || 'Failed to delete pattern')
     } finally {
       setLoading(false)
@@ -135,7 +140,6 @@ export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: R
       // Refresh appointments
       await fetchUpcomingAppointments()
     } catch (err: any) {
-      console.error('Failed to modify occurrence:', err)
       setError(err.message || 'Failed to modify occurrence')
     } finally {
       setLoading(false)
@@ -157,7 +161,6 @@ export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: R
       // Refresh appointments
       await fetchUpcomingAppointments()
     } catch (err: any) {
-      console.error('Failed to cancel occurrence:', err)
       setError(err.message || 'Failed to cancel occurrence')
     } finally {
       setLoading(false)

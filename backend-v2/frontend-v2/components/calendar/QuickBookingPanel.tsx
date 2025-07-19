@@ -63,8 +63,7 @@ export default function QuickBookingPanel({
         .slice(0, 3)
       setRecentBookings(recent)
     } catch (error) {
-      console.error('Failed to load quick booking data:', error)
-    } finally {
+      } finally {
       setLoading(false)
     }
   }

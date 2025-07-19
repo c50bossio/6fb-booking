@@ -104,8 +104,7 @@ export default function CalendarConflictResolver() {
       ]
       setConflicts(mockConflicts)
     } catch (error) {
-      console.error('Error fetching conflicts:', error)
-    } finally {
+      } finally {
       setLoading(false)
     }
   }
@@ -160,8 +159,7 @@ export default function CalendarConflictResolver() {
         return newSet
       })
     } catch (error) {
-      console.error('Error resolving conflict:', error)
-    } finally {
+      } finally {
       setResolving(null)
     }
   }

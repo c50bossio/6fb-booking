@@ -6,6 +6,7 @@ import { Button } from '../ui/button'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Card, CardContent } from '../ui/card'
 import { reportApiError, captureUserFeedback, addUserActionBreadcrumb } from '../../lib/sentry'
+import { showToast } from '../../lib/toast-utils'
 
 interface Props {
   children: ReactNode
@@ -64,8 +65,6 @@ export class FormErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('FormErrorBoundary caught an error:', error, errorInfo)
-    
     // Try to save form data to localStorage
     try {
       if (this.props.contextInfo?.formData) {
@@ -74,8 +73,7 @@ export class FormErrorBoundary extends Component<Props, State> {
         this.setState({ savedFormData: formDataString })
       }
     } catch (saveError) {
-      console.warn('Failed to save form data:', saveError)
-    }
+      }
     
     // Enhanced error reporting for form-specific issues
     const sentryEventId = reportApiError(error, {
@@ -183,7 +181,10 @@ export class FormErrorBoundary extends Component<Props, State> {
     
     if (this.state.savedFormData) {
       // Show user the saved data (they can copy it if needed)
-      alert(`Your form data has been backed up. It will be restored when you retry.`)
+      showToast({
+        title: "Form Data Backed Up",
+        description: "Your form data has been backed up. It will be restored when you retry.",
+      })
     }
     
     this.resetErrorBoundary()

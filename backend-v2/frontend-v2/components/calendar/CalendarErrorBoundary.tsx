@@ -71,8 +71,7 @@ export function useCalendarErrorReporting() {
         
         localStorage.setItem('calendar_errors', JSON.stringify(errors))
       } catch (storageError) {
-        console.warn('Failed to store error locally:', storageError)
-      }
+        }
     }
     
     return calendarError
@@ -140,13 +139,6 @@ export class CalendarErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error details
-    console.error('Calendar Error Boundary caught an error:', {
-      error,
-      errorInfo,
-      context: this.props.context,
-      errorId: this.state.errorId
-    })
-
     // Call custom error handler if provided
     if (this.props.onError && this.state.error) {
       this.props.onError(this.state.error, errorInfo)
@@ -157,7 +149,6 @@ export class CalendarErrorBoundary extends Component<Props, State> {
     
     // Auto-retry for recoverable errors
     if (this.state.error?.recoverable && this.state.retryCount < this.maxRetries) {
-      console.log(`Attempting auto-retry ${this.state.retryCount + 1}/${this.maxRetries}`)
       setTimeout(() => {
         this.handleRetry()
       }, Math.pow(2, this.state.retryCount) * 1000) // Exponential backoff
@@ -182,8 +173,7 @@ export class CalendarErrorBoundary extends Component<Props, State> {
         })
       }
     } catch (monitoringError) {
-      console.warn('Failed to send error to monitoring service:', monitoringError)
-    }
+      }
   }
 
   private handleRetry = async () => {
@@ -222,7 +212,7 @@ export class CalendarErrorBoundary extends Component<Props, State> {
           maxRetries: 1, // Single attempt since we're managing retries at component level
           initialDelay: Math.min(1000 * Math.pow(2, this.state.retryCount), 10000),
           onRetry: (error, attemptNumber) => {
-            console.log(`Retrying calendar mount (attempt ${this.state.retryCount + 1}/${this.maxRetries})`)
+            `)
           }
         }
       )

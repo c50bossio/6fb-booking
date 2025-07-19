@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Modal, ModalBody } from '../ui/Modal'
 import { Card } from '@/components/ui/card'
 import LinkCustomizer from './LinkCustomizer'
+import { useToast } from '@/hooks/use-toast'
 import {
   LinkIcon,
   CodeBracketIcon,
@@ -43,6 +44,7 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
   services = [],
   barbers = []
 }) => {
+  const { toast } = useToast()
   const [copiedOption, setCopiedOption] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState<string | null>(null)
   const [showLinkCustomizer, setShowLinkCustomizer] = useState(false)
@@ -55,7 +57,10 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
     setTimeout(() => {
       setIsGenerating(null)
       // Show QR code modal or download
-      alert('QR Code generated! (This would show the actual QR code in production)')
+      toast({
+        title: "QR Code Ready",
+        description: 'QR Code generated! (This would show the actual QR code in production)',
+      })
     }, 1500)
   }
 
@@ -66,8 +71,7 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
       setCopiedOption(optionId)
       setTimeout(() => setCopiedOption(null), 2000)
     } catch (err) {
-      console.error('Failed to copy:', err)
-    }
+      }
   }
 
   // Generate embed code
@@ -114,8 +118,7 @@ ${businessName}`
       try {
         await navigator.share(shareData)
       } catch (err) {
-        console.log('Share cancelled')
-      }
+        }
     } else {
       // Fallback: copy to clipboard
       copyToClipboard(`${shareData.text} - ${shareData.url}`, 'social')

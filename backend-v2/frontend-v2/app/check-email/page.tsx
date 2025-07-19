@@ -55,7 +55,6 @@ function CheckEmailContent() {
         setResendSuccess(false)
       }, 5000)
     } catch (error: any) {
-      console.error('Resend verification failed:', error)
       // Error will be shown by the useAsyncOperation
     }
   }

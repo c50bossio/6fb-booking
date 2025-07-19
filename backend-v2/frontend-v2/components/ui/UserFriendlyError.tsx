@@ -151,8 +151,7 @@ export function UserFriendlyError({
           {
             maxRetries: 3,
             onRetry: (error, attempt) => {
-              console.log(`Retry attempt ${attempt} after error:`, error)
-            }
+              }
           }
         )
         
@@ -163,8 +162,7 @@ export function UserFriendlyError({
         await onRetry()
       }
     } catch (retryError) {
-      console.error('Retry failed:', retryError)
-    } finally {
+      } finally {
       setRetrying(false)
     }
   }

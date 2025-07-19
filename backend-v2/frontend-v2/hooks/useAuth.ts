@@ -26,31 +26,22 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
   const checkAuthState = async () => {
     // Quick check - if already loading or no window, skip
     if (typeof window === 'undefined') {
-      console.log('🔍 useAuth: Server-side rendering, skipping auth check')
       return
     }
     
-    console.log('🔍 useAuth: ============ STARTING AUTH CHECK ============')
-    console.log('🔍 useAuth: Current state - user:', !!user, 'loading:', isLoading, 'error:', error)
     setIsLoading(true)
     setError(null)
     
     try {
       // Check if we have a token first
       const token = localStorage.getItem('token')
-      console.log('🔍 useAuth: Token present:', !!token)
-      
       if (!token) {
-        console.log('🔍 useAuth: ❌ No token found, user not authenticated')
-        console.log('🔍 useAuth: Setting state - user: null, loading: false, error: null')
         setUser(null)
         setIsLoading(false)
-        console.log('🔍 useAuth: ============ AUTH CHECK COMPLETE (NO TOKEN) ============')
+        ============')
         return
       }
 
-      console.log('🔍 useAuth: Token found, validating with API')
-      
       // Make API call to validate token - with reasonable timeout
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       
@@ -65,48 +56,38 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
 
         if (response.ok) {
           const userData = await response.json()
-          console.log('🔍 useAuth: ✅ Token valid, user authenticated:', userData.email || userData.id)
-          console.log('🔍 useAuth: Setting state - user: authenticated, loading: false, error: null')
           setUser(userData)
           setError(null)
         } else if (response.status === 401 || response.status === 403) {
-          console.log('🔍 useAuth: ❌ Token invalid/expired (status:', response.status, '), clearing storage')
+          , clearing storage')
           // Clear invalid tokens
           localStorage.removeItem('token')
           localStorage.removeItem('refresh_token')
           localStorage.removeItem('user')
           document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-          console.log('🔍 useAuth: Setting state - user: null, loading: false, error: null')
           setUser(null)
           setError(null)
         } else {
-          console.warn('🔍 useAuth: ⚠️ API error (status:', response.status, '), keeping tokens')
-          console.log('🔍 useAuth: Setting state - user: null, loading: false, error: api_error')
+          , keeping tokens')
           // Don't clear tokens for server errors, just set user to null
           setUser(null)
           setError('api_error')
         }
       } catch (fetchError) {
-        console.warn('🔍 useAuth: 🌐 Network error:', fetchError)
-        console.log('🔍 useAuth: Setting state - user: null, loading: false, error: network_error')
         // For network errors, don't clear tokens but set user to null
         setUser(null)
         setError('network_error')
       }
     } catch (error) {
-      console.warn('🔍 useAuth: 💥 Auth check failed:', error)
-      console.log('🔍 useAuth: Setting state - user: null, loading: false, error:', error instanceof Error ? error.message : 'unknown_error')
       setUser(null)
       setError(error instanceof Error ? error.message : 'unknown_error')
     } finally {
       setIsLoading(false)
-      console.log('🔍 useAuth: ============ AUTH CHECK COMPLETE ============')
-    }
+      }
   }
 
   const logout = async () => {
     try {
-      console.log('🔓 logout: Starting logout process')
       await apiLogout()
       setUser(null)
       setError(null)
@@ -120,16 +101,13 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
         sessionStorage.clear()
         // Clear auth cookie
         document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-        console.log('🔓 logout: All auth storage cleared')
-      }
+        }
       
       // Redirect to homepage after logout
       if (typeof window !== 'undefined') {
-        console.log('🔓 logout: Redirecting to homepage')
         window.location.href = '/'
       }
     } catch (error) {
-      console.error('Logout failed:', error)
       setError('Logout failed')
       
       // Even if API logout fails, clear local storage
@@ -145,8 +123,6 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
 
   const refreshToken = async () => {
     try {
-      console.log('🔄 refreshToken: Starting token refresh')
-      
       const refreshTokenValue = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null
       if (!refreshTokenValue) {
         throw new Error('No refresh token available')
@@ -163,8 +139,6 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
 
       if (response.ok) {
         const data = await response.json()
-        console.log('🔄 refreshToken: Token refreshed successfully')
-        
         // Update stored tokens
         if (typeof window !== 'undefined' && data.access_token) {
           localStorage.setItem('token', data.access_token)
@@ -181,7 +155,6 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
         throw new Error(`Token refresh failed: ${response.status}`)
       }
     } catch (error) {
-      console.error('🔄 refreshToken: Refresh failed:', error)
       // If refresh fails, logout user
       await logout()
       throw error
@@ -189,8 +162,6 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
   }
 
   const setAuthTokens = (accessToken: string, refreshToken: string) => {
-    console.log('🔐 setAuthTokens: Storing new auth tokens')
-    
     if (typeof window !== 'undefined') {
       // Store tokens in localStorage
       localStorage.setItem('token', accessToken)

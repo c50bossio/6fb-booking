@@ -50,8 +50,7 @@ export default function BillingSection({ userRole }: BillingSectionProps) {
         }
         setBillingData(mockData)
       } catch (error) {
-        console.error('Error fetching billing:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }

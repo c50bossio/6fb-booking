@@ -92,13 +92,7 @@ export default function RecurringAppointmentsPage() {
         throw new Error('Failed to fetch patterns');
       }
     } catch (error) {
-      console.error('Error fetching patterns:', error);
-      console.log({
-        title: 'Error',
-        description: 'Failed to load recurring patterns',
-        variant: 'destructive',
-      });
-    }
+      }
   };
 
   const fetchUpcomingAppointments = async () => {
@@ -116,7 +110,6 @@ export default function RecurringAppointmentsPage() {
       }
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching upcoming appointments:', error);
       setLoading(false);
     }
   };
@@ -151,22 +144,12 @@ export default function RecurringAppointmentsPage() {
           service_name: 'Haircut'
         });
 
-        console.log({
-          title: 'Success',
-          description: 'Recurring pattern created successfully',
-        });
-      } else {
+        } else {
         const error = await response.json();
         throw new Error(error.detail || 'Failed to create pattern');
       }
     } catch (error) {
-      console.error('Error creating pattern:', error);
-      console.log({
-        title: 'Error',
-        description: 'Failed to create recurring pattern',
-        variant: 'destructive',
-      });
-    } finally {
+      } finally {
       setCreating(false);
     }
   };
@@ -186,22 +169,12 @@ export default function RecurringAppointmentsPage() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log({
-          title: 'Success',
-          description: `Generated ${result.total_generated} appointments`,
-        });
         fetchUpcomingAppointments();
       } else {
         throw new Error('Failed to generate appointments');
       }
     } catch (error) {
-      console.error('Error generating appointments:', error);
-      console.log({
-        title: 'Error',
-        description: 'Failed to generate appointments',
-        variant: 'destructive',
-      });
-    }
+      }
   };
 
   const deletePattern = async (patternId: number) => {
@@ -219,21 +192,11 @@ export default function RecurringAppointmentsPage() {
 
       if (response.ok) {
         setPatterns(patterns.filter(p => p.id !== patternId));
-        console.log({
-          title: 'Success',
-          description: 'Recurring pattern deleted',
-        });
-      } else {
+        } else {
         throw new Error('Failed to delete pattern');
       }
     } catch (error) {
-      console.error('Error deleting pattern:', error);
-      console.log({
-        title: 'Error',
-        description: 'Failed to delete pattern',
-        variant: 'destructive',
-      });
-    }
+      }
   };
 
   const formatDaysOfWeek = (days: number[]) => {

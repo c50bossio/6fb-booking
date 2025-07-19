@@ -167,7 +167,6 @@ export default function ComparisonChart({
       setComparisonData(comparison)
       
     } catch (err) {
-      console.error('Failed to fetch comparison data:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to load comparison data'
       setError(errorMessage)
     } finally {

@@ -76,8 +76,6 @@ export function useAppointmentServices({
         }
       }
     } catch (err: any) {
-      console.error('Failed to load services:', err)
-      
       // Provide more specific error messages
       if (err.message?.includes('Network') || err.message?.includes('Failed to connect')) {
         setServicesError('Unable to connect to server. Please check your connection.')
@@ -130,7 +128,6 @@ export function useAppointmentServices({
         }
       }
     } catch (err: any) {
-      console.error('Failed to load barbers:', err)
       setBarbersError('Failed to load barbers')
       // Don't show error for barbers loading as it's not critical
     } finally {

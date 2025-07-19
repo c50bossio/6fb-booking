@@ -153,7 +153,6 @@ export default function ReviewsAnalyticsPage() {
 
         setAnalyticsData(mockData)
       } catch (err) {
-        console.error('Failed to load review analytics:', err)
         setError(err instanceof Error ? err.message : 'Failed to load analytics')
       } finally {
         setLoading(false)
@@ -208,8 +207,7 @@ export default function ReviewsAnalyticsPage() {
   ]
 
   const handleExport = () => {
-    console.log('Exporting review analytics...')
-  }
+    }
 
   return (
     <AnalyticsLayout

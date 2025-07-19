@@ -68,8 +68,7 @@ export default function ExportProgress({ progress, onReset }: ExportProgressProp
     if (progress.downloadUrl) {
       // In a real app, this would trigger a download
       // For now, we'll just log it
-      console.log('Downloading:', progress.filename)
-    }
+      }
   }
 
   return (

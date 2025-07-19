@@ -148,7 +148,6 @@ const ScheduleGrid = React.memo(function ScheduleGrid({
       
       setSchedule(transformedSchedule)
     } catch (error) {
-      console.error('Failed to load schedule:', error)
       onError('Failed to load schedule data')
     } finally {
       setLoading(false)
@@ -187,7 +186,6 @@ const ScheduleGrid = React.memo(function ScheduleGrid({
       setSelectedSlot(null)
       loadScheduleData()
     } catch (error: any) {
-      console.error('Error adding availability:', error)
       const errorMessage = error?.message || 'Failed to add availability'
       onError(errorMessage)
     }
@@ -207,7 +205,6 @@ const ScheduleGrid = React.memo(function ScheduleGrid({
       setEditingAvailability(null)
       loadScheduleData()
     } catch (error: any) {
-      console.error('Error updating availability:', error)
       const errorMessage = error?.message || 'Failed to update availability'
       onError(errorMessage)
     }
@@ -221,7 +218,6 @@ const ScheduleGrid = React.memo(function ScheduleGrid({
       onSuccess('Availability deleted successfully')
       loadScheduleData()
     } catch (error: any) {
-      console.error('Error deleting availability:', error)
       const errorMessage = error?.message || 'Failed to delete availability'
       onError(errorMessage)
     }

@@ -51,11 +51,9 @@ export function GA4Provider({ children }: GA4ProviderProps) {
             setAnalytics(ga4Instance)
             setIsInitialized(true)
             
-            console.log('GA4 initialized successfully with consent status:', consentStatus)
-          }
+            }
         } catch (error) {
-          console.error('Failed to initialize GA4:', error)
-        }
+          }
       }
     }
 
@@ -99,8 +97,7 @@ export function GA4Provider({ children }: GA4ProviderProps) {
       
       analytics.updateConsent(consentStatus)
       
-      console.log('GA4 consent updated:', consentStatus)
-    }
+      }
   }, [analytics, preferences])
 
   const trackPageView = useCallback((title: string, path: string) => {
@@ -202,11 +199,9 @@ export function useGA4BusinessTracking() {
             customDimensions
           )
         default:
-          console.warn(`Unknown appointment event type: ${eventType}`)
           return false
       }
     } catch (error) {
-      console.error(`Failed to track appointment ${eventType} event:`, error)
       return false
     }
   }, [analytics, hasConsent])
@@ -269,11 +264,9 @@ export function useGA4BusinessTracking() {
             customDimensions
           )
         default:
-          console.warn(`Unknown payment event type: ${eventType}`)
           return false
       }
     } catch (error) {
-      console.error(`Failed to track payment ${eventType} event:`, error)
       return false
     }
   }, [analytics, hasConsent])
@@ -312,11 +305,9 @@ export function useGA4BusinessTracking() {
             customDimensions
           )
         default:
-          console.warn(`Unknown user event type: ${eventType}`)
           return false
       }
     } catch (error) {
-      console.error(`Failed to track user ${eventType} event:`, error)
       return false
     }
   }, [analytics, hasConsent])
@@ -348,7 +339,6 @@ export function useGA4BusinessTracking() {
       switch (eventType) {
         case 'service_viewed':
           if (!data.serviceId || !data.serviceName) {
-            console.warn('Service ID and name are required for service_viewed event')
             return false
           }
           return await analytics.trackServiceViewed(
@@ -360,7 +350,6 @@ export function useGA4BusinessTracking() {
           )
         case 'barber_viewed':
           if (!data.barberId || !data.barberName) {
-            console.warn('Barber ID and name are required for barber_viewed event')
             return false
           }
           return await analytics.trackBarberViewed(
@@ -371,7 +360,6 @@ export function useGA4BusinessTracking() {
           )
         case 'availability_checked':
           if (!data.barberId || !data.dateRequested || data.availableSlots === undefined) {
-            console.warn('Barber ID, date, and available slots are required for availability_checked event')
             return false
           }
           return await analytics.trackAvailabilityChecked(
@@ -381,11 +369,9 @@ export function useGA4BusinessTracking() {
             customDimensions
           )
         default:
-          console.warn(`Unknown business event type: ${eventType}`)
           return false
       }
     } catch (error) {
-      console.error(`Failed to track business ${eventType} event:`, error)
       return false
     }
   }, [analytics, hasConsent])

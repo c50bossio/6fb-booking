@@ -46,8 +46,7 @@ export function MobileTimePicker({
     try {
       await Haptics.impact({ style: ImpactStyle.Light })
     } catch (error) {
-      console.debug('Haptics not available')
-    }
+      }
   }, [])
 
   // Update time

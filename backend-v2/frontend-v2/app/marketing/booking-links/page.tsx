@@ -147,7 +147,6 @@ export default function BookingLinksPage() {
         { id: '2', name: 'Westside Branch' }
       ])
     } catch (error) {
-      console.error('Failed to load data:', error)
       toast({
         title: 'Error',
         description: 'Failed to load booking links',

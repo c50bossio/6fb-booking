@@ -69,7 +69,6 @@ export default function RealTimeAnalytics({
       setError(null)
       
     } catch (err) {
-      console.error('Error fetching real-time metrics:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch metrics')
       setIsConnected(false)
     } finally {

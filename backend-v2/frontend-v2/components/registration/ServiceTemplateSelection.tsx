@@ -57,8 +57,6 @@ export function ServiceTemplateSelection({
 
   const handleTemplateSelect = (templates: ServiceTemplate[]) => {
     onUpdate(templates)
-    console.log('[ServiceTemplateSelection] Templates selected:', templates)
-    
     // Track analytics for template selection
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'template_selection', {

@@ -52,8 +52,7 @@ export default function WebhooksPage() {
       const webhookStats = await webhooksAPI.getStats()
       setStats(webhookStats)
     } catch (err: any) {
-      console.error('Failed to refresh stats:', err)
-    }
+      }
   }
 
   if (loading) {

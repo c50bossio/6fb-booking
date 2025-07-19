@@ -31,8 +31,7 @@ export default function EarningsSection({ userRole, dateRange }: EarningsSection
         )
         setEarningsData(response)
       } catch (error) {
-        console.error('Error fetching earnings:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }

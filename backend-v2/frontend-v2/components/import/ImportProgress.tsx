@@ -90,7 +90,6 @@ export default function ImportProgress({
             await new Promise(resolve => setTimeout(resolve, 500))
           }
         } catch (error) {
-          console.error('Batch import error:', error)
           errors.push({
             batch: index,
             error: error instanceof Error ? error.message : 'Unknown error'
@@ -117,7 +116,6 @@ export default function ImportProgress({
 
       onImportComplete(results)
     } catch (error) {
-      console.error('Import error:', error)
       onProgressUpdate({
         isImporting: false,
         progress: 0,

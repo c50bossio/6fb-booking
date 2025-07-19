@@ -79,7 +79,6 @@ export default function OverviewPage({}: OverviewPageProps) {
         setTodayStats(stats)
         
       } catch (err) {
-        console.error('Failed to load overview data:', err)
         setError(err instanceof Error ? err.message : 'Failed to load data')
       } finally {
         setLoading(false)

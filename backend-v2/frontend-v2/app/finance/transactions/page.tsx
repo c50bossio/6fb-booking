@@ -136,8 +136,7 @@ export default function TransactionsPage() {
           successful_rate: (report.transactions.successful / report.transactions.total) * 100
         })
       } catch (error) {
-        console.error('Error fetching transactions:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }
@@ -173,8 +172,7 @@ export default function TransactionsPage() {
         window.URL.revokeObjectURL(url)
       }
     } catch (error) {
-      console.error('Error exporting transactions:', error)
-    }
+      }
   }
 
   const filteredPayments = payments.filter(payment => {

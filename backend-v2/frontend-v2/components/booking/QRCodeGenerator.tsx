@@ -63,7 +63,6 @@ export default function QRCodeGenerator({
       const result = await generateBookingQRCode(bookingUrl, selectedSize);
       setQrCodeData(result);
     } catch (err) {
-      console.error('Failed to generate QR code:', err);
       setError('Failed to generate QR code. Please try again.');
     } finally {
       setIsLoading(false);
@@ -77,7 +76,6 @@ export default function QRCodeGenerator({
       const filename = generateQRCodeFilename('booking-qr-code', selectedSize);
       downloadQRCode(qrCodeData.downloadUrl, filename);
     } catch (err) {
-      console.error('Failed to download QR code:', err);
       setError('Failed to download QR code. Please try again.');
     }
   };
@@ -88,7 +86,6 @@ export default function QRCodeGenerator({
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
-      console.error('Failed to copy URL:', err);
       setError('Failed to copy URL to clipboard');
     }
   };
@@ -102,7 +99,6 @@ export default function QRCodeGenerator({
           url: bookingUrl,
         });
       } catch (err) {
-        console.error('Failed to share:', err);
         // Fallback to copy URL
         handleCopyUrl();
       }

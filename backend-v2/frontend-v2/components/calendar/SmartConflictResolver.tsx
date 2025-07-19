@@ -69,8 +69,7 @@ export default function SmartConflictResolver({
             try {
               await onResolveConflict(conflict.id, automatedFix)
             } catch (error) {
-              console.error('Auto-resolve failed:', error)
-            }
+              }
           }
         })
     }
@@ -111,8 +110,7 @@ export default function SmartConflictResolver({
       await onResolveConflict(conflictId, resolution)
       setSelectedConflict(null)
     } catch (error) {
-      console.error('Failed to resolve conflict:', error)
-    } finally {
+      } finally {
       setProcessingResolution(null)
     }
   }

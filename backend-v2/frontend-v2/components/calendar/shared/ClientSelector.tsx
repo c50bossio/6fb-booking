@@ -69,7 +69,6 @@ export const ClientSelector = memo(function ClientSelector({
       const response = await searchClients(searchTerm)
       setClients(response.clients || [])
     } catch (err) {
-      console.error('Failed to search clients:', err)
       setError('Failed to search clients')
     } finally {
       setLoadingClients(false)
@@ -95,7 +94,6 @@ export const ClientSelector = memo(function ClientSelector({
       setIsDropdownOpen(false)
       setNewClientData({ first_name: '', last_name: '', email: '', phone: '' })
     } catch (err) {
-      console.error('Failed to create client:', err)
       setError('Failed to create client')
     } finally {
       setLoading(false)

@@ -50,7 +50,7 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
 
     // Log access denial for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🚫 Access denied: ${path} - User role: ${userRole || 'none'}, Required: ${accessCheck.matchedRoute?.allowedRoles.join(',') || 'authenticated'}`)
+      || 'authenticated'}`)
     }
 
     return NextResponse.redirect(redirectUrl)
@@ -154,8 +154,7 @@ export function logAccessAttempt(
     const ip = request.ip || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
     
-    console.log(`[${timestamp}] Access ${granted ? 'GRANTED' : 'DENIED'} - Path: ${request.nextUrl.pathname}, Role: ${userRole || 'none'}, IP: ${ip}, Reason: ${reason || 'role_check'}`)
-  }
+    }
   
   // In production, you'd send this to a logging service
   // Example: send to Sentry, DataDog, or CloudWatch

@@ -73,7 +73,6 @@ export default function RescheduleModal({
         setNote('')
         setError(null)
       } catch (err) {
-        console.error('Error parsing appointment date:', err)
         setError('Unable to load appointment data')
       }
     }
@@ -142,7 +141,6 @@ export default function RescheduleModal({
       onClose()
       
     } catch (err: any) {
-      console.error('Error rescheduling appointment:', err)
       setError(err.message || 'Failed to reschedule appointment')
     } finally {
       setLoading(false)

@@ -141,7 +141,6 @@ export default function UnifiedAnalyticsPage() {
 
         setAnalyticsData(data)
       } catch (err) {
-        console.error('Failed to load analytics:', err)
         setError(err instanceof Error ? err.message : 'Failed to load analytics')
       } finally {
         setLoading(false)
@@ -155,8 +154,7 @@ export default function UnifiedAnalyticsPage() {
 
   const handleExport = async () => {
     // Export functionality
-    console.log('Exporting analytics data...')
-  }
+    }
 
   if (loading) {
     return <PageLoading message="Loading analytics..." />

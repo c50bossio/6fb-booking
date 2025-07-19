@@ -50,7 +50,6 @@ export default function AppointmentPatterns({ userId, timeRange }: AppointmentPa
         )
         setAnalytics(data)
       } catch (err) {
-        console.error('Failed to fetch appointment patterns:', err)
         const errorMessage = err instanceof Error ? err.message : 'Failed to load appointment data'
         setError(errorMessage)
       } finally {

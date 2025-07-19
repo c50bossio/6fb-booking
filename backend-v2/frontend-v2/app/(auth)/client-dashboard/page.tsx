@@ -77,7 +77,6 @@ export default function ClientDashboard() {
       setPastBookings(past)
       setProfile(profileData)
     } catch (err) {
-      console.error('Failed to fetch dashboard data:', err)
       setError('Failed to load your dashboard. Please try again.')
     } finally {
       setLoading(false)

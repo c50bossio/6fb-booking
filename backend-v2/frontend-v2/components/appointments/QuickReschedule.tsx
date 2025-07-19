@@ -107,8 +107,7 @@ export default function QuickReschedule({
           if (suggestions.length >= 3) break
         }
       } catch (err) {
-        console.error('Failed to load slots for date:', checkDate, err)
-      }
+        }
     }
     
     setSuggestedSlots(suggestions)
@@ -136,7 +135,6 @@ export default function QuickReschedule({
         setSelectedTime(available[0].time)
       }
     } catch (err) {
-      console.error('Failed to load time slots:', err)
       toast({
         title: 'Error',
         description: 'Failed to load available times.',
@@ -165,7 +163,6 @@ export default function QuickReschedule({
       
       onSuccess?.(result)
     } catch (err: any) {
-      console.error('Failed to reschedule appointment:', err)
       toast({
         title: 'Error',
         description: err.message || 'Failed to reschedule appointment.',

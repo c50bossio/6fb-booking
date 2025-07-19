@@ -53,7 +53,6 @@ export default function CheckoutPage() {
 
         setCheckoutState({ step: 'payment' })
       } catch (error) {
-        console.error('Failed to initialize checkout:', error)
         setCheckoutState({ 
           step: 'error', 
           error: 'Failed to load checkout. Please try again.' 
@@ -80,7 +79,6 @@ export default function CheckoutPage() {
       }, 2000)
       
     } catch (error) {
-      console.error('Payment processing failed:', error)
       setCheckoutState({ 
         step: 'error', 
         error: 'Payment processing failed. Please try again.' 

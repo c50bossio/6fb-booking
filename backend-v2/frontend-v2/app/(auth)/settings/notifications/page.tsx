@@ -53,7 +53,6 @@ export default function NotificationsSettingsPage() {
         })
       }
     } catch (error) {
-      console.error('Failed to load notification settings:', error)
       toast({
         title: 'Error',
         description: 'Failed to load notification settings',
@@ -81,7 +80,6 @@ export default function NotificationsSettingsPage() {
         description: 'Notification settings updated successfully'
       })
     } catch (error) {
-      console.error('Failed to save notification settings:', error)
       toast({
         title: 'Error',
         description: 'Failed to save notification settings',

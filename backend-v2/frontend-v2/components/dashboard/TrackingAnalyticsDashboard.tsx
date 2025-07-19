@@ -249,7 +249,6 @@ export default function TrackingAnalyticsDashboard({
       setAnalytics(mockData)
       setLastUpdated(new Date())
     } catch (error) {
-      console.error('Failed to fetch tracking analytics:', error)
       toast.error('Failed to load tracking analytics')
     } finally {
       setLoading(false)

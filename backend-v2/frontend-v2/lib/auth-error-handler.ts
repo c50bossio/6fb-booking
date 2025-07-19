@@ -57,8 +57,6 @@ export function handleAuthError(
     return false
   }
 
-  console.log('Auth error detected:', error.message || error)
-
   // Clear stored tokens
   if (clearTokens && typeof window !== 'undefined') {
     localStorage.removeItem('token')
@@ -71,7 +69,6 @@ export function handleAuthError(
     const currentPath = window.location.pathname
     
     if (publicRoutes.includes(currentPath) || currentPath.startsWith('/agents/') || currentPath.startsWith('/verify-email/')) {
-      console.log('Auth error on public route, not redirecting')
       return true
     }
   }
