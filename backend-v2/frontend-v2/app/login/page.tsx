@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { login, getProfile, resendVerification } from '@/lib/api'
 import { getDefaultDashboard } from '@/lib/routeGuards'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
+import { useAuth } from '@/hooks/useAuth'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -25,6 +26,7 @@ function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
+  const { setAuthTokens } = useAuth()
   const [rememberMe, setRememberMe] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [verificationError, setVerificationError] = useState(false)
@@ -91,8 +93,10 @@ function LoginContent() {
       console.log('Login response:', response)
       
       if (response.access_token) {
-        console.log('Token received, fetching profile...')
-        // Token is already stored in the login function
+        console.log('Token received, setting auth tokens...')
+        
+        // Use useAuth hook to properly set tokens and update state
+        setAuthTokens(response.access_token, response.refresh_token)
         
         // Handle device trust if remember me is checked
         if (rememberMe && response.user_id) {
@@ -106,47 +110,14 @@ function LoginContent() {
           }
         }
         
-        // Fetch user profile to determine role
-        console.log('✅ Login successful, starting redirect process...')
+        console.log('✅ Login successful, redirecting to dashboard...')
         
-        // Set up a timeout fallback to ensure redirect happens
-        const redirectTimeout = setTimeout(() => {
-          console.log('⏰ Timeout fallback - forcing redirect to dashboard')
-          window.location.href = '/dashboard'
-        }, 3000)
-        
-        try {
-          console.log('📋 Fetching user profile...')
-          const userProfile = await getProfile()
-          console.log('✅ User profile fetched:', userProfile)
-          
-          // Clear timeout since we got profile successfully
-          clearTimeout(redirectTimeout)
-          
-          // Always redirect to dashboard for now
+        // Wait a moment for auth state to update, then redirect
+        setTimeout(() => {
           const dashboardUrl = '/dashboard'
           console.log('🎯 Redirecting to:', dashboardUrl)
-          
-          // Use both methods to ensure redirect works
           router.push(dashboardUrl)
-          
-          // Also set a backup using window.location after short delay
-          setTimeout(() => {
-            if (window.location.pathname === '/login') {
-              console.log('🔄 Router.push failed, using window.location fallback')
-              window.location.href = dashboardUrl
-            }
-          }, 1000)
-          
-        } catch (profileError) {
-          console.error('❌ Failed to fetch user profile:', profileError)
-          
-          // Clear timeout and redirect anyway
-          clearTimeout(redirectTimeout)
-          
-          console.log('🎯 Redirecting to dashboard despite profile error...')
-          window.location.href = '/dashboard'
-        }
+        }, 500)
         
         // Reset rate limit on successful login
         rateLimit.resetAttempts()

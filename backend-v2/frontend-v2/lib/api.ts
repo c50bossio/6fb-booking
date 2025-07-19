@@ -270,16 +270,7 @@ export async function login(email: string, password: string) {
     }
   )
   
-  // Store tokens
-  if (response.access_token) {
-    localStorage.setItem('token', response.access_token)
-    // Also set as httpOnly:false cookie so middleware can detect auth
-    // Note: httpOnly:false is needed because we're setting from client-side
-    document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
-  }
-  if (response.refresh_token) {
-    localStorage.setItem('refresh_token', response.refresh_token)
-  }
+  // Note: Token storage is now handled by useAuth hook via setAuthTokens()
   
   return response
 }

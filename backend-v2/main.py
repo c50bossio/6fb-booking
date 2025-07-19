@@ -7,7 +7,7 @@ from database import engine, Base
 import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, homepage_builder
 # service_templates temporarily disabled due to FastAPI error
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
@@ -344,6 +344,7 @@ app.include_router(commission_rates.router, prefix="/api/v1")  # Commission rate
 app.include_router(billing.router, prefix="/api/v1")  # Chair-based billing and subscription management
 app.include_router(invitations.router)  # Staff invitation management
 app.include_router(organizations.router, prefix="/api/v1")  # Organization management
+app.include_router(homepage_builder.router)  # Homepage builder with section-based design
 app.include_router(trial_monitoring.router, prefix="/api/v1")  # Trial expiration monitoring and notifications
 app.include_router(privacy.router)  # GDPR compliance and privacy management
 # app.include_router(cache.router)  # Redis cache management and monitoring - disabled due to archived services

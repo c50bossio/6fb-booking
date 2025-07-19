@@ -48,6 +48,12 @@ const settingsCards: SettingCard[] = [
     icon: '🎨'
   },
   {
+    title: 'Homepage Builder',
+    description: 'Create a professional homepage with advanced section-based design',
+    href: '/settings/homepage-builder',
+    icon: '🏗️'
+  },
+  {
     title: 'Billing',
     description: 'View billing information and manage payment methods',
     href: '/settings/billing',

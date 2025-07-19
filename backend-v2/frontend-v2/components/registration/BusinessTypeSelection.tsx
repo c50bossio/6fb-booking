@@ -93,9 +93,8 @@ export function BusinessTypeSelection({
           const isSelected = selectedType === type.id
           
           return (
-            <Card 
+            <div
               key={type.id}
-              interactive={true}
               className={`
                 relative cursor-pointer transition-all duration-300 transform group
                 min-h-[300px] sm:min-h-[320px] md:min-h-[350px]
@@ -121,24 +120,25 @@ export function BusinessTypeSelection({
               aria-pressed={isSelected}
               aria-label={`Select ${type.title}`}
             >
-              {/* Selection Indicator */}
-              {isSelected && (
-                <div className="absolute -top-3 -right-3 z-10">
-                  <div className={`
-                    w-8 h-8 rounded-full flex items-center justify-center
-                    ${type.id === 'solo' ? 'bg-blue-500' : ''}
-                    ${type.id === 'single_location' ? 'bg-green-500' : ''}
-                    ${type.id === 'multi_location' ? 'bg-purple-500' : ''}
-                    text-white shadow-lg
-                  `}>
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
+              <Card className="h-full border-0 shadow-none bg-transparent">
+                {/* Selection Indicator */}
+                {isSelected && (
+                  <div className="absolute -top-3 -right-3 z-10">
+                    <div className={`
+                      w-8 h-8 rounded-full flex items-center justify-center
+                      ${type.id === 'solo' ? 'bg-blue-500' : ''}
+                      ${type.id === 'single_location' ? 'bg-green-500' : ''}
+                      ${type.id === 'multi_location' ? 'bg-purple-500' : ''}
+                      text-white shadow-lg
+                    `}>
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              <CardHeader className="text-center space-y-3 pb-2">
+                <CardHeader className="text-center space-y-3 pb-2">
                 <div className={`
                   mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center transition-colors duration-200
                   ${type.id === 'solo' ? `${isSelected ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30'}` : ''}
@@ -158,7 +158,7 @@ export function BusinessTypeSelection({
                 </div>
               </CardHeader>
               
-              <CardContent className="space-y-3 pt-3">
+                <CardContent className="space-y-3 pt-3">
                 <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-3">
                   {type.description}
                 </p>
@@ -210,8 +210,9 @@ export function BusinessTypeSelection({
                     {type.pricing}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           )
         })}
       </div>
