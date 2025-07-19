@@ -11,6 +11,7 @@ import {
   Palette, 
   Layout, 
   Eye, 
+  EyeOff,
   Settings,
   Plus,
   Trash2,
@@ -18,7 +19,6 @@ import {
   ArrowDown,
   Save,
   Globe,
-  GlobeOff,
   Sparkles,
   Info
 } from 'lucide-react'
@@ -168,7 +168,7 @@ function HomepageBuilderContent() {
               size="sm"
               onClick={handleUnpublish}
             >
-              <GlobeOff className="h-4 w-4 mr-2" />
+              <EyeOff className="h-4 w-4 mr-2" />
               Unpublish
             </Button>
           ) : (
@@ -212,7 +212,7 @@ function HomepageBuilderContent() {
       )}
 
       {/* Main Editor */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" defaultValue="sections">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="sections">
             <Layout className="h-4 w-4 mr-2" />
@@ -283,7 +283,7 @@ function HomepageBuilderContent() {
                         size="sm"
                         onClick={() => handleSectionToggle(index)}
                       >
-                        {section.visible ? <Eye className="h-4 w-4" /> : <GlobeOff className="h-4 w-4" />}
+                        {section.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       </Button>
                       <Button
                         variant="ghost"

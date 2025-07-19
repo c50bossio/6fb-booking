@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -178,7 +178,7 @@ function ReviewCard({ review, onRespond, onView }: ReviewCardProps) {
               
               {review.can_respond && review.response_status !== ReviewResponseStatus.SENT && (
                 <Button
-                  variant="default"
+                  variant="primary"
                   size="sm"
                   onClick={() => onRespond(review.id)}
                 >
@@ -238,7 +238,7 @@ export default function ReviewsPage() {
       sort_by: 'review_date',
       sort_order: 'desc'
     }),
-    keepPreviousData: true
+    placeholderData: keepPreviousData
   })
 
   // Sync reviews mutation
@@ -310,16 +310,16 @@ export default function ReviewsPage() {
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
-    if (!reviewsData?.reviews) return null
+    if (!reviewsData?.reviews || !Array.isArray(reviewsData.reviews)) return null
     
     const reviews = reviewsData.reviews
     const total = reviews.length
-    const needsResponse = reviews.filter(r => !r.response_text && r.can_respond).length
-    const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / total
-    const positiveCount = reviews.filter(r => r.sentiment === ReviewSentiment.POSITIVE).length
+    const needsResponse = reviews.filter((r: any) => !r.response_text && r.can_respond).length
+    const avgRating = reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / total
+    const positiveCount = reviews.filter((r: any) => r.sentiment === ReviewSentiment.POSITIVE).length
     
     return {
-      total: reviewsData.total,
+      total: reviewsData.total || 0,
       needsResponse,
       avgRating: avgRating.toFixed(1),
       positivePercentage: Math.round((positiveCount / total) * 100)
@@ -452,50 +452,42 @@ export default function ReviewsPage() {
                 <Select
                   placeholder="Platform"
                   value={filters.platform || ''}
-                  onValueChange={(value) => setFilters({ ...filters, platform: value as ReviewPlatform })}
-                >
-                  {filterOptions.platforms.map((platform) => (
-                    <option key={platform.value} value={platform.value}>
-                      {platform.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, platform: value as ReviewPlatform })}
+                  options={filterOptions.platforms.map((platform) => ({
+                    value: platform.value,
+                    label: platform.label
+                  }))}
+                />
                 
                 <Select
                   placeholder="Sentiment"
                   value={filters.sentiment || ''}
-                  onValueChange={(value) => setFilters({ ...filters, sentiment: value as ReviewSentiment })}
-                >
-                  {filterOptions.sentiments.map((sentiment) => (
-                    <option key={sentiment.value} value={sentiment.value}>
-                      {sentiment.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, sentiment: value as ReviewSentiment })}
+                  options={filterOptions.sentiments.map((sentiment) => ({
+                    value: sentiment.value,
+                    label: sentiment.label
+                  }))}
+                />
                 
                 <Select
                   placeholder="Response Status"
                   value={filters.response_status || ''}
-                  onValueChange={(value) => setFilters({ ...filters, response_status: value as ReviewResponseStatus })}
-                >
-                  {filterOptions.responseStatuses.map((status) => (
-                    <option key={status.value} value={status.value}>
-                      {status.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, response_status: value as ReviewResponseStatus })}
+                  options={filterOptions.responseStatuses.map((status) => ({
+                    value: status.value,
+                    label: status.label
+                  }))}
+                />
                 
                 <Select
                   placeholder="Min Rating"
                   value={filters.min_rating?.toString() || ''}
-                  onValueChange={(value) => setFilters({ ...filters, min_rating: value ? Number(value) : undefined })}
-                >
-                  {filterOptions.ratings.map((rating) => (
-                    <option key={rating.value} value={rating.value}>
-                      {rating.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, min_rating: value ? Number(value) : undefined })}
+                  options={filterOptions.ratings.map((rating) => ({
+                    value: rating.value.toString(),
+                    label: rating.label
+                  }))}
+                />
               </div>
               
               <div className="flex items-center space-x-4 mt-4">
@@ -517,7 +509,7 @@ export default function ReviewsPage() {
       </Card>
 
       {/* Review Tabs */}
-      <Tabs value={currentTab} onValueChange={applyTabFilter}>
+      <Tabs value={currentTab} onValueChange={applyTabFilter} defaultValue="all">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="all">All Reviews</TabsTrigger>
           <TabsTrigger value="needs_response">Needs Response</TabsTrigger>

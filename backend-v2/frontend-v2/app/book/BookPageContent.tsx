@@ -75,7 +75,7 @@ export default function BookPage() {
 
   // Accessibility state for keyboard navigation
   const [focusedServiceIndex, setFocusedServiceIndex] = useState<number>(-1)
-  const serviceCardRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const serviceCardRefs = useRef<(HTMLDivElement | null)[]>([])
   const { announceStatus, announceNavigation } = useScreenReader()
 
   // State for timezone display
@@ -214,7 +214,8 @@ export default function BookPage() {
     }
   }
 
-  const handleDateSelect = (date: Date) => {
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
     setSelectedDate(date)
     setSelectedTime(null) // Reset time when date changes
   }
@@ -412,6 +413,7 @@ export default function BookPage() {
         
         return {
           id: -1000 - index, // Negative IDs to distinguish from real appointments
+          user_id: 1, // Required field for appointment interface
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
           service_name: 'Available Slot',
@@ -419,6 +421,7 @@ export default function BookPage() {
           status: 'available',
           duration_minutes: 30,
           price: SERVICES.find(s => s.id === selectedService)?.amount || 0,
+          created_at: new Date().toISOString(), // Required field
           // Custom properties
           isAvailableSlot: true,
           originalTime: slot.time,
@@ -441,12 +444,15 @@ export default function BookPage() {
         
         return {
           id: -2000 - index,
+          user_id: 1, // Required field
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
           service_name: 'Booked',
           client_name: 'Not Available',
           status: 'confirmed',
           duration_minutes: 30,
+          price: 0, // Required field
+          created_at: new Date().toISOString(), // Required field
           barber_id: 1,
           barber_name: 'Booked',
           isAvailableSlot: false
@@ -604,7 +610,7 @@ export default function BookPage() {
               {SERVICES.map((service, index) => (
                 <Card
                   key={service.id}
-                  ref={(el) => (serviceCardRefs.current[index] = el)}
+                  ref={(el) => { serviceCardRefs.current[index] = el; }}
                   variant="default"
                   interactive
                   selected={selectedService === service.id}
@@ -700,9 +706,8 @@ export default function BookPage() {
                 <div>
                   <h2 className="text-lg font-semibold mb-4">Choose a Date</h2>
                   <Calendar
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                    bookingDates={bookingDates}
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
                   />
                 </div>
 
@@ -832,7 +837,7 @@ export default function BookPage() {
                 ) : (
                   <ErrorDisplay 
                     error={error} 
-                    onRetry={() => selectedDate && fetchTimeSlots(selectedDate)}
+                    onRetry={() => selectedDate && handleDateSelect(selectedDate)}
                     title="Failed to load time slots"
                   />
                 )}
