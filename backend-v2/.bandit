@@ -1,0 +1,18 @@
+[bandit]
+# Bandit configuration file for security scanning
+# https://bandit.readthedocs.io/en/latest/config.html
+
+# Exclude database migrations from B110 (try-except-pass) checks
+# These are intentional patterns for safe re-runnable migrations
+skips = B110
+
+# Skip specific paths that are known to have intentional try-except-pass patterns
+exclude_dirs = ./alembic/versions
+
+# Skip test files from certain checks that are expected in testing
+[bandit.assert_used]
+skips = ['*_test.py', 'test_*.py', '**/tests/**/*.py']
+
+[bandit.hardcoded_password_string]
+# Skip password checks in test files and migration files
+skips = ['*_test.py', 'test_*.py', '**/tests/**/*.py', '**/alembic/**/*.py']

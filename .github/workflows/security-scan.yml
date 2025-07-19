@@ -103,8 +103,8 @@ jobs:
       - name: Run Bandit security scan (Python)
         run: |
           cd backend-v2
-          bandit -r . -f json -o bandit-report.json || true
-          bandit -r . -f txt
+          bandit -r . -f json -o bandit-report.json -c .bandit || true
+          bandit -r . -f txt -c .bandit
 
       - name: Run Semgrep security scan
         run: |
