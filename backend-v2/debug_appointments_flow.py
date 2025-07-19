@@ -19,7 +19,7 @@ def login():
     """Login and get access token"""
     print("🔐 Logging in...")
     response = requests.post(
-        f"{API_URL}/api/v1/auth/login",
+        f"{API_URL}/api/v2/auth/login",
         json={"email": EMAIL, "password": PASSWORD}
     )
     if response.status_code != 200:
@@ -32,10 +32,10 @@ def login():
 
 def get_appointments(token):
     """Get appointments using the same endpoint as frontend"""
-    print("\n📋 Getting appointments from /api/v1/appointments/...")
+    print("\n📋 Getting appointments from /api/v2/appointments/...")
     headers = {"Authorization": f"Bearer {token}"}
     
-    response = requests.get(f"{API_URL}/api/v1/appointments/", headers=headers)
+    response = requests.get(f"{API_URL}/api/v2/appointments/", headers=headers)
     
     print(f"Response status: {response.status_code}")
     print(f"Response headers: {dict(response.headers)}")

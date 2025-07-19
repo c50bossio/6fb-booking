@@ -54,7 +54,7 @@ def test_agent_endpoints():
     """Test agent endpoints without authentication"""
     try:
         # Test agent templates endpoint
-        response = requests.get(f"{API_URL}/api/v1/agents/templates")
+        response = requests.get(f"{API_URL}/api/v2/agents/templates")
         print(f"📋 Agent templates endpoint: {response.status_code}")
         if response.status_code == 200:
             templates = response.json()
@@ -63,7 +63,7 @@ def test_agent_endpoints():
                 print(f"   - {template.get('name', 'Unknown')}: {template.get('agent_type', 'Unknown')}")
         
         # Test AI providers endpoint  
-        response = requests.get(f"{API_URL}/api/v1/agents/providers")
+        response = requests.get(f"{API_URL}/api/v2/agents/providers")
         print(f"🤖 AI providers endpoint: {response.status_code}")
         if response.status_code == 200:
             providers = response.json()

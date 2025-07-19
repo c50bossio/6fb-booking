@@ -132,7 +132,7 @@ function DashboardContent() {
         // Prepare batched requests based on user role
         const dashboardRequests = [
           {
-            endpoint: '/api/v1/appointments/',
+            endpoint: '/api/v2/appointments/',
             priority: 8,
             cacheKey: `user_appointments_${userData.id}`,
             cacheTtl: 30000 // 30 seconds
@@ -143,13 +143,13 @@ function DashboardContent() {
         if (userData.role === 'admin' || userData.role === 'barber') {
           dashboardRequests.push(
             {
-              endpoint: '/api/v1/dashboard/client-metrics',
+              endpoint: '/api/v2/dashboard/client-metrics',
               priority: 6,
               cacheKey: `client_metrics_${userData.id}`,
               cacheTtl: 60000 // 1 minute
             },
             {
-              endpoint: `/api/v1/analytics/dashboard/${userData.id}`,
+              endpoint: `/api/v2/analytics/dashboard/${userData.id}`,
               priority: 5,
               cacheKey: `dashboard_analytics_${userData.id}`,
               cacheTtl: 120000 // 2 minutes

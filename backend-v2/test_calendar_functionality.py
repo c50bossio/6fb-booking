@@ -13,7 +13,7 @@ def login():
     """Login to get auth token"""
     global AUTH_TOKEN
     response = requests.post(
-        f"{BASE_URL}/api/v1/auth/login",
+        f"{BASE_URL}/api/v2/auth/login",
         json={"email": "super.admin@bookedbarber.com", "password": "TestPass123!"}
     )
     if response.status_code == 200:
@@ -27,7 +27,7 @@ def login():
 def test_appointments_list():
     """Test getting appointments list"""
     headers = {"Authorization": f"Bearer {AUTH_TOKEN}"}
-    response = requests.get(f"{BASE_URL}/api/v1/appointments/", headers=headers)
+    response = requests.get(f"{BASE_URL}/api/v2/appointments/", headers=headers)
     if response.status_code == 200:
         appointments = response.json()
         print(f"✅ Appointments list: Found {len(appointments)} appointments")
@@ -43,7 +43,7 @@ def test_available_slots():
     
     # Test without barber_id
     response = requests.get(
-        f"{BASE_URL}/api/v1/appointments/slots",
+        f"{BASE_URL}/api/v2/appointments/slots",
         params={"appointment_date": tomorrow, "service_id": 1},
         headers=headers
     )
@@ -59,7 +59,7 @@ def test_available_slots():
     
     # Test with specific barber_id
     response = requests.get(
-        f"{BASE_URL}/api/v1/appointments/slots",
+        f"{BASE_URL}/api/v2/appointments/slots",
         params={"appointment_date": tomorrow, "service_id": 1, "barber_id": 2},
         headers=headers
     )
@@ -74,7 +74,7 @@ def test_available_slots():
 def test_services():
     """Test getting services list"""
     headers = {"Authorization": f"Bearer {AUTH_TOKEN}"}
-    response = requests.get(f"{BASE_URL}/api/v1/services/", headers=headers)
+    response = requests.get(f"{BASE_URL}/api/v2/services/", headers=headers)
     if response.status_code == 200:
         services = response.json()
         if isinstance(services, list):
@@ -95,7 +95,7 @@ def test_services():
 def test_clients():
     """Test getting clients list"""
     headers = {"Authorization": f"Bearer {AUTH_TOKEN}"}
-    response = requests.get(f"{BASE_URL}/api/v1/clients/", headers=headers)
+    response = requests.get(f"{BASE_URL}/api/v2/clients/", headers=headers)
     if response.status_code == 200:
         clients = response.json()
         print(f"✅ Clients list: Found {clients.get('total', 0)} clients")
@@ -107,7 +107,7 @@ def test_clients():
 def test_barbers():
     """Test getting barbers list"""
     headers = {"Authorization": f"Bearer {AUTH_TOKEN}"}
-    response = requests.get(f"{BASE_URL}/api/v1/users/?role=barber", headers=headers)
+    response = requests.get(f"{BASE_URL}/api/v2/users/?role=barber", headers=headers)
     if response.status_code == 200:
         barbers = response.json()
         print(f"✅ Barbers list: Found {len(barbers)} barbers")

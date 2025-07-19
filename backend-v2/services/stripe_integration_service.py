@@ -46,7 +46,7 @@ class StripeIntegrationService(BaseIntegrationService):
     
     @property
     def default_redirect_uri(self) -> str:
-        return f"{settings.BACKEND_URL}/api/v1/integrations/callback?integration_type=stripe"
+        return f"{settings.BACKEND_URL}/api/v2/integrations/callback?integration_type=stripe"
     
     async def exchange_code_for_tokens(self, code: str, redirect_uri: str) -> Dict[str, Any]:
         """Exchange authorization code for Stripe account ID"""

@@ -13,7 +13,7 @@ from schemas import ClientCreate
 def test_create_client(client, auth_headers, db: Session):
     """Test creating a new client"""
     response = client.post(
-        "/api/v1/clients",
+        "/api/v2/clients",
         json={
             "first_name": "John",
             "last_name": "Doe", 
@@ -42,11 +42,11 @@ def test_create_duplicate_client(client, auth_headers, db: Session):
         "email": "jane.smith@example.com",
         "phone": "555-5678"
     }
-    response1 = client.post("/api/v1/clients", json=client_data, headers=auth_headers)
+    response1 = client.post("/api/v2/clients", json=client_data, headers=auth_headers)
     assert response1.status_code == 200
     
     # Try to create duplicate - API allows it (no unique constraint on email)
-    response2 = client.post("/api/v1/clients", json=client_data, headers=auth_headers)
+    response2 = client.post("/api/v2/clients", json=client_data, headers=auth_headers)
     assert response2.status_code == 200  # API allows duplicate clients
     # This might be a business decision to allow multiple clients with same email
 
@@ -56,7 +56,7 @@ def test_list_clients(client, auth_headers, db: Session):
     # Create some clients first
     for i in range(3):
         client.post(
-            "/api/v1/clients",
+            "/api/v2/clients",
             json={
                 "first_name": f"Client{i}",
                 "last_name": "Test",
@@ -67,7 +67,7 @@ def test_list_clients(client, auth_headers, db: Session):
         )
     
     # List clients
-    response = client.get("/api/v1/clients", headers=auth_headers)
+    response = client.get("/api/v2/clients", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
     # Handle paginated response
@@ -82,7 +82,7 @@ def test_search_clients(client, auth_headers, db: Session):
     """Test searching clients"""
     # Create a client
     client.post(
-        "/api/v1/clients",
+        "/api/v2/clients",
         json={
             "first_name": "Searchable",
             "last_name": "Client",
@@ -93,7 +93,7 @@ def test_search_clients(client, auth_headers, db: Session):
     )
     
     # Search for the client
-    response = client.get("/api/v1/clients?search=Searchable", headers=auth_headers)
+    response = client.get("/api/v2/clients?search=Searchable", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
     
@@ -108,7 +108,7 @@ def test_get_client_details(client, auth_headers, db: Session):
     """Test getting client details"""
     # Create a client
     create_response = client.post(
-        "/api/v1/clients",
+        "/api/v2/clients",
         json={
             "first_name": "Detail",
             "last_name": "Test",
@@ -120,7 +120,7 @@ def test_get_client_details(client, auth_headers, db: Session):
     client_id = create_response.json()["id"]
     
     # Get client details
-    response = client.get(f"/api/v1/clients/{client_id}", headers=auth_headers)
+    response = client.get(f"/api/v2/clients/{client_id}", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
     assert data["first_name"] == "Detail"
@@ -129,7 +129,7 @@ def test_get_client_details(client, auth_headers, db: Session):
 
 def test_get_nonexistent_client(client, auth_headers):
     """Test getting a non-existent client"""
-    response = client.get("/api/v1/clients/999999", headers=auth_headers)
+    response = client.get("/api/v2/clients/999999", headers=auth_headers)
     assert response.status_code == 404
 
 
@@ -137,7 +137,7 @@ def test_update_client(client, auth_headers, db: Session):
     """Test updating a client"""
     # Create a client
     create_response = client.post(
-        "/api/v1/clients",
+        "/api/v2/clients",
         json={
             "first_name": "Update",
             "last_name": "Test",
@@ -150,7 +150,7 @@ def test_update_client(client, auth_headers, db: Session):
     
     # Update the client
     response = client.put(
-        f"/api/v1/clients/{client_id}",
+        f"/api/v2/clients/{client_id}",
         json={
             "first_name": "Updated",
             "last_name": "Client",
@@ -169,7 +169,7 @@ def test_delete_client_as_admin(client, admin_auth_headers, db: Session):
     """Test deleting a client as admin"""
     # Create a client
     create_response = client.post(
-        "/api/v1/clients",
+        "/api/v2/clients",
         json={
             "first_name": "Delete",
             "last_name": "Test",
@@ -181,11 +181,11 @@ def test_delete_client_as_admin(client, admin_auth_headers, db: Session):
     client_id = create_response.json()["id"]
     
     # Delete the client
-    response = client.delete(f"/api/v1/clients/{client_id}", headers=admin_auth_headers)
+    response = client.delete(f"/api/v2/clients/{client_id}", headers=admin_auth_headers)
     assert response.status_code == 200
     
     # Verify deletion
-    get_response = client.get(f"/api/v1/clients/{client_id}", headers=admin_auth_headers)
+    get_response = client.get(f"/api/v2/clients/{client_id}", headers=admin_auth_headers)
     assert get_response.status_code == 404
 
 
@@ -193,7 +193,7 @@ def test_delete_client_as_non_admin(client, auth_headers):
     """Test that non-admin users cannot delete clients"""
     # Create a client
     create_response = client.post(
-        "/api/v1/clients",
+        "/api/v2/clients",
         json={
             "first_name": "NoDelete",
             "last_name": "Test",
@@ -205,11 +205,11 @@ def test_delete_client_as_non_admin(client, auth_headers):
     client_id = create_response.json()["id"]
     
     # Try to delete as non-admin
-    response = client.delete(f"/api/v1/clients/{client_id}", headers=auth_headers)
+    response = client.delete(f"/api/v2/clients/{client_id}", headers=auth_headers)
     assert response.status_code == 403
 
 
 def test_unauthorized_access(client):
     """Test accessing clients without authentication"""
-    response = client.get("/api/v1/clients")
+    response = client.get("/api/v2/clients")
     assert response.status_code == 403

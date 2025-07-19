@@ -149,11 +149,11 @@ async function crawlBookingPage() {
         const headers = { 'Authorization': `Bearer ${token}` };
         
         // Call the slots API for June 28th
-        const slotsResponse = await fetch('http://localhost:8000/api/v1/bookings/slots?booking_date=2025-06-28', { headers });
+        const slotsResponse = await fetch('http://localhost:8000/api/v2/bookings/slots?booking_date=2025-06-28', { headers });
         const slotsData = await slotsResponse.json();
         
         // Call next available API
-        const nextResponse = await fetch('http://localhost:8000/api/v1/bookings/slots/next-available', { headers });
+        const nextResponse = await fetch('http://localhost:8000/api/v2/bookings/slots/next-available', { headers });
         const nextData = await nextResponse.json();
         
         return {

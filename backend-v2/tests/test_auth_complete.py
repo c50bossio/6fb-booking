@@ -43,7 +43,7 @@ class TestAuthentication:
             db.commit()
             
         response = client.post(
-            "/api/v1/auth/register",
+            "/api/v2/auth/register",
             json=TEST_USER_DATA
         )
         assert response.status_code == 200
@@ -57,7 +57,7 @@ class TestAuthentication:
     def test_register_duplicate_email(self, client: TestClient, test_user, mock_notification_service):
         """Test registration with existing email"""
         response = client.post(
-            "/api/v1/auth/register",
+            "/api/v2/auth/register",
             json={
                 "email": test_user.email,
                 "password": "Test123!",
@@ -71,7 +71,7 @@ class TestAuthentication:
     def test_register_weak_password(self, client: TestClient, password, mock_notification_service):
         """Test registration with weak passwords"""
         response = client.post(
-            "/api/v1/auth/register",
+            "/api/v2/auth/register",
             json={
                 "email": f"{password}@example.com",
                 "password": password,
@@ -85,7 +85,7 @@ class TestAuthentication:
     def test_login_success(self, client: TestClient, test_user):
         """Test successful login"""
         response = client.post(
-            "/api/v1/auth/login",
+            "/api/v2/auth/login",
             json={  # Login uses JSON data
                 "email": test_user.email,
                 "password": "testpass123"
@@ -109,7 +109,7 @@ class TestAuthentication:
     def test_login_wrong_password(self, client: TestClient, test_user):
         """Test login with wrong password"""
         response = client.post(
-            "/api/v1/auth/login",
+            "/api/v2/auth/login",
             json={
                 "email": test_user.email,
                 "password": "wrongpassword"
@@ -121,7 +121,7 @@ class TestAuthentication:
     def test_login_nonexistent_user(self, client: TestClient):
         """Test login with non-existent user"""
         response = client.post(
-            "/api/v1/auth/login",
+            "/api/v2/auth/login",
             json={
                 "email": "nonexistent@example.com",
                 "password": "somepassword"
@@ -133,7 +133,7 @@ class TestAuthentication:
     def test_get_current_user(self, client: TestClient, test_user, auth_headers):
         """Test getting current user info"""
         response = client.get(
-            "/api/v1/auth/me",
+            "/api/v2/auth/me",
             headers=auth_headers
         )
         assert response.status_code == 200
@@ -144,13 +144,13 @@ class TestAuthentication:
     
     def test_get_current_user_unauthorized(self, client: TestClient):
         """Test accessing protected endpoint without token"""
-        response = client.get("/api/v1/auth/me")
+        response = client.get("/api/v2/auth/me")
         assert response.status_code == 403  # FastAPI returns 403 for missing auth header
     
     def test_get_current_user_invalid_token(self, client: TestClient):
         """Test accessing protected endpoint with invalid token"""
         response = client.get(
-            "/api/v1/auth/me",
+            "/api/v2/auth/me",
             headers={"Authorization": "Bearer invalid_token"}
         )
         assert response.status_code == 401
@@ -160,7 +160,7 @@ class TestAuthentication:
         """Test refreshing access token"""
         # First login to get tokens
         login_response = client.post(
-            "/api/v1/auth/login",
+            "/api/v2/auth/login",
             json={
                 "email": test_user.email,
                 "password": "testpass123"
@@ -170,7 +170,7 @@ class TestAuthentication:
         
         # Use refresh token to get new access token
         response = client.post(
-            "/api/v1/auth/refresh",
+            "/api/v2/auth/refresh",
             json={"refresh_token": tokens["refresh_token"]}
         )
         assert response.status_code == 200
@@ -186,7 +186,7 @@ class TestAuthentication:
     def test_refresh_token_invalid(self, client: TestClient):
         """Test refresh with invalid token"""
         response = client.post(
-            "/api/v1/auth/refresh",
+            "/api/v2/auth/refresh",
             json={"refresh_token": "invalid_refresh_token"}
         )
         assert response.status_code == 401
@@ -204,7 +204,7 @@ class TestAuthentication:
         expired_token = jwt.encode(expired_data, SECRET_KEY, algorithm=ALGORITHM)
         
         response = client.post(
-            "/api/v1/auth/refresh",
+            "/api/v2/auth/refresh",
             json={"refresh_token": expired_token}
         )
         assert response.status_code == 401
@@ -212,7 +212,7 @@ class TestAuthentication:
     def test_forgot_password_success(self, client: TestClient, test_user, mock_notification_service):
         """Test password reset request"""
         response = client.post(
-            "/api/v1/auth/forgot-password",
+            "/api/v2/auth/forgot-password",
             json={"email": test_user.email}
         )
         assert response.status_code == 200
@@ -221,7 +221,7 @@ class TestAuthentication:
     def test_forgot_password_nonexistent_email(self, client: TestClient, mock_notification_service):
         """Test password reset for non-existent email"""
         response = client.post(
-            "/api/v1/auth/forgot-password",
+            "/api/v2/auth/forgot-password",
             json={"email": "nonexistent@example.com"}
         )
         # Should return success for security reasons
@@ -242,7 +242,7 @@ class TestAuthentication:
         # Reset password
         new_password = "NewPass123!"
         response = client.post(
-            "/api/v1/auth/reset-password",
+            "/api/v2/auth/reset-password",
             json={
                 "token": "test_reset_token",
                 "new_password": new_password
@@ -253,7 +253,7 @@ class TestAuthentication:
         
         # Verify can login with new password
         login_response = client.post(
-            "/api/v1/auth/login",
+            "/api/v2/auth/login",
             json={
                 "email": test_user.email,
                 "password": new_password
@@ -264,7 +264,7 @@ class TestAuthentication:
     def test_reset_password_invalid_token(self, client: TestClient):
         """Test password reset with invalid token"""
         response = client.post(
-            "/api/v1/auth/reset-password",
+            "/api/v2/auth/reset-password",
             json={
                 "token": "invalid_token",
                 "new_password": "NewPass123!"
@@ -285,7 +285,7 @@ class TestAuthentication:
         db.commit()
         
         response = client.post(
-            "/api/v1/auth/reset-password",
+            "/api/v2/auth/reset-password",
             json={
                 "token": "expired_reset_token",
                 "new_password": "NewPass123!"
@@ -307,7 +307,7 @@ class TestAuthentication:
         db.commit()
         
         response = client.post(
-            "/api/v1/auth/reset-password",
+            "/api/v2/auth/reset-password",
             json={
                 "token": "used_reset_token",
                 "new_password": "NewPass123!"
@@ -320,7 +320,7 @@ class TestAuthentication:
         """Test changing password for authenticated user"""
         new_password = "NewPass123!"
         response = client.post(
-            "/api/v1/auth/change-password",
+            "/api/v2/auth/change-password",
             json={
                 "current_password": "testpass123",
                 "new_password": new_password
@@ -335,7 +335,7 @@ class TestAuthentication:
             
             # Verify can login with new password (if change succeeded)
             login_response = client.post(
-                "/api/v1/auth/login",
+                "/api/v2/auth/login",
                 json={
                     "email": test_user.email,
                     "password": new_password
@@ -347,7 +347,7 @@ class TestAuthentication:
     def test_change_password_wrong_current(self, client: TestClient, auth_headers):
         """Test changing password with wrong current password"""
         response = client.post(
-            "/api/v1/auth/change-password",
+            "/api/v2/auth/change-password",
             json={
                 "current_password": "wrongpassword",
                 "new_password": "NewPass123!"
@@ -360,7 +360,7 @@ class TestAuthentication:
     def test_change_password_weak_new(self, client: TestClient, auth_headers):
         """Test changing to weak password"""
         response = client.post(
-            "/api/v1/auth/change-password",
+            "/api/v2/auth/change-password",
             json={
                 "current_password": "testpass123",
                 "new_password": "weak"
@@ -381,7 +381,7 @@ class TestRateLimiting:
         responses = []
         for i in range(6):
             response = client.post(
-                "/api/v1/auth/login",
+                "/api/v2/auth/login",
                 json={
                     "email": f"test{i}@example.com",
                     "password": "password"
@@ -401,7 +401,7 @@ class TestRateLimiting:
         responses = []
         for i in range(4):
             response = client.post(
-                "/api/v1/auth/register",
+                "/api/v2/auth/register",
                 json={
                     "email": f"ratelimit{i}@example.com",
                     "password": "Test123!",
@@ -422,7 +422,7 @@ class TestRateLimiting:
         responses = []
         for i in range(4):
             response = client.post(
-                "/api/v1/auth/forgot-password",
+                "/api/v2/auth/forgot-password",
                 json={"email": f"reset{i}@example.com"}
             )
             responses.append(response.status_code)
@@ -440,7 +440,7 @@ class TestTokenValidation:
     def test_malformed_token(self, client: TestClient):
         """Test with malformed JWT token"""
         response = client.get(
-            "/api/v1/auth/me",
+            "/api/v2/auth/me",
             headers={"Authorization": "Bearer not.a.valid.jwt"}
         )
         assert response.status_code == 401
@@ -449,7 +449,7 @@ class TestTokenValidation:
         """Test using refresh token as access token"""
         refresh_token = create_refresh_token({"sub": test_user.email})
         response = client.get(
-            "/api/v1/auth/me",
+            "/api/v2/auth/me",
             headers={"Authorization": f"Bearer {refresh_token}"}
         )
         # Actually should succeed since token type is not validated in decode_token
@@ -464,7 +464,7 @@ class TestTokenValidation:
             expires_delta=timedelta(seconds=-1)
         )
         response = client.get(
-            "/api/v1/auth/me",
+            "/api/v2/auth/me",
             headers={"Authorization": f"Bearer {expired_token}"}
         )
         assert response.status_code == 401

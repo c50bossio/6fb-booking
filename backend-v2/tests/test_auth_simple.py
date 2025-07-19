@@ -17,7 +17,7 @@ def test_register_user(client, db: Session, mock_notification_service, disable_r
         db.commit()
     
     response = client.post(
-        "/api/v1/auth/register",
+        "/api/v2/auth/register",
         json={
             "email": "newuser@example.com",
             "password": "TestPass123!",
@@ -49,7 +49,7 @@ def test_login_user(client, db: Session, disable_rate_limiting):
     
     # Now try to login
     response = client.post(
-        "/api/v1/auth/login",
+        "/api/v2/auth/login",
         json={
             "email": "logintest@example.com",
             "password": "testpass123"
@@ -80,7 +80,7 @@ def test_get_current_user(client, db: Session, disable_rate_limiting):
     
     # Login
     login_response = client.post(
-        "/api/v1/auth/login",
+        "/api/v2/auth/login",
         json={
             "email": "currentuser@example.com",
             "password": "testpass123"
@@ -90,7 +90,7 @@ def test_get_current_user(client, db: Session, disable_rate_limiting):
     
     # Get user info
     response = client.get(
-        "/api/v1/auth/me",
+        "/api/v2/auth/me",
         headers={"Authorization": f"Bearer {token}"}
     )
     assert response.status_code == 200
@@ -101,14 +101,14 @@ def test_get_current_user(client, db: Session, disable_rate_limiting):
 
 def test_unauthorized_access(client):
     """Test accessing protected endpoint without token"""
-    response = client.get("/api/v1/auth/me")
+    response = client.get("/api/v2/auth/me")
     assert response.status_code == 403  # FastAPI returns 403 for missing credentials
 
 
 def test_invalid_login(client, disable_rate_limiting):
     """Test login with wrong password"""
     response = client.post(
-        "/api/v1/auth/login",
+        "/api/v2/auth/login",
         json={
             "email": "wrong@example.com",
             "password": "wrongpass"

@@ -124,7 +124,7 @@ class TestCompleteBookingFlow:
                 with patch.object(NotificationService, 'send_appointment_confirmation', mock_services['notification'].send_appointment_confirmation):
                     
                     # Step 1: Get available services
-                    response = test_client.get("/api/v1/services")
+                    response = test_client.get("/api/v2/services")
                     assert response.status_code == 200
                     services_data = response.json()
                     assert len(services_data) >= 1
@@ -132,7 +132,7 @@ class TestCompleteBookingFlow:
                     # Step 2: Get available time slots
                     booking_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
                     response = test_client.get(
-                        f"/api/v1/appointments/available-slots",
+                        f"/api/v2/appointments/available-slots",
                         params={
                             "date": booking_date,
                             "service_id": service.id,
@@ -156,7 +156,7 @@ class TestCompleteBookingFlow:
                         "notes": "First time customer"
                     }
                     
-                    response = test_client.post("/api/v1/appointments", json=appointment_data)
+                    response = test_client.post("/api/v2/appointments", json=appointment_data)
                     assert response.status_code == 201
                     appointment_response = response.json()
                     appointment_id = appointment_response["id"]
@@ -173,7 +173,7 @@ class TestCompleteBookingFlow:
                         "amount": float(service.base_price)
                     }
                     
-                    response = test_client.post("/api/v1/payments/create-intent", json=payment_data)
+                    response = test_client.post("/api/v2/payments/create-intent", json=payment_data)
                     assert response.status_code == 200
                     payment_response = response.json()
                     assert payment_response["payment_intent_id"] == "pi_e2e_test_123"
@@ -190,7 +190,7 @@ class TestCompleteBookingFlow:
                         "booking_id": appointment_id
                     }
                     
-                    response = test_client.post("/api/v1/payments/confirm", json=confirm_data)
+                    response = test_client.post("/api/v2/payments/confirm", json=confirm_data)
                     assert response.status_code == 200
                     confirm_response = response.json()
                     assert confirm_response["success"] is True
@@ -238,7 +238,7 @@ class TestCompleteBookingFlow:
                 "client_phone": "(555) 987-6543"
             }
             
-            response = test_client.post("/api/v1/appointments", json=appointment_data)
+            response = test_client.post("/api/v2/appointments", json=appointment_data)
             assert response.status_code == 201
             appointment_id = response.json()["id"]
             
@@ -257,7 +257,7 @@ class TestCompleteBookingFlow:
                 currency="usd"
             )
             
-            response = test_client.post("/api/v1/payments/create-intent", json=payment_data)
+            response = test_client.post("/api/v2/payments/create-intent", json=payment_data)
             assert response.status_code == 200
             payment_response = response.json()
             
@@ -300,7 +300,7 @@ class TestCompleteBookingFlow:
             "client_phone": "(555) 111-2222"
         }
         
-        response = test_client.post("/api/v1/appointments", json=appointment_data)
+        response = test_client.post("/api/v2/appointments", json=appointment_data)
         assert response.status_code == 400
         error_response = response.json()
         assert "advance booking required" in error_response["detail"].lower()
@@ -334,7 +334,7 @@ class TestCompleteBookingFlow:
             "client_phone": "(555) 333-4444"
         }
         
-        response = test_client.post("/api/v1/appointments", json=appointment_data)
+        response = test_client.post("/api/v2/appointments", json=appointment_data)
         assert response.status_code == 400
         error_response = response.json()
         assert "conflict" in error_response["detail"].lower()
@@ -367,7 +367,7 @@ class TestMultiServiceBookingFlow:
                 "client_phone": "(555) 777-8888"
             }
             
-            response = test_client.post("/api/v1/appointments/multi-service", json=appointment_data)
+            response = test_client.post("/api/v2/appointments/multi-service", json=appointment_data)
             assert response.status_code == 201
             appointment_response = response.json()
             
@@ -396,7 +396,7 @@ class TestMultiServiceBookingFlow:
                 "client_phone": "(555) 999-0000"
             }
             
-            response = test_client.post("/api/v1/appointments", json=first_appointment_data)
+            response = test_client.post("/api/v2/appointments", json=first_appointment_data)
             assert response.status_code == 201
             first_appointment_id = response.json()["id"]
             
@@ -416,7 +416,7 @@ class TestMultiServiceBookingFlow:
                 "client_phone": "(555) 999-0000"
             }
             
-            response = test_client.post("/api/v1/appointments", json=second_appointment_data)
+            response = test_client.post("/api/v2/appointments", json=second_appointment_data)
             assert response.status_code == 201
             
             # Verify both appointments exist and are properly scheduled
@@ -458,7 +458,7 @@ class TestBookingCancellationFlow:
                     )
                     
                     # Cancel appointment
-                    response = test_client.delete(f"/api/v1/appointments/{appointment.id}")
+                    response = test_client.delete(f"/api/v2/appointments/{appointment.id}")
                     assert response.status_code == 200
                     
                     # Verify appointment cancelled
@@ -489,7 +489,7 @@ class TestBookingCancellationFlow:
                     "time": "16:00"
                 }
                 
-                response = test_client.put(f"/api/v1/appointments/{appointment.id}/reschedule", json=reschedule_data)
+                response = test_client.put(f"/api/v2/appointments/{appointment.id}/reschedule", json=reschedule_data)
                 assert response.status_code == 200
                 
                 # Verify appointment updated
@@ -523,7 +523,7 @@ class TestBookingErrorRecovery:
             "client_phone": "(555) 111-0000"
         }
         
-        response = test_client.post("/api/v1/appointments", json=appointment_data)
+        response = test_client.post("/api/v2/appointments", json=appointment_data)
         assert response.status_code == 201
         appointment_id = response.json()["id"]
         
@@ -539,7 +539,7 @@ class TestBookingErrorRecovery:
                 "amount": float(service.base_price)
             }
             
-            response = test_client.post("/api/v1/payments/create-intent", json=payment_data)
+            response = test_client.post("/api/v2/payments/create-intent", json=payment_data)
             assert response.status_code == 200
             
             # Confirm payment (should fail)
@@ -548,7 +548,7 @@ class TestBookingErrorRecovery:
                 "booking_id": appointment_id
             }
             
-            response = test_client.post("/api/v1/payments/confirm", json=confirm_data)
+            response = test_client.post("/api/v2/payments/confirm", json=confirm_data)
             assert response.status_code == 400
             
             # Appointment should still be pending
@@ -566,11 +566,11 @@ class TestBookingErrorRecovery:
                 status="succeeded"
             )
             
-            response = test_client.post("/api/v1/payments/create-intent", json=payment_data)
+            response = test_client.post("/api/v2/payments/create-intent", json=payment_data)
             assert response.status_code == 200
             
             confirm_data["payment_intent_id"] = "pi_retry_123"
-            response = test_client.post("/api/v1/payments/confirm", json=confirm_data)
+            response = test_client.post("/api/v2/payments/confirm", json=confirm_data)
             assert response.status_code == 200
             
             # Verify appointment confirmed
@@ -596,7 +596,7 @@ class TestBookingErrorRecovery:
                 "client_phone": "(555) 222-0000"
             }
             
-            response = test_client.post("/api/v1/appointments", json=appointment_data)
+            response = test_client.post("/api/v2/appointments", json=appointment_data)
             
             # Appointment should still be created despite calendar sync failure
             assert response.status_code == 201
@@ -622,7 +622,7 @@ class TestBookingErrorRecovery:
                     "amount": float(appointment.price)
                 }
                 
-                response = test_client.post("/api/v1/payments/create-intent", json=payment_data)
+                response = test_client.post("/api/v2/payments/create-intent", json=payment_data)
                 assert response.status_code == 200
                 
                 confirm_data = {
@@ -630,7 +630,7 @@ class TestBookingErrorRecovery:
                     "booking_id": appointment.id
                 }
                 
-                response = test_client.post("/api/v1/payments/confirm", json=confirm_data)
+                response = test_client.post("/api/v2/payments/confirm", json=confirm_data)
                 
                 # Payment should succeed despite notification failure
                 assert response.status_code == 200
@@ -671,7 +671,7 @@ class TestBookingFlowPerformance:
             data = booking_data.copy()
             data["client_email"] = f"concurrent{i}@example.com"
             
-            task = async_test_client.post("/api/v1/appointments", json=data)
+            task = async_test_client.post("/api/v2/appointments", json=data)
             tasks.append(task)
         
         # Execute all requests concurrently
@@ -715,7 +715,7 @@ class TestBookingFlowPerformance:
                 "client_phone": "(555) 123-4567"
             }
             
-            response = test_client.post("/api/v1/appointments", json=appointment_data)
+            response = test_client.post("/api/v2/appointments", json=appointment_data)
             assert response.status_code == 201
             appointment_id = response.json()["id"]
             
@@ -725,7 +725,7 @@ class TestBookingFlowPerformance:
                 "amount": float(service.base_price)
             }
             
-            response = test_client.post("/api/v1/payments/create-intent", json=payment_data)
+            response = test_client.post("/api/v2/payments/create-intent", json=payment_data)
             assert response.status_code == 200
             
             # Confirm payment
@@ -734,7 +734,7 @@ class TestBookingFlowPerformance:
                 "booking_id": appointment_id
             }
             
-            response = test_client.post("/api/v1/payments/confirm", json=confirm_data)
+            response = test_client.post("/api/v2/payments/confirm", json=confirm_data)
             assert response.status_code == 200
             
             end_time = time.time()

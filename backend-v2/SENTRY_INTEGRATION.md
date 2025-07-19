@@ -465,7 +465,7 @@ Configure the following in your Sentry project:
 # Slow performance alert
 {
   "name": "Slow API Performance",
-  "conditions": "transaction.duration > 2000ms for /api/v1/appointments",
+  "conditions": "transaction.duration > 2000ms for /api/v2/appointments",
   "actions": "email devops team"
 }
 

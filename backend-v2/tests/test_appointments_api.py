@@ -51,7 +51,7 @@ class TestAppointmentsAPI:
         with patch.object(booking_service, 'get_available_slots_with_barber_availability', return_value=mock_barber_slots):
             with patch.object(booking_service, 'get_booking_settings', return_value=Mock(max_advance_days=30)):
                 response = client.get(
-                    f"/api/v1/appointments/slots?appointment_date={test_date}",
+                    f"/api/v2/appointments/slots?appointment_date={test_date}",
                     headers=auth_headers
                 )
         
@@ -67,7 +67,7 @@ class TestAppointmentsAPI:
         past_date = (date.today() - timedelta(days=1)).isoformat()
         
         response = client.get(
-            f"/api/v1/appointments/slots?appointment_date={past_date}",
+            f"/api/v2/appointments/slots?appointment_date={past_date}",
             headers=auth_headers
         )
         
@@ -80,7 +80,7 @@ class TestAppointmentsAPI:
         
         with patch.object(booking_service, 'get_booking_settings', return_value=Mock(max_advance_days=30)):
             response = client.get(
-                f"/api/v1/appointments/slots?appointment_date={far_future_date}",
+                f"/api/v2/appointments/slots?appointment_date={far_future_date}",
                 headers=auth_headers
             )
         
@@ -97,7 +97,7 @@ class TestAppointmentsAPI:
         
         # Test that the endpoint exists and returns a reasonable response
         response = client.post(
-            "/api/v1/appointments/",
+            "/api/v2/appointments/",
             json=appointment_data,
             headers=auth_headers
         )
@@ -114,7 +114,7 @@ class TestAppointmentsAPI:
         }
         
         response = client.post(
-            "/api/v1/appointments/",
+            "/api/v2/appointments/",
             json=invalid_data,
             headers=auth_headers
         )
@@ -124,7 +124,7 @@ class TestAppointmentsAPI:
     def test_get_user_appointments_success(self, client: TestClient, auth_headers: dict):
         """Test getting user's appointments (simplified)"""
         response = client.get(
-            "/api/v1/appointments/",
+            "/api/v2/appointments/",
             headers=auth_headers
         )
         
@@ -138,7 +138,7 @@ class TestAppointmentsAPI:
     def test_get_user_appointments_with_filters(self, client: TestClient, auth_headers: dict):
         """Test getting user appointments with status filter (simplified)"""
         response = client.get(
-            "/api/v1/appointments/?status=confirmed&limit=10",
+            "/api/v2/appointments/?status=confirmed&limit=10",
             headers=auth_headers
         )
         
@@ -148,7 +148,7 @@ class TestAppointmentsAPI:
     def test_get_appointment_by_id_success(self, client: TestClient, auth_headers: dict):
         """Test getting a specific appointment by ID (simplified)"""
         response = client.get(
-            "/api/v1/appointments/1",
+            "/api/v2/appointments/1",
             headers=auth_headers
         )
         
@@ -158,7 +158,7 @@ class TestAppointmentsAPI:
     def test_get_appointment_not_found(self, client: TestClient, auth_headers: dict):
         """Test getting non-existent appointment (simplified)"""
         response = client.get(
-            "/api/v1/appointments/999",
+            "/api/v2/appointments/999",
             headers=auth_headers
         )
         
@@ -168,7 +168,7 @@ class TestAppointmentsAPI:
     def test_cancel_appointment_success(self, client: TestClient, auth_headers: dict):
         """Test cancelling an appointment (simplified)"""
         response = client.delete(
-            "/api/v1/appointments/1",
+            "/api/v2/appointments/1",
             headers=auth_headers
         )
         
@@ -179,7 +179,7 @@ class TestAppointmentsAPI:
         """Test cancelling non-existent appointment"""
         with patch.object(booking_service, 'cancel_booking', return_value=False):
             response = client.delete(
-                "/api/v1/appointments/999",
+                "/api/v2/appointments/999",
                 headers=auth_headers
             )
         
@@ -188,7 +188,7 @@ class TestAppointmentsAPI:
 
     def test_get_next_available_slot(self, client: TestClient):
         """Test getting the next available appointment slot (simplified)"""
-        response = client.get("/api/v1/appointments/slots/next-available")
+        response = client.get("/api/v2/appointments/slots/next-available")
         
         # Accept reasonable response codes (including 500 for implementation issues)
         assert response.status_code in [200, 404, 422, 500]
@@ -196,7 +196,7 @@ class TestAppointmentsAPI:
     def test_get_appointment_settings(self, client: TestClient, auth_headers: dict):
         """Test getting appointment booking settings (simplified)"""
         response = client.get(
-            "/api/v1/appointments/settings",
+            "/api/v2/appointments/settings",
             headers=auth_headers
         )
         
@@ -206,9 +206,9 @@ class TestAppointmentsAPI:
     def test_unauthorized_access(self, client: TestClient):
         """Test that protected endpoints require authentication"""
         endpoints = [
-            "/api/v1/appointments/",
-            "/api/v1/appointments/1", 
-            "/api/v1/appointments/settings"
+            "/api/v2/appointments/",
+            "/api/v2/appointments/1", 
+            "/api/v2/appointments/settings"
         ]
         
         for endpoint in endpoints:
@@ -222,7 +222,7 @@ class TestAppointmentsAPI:
         }
         
         response = client.post(
-            "/api/v1/appointments/quick",
+            "/api/v2/appointments/quick",
             json=quick_data,
             headers=auth_headers
         )

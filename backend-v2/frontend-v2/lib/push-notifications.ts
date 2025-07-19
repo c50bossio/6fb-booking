@@ -109,7 +109,7 @@ async function savePushSubscription(userId: string, subscription: PushSubscripti
     }
   }
 
-  const response = await fetch(`${API_URL}/api/v1/push/subscribe`, {
+  const response = await fetch(`${API_URL}/api/v2/push/subscribe`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ export async function unsubscribeFromPushNotifications(userId: string): Promise<
 
 // Remove push subscription from backend
 async function removePushSubscription(userId: string, endpoint: string): Promise<void> {
-  const response = await fetch(`${API_URL}/api/v1/push/unsubscribe`, {
+  const response = await fetch(`${API_URL}/api/v2/push/unsubscribe`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -230,7 +230,7 @@ export async function updateNotificationPreferences(
     reminders?: boolean
   }
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/api/v1/push/preferences`, {
+  const response = await fetch(`${API_URL}/api/v2/push/preferences`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -249,7 +249,7 @@ export async function updateNotificationPreferences(
 
 // Get notification preferences
 export async function getNotificationPreferences(userId: string): Promise<any> {
-  const response = await fetch(`${API_URL}/api/v1/push/preferences/${userId}`, {
+  const response = await fetch(`${API_URL}/api/v2/push/preferences/${userId}`, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     }

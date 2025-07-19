@@ -79,7 +79,7 @@ export function DevHealthMonitor() {
 
       // Check Redis (via backend endpoint)
       try {
-        const response = await fetch('http://localhost:8000/api/v1/health/redis', {
+        const response = await fetch('http://localhost:8000/api/v2/health/redis', {
           method: 'GET',
           signal: AbortSignal.timeout(3000)
         }).catch(() => null);

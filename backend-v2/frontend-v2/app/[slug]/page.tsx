@@ -79,7 +79,7 @@ export default function OrganizationLandingPageRoute() {
         setLoading(true)
         
         // Fetch landing page data from API
-        const response = await fetch(`/api/v1/public/booking/landing/${slug}`)
+        const response = await fetch(`/api/v2/public/booking/landing/${slug}`)
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -113,7 +113,7 @@ export default function OrganizationLandingPageRoute() {
     const trackPageView = async () => {
       if (landingData) {
         try {
-          await fetch(`/api/v1/public/booking/landing/${slug}/track`, {
+          await fetch(`/api/v2/public/booking/landing/${slug}/track`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

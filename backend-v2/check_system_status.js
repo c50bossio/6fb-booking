@@ -44,7 +44,7 @@ async function checkSystemStatus() {
   if (backendOk) {
     console.log('\n🔐 Authentication Test:');
     try {
-      const loginResponse = await fetch('http://localhost:8000/api/v1/auth/login', {
+      const loginResponse = await fetch('http://localhost:8000/api/v2/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

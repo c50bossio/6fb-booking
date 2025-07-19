@@ -170,10 +170,10 @@ To test the marketing integrations:
 2. **OAuth credentials** are configured in `.env` file
 3. **Access the integrations page** (when frontend is running)
 4. **Test endpoints** are available:
-   - `POST /api/v1/integrations/connect` - Initiate OAuth
-   - `GET /api/v1/integrations/callback` - Handle OAuth callback
-   - `GET /api/v1/integrations/list` - List all integrations
-   - `GET /api/v1/integrations/{id}/health` - Check integration health
+   - `POST /api/v2/integrations/connect` - Initiate OAuth
+   - `GET /api/v2/integrations/callback` - Handle OAuth callback
+   - `GET /api/v2/integrations/list` - List all integrations
+   - `GET /api/v2/integrations/{id}/health` - Check integration health
 
 ## 🎯 Success Metrics
 

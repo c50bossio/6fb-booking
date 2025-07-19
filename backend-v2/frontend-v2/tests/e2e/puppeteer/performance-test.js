@@ -293,7 +293,7 @@ class PerformanceTester {
                             status: res.status,
                             ok: res.ok
                         };
-                    }, `${CONFIG.apiUrl}/api/v1${endpoint}`);
+                    }, `${CONFIG.apiUrl}/api/v2${endpoint}`);
                     
                     const responseTime = Date.now() - startTime;
                     

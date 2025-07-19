@@ -26,12 +26,12 @@ def create_test_user():
         "role": "barber"
     }
     
-    response = requests.post(f"{API_URL}/api/v1/auth/register", json=register_data)
+    response = requests.post(f"{API_URL}/api/v2/auth/register", json=register_data)
     
     # Login regardless of registration result
     print("🔐 Logging in...")
     login_response = requests.post(
-        f"{API_URL}/api/v1/auth/login",
+        f"{API_URL}/api/v2/auth/login",
         json={"email": register_data["email"], "password": register_data["password"]}
     )
     
@@ -45,10 +45,10 @@ def create_test_user():
 
 def test_appointments_endpoint(token):
     """Test the appointments endpoint"""
-    print("\n📋 Testing /api/v1/appointments/ endpoint...")
+    print("\n📋 Testing /api/v2/appointments/ endpoint...")
     headers = {"Authorization": f"Bearer {token}"}
     
-    response = requests.get(f"{API_URL}/api/v1/appointments/", headers=headers)
+    response = requests.get(f"{API_URL}/api/v2/appointments/", headers=headers)
     
     print(f"Response status: {response.status_code}")
     
@@ -91,7 +91,7 @@ def test_calendar_data_flow():
     """Test the complete data flow"""
     print("\n🔄 Testing Calendar Data Flow:")
     print("1. Frontend calls getAppointments() from lib/api.ts")
-    print("2. getAppointments() calls fetchAPI('/api/v1/appointments/')")
+    print("2. getAppointments() calls fetchAPI('/api/v2/appointments/')")
     print("3. Backend returns { appointments: [...], total: N }")
     print("4. Frontend expects to access userBookings.appointments (was .bookings)")
     print("5. Appointments are filtered by date and displayed in calendar views")

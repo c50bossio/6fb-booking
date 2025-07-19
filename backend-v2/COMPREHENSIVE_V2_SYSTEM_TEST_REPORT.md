@@ -61,18 +61,18 @@ The 6FB Booking V2 platform has been thoroughly tested across all major function
 #### Core Working Endpoints:
 - `GET /health` - System health check
 - `GET /docs` - API documentation
-- `POST /api/v1/auth/login` - User authentication
-- `GET /api/v1/auth/me` - User profile
-- `GET /api/v1/bookings/` - Bookings management
-- `GET /api/v1/timezones` - Timezone support
-- `GET /api/v1/services/` - Services management
-- `GET /api/v1/clients/` - Client management
+- `POST /api/v2/auth/login` - User authentication
+- `GET /api/v2/auth/me` - User profile
+- `GET /api/v2/bookings/` - Bookings management
+- `GET /api/v2/timezones` - Timezone support
+- `GET /api/v2/services/` - Services management
+- `GET /api/v2/clients/` - Client management
 
 #### Booking System Endpoints:
-- `/api/v1/bookings/slots` - Time slot availability
-- `/api/v1/bookings/quick` - Quick booking
-- `/api/v1/bookings/slots/next-available` - Next available slot
-- `/api/v1/services/{service_id}/booking-rules` - Booking rules
+- `/api/v2/bookings/slots` - Time slot availability
+- `/api/v2/bookings/quick` - Quick booking
+- `/api/v2/bookings/slots/next-available` - Next available slot
+- `/api/v2/services/{service_id}/booking-rules` - Booking rules
 
 ### 4. Database Architecture ✅
 
@@ -113,7 +113,7 @@ The 6FB Booking V2 platform has been thoroughly tested across all major function
 - **100 timezones** supported
 - Proper offset calculations
 - Display format: "Region - City (+offset)"
-- API endpoint: `/api/v1/timezones`
+- API endpoint: `/api/v2/timezones`
 
 ### 8. Error Handling ✅
 

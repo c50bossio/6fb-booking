@@ -192,19 +192,19 @@ function AppointmentsPage() {
 For full functionality, implement these backend endpoints:
 
 ```
-POST /api/v1/exports/email
+POST /api/v2/exports/email
 - Send export via email
 - Multipart form data with file attachment
 
-POST /api/v1/exports/schedule
+POST /api/v2/exports/schedule
 - Create recurring export schedule
 - Cron job or task queue integration
 
-GET /api/v1/exports/history
+GET /api/v2/exports/history
 - Retrieve export history
 - Pagination support
 
-GET /api/v1/exports/templates
+GET /api/v2/exports/templates
 - Custom report templates
 - User-specific configurations
 ```

@@ -162,7 +162,7 @@ class BookedBarberAPITester:
         try:
             start_time = time.time()
             response = self.session.post(
-                f"{self.base_url}/api/v1/auth/login",
+                f"{self.base_url}/api/v2/auth/login",
                 json=login_data,
                 timeout=30
             )
@@ -189,7 +189,7 @@ class BookedBarberAPITester:
         if self.auth_token:
             try:
                 start_time = time.time()
-                response = self.session.get(f"{self.base_url}/api/v1/users/me", timeout=10)
+                response = self.session.get(f"{self.base_url}/api/v2/users/me", timeout=10)
                 response_time = time.time() - start_time
                 
                 success = response.status_code == 200
@@ -209,7 +209,7 @@ class BookedBarberAPITester:
         # Test services endpoint
         try:
             start_time = time.time()
-            response = self.session.get(f"{self.base_url}/api/v1/services", timeout=10)
+            response = self.session.get(f"{self.base_url}/api/v2/services", timeout=10)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
@@ -226,7 +226,7 @@ class BookedBarberAPITester:
         # Test appointments endpoint
         try:
             start_time = time.time()
-            response = self.session.get(f"{self.base_url}/api/v1/appointments", timeout=10)
+            response = self.session.get(f"{self.base_url}/api/v2/appointments", timeout=10)
             response_time = time.time() - start_time
             
             success = response.status_code in [200, 404]  # 404 might be normal if no appointments
@@ -252,7 +252,7 @@ class BookedBarberAPITester:
         # Test Stripe integration endpoint
         try:
             start_time = time.time()
-            response = self.session.get(f"{self.base_url}/api/v1/payments/config", timeout=10)
+            response = self.session.get(f"{self.base_url}/api/v2/payments/config", timeout=10)
             response_time = time.time() - start_time
             
             success = response.status_code in [200, 401, 403]  # May require specific permissions
@@ -264,7 +264,7 @@ class BookedBarberAPITester:
         # Test calendar integration endpoint
         try:
             start_time = time.time()
-            response = self.session.get(f"{self.base_url}/api/v1/calendar/availability", timeout=10)
+            response = self.session.get(f"{self.base_url}/api/v2/calendar/availability", timeout=10)
             response_time = time.time() - start_time
             
             success = response.status_code in [200, 400, 401, 403]
@@ -279,7 +279,7 @@ class BookedBarberAPITester:
         
         endpoints_to_test = [
             ("/", "root"),
-            ("/api/v1/services", "services"),
+            ("/api/v2/services", "services"),
             ("/openapi.json", "openapi")
         ]
         

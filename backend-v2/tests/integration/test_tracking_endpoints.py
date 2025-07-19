@@ -18,7 +18,7 @@ async def authenticated_client(async_client: AsyncClient, test_user: User):
     """Create authenticated client with test user token"""
     # Login to get token
     response = await async_client.post(
-        "/api/v1/auth/login",
+        "/api/v2/auth/login",
         json={"email": test_user.email, "password": "testpassword123"}
     )
     token = response.json()["access_token"]
@@ -32,7 +32,7 @@ async def authenticated_client(async_client: AsyncClient, test_user: User):
 async def admin_client(async_client: AsyncClient, admin_user: User):
     """Create authenticated client with admin user token"""
     response = await async_client.post(
-        "/api/v1/auth/login",
+        "/api/v2/auth/login",
         json={"email": admin_user.email, "password": "adminpassword123"}
     )
     token = response.json()["access_token"]
@@ -62,7 +62,7 @@ class TestTrackingEndpoints:
         
         # Act
         response = await authenticated_client.post(
-            "/api/v1/tracking/events",
+            "/api/v2/tracking/events",
             json=event_data
         )
         
@@ -86,13 +86,13 @@ class TestTrackingEndpoints:
         
         # Act - First request
         response1 = await authenticated_client.post(
-            "/api/v1/tracking/events",
+            "/api/v2/tracking/events",
             json=event_data
         )
         
         # Act - Duplicate request
         response2 = await authenticated_client.post(
-            "/api/v1/tracking/events",
+            "/api/v2/tracking/events",
             json=event_data
         )
         
@@ -111,7 +111,7 @@ class TestTrackingEndpoints:
         
         # Act
         response = await authenticated_client.post(
-            "/api/v1/tracking/events",
+            "/api/v2/tracking/events",
             json=invalid_data
         )
         
@@ -142,7 +142,7 @@ class TestTrackingEndpoints:
         
         # Act
         response = await authenticated_client.post(
-            "/api/v1/tracking/events/batch",
+            "/api/v2/tracking/events/batch",
             json=batch_data
         )
         
@@ -162,7 +162,7 @@ class TestTrackingEndpoints:
         responses = []
         for _ in range(15):  # Assuming rate limit is 10 per minute
             response = await authenticated_client.post(
-                "/api/v1/tracking/events",
+                "/api/v2/tracking/events",
                 json=event_data
             )
             responses.append(response)
@@ -184,7 +184,7 @@ class TestAnalyticsEndpoints:
         """Test retrieving analytics summary"""
         # Act
         response = await authenticated_client.get(
-            "/api/v1/tracking/analytics/summary",
+            "/api/v2/tracking/analytics/summary",
             params={
                 "start_date": "2025-01-01",
                 "end_date": "2025-01-31"
@@ -205,7 +205,7 @@ class TestAnalyticsEndpoints:
         """Test channel performance analytics"""
         # Act
         response = await authenticated_client.get(
-            "/api/v1/tracking/analytics/channels",
+            "/api/v2/tracking/analytics/channels",
             params={"period": "last_30_days"}
         )
         
@@ -225,7 +225,7 @@ class TestAnalyticsEndpoints:
         """Test attribution reporting"""
         # Act
         response = await authenticated_client.get(
-            "/api/v1/tracking/analytics/attribution",
+            "/api/v2/tracking/analytics/attribution",
             params={
                 "model": "linear",
                 "start_date": "2025-01-01",
@@ -246,7 +246,7 @@ class TestAnalyticsEndpoints:
         """Test user journey analytics"""
         # Act
         response = await authenticated_client.get(
-            "/api/v1/tracking/analytics/user-journeys",
+            "/api/v2/tracking/analytics/user-journeys",
             params={"cohort": "2025-01"}
         )
         
@@ -274,7 +274,7 @@ class TestGoalManagement:
         
         # Act
         response = await admin_client.post(
-            "/api/v1/tracking/goals",
+            "/api/v2/tracking/goals",
             json=goal_data
         )
         
@@ -290,7 +290,7 @@ class TestGoalManagement:
     async def test_list_conversion_goals(self, authenticated_client: AsyncClient):
         """Test listing conversion goals"""
         # Act
-        response = await authenticated_client.get("/api/v1/tracking/goals")
+        response = await authenticated_client.get("/api/v2/tracking/goals")
         
         # Assert
         assert response.status_code == 200
@@ -318,7 +318,7 @@ class TestGoalManagement:
         
         # Act
         response = await admin_client.put(
-            f"/api/v1/tracking/goals/{goal.id}",
+            f"/api/v2/tracking/goals/{goal.id}",
             json=update_data
         )
         
@@ -340,13 +340,13 @@ class TestGoalManagement:
         await db_session.commit()
         
         # Act
-        response = await admin_client.delete(f"/api/v1/tracking/goals/{goal.id}")
+        response = await admin_client.delete(f"/api/v2/tracking/goals/{goal.id}")
         
         # Assert
         assert response.status_code == 204
         
         # Verify deletion
-        get_response = await admin_client.get(f"/api/v1/tracking/goals/{goal.id}")
+        get_response = await admin_client.get(f"/api/v2/tracking/goals/{goal.id}")
         assert get_response.status_code == 404
 
 
@@ -368,7 +368,7 @@ class TestCampaignTracking:
         
         # Act
         response = await admin_client.post(
-            "/api/v1/tracking/campaigns",
+            "/api/v2/tracking/campaigns",
             json=campaign_data
         )
         
@@ -395,7 +395,7 @@ class TestCampaignTracking:
         
         # Act
         response = await authenticated_client.get(
-            f"/api/v1/tracking/campaigns/{campaign.id}/performance"
+            f"/api/v2/tracking/campaigns/{campaign.id}/performance"
         )
         
         # Assert
@@ -417,7 +417,7 @@ class TestUserLTVEndpoints:
     async def test_get_user_ltv(self, authenticated_client: AsyncClient):
         """Test retrieving user LTV"""
         # Act
-        response = await authenticated_client.get("/api/v1/tracking/users/ltv")
+        response = await authenticated_client.get("/api/v2/tracking/users/ltv")
         
         # Assert
         assert response.status_code == 200
@@ -432,7 +432,7 @@ class TestUserLTVEndpoints:
     async def test_get_ltv_segments(self, admin_client: AsyncClient):
         """Test retrieving LTV segments"""
         # Act
-        response = await admin_client.get("/api/v1/tracking/analytics/ltv-segments")
+        response = await admin_client.get("/api/v2/tracking/analytics/ltv-segments")
         
         # Assert
         assert response.status_code == 200
@@ -449,7 +449,7 @@ class TestConfigurationEndpoints:
     async def test_get_tracking_config(self, admin_client: AsyncClient):
         """Test retrieving tracking configuration"""
         # Act
-        response = await admin_client.get("/api/v1/tracking/config")
+        response = await admin_client.get("/api/v2/tracking/config")
         
         # Assert
         assert response.status_code == 200
@@ -474,7 +474,7 @@ class TestConfigurationEndpoints:
         
         # Act
         response = await admin_client.put(
-            "/api/v1/tracking/config",
+            "/api/v2/tracking/config",
             json=config_update
         )
         
@@ -489,7 +489,7 @@ class TestConfigurationEndpoints:
         """Test platform connection testing endpoint"""
         # Act
         response = await admin_client.post(
-            "/api/v1/tracking/config/test-connection",
+            "/api/v2/tracking/config/test-connection",
             json={"platform": "gtm"}
         )
         
@@ -509,7 +509,7 @@ class TestExportEndpoints:
         """Test exporting events as CSV"""
         # Act
         response = await authenticated_client.get(
-            "/api/v1/tracking/export/events",
+            "/api/v2/tracking/export/events",
             params={
                 "format": "csv",
                 "start_date": "2025-01-01",
@@ -527,7 +527,7 @@ class TestExportEndpoints:
         """Test exporting attribution report"""
         # Act
         response = await admin_client.get(
-            "/api/v1/tracking/export/attribution",
+            "/api/v2/tracking/export/attribution",
             params={
                 "format": "json",
                 "model": "linear",
@@ -558,7 +558,7 @@ class TestWebhookEndpoints:
         
         # Act
         response = await async_client.post(
-            "/api/v1/tracking/webhooks/gtm",
+            "/api/v2/tracking/webhooks/gtm",
             json=webhook_data,
             headers={"X-GTM-Signature": "mock-signature"}
         )
@@ -583,7 +583,7 @@ class TestWebhookEndpoints:
         
         # Act
         response = await async_client.post(
-            "/api/v1/tracking/webhooks/meta",
+            "/api/v2/tracking/webhooks/meta",
             json=webhook_data,
             headers={"X-Hub-Signature": "sha1=mock-signature"}
         )
@@ -599,14 +599,14 @@ class TestPermissions:
         """Test that regular users cannot access admin-only endpoints"""
         # Try to create a goal (admin only)
         response = await authenticated_client.post(
-            "/api/v1/tracking/goals",
+            "/api/v2/tracking/goals",
             json={"name": "Test", "event_type": "test"}
         )
         assert response.status_code == 403
         
         # Try to update config (admin only)
         response = await authenticated_client.put(
-            "/api/v1/tracking/config",
+            "/api/v2/tracking/config",
             json={"gtm_enabled": False}
         )
         assert response.status_code == 403
@@ -615,7 +615,7 @@ class TestPermissions:
         """Test that unauthenticated requests are denied"""
         # Try to track event without auth
         response = await async_client.post(
-            "/api/v1/tracking/events",
+            "/api/v2/tracking/events",
             json={"event_type": "test"}
         )
         assert response.status_code == 401

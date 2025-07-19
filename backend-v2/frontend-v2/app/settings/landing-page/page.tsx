@@ -91,7 +91,7 @@ export default function LandingPageSettings() {
       }
       
       // Load landing page settings
-      const response = await fetch('/api/v1/organizations/current/landing-page-settings', {
+      const response = await fetch('/api/v2/organizations/current/landing-page-settings', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -134,7 +134,7 @@ export default function LandingPageSettings() {
   const saveSettings = async () => {
     setSaving(true)
     try {
-      const response = await fetch('/api/v1/organizations/current/landing-page-settings', {
+      const response = await fetch('/api/v2/organizations/current/landing-page-settings', {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

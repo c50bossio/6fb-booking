@@ -88,7 +88,7 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
   const fetchReportData = async () => {
     try {
       setLoading(true);
-      const response = await fetchAPI('/api/v1/payments/reports', {
+      const response = await fetchAPI('/api/v2/payments/reports', {
         method: 'POST',
         body: JSON.stringify({
           start_date: new Date(dateRange.start).toISOString(),
@@ -124,7 +124,7 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
         include_tax: includeTax.toString(),
       });
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/reports/export?${params}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v2/payments/reports/export?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },

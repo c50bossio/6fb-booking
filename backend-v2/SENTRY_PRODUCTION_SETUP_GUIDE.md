@@ -100,7 +100,7 @@ cd backend-v2
 uvicorn main:app --reload
 
 # 2. Trigger test error
-curl -X POST http://localhost:8000/api/v1/test-error \
+curl -X POST http://localhost:8000/api/v2/test-error \
   -H "Content-Type: application/json"
 
 # 3. Check Sentry dashboard

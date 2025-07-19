@@ -14,7 +14,7 @@ import os
 
 # API Base Configuration
 BASE_URL = "http://localhost:8001"
-API_V1_URL = f"{BASE_URL}/api/v1"
+API_V1_URL = f"{BASE_URL}/api/v2"
 
 # Test users from setup_test_users.py
 TEST_USERS = {

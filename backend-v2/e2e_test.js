@@ -27,7 +27,7 @@ async function runE2ETests() {
     tests.push({
         name: 'Integration Status API',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/status');
+            const response = await fetch('http://localhost:8000/api/v2/integrations/status');
             const data = await response.json();
             if (response.ok && Array.isArray(data) && data.length > 0) {
                 return { success: true, data: `Found ${data.length} integrations` };
@@ -40,7 +40,7 @@ async function runE2ETests() {
     tests.push({
         name: 'OAuth Initiation API',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ async function runE2ETests() {
     tests.push({
         name: 'Integration Health Check API',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/health/all');
+            const response = await fetch('http://localhost:8000/api/v2/integrations/health/all');
             const data = await response.json();
             if (response.ok && data.summary && data.integrations) {
                 return { success: true, data: `Health check: ${data.summary.total} total, ${data.summary.healthy} healthy` };
@@ -72,7 +72,7 @@ async function runE2ETests() {
     tests.push({
         name: 'Reviews API',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/reviews');
+            const response = await fetch('http://localhost:8000/api/v2/reviews');
             const data = await response.json();
             if (response.ok && Array.isArray(data)) {
                 return { success: true, data: `Found ${data.length} reviews` };
@@ -100,7 +100,7 @@ async function runE2ETests() {
     tests.push({
         name: 'Error Handling Test',
         test: async () => {
-            const response = await fetch('http://localhost:8000/api/v1/integrations/connect', {
+            const response = await fetch('http://localhost:8000/api/v2/integrations/connect', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

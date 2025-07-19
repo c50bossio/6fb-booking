@@ -16,7 +16,7 @@ The 6FB Booking application is now **fully operational** with all critical issue
 - **Status**: ✅ RESOLVED
 
 ### 3. **Missing Barbers Endpoint**
-- **Issue**: `/api/v1/barbers` endpoint returning 404
+- **Issue**: `/api/v2/barbers` endpoint returning 404
 - **Fix**: Created new barbers router with public endpoint for booking page
 - **Status**: ✅ RESOLVED
 

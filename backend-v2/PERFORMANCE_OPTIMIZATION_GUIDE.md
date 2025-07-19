@@ -701,10 +701,10 @@ class TestAPIPerformance:
     async def test_api_response_times(self):
         """Test that API endpoints meet response time thresholds"""
         endpoints = [
-            "/api/v1/health",
-            "/api/v1/barbers",
-            "/api/v1/services",
-            "/api/v1/appointments"
+            "/api/v2/health",
+            "/api/v2/barbers",
+            "/api/v2/services",
+            "/api/v2/appointments"
         ]
         
         async with aiohttp.ClientSession() as session:
@@ -741,7 +741,7 @@ class TestAPIPerformance:
         async with aiohttp.ClientSession() as session:
             # Test with 50 concurrent requests
             tasks = [
-                make_request(session, "http://localhost:8000/api/v1/health")
+                make_request(session, "http://localhost:8000/api/v2/health")
                 for _ in range(50)
             ]
             

@@ -13,7 +13,7 @@ def get_auth_token():
         "password": "testpassword123"
     }
     
-    response = requests.post(f"{BASE_URL}/api/v1/auth/login", json=login_data)
+    response = requests.post(f"{BASE_URL}/api/v2/auth/login", json=login_data)
     if response.status_code == 200:
         return response.json().get("access_token")
     return None
@@ -32,7 +32,7 @@ def main():
     # Get integration status
     print("\n📊 Checking Integration Status...")
     status_response = requests.get(
-        f"{BASE_URL}/api/v1/integrations/status", 
+        f"{BASE_URL}/api/v2/integrations/status", 
         headers=headers
     )
     
@@ -50,7 +50,7 @@ def main():
     # Check health status
     print("\n🏥 Checking Integration Health...")
     health_response = requests.get(
-        f"{BASE_URL}/api/v1/integrations/health/all",
+        f"{BASE_URL}/api/v2/integrations/health/all",
         headers=headers
     )
     

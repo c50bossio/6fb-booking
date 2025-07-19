@@ -96,33 +96,33 @@ The enhanced payment management system provides comprehensive features for handl
 
 ### Payment History
 ```
-GET /api/v1/payments/history
+GET /api/v2/payments/history
 Query params: user_id, barber_id, start_date, end_date, status, page, page_size
 ```
 
 ### Refund Processing
 ```
-POST /api/v1/payments/refund
+POST /api/v2/payments/refund
 Body: { payment_id, amount, reason }
 ```
 
 ### Gift Certificates
 ```
-POST /api/v1/payments/gift-certificates - Create certificate
-GET /api/v1/payments/gift-certificates - List certificates
-POST /api/v1/payments/gift-certificates/validate - Validate code
+POST /api/v2/payments/gift-certificates - Create certificate
+GET /api/v2/payments/gift-certificates - List certificates
+POST /api/v2/payments/gift-certificates/validate - Validate code
 ```
 
 ### Payment Reports
 ```
-POST /api/v1/payments/reports
+POST /api/v2/payments/reports
 Body: { start_date, end_date, barber_id }
 ```
 
 ### Stripe Connect
 ```
-POST /api/v1/payments/stripe-connect/onboard - Start onboarding
-GET /api/v1/payments/stripe-connect/status - Check status
+POST /api/v2/payments/stripe-connect/onboard - Start onboarding
+GET /api/v2/payments/stripe-connect/status - Check status
 ```
 
 ## Configuration

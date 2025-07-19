@@ -391,25 +391,25 @@ Core Tables:
 ### API Endpoints (45 Total)
 ```
 Authentication & Users:
-├── POST /api/v1/auth/login
-├── POST /api/v1/auth/register
-├── POST /api/v1/auth/refresh
-├── POST /api/v1/auth/forgot-password
-└── POST /api/v1/auth/reset-password
+├── POST /api/v2/auth/login
+├── POST /api/v2/auth/register
+├── POST /api/v2/auth/refresh
+├── POST /api/v2/auth/forgot-password
+└── POST /api/v2/auth/reset-password
 
 Booking Management:
-├── GET /api/v1/bookings/
-├── POST /api/v1/bookings/
-├── GET /api/v1/bookings/slots
-├── POST /api/v1/bookings/quick
-└── GET /api/v1/bookings/slots/next-available
+├── GET /api/v2/bookings/
+├── POST /api/v2/bookings/
+├── GET /api/v2/bookings/slots
+├── POST /api/v2/bookings/quick
+└── GET /api/v2/bookings/slots/next-available
 
 Client Management:
-├── GET /api/v1/clients/
-├── POST /api/v1/clients/
-├── GET /api/v1/clients/{id}
-├── PUT /api/v1/clients/{id}
-└── GET /api/v1/clients/{id}/history
+├── GET /api/v2/clients/
+├── POST /api/v2/clients/
+├── GET /api/v2/clients/{id}
+├── PUT /api/v2/clients/{id}
+└── GET /api/v2/clients/{id}/history
 
 + 30 additional endpoints for services, payments, analytics, etc.
 ```

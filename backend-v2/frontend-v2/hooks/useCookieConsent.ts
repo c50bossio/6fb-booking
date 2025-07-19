@@ -87,7 +87,7 @@ export const useCookieConsent = () => {
       
       // Save to backend API (optional, for compliance tracking)
       try {
-        await fetch('/api/v1/privacy/consent', {
+        await fetch('/api/v2/privacy/consent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -64,7 +64,7 @@ export async function createSetupIntent(
   customerId: string
 }> {
   try {
-    const response = await fetch('/api/v1/billing/setup-intent', {
+    const response = await fetch('/api/v2/billing/setup-intent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export async function attachPaymentMethod(
   paymentMethodId: string
   message: string
 }> {
-  const response = await fetch('/api/v1/billing/attach-payment-method', {
+  const response = await fetch('/api/v2/billing/attach-payment-method', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

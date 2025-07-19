@@ -18,7 +18,7 @@ from services.service_template_service import ServiceTemplateService
 from routers.auth import get_current_user
 
 # Initialize router
-router = APIRouter(prefix="/api/v1/pricing", tags=["pricing"])
+router = APIRouter(prefix="/api/v2/pricing", tags=["pricing"])
 
 # Enums
 class SixFBTier(str, Enum):

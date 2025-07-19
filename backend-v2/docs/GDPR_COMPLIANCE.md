@@ -34,7 +34,7 @@ BookedBarber V2 is designed with privacy-first principles and full GDPR (General
 ## API Endpoints
 
 ### Base URL
-All privacy endpoints are prefixed with `/api/v1/privacy`
+All privacy endpoints are prefixed with `/api/v2/privacy`
 
 ### Authentication
 All endpoints require valid JWT authentication except where noted.
@@ -44,7 +44,7 @@ All endpoints require valid JWT authentication except where noted.
 ### 1. Get User Consents
 
 ```http
-GET /api/v1/privacy/consents
+GET /api/v2/privacy/consents
 ```
 
 Retrieve all consent statuses for the current user.
@@ -89,7 +89,7 @@ Retrieve all consent statuses for the current user.
 ### 2. Update Consent
 
 ```http
-PUT /api/v1/privacy/consents
+PUT /api/v2/privacy/consents
 ```
 
 Update user consent for specific purposes.
@@ -147,7 +147,7 @@ Update user consent for specific purposes.
 ### 3. Bulk Consent Update
 
 ```http
-POST /api/v1/privacy/consents/bulk
+POST /api/v2/privacy/consents/bulk
 ```
 
 Update multiple consents in a single request (useful for initial consent collection).
@@ -180,7 +180,7 @@ Update multiple consents in a single request (useful for initial consent collect
 ### 1. Cookie Consent Preferences
 
 ```http
-GET /api/v1/privacy/cookies
+GET /api/v2/privacy/cookies
 ```
 
 Get current cookie consent preferences.
@@ -225,7 +225,7 @@ Get current cookie consent preferences.
 ### 2. Update Cookie Preferences
 
 ```http
-PUT /api/v1/privacy/cookies
+PUT /api/v2/privacy/cookies
 ```
 
 Update cookie consent preferences.
@@ -269,7 +269,7 @@ Update cookie consent preferences.
 
 #### Request Data Export
 ```http
-POST /api/v1/privacy/data-export
+POST /api/v2/privacy/data-export
 ```
 
 Request a complete export of user data.
@@ -316,7 +316,7 @@ Request a complete export of user data.
 
 #### Check Export Status
 ```http
-GET /api/v1/privacy/data-export/{export_request_id}/status
+GET /api/v2/privacy/data-export/{export_request_id}/status
 ```
 
 **Response:**
@@ -339,7 +339,7 @@ GET /api/v1/privacy/data-export/{export_request_id}/status
 
 #### Download Export Data
 ```http
-GET /api/v1/privacy/data-export/{export_request_id}/download
+GET /api/v2/privacy/data-export/{export_request_id}/download
 ```
 
 **Query Parameters:**
@@ -380,7 +380,7 @@ data_export_user_123/
 ### 2. Account Deletion (Right to Erasure)
 
 ```http
-POST /api/v1/privacy/delete-account
+POST /api/v2/privacy/delete-account
 ```
 
 Request complete account and data deletion.
@@ -428,7 +428,7 @@ Request complete account and data deletion.
 
 #### Cancel Deletion Request
 ```http
-DELETE /api/v1/privacy/delete-account/{deletion_request_id}
+DELETE /api/v2/privacy/delete-account/{deletion_request_id}
 ```
 
 **Response:**
@@ -447,7 +447,7 @@ DELETE /api/v1/privacy/delete-account/{deletion_request_id}
 ### 1. Get Privacy Settings
 
 ```http
-GET /api/v1/privacy/settings
+GET /api/v2/privacy/settings
 ```
 
 **Response:**
@@ -484,7 +484,7 @@ GET /api/v1/privacy/settings
 ### 2. Update Privacy Settings
 
 ```http
-PUT /api/v1/privacy/settings
+PUT /api/v2/privacy/settings
 ```
 
 **Request Body:**
@@ -509,7 +509,7 @@ PUT /api/v1/privacy/settings
 ### 1. Consent Audit Log
 
 ```http
-GET /api/v1/privacy/audit/consents
+GET /api/v2/privacy/audit/consents
 ```
 
 View audit trail of consent changes (available to data subjects).
@@ -562,7 +562,7 @@ View audit trail of consent changes (available to data subjects).
 ### 2. Data Processing Activities
 
 ```http
-GET /api/v1/privacy/processing-activities
+GET /api/v2/privacy/processing-activities
 ```
 
 View all data processing activities for transparency (public endpoint).

@@ -39,7 +39,7 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
         description: `Deleted appointment for ${appointment.client_name}`
       })
 
-      await apiRequest(`/api/v1/appointments/${appointment.id}`, {
+      await apiRequest(`/api/v2/appointments/${appointment.id}`, {
         method: 'DELETE'
       })
 
@@ -84,7 +84,7 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
         description: `Rescheduled ${appointment.client_name} to ${newTime.toLocaleTimeString()}`
       })
 
-      await apiRequest(`/api/v1/appointments/${appointment.id}`, {
+      await apiRequest(`/api/v2/appointments/${appointment.id}`, {
         method: 'PUT',
         data: {
           appointment_time: newTime.toISOString(),
@@ -117,7 +117,7 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
         description: `Cancelled appointment for ${appointment.client_name}`
       })
 
-      await apiRequest(`/api/v1/appointments/${appointment.id}/status`, {
+      await apiRequest(`/api/v2/appointments/${appointment.id}/status`, {
         method: 'PUT',
         data: { status: 'cancelled' }
       })
@@ -212,7 +212,7 @@ export default function AppointmentManagementWithUndo() {
 
   const fetchAppointments = async () => {
     try {
-      const response = await apiRequest('/api/v1/appointments', {
+      const response = await apiRequest('/api/v2/appointments', {
         method: 'GET'
       })
       setAppointments(response.data || [])

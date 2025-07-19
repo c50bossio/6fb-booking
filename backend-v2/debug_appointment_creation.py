@@ -165,7 +165,7 @@ def test_frontend_api_call():
     # Get token first
     try:
         login_response = requests.post(
-            "http://localhost:8000/api/v1/auth/login",
+            "http://localhost:8000/api/v2/auth/login",
             json={"email": "admin@6fb.com", "password": "admin123"}
         )
         
@@ -189,7 +189,7 @@ def test_frontend_api_call():
             }
             
             response = requests.post(
-                "http://localhost:8000/api/v1/appointments",
+                "http://localhost:8000/api/v2/appointments",
                 json=appointment_data,
                 headers=headers
             )

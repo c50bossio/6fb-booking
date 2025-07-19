@@ -51,27 +51,27 @@ class E2EBookingPerformanceTest:
         self.booking_flow_steps = [
             BookingFlowStep(
                 name="Health Check",
-                endpoint="/api/v1/health",
+                endpoint="/api/v2/health",
                 method="GET"
             ),
             BookingFlowStep(
                 name="Get Available Services",
-                endpoint="/api/v1/services",
+                endpoint="/api/v2/services",
                 method="GET"
             ),
             BookingFlowStep(
                 name="Get Available Barbers",
-                endpoint="/api/v1/barbers",
+                endpoint="/api/v2/barbers",
                 method="GET"
             ),
             BookingFlowStep(
                 name="Check Calendar Availability",
-                endpoint="/api/v1/calendar/availability",
+                endpoint="/api/v2/calendar/availability",
                 method="GET"
             ),
             BookingFlowStep(
                 name="Create Guest User",
-                endpoint="/api/v1/auth/register",
+                endpoint="/api/v2/auth/register",
                 method="POST",
                 payload={
                     "email": "test@performance.test",
@@ -83,7 +83,7 @@ class E2EBookingPerformanceTest:
             ),
             BookingFlowStep(
                 name="Login User",
-                endpoint="/api/v1/auth/login",
+                endpoint="/api/v2/auth/login",
                 method="POST",
                 payload={
                     "email": "test@performance.test",
@@ -92,7 +92,7 @@ class E2EBookingPerformanceTest:
             ),
             BookingFlowStep(
                 name="Create Appointment",
-                endpoint="/api/v1/appointments",
+                endpoint="/api/v2/appointments",
                 method="POST",
                 payload={
                     "service_id": 1,
@@ -104,13 +104,13 @@ class E2EBookingPerformanceTest:
             ),
             BookingFlowStep(
                 name="Confirm Appointment",
-                endpoint="/api/v1/appointments/{appointment_id}/confirm",
+                endpoint="/api/v2/appointments/{appointment_id}/confirm",
                 method="PUT",
                 payload={"confirmed": True}
             ),
             BookingFlowStep(
                 name="Get Appointment Details",
-                endpoint="/api/v1/appointments/{appointment_id}",
+                endpoint="/api/v2/appointments/{appointment_id}",
                 method="GET"
             )
         ]
@@ -560,7 +560,7 @@ async def main():
     # Check backend availability
     backend_url = "http://localhost:8000"
     try:
-        response = requests.get(f"{backend_url}/api/v1/health", timeout=5)
+        response = requests.get(f"{backend_url}/api/v2/health", timeout=5)
         if response.status_code != 200:
             logger.error(f"Backend server not responding properly at {backend_url}")
             return

@@ -14,7 +14,7 @@ def test_all_analytics():
         "password": "admin123"
     }
     
-    login_response = requests.post(f"{base_url}/api/v1/auth/login", json=login_data)
+    login_response = requests.post(f"{base_url}/api/v2/auth/login", json=login_data)
     if login_response.status_code != 200:
         print(f"Login failed: {login_response.text}")
         return
@@ -24,16 +24,16 @@ def test_all_analytics():
     
     # Test all analytics endpoints
     endpoints = [
-        ("/api/v1/analytics/dashboard", "Dashboard Analytics"),
-        ("/api/v1/analytics/revenue", "Revenue Analytics"),
-        ("/api/v1/analytics/appointments", "Appointment Analytics"),
-        ("/api/v1/analytics/six-figure-barber", "Six Figure Barber Metrics"),
-        ("/api/v1/analytics/client-retention", "Client Retention"),
-        ("/api/v1/analytics/barber-performance", "Barber Performance"),
-        ("/api/v1/analytics/comparative", "Comparative Analytics"),
-        ("/api/v1/analytics/insights", "Business Insights"),
-        ("/api/v1/analytics/appointment-patterns", "Appointment Patterns"),
-        ("/api/v1/analytics/client-lifetime-value", "Client Lifetime Value")
+        ("/api/v2/analytics/dashboard", "Dashboard Analytics"),
+        ("/api/v2/analytics/revenue", "Revenue Analytics"),
+        ("/api/v2/analytics/appointments", "Appointment Analytics"),
+        ("/api/v2/analytics/six-figure-barber", "Six Figure Barber Metrics"),
+        ("/api/v2/analytics/client-retention", "Client Retention"),
+        ("/api/v2/analytics/barber-performance", "Barber Performance"),
+        ("/api/v2/analytics/comparative", "Comparative Analytics"),
+        ("/api/v2/analytics/insights", "Business Insights"),
+        ("/api/v2/analytics/appointment-patterns", "Appointment Patterns"),
+        ("/api/v2/analytics/client-lifetime-value", "Client Lifetime Value")
     ]
     
     print("Testing all analytics endpoints...")

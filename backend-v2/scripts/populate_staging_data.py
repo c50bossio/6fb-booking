@@ -176,7 +176,7 @@ class StagingDataPopulator:
                     "symbol": barber_data["symbol"],
                     "working_hours": barber_data["working_hours"],
                     "social": {"instagram": barber_data["instagram"]},
-                    "avatar_url": f"/api/v1/avatars/barber_{i+1}.jpg",
+                    "avatar_url": f"/api/v2/avatars/barber_{i+1}.jpg",
                     "rating": round(random.uniform(4.2, 5.0), 1),
                     "total_cuts": random.randint(150, 800)
                 }),

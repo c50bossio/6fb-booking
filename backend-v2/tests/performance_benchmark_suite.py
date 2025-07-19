@@ -54,15 +54,15 @@ class PerformanceBenchmarkSuite:
         
         # Test endpoints
         self.api_endpoints = [
-            "/api/v1/health",
-            "/api/v1/auth/verify",
-            "/api/v1/appointments",
-            "/api/v1/barbers",
-            "/api/v1/services",
-            "/api/v1/analytics/dashboard",
-            "/api/v1/calendar/availability",
-            "/api/v1/clients",
-            "/api/v1/payments/status"
+            "/api/v2/health",
+            "/api/v2/auth/verify",
+            "/api/v2/appointments",
+            "/api/v2/barbers",
+            "/api/v2/services",
+            "/api/v2/analytics/dashboard",
+            "/api/v2/calendar/availability",
+            "/api/v2/clients",
+            "/api/v2/payments/status"
         ]
         
         self.frontend_routes = [
@@ -336,10 +336,10 @@ runAllTests().catch(console.error);
             while time.time() < end_time:
                 # Simulate user journey: login -> dashboard -> calendar -> booking
                 endpoints = [
-                    "/api/v1/health",
-                    "/api/v1/barbers",
-                    "/api/v1/appointments",
-                    "/api/v1/services"
+                    "/api/v2/health",
+                    "/api/v2/barbers",
+                    "/api/v2/appointments",
+                    "/api/v2/services"
                 ]
                 
                 for endpoint in endpoints:
@@ -682,7 +682,7 @@ async def main():
     
     print("🔍 Checking server availability...")
     try:
-        response = requests.get(f"{backend_url}/api/v1/health", timeout=5)
+        response = requests.get(f"{backend_url}/api/v2/health", timeout=5)
         if response.status_code != 200:
             print(f"⚠️  Backend server not responding properly at {backend_url}")
     except:

@@ -17,7 +17,7 @@ def analyze_booking_contradiction():
     
     # Get auth token
     auth_data = {"email": "test@example.com", "password": "Test123!"}
-    response = requests.post("http://localhost:8000/api/v1/auth/login", json=auth_data)
+    response = requests.post("http://localhost:8000/api/v2/auth/login", json=auth_data)
     
     if response.status_code != 200:
         print("❌ Authentication failed")
@@ -31,7 +31,7 @@ def analyze_booking_contradiction():
     
     # Test 1: Get slots for June 28th
     print("📊 1. Checking slots for June 28th, 2025...")
-    slots_response = requests.get("http://localhost:8000/api/v1/bookings/slots?booking_date=2025-06-28", headers=headers)
+    slots_response = requests.get("http://localhost:8000/api/v2/bookings/slots?booking_date=2025-06-28", headers=headers)
     
     if slots_response.status_code == 200:
         slots_data = slots_response.json()
@@ -75,7 +75,7 @@ def analyze_booking_contradiction():
     
     # Test 2: Global next available
     print(f"\n📊 2. Checking global next available...")
-    global_response = requests.get("http://localhost:8000/api/v1/bookings/slots/next-available", headers=headers)
+    global_response = requests.get("http://localhost:8000/api/v2/bookings/slots/next-available", headers=headers)
     
     if global_response.status_code == 200:
         global_data = global_response.json()
@@ -98,7 +98,7 @@ def analyze_booking_contradiction():
     print(f"\n📊 3. Investigating 4:30 PM slot specifically...")
     
     # Let's check all appointments for today to see if 4:30 PM is actually booked
-    bookings_response = requests.get("http://localhost:8000/api/v1/bookings/", headers=headers)
+    bookings_response = requests.get("http://localhost:8000/api/v2/bookings/", headers=headers)
     
     if bookings_response.status_code == 200:
         bookings_data = bookings_response.json()

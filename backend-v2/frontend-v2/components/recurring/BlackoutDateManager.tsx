@@ -157,7 +157,7 @@ export default function BlackoutDateManager({
       params.append('include_recurring', 'true');
 
       const response = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/blackouts?${params}`,
+        `${apiUrl}/api/v2/recurring-appointments/blackouts?${params}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -216,7 +216,7 @@ export default function BlackoutDateManager({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/blackouts`,
+        `${apiUrl}/api/v2/recurring-appointments/blackouts`,
         {
           method: 'POST',
           headers: {
@@ -249,7 +249,7 @@ export default function BlackoutDateManager({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/blackouts/${editingBlackout.id}`,
+        `${apiUrl}/api/v2/recurring-appointments/blackouts/${editingBlackout.id}`,
         {
           method: 'PUT',
           headers: {
@@ -282,7 +282,7 @@ export default function BlackoutDateManager({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/blackouts/${blackoutId}`,
+        `${apiUrl}/api/v2/recurring-appointments/blackouts/${blackoutId}`,
         {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
@@ -306,7 +306,7 @@ export default function BlackoutDateManager({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/blackouts/${blackoutId}/impact`,
+        `${apiUrl}/api/v2/recurring-appointments/blackouts/${blackoutId}/impact`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -337,7 +337,7 @@ export default function BlackoutDateManager({
       }
 
       const response = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/blackouts/check`,
+        `${apiUrl}/api/v2/recurring-appointments/blackouts/check`,
         {
           method: 'POST',
           headers: {

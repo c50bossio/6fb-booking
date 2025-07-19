@@ -2,7 +2,7 @@ import requests
 import json
 
 # Create test user
-url = "http://localhost:8000/api/v1/auth/register-complete"
+url = "http://localhost:8000/api/v2/auth/register-complete"
 data = {
     "firstName": "Test",
     "lastName": "User",
@@ -34,7 +34,7 @@ print(f"Response: {response.text}")
 
 if response.status_code == 200:
     # Login to get token
-    login_url = "http://localhost:8000/api/v1/auth/login"
+    login_url = "http://localhost:8000/api/v2/auth/login"
     login_data = {
         "email": "test@example.com",
         "password": "TestPass@2024\!"

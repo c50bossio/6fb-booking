@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-✅ **Admin endpoint working correctly** - All appointments accessible via `/api/v1/appointments/all/list`  
+✅ **Admin endpoint working correctly** - All appointments accessible via `/api/v2/appointments/all/list`  
 ⚠️ **Calendar endpoint returns empty** - User appointments filtered by user_id  
 ❌ **Single appointment endpoint broken** - Service layer method missing  
 ✅ **Appointment ID 52 confirmed present** - Visible in admin endpoint with correct data  
@@ -11,16 +11,16 @@
 
 | Endpoint | Status | Appointments | ID 52 Found | Notes |
 |----------|--------|--------------|-------------|-------|
-| `/api/v1/appointments/` | ✅ 200 | 0 | ❌ No | User-specific filtering |
-| `/api/v1/appointments/all/list` | ✅ 200 | 53 | ✅ Yes | All system appointments |
-| `/api/v1/appointments/52` | ❌ 500 | N/A | N/A | Service method missing |
+| `/api/v2/appointments/` | ✅ 200 | 0 | ❌ No | User-specific filtering |
+| `/api/v2/appointments/all/list` | ✅ 200 | 53 | ✅ Yes | All system appointments |
+| `/api/v2/appointments/52` | ❌ 500 | N/A | N/A | Service method missing |
 
 ## Detailed Findings
 
-### 1. Calendar Main Endpoint (`/api/v1/appointments/`)
+### 1. Calendar Main Endpoint (`/api/v2/appointments/`)
 
 **Status:** ✅ Working but returns empty data  
-**URL:** `http://localhost:8000/api/v1/appointments/`  
+**URL:** `http://localhost:8000/api/v2/appointments/`  
 **Response:** 
 ```json
 {
@@ -33,10 +33,10 @@
 
 **Impact:** The frontend calendar won't show any appointments when using this endpoint.
 
-### 2. Admin Appointments Endpoint (`/api/v1/appointments/all/list`)
+### 2. Admin Appointments Endpoint (`/api/v2/appointments/all/list`)
 
 **Status:** ✅ Fully working  
-**URL:** `http://localhost:8000/api/v1/appointments/all/list`  
+**URL:** `http://localhost:8000/api/v2/appointments/all/list`  
 **Results:** 
 - Total appointments in system: **53**
 - Appointment ID 52: **✅ Found**
@@ -57,10 +57,10 @@
 }
 ```
 
-### 3. Specific Appointment Endpoint (`/api/v1/appointments/52`)
+### 3. Specific Appointment Endpoint (`/api/v2/appointments/52`)
 
 **Status:** ❌ Broken  
-**URL:** `http://localhost:8000/api/v1/appointments/52`  
+**URL:** `http://localhost:8000/api/v2/appointments/52`  
 **Error:** 
 ```json
 {
@@ -93,7 +93,7 @@ The appointment data structure is fully compatible with frontend calendar expect
 
 ### Why Calendar Shows Empty Data
 
-1. **User-Specific Filtering:** The main calendar endpoint `/api/v1/appointments/` filters by `current_user.id`
+1. **User-Specific Filtering:** The main calendar endpoint `/api/v2/appointments/` filters by `current_user.id`
 2. **Test User Mismatch:** Our test admin user (ID from `testadmin@test.com`) doesn't own any appointments
 3. **Existing Appointments:** All 53 appointments belong to other users (IDs 3, 4, 19, 36, 38, 40, etc.)
 
@@ -110,14 +110,14 @@ The individual appointment endpoint calls `booking_service.get_booking()` which 
 
 ### Calendar Data Flow
 ```
-Frontend Calendar → /api/v1/appointments/ → User's appointments only
+Frontend Calendar → /api/v2/appointments/ → User's appointments only
                  ↓
                 Empty results for test user
 ```
 
 ### Admin Dashboard
 ```
-Admin Dashboard → /api/v1/appointments/all/list → All system appointments
+Admin Dashboard → /api/v2/appointments/all/list → All system appointments
                 ↓
                 ✅ 53 appointments including ID 52
 ```
@@ -127,10 +127,10 @@ Admin Dashboard → /api/v1/appointments/all/list → All system appointments
 ### 1. For Testing Calendar Functionality
 ```bash
 # Option A: Create appointments for test user
-POST /api/v1/appointments/ with user_id = testadmin@test.com's ID
+POST /api/v2/appointments/ with user_id = testadmin@test.com's ID
 
 # Option B: Use admin endpoint in calendar
-GET /api/v1/appointments/all/list (for admin users)
+GET /api/v2/appointments/all/list (for admin users)
 
 # Option C: Test with existing user
 # Use credentials for user_id 40 (who owns appointment 52)
@@ -158,15 +158,15 @@ For admin users, consider using the `/appointments/all/list` endpoint instead of
 ```bash
 # Test admin endpoint (working)
 curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8000/api/v1/appointments/all/list
+  http://localhost:8000/api/v2/appointments/all/list
 
 # Test user endpoint (empty)
 curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8000/api/v1/appointments/
+  http://localhost:8000/api/v2/appointments/
 
 # Test specific appointment (broken)
 curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8000/api/v1/appointments/52
+  http://localhost:8000/api/v2/appointments/52
 ```
 
 ## Conclusion

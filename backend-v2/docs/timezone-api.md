@@ -16,7 +16,7 @@ The timezone management system allows users to:
 
 #### Get User Profile with Timezone
 ```
-GET /api/v1/users/me
+GET /api/v2/users/me
 Authorization: Bearer {token}
 ```
 
@@ -34,7 +34,7 @@ Authorization: Bearer {token}
 
 #### Get User Timezone
 ```
-GET /api/v1/users/timezone
+GET /api/v2/users/timezone
 Authorization: Bearer {token}
 ```
 
@@ -48,7 +48,7 @@ Authorization: Bearer {token}
 
 #### Update User Timezone
 ```
-PUT /api/v1/users/timezone
+PUT /api/v2/users/timezone
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -71,7 +71,7 @@ Content-Type: application/json
 
 #### List All Timezones
 ```
-GET /api/v1/timezones?search=America&limit=10&offset=0
+GET /api/v2/timezones?search=America&limit=10&offset=0
 Authorization: Bearer {token}
 ```
 
@@ -101,7 +101,7 @@ Authorization: Bearer {token}
 
 #### Get Common Timezones
 ```
-GET /api/v1/timezones/common
+GET /api/v2/timezones/common
 Authorization: Bearer {token}
 ```
 
@@ -136,13 +136,13 @@ Authorization: Bearer {token}
 
 #### Get Specific Timezone Details
 ```
-GET /api/v1/timezones/{timezone_name}
+GET /api/v2/timezones/{timezone_name}
 Authorization: Bearer {token}
 ```
 
 **Example:**
 ```
-GET /api/v1/timezones/America/New_York
+GET /api/v2/timezones/America/New_York
 ```
 
 **Response:**

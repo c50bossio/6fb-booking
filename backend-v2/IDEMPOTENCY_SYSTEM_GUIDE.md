@@ -45,7 +45,7 @@ CREATE TABLE idempotency_keys (
 Include an `Idempotency-Key` header in requests to protected endpoints:
 
 ```bash
-curl -X POST /api/v1/payments/create-intent \
+curl -X POST /api/v2/payments/create-intent \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: payment_a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
   -H "Authorization: Bearer <token>" \
@@ -98,23 +98,23 @@ async def handle_stripe_webhook(
 ## Protected Endpoints
 
 ### Payment Operations
-- `POST /api/v1/payments/create-intent` - Payment intent creation
-- `POST /api/v1/payments/confirm` - Payment confirmation
-- `POST /api/v1/payments/refund` - Refund processing
-- `POST /api/v1/payments/gift-certificates` - Gift certificate creation
+- `POST /api/v2/payments/create-intent` - Payment intent creation
+- `POST /api/v2/payments/confirm` - Payment confirmation
+- `POST /api/v2/payments/refund` - Refund processing
+- `POST /api/v2/payments/gift-certificates` - Gift certificate creation
 
 ### Payout Operations  
-- `POST /api/v1/payments/payouts` - Barber payouts
-- `POST /api/v1/payments/payouts/enhanced` - Enhanced payouts with retail
+- `POST /api/v2/payments/payouts` - Barber payouts
+- `POST /api/v2/payments/payouts/enhanced` - Enhanced payouts with retail
 
 ### Order Management
-- `POST /api/v1/products/orders` - Order creation
-- `POST /api/v1/products/pos/transactions` - POS transactions
+- `POST /api/v2/products/orders` - Order creation
+- `POST /api/v2/products/pos/transactions` - POS transactions
 
 ### Webhook Handlers
-- `POST /api/v1/webhooks/stripe` - Stripe webhooks
-- `POST /api/v1/webhooks/sms` - SMS webhooks  
-- `POST /api/v1/webhooks/shopify/products/create` - Shopify webhooks
+- `POST /api/v2/webhooks/stripe` - Stripe webhooks
+- `POST /api/v2/webhooks/sms` - SMS webhooks  
+- `POST /api/v2/webhooks/shopify/products/create` - Shopify webhooks
 
 ## Key Generation
 
@@ -241,7 +241,7 @@ print(f"Cleaned up {deleted_count} expired keys")
 ### Health Check
 
 ```bash
-curl /api/v1/webhooks/health
+curl /api/v2/webhooks/health
 ```
 
 ## Best Practices
@@ -283,13 +283,13 @@ python test_idempotency_system.py
 uvicorn main:app --reload
 
 # Test duplicate requests
-curl -X POST /api/v1/payments/create-intent \
+curl -X POST /api/v2/payments/create-intent \
   -H "Idempotency-Key: test_payment_123" \
   -H "Authorization: Bearer <token>" \
   -d '{"booking_id": 123}'
 
 # Send same request again (should return cached result)
-curl -X POST /api/v1/payments/create-intent \
+curl -X POST /api/v2/payments/create-intent \
   -H "Idempotency-Key: test_payment_123" \
   -H "Authorization: Bearer <token>" \
   -d '{"booking_id": 123}'

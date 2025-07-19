@@ -26,7 +26,7 @@ BookedBarber V2's AI Analytics system provides revolutionary cross-user intellig
 ## API Endpoints
 
 ### Base URL
-All AI Analytics endpoints are prefixed with `/api/v1/ai-analytics`
+All AI Analytics endpoints are prefixed with `/api/v2/ai-analytics`
 
 ### Authentication
 All endpoints require valid JWT authentication and user consent for AI analytics.
@@ -36,7 +36,7 @@ All endpoints require valid JWT authentication and user consent for AI analytics
 #### 1. Benchmark Comparisons
 
 ```http
-POST /api/v1/ai-analytics/benchmark
+POST /api/v2/ai-analytics/benchmark
 ```
 
 Compare your metrics against industry benchmarks.
@@ -71,7 +71,7 @@ Compare your metrics against industry benchmarks.
 #### 2. Revenue Forecasting
 
 ```http
-POST /api/v1/ai-analytics/predict/revenue
+POST /api/v2/ai-analytics/predict/revenue
 ```
 
 Get AI-powered revenue predictions.
@@ -110,7 +110,7 @@ Get AI-powered revenue predictions.
 #### 3. Client Churn Prediction
 
 ```http
-POST /api/v1/ai-analytics/predict/churn
+POST /api/v2/ai-analytics/predict/churn
 ```
 
 Identify clients at risk of leaving.
@@ -142,7 +142,7 @@ Identify clients at risk of leaving.
 #### 4. Demand Pattern Analysis
 
 ```http
-POST /api/v1/ai-analytics/predict/demand
+POST /api/v2/ai-analytics/predict/demand
 ```
 
 Analyze and predict booking demand patterns.
@@ -175,7 +175,7 @@ Analyze and predict booking demand patterns.
 #### 5. Pricing Optimization
 
 ```http
-POST /api/v1/ai-analytics/predict/pricing
+POST /api/v2/ai-analytics/predict/pricing
 ```
 
 Get AI-recommended pricing strategies.
@@ -208,7 +208,7 @@ Get AI-recommended pricing strategies.
 #### 6. Performance Dashboard
 
 ```http
-GET /api/v1/ai-analytics/dashboard
+GET /api/v2/ai-analytics/dashboard
 ```
 
 Get comprehensive performance insights.
@@ -250,7 +250,7 @@ Get comprehensive performance insights.
 Before accessing AI analytics features, users must provide explicit consent:
 
 ```http
-POST /api/v1/ai-analytics/consent
+POST /api/v2/ai-analytics/consent
 ```
 
 **Request Body:**
@@ -278,7 +278,7 @@ The system employs advanced anonymization techniques:
 Users can revoke consent at any time:
 
 ```http
-DELETE /api/v1/ai-analytics/consent
+DELETE /api/v2/ai-analytics/consent
 ```
 
 ## Implementation Guide

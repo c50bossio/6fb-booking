@@ -65,7 +65,7 @@
 **Working Endpoints:**
 - `GET /` - Root endpoint
 - `GET /docs` - API documentation
-- `POST /api/v1/auth/register` - User registration
+- `POST /api/v2/auth/register` - User registration
 - Various public endpoints for services/businesses
 
 **Issues:**

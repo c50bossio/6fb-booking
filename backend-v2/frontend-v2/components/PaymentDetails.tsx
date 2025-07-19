@@ -48,7 +48,7 @@ export default function PaymentDetails({ payment, onClose, onRefund }: PaymentDe
   const handleSendReceipt = async () => {
     try {
       setSendingReceipt(true);
-      await fetchAPI(`/api/v1/payments/${payment.id}/receipt`, {
+      await fetchAPI(`/api/v2/payments/${payment.id}/receipt`, {
         method: 'POST',
       });
       setReceiptSent(true);

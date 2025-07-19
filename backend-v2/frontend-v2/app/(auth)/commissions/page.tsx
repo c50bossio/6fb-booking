@@ -65,7 +65,7 @@ export default function CommissionsPage() {
   // Fetch commission data
   const { data: commissionData, isLoading: loadingCommissions } = useQuery<CommissionData[]>({
     queryKey: ['commissions', selectedBarber, dateRange],
-    queryFn: () => fetchAPI(`/api/v1/commissions?${new URLSearchParams({
+    queryFn: () => fetchAPI(`/api/v2/commissions?${new URLSearchParams({
       ...(selectedBarber && { barber_id: selectedBarber }),
       start_date: dateRange.start,
       end_date: dateRange.end
@@ -75,7 +75,7 @@ export default function CommissionsPage() {
   // Fetch payout history
   const { data: payoutHistory, isLoading: loadingPayouts } = useQuery<PayoutData[]>({
     queryKey: ['payouts', selectedBarber, dateRange],
-    queryFn: () => fetchAPI(`/api/v1/payouts?${new URLSearchParams({
+    queryFn: () => fetchAPI(`/api/v2/payouts?${new URLSearchParams({
       ...(selectedBarber && { barber_id: selectedBarber }),
       start_date: dateRange.start,
       end_date: dateRange.end
@@ -85,7 +85,7 @@ export default function CommissionsPage() {
   // Fetch barbers list
   const { data: barbers } = useQuery({
     queryKey: ['barbers'],
-    queryFn: () => fetchAPI('/api/v1/users?role=barber')
+    queryFn: () => fetchAPI('/api/v2/users?role=barber')
   })
   
   // Calculate totals
@@ -115,7 +115,7 @@ export default function CommissionsPage() {
   
   const handleExport = async (format: 'csv' | 'pdf') => {
     try {
-      const response = await fetchAPI(`/api/v1/commissions/export?${new URLSearchParams({
+      const response = await fetchAPI(`/api/v2/commissions/export?${new URLSearchParams({
         format,
         ...(selectedBarber && { barber_id: selectedBarber }),
         start_date: dateRange.start,

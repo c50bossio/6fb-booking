@@ -17,7 +17,7 @@ def test_analytics_endpoints():
     
     try:
         print("1. Attempting login...")
-        login_response = requests.post(f"{base_url}/api/v1/auth/login", json=login_data)
+        login_response = requests.post(f"{base_url}/api/v2/auth/login", json=login_data)
         print(f"Login response: {login_response.status_code}")
         
         if login_response.status_code != 200:
@@ -31,12 +31,12 @@ def test_analytics_endpoints():
         
         # Test various analytics endpoints
         endpoints = [
-            "/api/v1/analytics/dashboard",
-            "/api/v1/analytics/revenue",
-            "/api/v1/analytics/appointments",
-            "/api/v1/analytics/six-figure-barber",
-            "/api/v1/analytics/client-retention",
-            "/api/v1/analytics/barber-performance"
+            "/api/v2/analytics/dashboard",
+            "/api/v2/analytics/revenue",
+            "/api/v2/analytics/appointments",
+            "/api/v2/analytics/six-figure-barber",
+            "/api/v2/analytics/client-retention",
+            "/api/v2/analytics/barber-performance"
         ]
         
         for endpoint in endpoints:

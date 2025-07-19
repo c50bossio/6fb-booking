@@ -281,28 +281,28 @@ export const api = {
  */
 export const bookingApi = {
   getAvailability: async (barberId: string, date: string) => {
-    return api.get(`/api/v1/availability/${barberId}`, {
+    return api.get(`/api/v2/availability/${barberId}`, {
       feature: 'booking',
       tags: { 'booking.action': 'get_availability', 'booking.barber_id': barberId },
     })
   },
 
   createBooking: async (bookingData: any) => {
-    return api.post('/api/v1/bookings', bookingData, {
+    return api.post('/api/v2/bookings', bookingData, {
       feature: 'booking',
       tags: { 'booking.action': 'create_booking' },
     })
   },
 
   updateBooking: async (bookingId: string, updates: any) => {
-    return api.patch(`/api/v1/bookings/${bookingId}`, updates, {
+    return api.patch(`/api/v2/bookings/${bookingId}`, updates, {
       feature: 'booking',
       tags: { 'booking.action': 'update_booking', 'booking.id': bookingId },
     })
   },
 
   cancelBooking: async (bookingId: string, reason?: string) => {
-    return api.delete(`/api/v1/bookings/${bookingId}`, {
+    return api.delete(`/api/v2/bookings/${bookingId}`, {
       feature: 'booking',
       tags: { 'booking.action': 'cancel_booking', 'booking.id': bookingId },
     })
@@ -314,7 +314,7 @@ export const bookingApi = {
  */
 export const paymentApi = {
   createPaymentIntent: async (amount: number, currency: string, bookingId: string) => {
-    return api.post('/api/v1/payments/create-intent', 
+    return api.post('/api/v2/payments/create-intent', 
       { amount, currency, booking_id: bookingId },
       {
         feature: 'payment',
@@ -329,7 +329,7 @@ export const paymentApi = {
   },
 
   confirmPayment: async (paymentIntentId: string, paymentMethodId: string) => {
-    return api.post('/api/v1/payments/confirm',
+    return api.post('/api/v2/payments/confirm',
       { payment_intent_id: paymentIntentId, payment_method_id: paymentMethodId },
       {
         feature: 'payment',
@@ -342,7 +342,7 @@ export const paymentApi = {
   },
 
   refundPayment: async (paymentIntentId: string, amount?: number) => {
-    return api.post('/api/v1/payments/refund',
+    return api.post('/api/v2/payments/refund',
       { payment_intent_id: paymentIntentId, amount },
       {
         feature: 'payment',
@@ -360,7 +360,7 @@ export const paymentApi = {
  */
 export const authApi = {
   login: async (email: string, password: string) => {
-    return api.post('/api/v1/auth/login',
+    return api.post('/api/v2/auth/login',
       { email, password },
       {
         feature: 'auth',
@@ -370,7 +370,7 @@ export const authApi = {
   },
 
   register: async (userData: any) => {
-    return api.post('/api/v1/auth/register',
+    return api.post('/api/v2/auth/register',
       userData,
       {
         feature: 'auth',
@@ -380,7 +380,7 @@ export const authApi = {
   },
 
   refreshToken: async () => {
-    return api.post('/api/v1/auth/refresh',
+    return api.post('/api/v2/auth/refresh',
       {},
       {
         feature: 'auth',
@@ -390,7 +390,7 @@ export const authApi = {
   },
 
   logout: async () => {
-    return api.post('/api/v1/auth/logout',
+    return api.post('/api/v2/auth/logout',
       {},
       {
         feature: 'auth',

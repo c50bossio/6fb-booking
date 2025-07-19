@@ -102,7 +102,7 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
       
       const finalReason = reason === 'other' ? customReason : REFUND_REASONS.find(r => r.value === reason)?.label || reason;
       
-      await fetchAPI('/api/v1/payments/refund', {
+      await fetchAPI('/api/v2/payments/refund', {
         method: 'POST',
         body: JSON.stringify({
           payment_id: payment.id,
@@ -114,7 +114,7 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
       // Send notification if requested
       if (notifyCustomer && payment.appointment?.user?.email) {
         try {
-          await fetchAPI('/api/v1/notifications/refund', {
+          await fetchAPI('/api/v2/notifications/refund', {
             method: 'POST',
             body: JSON.stringify({
               payment_id: payment.id,

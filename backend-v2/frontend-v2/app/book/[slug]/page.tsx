@@ -57,7 +57,7 @@ export default function OrganizationBookingPage() {
         setLoading(true)
         
         // Fetch organization data from API
-        const response = await fetch(`/api/v1/public/booking/organization/${slug}`)
+        const response = await fetch(`/api/v2/public/booking/organization/${slug}`)
         
         if (!response.ok) {
           if (response.status === 404) {

@@ -71,7 +71,7 @@ export async function getServiceTemplates(
   }
   
   const queryString = searchParams.toString()
-  const endpoint = `/api/v1/service-templates/${queryString ? `?${queryString}` : ''}`
+  const endpoint = `/api/v2/service-templates/${queryString ? `?${queryString}` : ''}`
   
   return await fetchAPI(endpoint)
 }
@@ -80,7 +80,7 @@ export async function getServiceTemplates(
  * Get featured service templates for onboarding
  */
 export async function getFeaturedServiceTemplates(limit: number = 6): Promise<ServiceTemplate[]> {
-  const endpoint = `/api/v1/service-templates/featured?limit=${limit}`
+  const endpoint = `/api/v2/service-templates/featured?limit=${limit}`
   return await fetchAPI(endpoint)
 }
 
@@ -88,7 +88,7 @@ export async function getFeaturedServiceTemplates(limit: number = 6): Promise<Se
  * Get a specific service template by ID
  */
 export async function getServiceTemplate(templateId: number): Promise<ServiceTemplate> {
-  const endpoint = `/api/v1/service-templates/${templateId}`
+  const endpoint = `/api/v2/service-templates/${templateId}`
   return await fetchAPI(endpoint)
 }
 
@@ -98,7 +98,7 @@ export async function getServiceTemplate(templateId: number): Promise<ServiceTem
 export async function applyServiceTemplate(
   applyRequest: ServiceTemplateApplyRequest
 ): Promise<ServiceTemplateApplyResponse> {
-  const endpoint = '/api/v1/service-templates/apply'
+  const endpoint = '/api/v2/service-templates/apply'
   
   return await fetchAPI(endpoint, {
     method: 'POST',
@@ -110,7 +110,7 @@ export async function applyServiceTemplate(
  * Get service templates that the current user has applied
  */
 export async function getUserAppliedTemplates(): Promise<AppliedTemplate[]> {
-  const endpoint = '/api/v1/service-templates/user/applied'
+  const endpoint = '/api/v2/service-templates/user/applied'
   return await fetchAPI(endpoint)
 }
 
@@ -118,7 +118,7 @@ export async function getUserAppliedTemplates(): Promise<AppliedTemplate[]> {
  * Get Six Figure Barber tier summary with template counts and metrics
  */
 export async function getSixFBTierSummary(): Promise<ServiceTemplateTierSummaryResponse> {
-  const endpoint = '/api/v1/service-templates/tiers/summary'
+  const endpoint = '/api/v2/service-templates/tiers/summary'
   return await fetchAPI(endpoint)
 }
 
@@ -127,7 +127,7 @@ export async function getSixFBTierSummary(): Promise<ServiceTemplateTierSummaryR
  * Note: This is typically an admin-only operation
  */
 export async function populateSixFBPresets(): Promise<{ message: string; templates_created: any[] }> {
-  const endpoint = '/api/v1/service-templates/populate-presets'
+  const endpoint = '/api/v2/service-templates/populate-presets'
   
   return await fetchAPI(endpoint, {
     method: 'POST',
@@ -140,7 +140,7 @@ export async function populateSixFBPresets(): Promise<{ message: string; templat
 export async function createServiceTemplate(
   templateData: Omit<ServiceTemplate, 'id' | 'created_at' | 'updated_at' | 'created_by_id' | 'usage_count' | 'popularity_score' | 'success_rate'>
 ): Promise<ServiceTemplate> {
-  const endpoint = '/api/v1/service-templates'
+  const endpoint = '/api/v2/service-templates'
   
   return await fetchAPI(endpoint, {
     method: 'POST',

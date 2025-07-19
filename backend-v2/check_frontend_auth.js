@@ -67,7 +67,7 @@ async function checkFrontendAuth() {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       
       try {
-        const response = await fetch(`${API_URL}/api/v1/appointments`, {
+        const response = await fetch(`${API_URL}/api/v2/appointments`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

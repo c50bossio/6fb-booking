@@ -65,7 +65,7 @@ export default function BenchmarkWidget({
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/v1/ai-analytics/benchmarks/${metric}`, {
+      const response = await fetch(`/api/v2/ai-analytics/benchmarks/${metric}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

@@ -1476,7 +1476,7 @@ class EventBatcher {
     }
     
     sendBatch(events) {
-        fetch('/api/v1/tracking/batch', {
+        fetch('/api/v2/tracking/batch', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

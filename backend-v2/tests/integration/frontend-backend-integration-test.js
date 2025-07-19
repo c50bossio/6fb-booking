@@ -80,11 +80,11 @@ async function testAPIEndpoints() {
     logSection('API Endpoints Testing');
     
     const endpoints = [
-        { path: '/api/v1/appointments', method: 'GET', name: 'Appointments API' },
-        { path: '/api/v1/users/me', method: 'GET', name: 'User Profile API' },
-        { path: '/api/v1/analytics/revenue', method: 'GET', name: 'Revenue Analytics API' },
-        { path: '/api/v1/integrations/status', method: 'GET', name: 'Integrations Status API' },
-        { path: '/api/v1/marketing/gmb/locations', method: 'GET', name: 'GMB Locations API' }
+        { path: '/api/v2/appointments', method: 'GET', name: 'Appointments API' },
+        { path: '/api/v2/users/me', method: 'GET', name: 'User Profile API' },
+        { path: '/api/v2/analytics/revenue', method: 'GET', name: 'Revenue Analytics API' },
+        { path: '/api/v2/integrations/status', method: 'GET', name: 'Integrations Status API' },
+        { path: '/api/v2/marketing/gmb/locations', method: 'GET', name: 'GMB Locations API' }
     ];
     
     let passCount = 0;
@@ -171,7 +171,7 @@ async function testCrossOriginRequests() {
     
     try {
         // Simulate a frontend API call to backend
-        const response = await axios.get(`${BACKEND_URL}/api/v1/appointments`, {
+        const response = await axios.get(`${BACKEND_URL}/api/v2/appointments`, {
             headers: {
                 'Origin': FRONTEND_URL,
                 'Referer': FRONTEND_URL,

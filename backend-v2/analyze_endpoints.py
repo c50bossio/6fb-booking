@@ -69,10 +69,10 @@ def main():
             elif router_name == 'short_urls':
                 prefix = '/s'
             elif router_name in ['notification_preferences', 'integrations', 'invitations', 'privacy', 'tracking', 'customer_pixels', 'public_booking']:
-                # These routers include their own /api/v1 prefix
+                # These routers include their own /api/v2 prefix
                 prefix = ''
             else:
-                prefix = '/api/v1'
+                prefix = '/api/v2'
             
             # Get router prefix from file
             router_prefix = ''

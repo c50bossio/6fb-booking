@@ -19,12 +19,12 @@ Add these variables to your `.env` file:
 # Google My Business OAuth
 GMB_CLIENT_ID=your-gmb-client-id
 GMB_CLIENT_SECRET=your-gmb-client-secret
-GMB_REDIRECT_URI=http://localhost:8000/api/v1/integrations/gmb/callback
+GMB_REDIRECT_URI=http://localhost:8000/api/v2/integrations/gmb/callback
 
 # Meta Business OAuth
 META_CLIENT_ID=your-meta-client-id
 META_CLIENT_SECRET=your-meta-client-secret
-META_REDIRECT_URI=http://localhost:8000/api/v1/integrations/meta/callback
+META_REDIRECT_URI=http://localhost:8000/api/v2/integrations/meta/callback
 
 # Google Tag Manager
 GTM_SERVER_CONTAINER_URL=https://your-gtm-server.com
@@ -59,7 +59,7 @@ The required tables are created automatically via SQLAlchemy models:
 2. Create a new project or select existing
 3. Enable Google My Business API
 4. Create OAuth 2.0 credentials
-5. Add redirect URI: `http://localhost:8000/api/v1/integrations/gmb/callback`
+5. Add redirect URI: `http://localhost:8000/api/v2/integrations/gmb/callback`
 6. Copy Client ID and Secret to `.env`
 
 #### Meta (Facebook) Business
@@ -113,10 +113,10 @@ python test_oauth_integrations.py
 
 ```http
 # List all integrations
-GET /api/v1/integrations/list
+GET /api/v2/integrations/list
 
 # Initiate OAuth connection
-POST /api/v1/integrations/connect
+POST /api/v2/integrations/connect
 {
   "integration_type": "google_my_business",
   "redirect_uri": "http://localhost:3000/settings/integrations",
@@ -124,13 +124,13 @@ POST /api/v1/integrations/connect
 }
 
 # Handle OAuth callback
-GET /api/v1/integrations/callback?code=xxx&state=xxx
+GET /api/v2/integrations/callback?code=xxx&state=xxx
 
 # Check integration health
-GET /api/v1/integrations/{id}/health
+GET /api/v2/integrations/{id}/health
 
 # Disconnect integration
-DELETE /api/v1/integrations/{id}
+DELETE /api/v2/integrations/{id}
 ```
 
 ### Conversion Tracking
@@ -155,7 +155,7 @@ GET /api/tracking/conversions?start_date=2024-01-01&end_date=2024-12-31
 
 ```http
 # Generate review response
-POST /api/v1/reviews/generate-response
+POST /api/v2/reviews/generate-response
 {
   "rating": 5,
   "review_text": "Great service!",
@@ -163,7 +163,7 @@ POST /api/v1/reviews/generate-response
 }
 
 # Get review templates
-GET /api/v1/reviews/templates
+GET /api/v2/reviews/templates
 ```
 
 ## 🧪 Testing
@@ -242,10 +242,10 @@ tail -f backend-v2/logs/app.log
 
 ```bash
 # Check all integrations health
-curl http://localhost:8000/api/v1/integrations/health/all
+curl http://localhost:8000/api/v2/integrations/health/all
 
 # Check specific integration
-curl http://localhost:8000/api/v1/integrations/{id}/health
+curl http://localhost:8000/api/v2/integrations/{id}/health
 ```
 
 ### Metrics to Monitor

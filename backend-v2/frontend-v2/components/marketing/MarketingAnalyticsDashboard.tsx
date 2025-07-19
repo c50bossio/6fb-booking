@@ -115,7 +115,7 @@ export default function MarketingAnalyticsDashboard({ organizationId }: Marketin
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - parseInt(dateRange))
       
-      const response = await fetch(`/api/v1/marketing/analytics/overview?start_date=${startDate.toISOString()}&end_date=${endDate.toISOString()}`, {
+      const response = await fetch(`/api/v2/marketing/analytics/overview?start_date=${startDate.toISOString()}&end_date=${endDate.toISOString()}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -147,7 +147,7 @@ export default function MarketingAnalyticsDashboard({ organizationId }: Marketin
   // Export data
   const exportData = async (format: 'csv' | 'json' | 'pdf') => {
     try {
-      const response = await fetch(`/api/v1/marketing/analytics/export?format=${format}`, {
+      const response = await fetch(`/api/v2/marketing/analytics/export?format=${format}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }

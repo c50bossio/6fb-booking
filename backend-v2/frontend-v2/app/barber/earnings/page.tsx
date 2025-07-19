@@ -85,7 +85,7 @@ export default function BarberEarningsPage() {
       }
 
       // Fetch earnings summary
-      const summaryResponse = await fetchAPI('/api/v1/analytics/barber-earnings', {
+      const summaryResponse = await fetchAPI('/api/v2/analytics/barber-earnings', {
         method: 'POST',
         body: JSON.stringify({
           barber_id: user.id,
@@ -131,7 +131,7 @@ export default function BarberEarningsPage() {
         format: 'csv',
       });
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/earnings/export?${params}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v2/payments/earnings/export?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },

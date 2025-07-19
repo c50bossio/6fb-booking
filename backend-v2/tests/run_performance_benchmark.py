@@ -52,7 +52,7 @@ class PerformanceBenchmarkRunner:
         
         # Check backend server
         try:
-            response = requests.get(f"{self.backend_url}/api/v1/health", timeout=5)
+            response = requests.get(f"{self.backend_url}/api/v2/health", timeout=5)
             prerequisites["backend_server"] = response.status_code == 200
             logger.info(f"✅ Backend server: {'Available' if prerequisites['backend_server'] else 'Not responding'}")
         except:

@@ -1,6 +1,7 @@
 """
 Sub-Agent Task Manager for Parallel Migration
 Allocates non-overlapping tasks to multiple agents
+Enhanced with production-grade error handling and resilience
 """
 
 import json
@@ -11,6 +12,15 @@ from datetime import datetime
 from pathlib import Path
 import uuid
 from enum import Enum
+import logging
+import asyncio
+
+# Import error handling framework
+from .agent_error_handler import (
+    AgentErrorHandler, DatabaseError, ValidationError, 
+    with_retry, with_circuit_breaker, with_full_protection,
+    ErrorSeverity, ErrorCategory
+)
 
 
 class TaskStatus(Enum):
@@ -65,7 +75,7 @@ class MigrationTask:
 
 
 class SubAgentManager:
-    """Manages task allocation for parallel migration work"""
+    """Manages task allocation for parallel migration work with production-grade error handling"""
     
     def __init__(self, max_agents: int = 3):
         self.max_agents = max_agents
@@ -75,16 +85,43 @@ class SubAgentManager:
         self.task_queue = queue.PriorityQueue()
         self.results_queue = queue.Queue()
         self.lock = threading.Lock()
-        self.base_path = Path("/Users/bossio/6fb-booking/backend-v2")
+        self.base_path = Path(__file__).parent.parent
         self.task_log_path = self.base_path / "migrations" / "task_logs"
         self.task_log_path.mkdir(exist_ok=True)
+        
+        # Initialize error handling
+        self.error_handler = AgentErrorHandler()
+        self.logger = logging.getLogger("sub_agent_manager")
+        
+        # Task execution statistics
+        self.execution_stats = {
+            "total_tasks": 0,
+            "completed_tasks": 0,
+            "failed_tasks": 0,
+            "retried_tasks": 0,
+            "start_time": None,
+            "end_time": None
+        }
     
+    @with_full_protection("create_phase_tasks", "database")
     def create_phase_tasks(self, phase: int) -> List[MigrationTask]:
         """Create tasks for all features in a phase"""
+        if not isinstance(phase, int) or phase < 1:
+            raise ValidationError(f"Invalid phase number: {phase}. Must be positive integer.")
+        
         # Load phase configuration
         config_path = self.base_path / "migrations" / "phase_config.json"
-        with open(config_path, 'r') as f:
-            phase_config = json.load(f)
+        
+        if not config_path.exists():
+            raise DatabaseError(f"Phase configuration file not found: {config_path}")
+        
+        try:
+            with open(config_path, 'r') as f:
+                phase_config = json.load(f)
+        except json.JSONDecodeError as e:
+            raise DatabaseError(f"Invalid JSON in phase config: {e}")
+        except Exception as e:
+            raise DatabaseError(f"Failed to read phase config: {e}")
         
         phase_features = phase_config["phases"].get(str(phase), {}).get("features", {})
         tasks = []
@@ -158,13 +195,19 @@ class SubAgentManager:
         for task in tasks:
             self.tasks[task.id] = task
         
+        
         return tasks
     
+    @with_retry("allocate_tasks", max_attempts=3)
     def allocate_tasks(self, tasks: List[MigrationTask]) -> Dict[str, List[MigrationTask]]:
         """
         Allocate tasks to agents ensuring no conflicts
         Returns: agent_id -> list of allocated tasks
         """
+        if not tasks:
+            raise ValidationError("Cannot allocate empty task list")
+        
+        self.logger.info(f"Starting task allocation for {len(tasks)} tasks across {self.max_agents} agents")
         # Initialize agents
         for i in range(self.max_agents):
             agent_id = f"agent_{i+1}"
@@ -184,20 +227,28 @@ class SubAgentManager:
         
         for task in sorted_tasks:
             # Find available agent that doesn't conflict
+            # Use a simple load balancing strategy: assign to agent with fewest tasks
             assigned = False
+            available_agents = []
             
             for agent_id in self.agents:
                 if self._can_assign_task(agent_id, task):
-                    allocation[agent_id].append(task)
-                    task.assigned_agent = agent_id
-                    task.status = TaskStatus.ASSIGNED
-                    
-                    # Lock files for this agent
-                    for file_path in task.affected_files:
-                        self.file_locks[file_path] = agent_id
-                    
-                    assigned = True
-                    break
+                    available_agents.append((agent_id, len(allocation[agent_id])))
+            
+            if available_agents:
+                # Sort by task count and assign to least loaded agent
+                available_agents.sort(key=lambda x: x[1])
+                best_agent_id = available_agents[0][0]
+                
+                allocation[best_agent_id].append(task)
+                task.assigned_agent = best_agent_id
+                task.status = TaskStatus.ASSIGNED
+                
+                # Lock files for this agent
+                for file_path in task.affected_files:
+                    self.file_locks[file_path] = best_agent_id
+                
+                assigned = True
             
             if not assigned:
                 # Task will be queued for later assignment
@@ -212,13 +263,12 @@ class SubAgentManager:
             if file_path in self.file_locks and self.file_locks[file_path] != agent_id:
                 return False
         
-        # Check dependencies
+        # Check dependencies - allow cross-agent dependencies as long as they're assigned
         for dep_id in task.dependencies:
             dep_task = self.tasks.get(dep_id)
-            if dep_task and dep_task.status != TaskStatus.COMPLETED:
-                # Check if dependency is assigned to same agent
-                if dep_task.assigned_agent != agent_id:
-                    return False
+            if dep_task and dep_task.status == TaskStatus.PENDING:
+                # Dependency not yet assigned, cannot assign this task yet
+                return False
         
         return True
     
@@ -231,7 +281,7 @@ class SubAgentManager:
         for task in tasks:
             for dep in task.dependencies:
                 if dep in in_degree:
-                    in_degree[dep] += 1
+                    in_degree[task.id] += 1
         
         # Find tasks with no dependencies
         queue = [task for task in tasks if in_degree[task.id] == 0]
@@ -340,11 +390,17 @@ class SubAgentManager:
 7. Update main README with links
 """
     
+    @with_circuit_breaker("database")
     def save_allocation_plan(self, allocation: Dict[str, List[MigrationTask]]):
-        """Save the task allocation plan"""
+        """Save the task allocation plan with error handling"""
+        if not allocation:
+            raise ValidationError("Cannot save empty allocation plan")
+        
         plan = {
             "generated_at": datetime.now().isoformat(),
-            "agents": {}
+            "agents": {},
+            "execution_stats": self.execution_stats,
+            "error_summary": self.error_handler.get_health_status()
         }
         
         for agent_id, tasks in allocation.items():

@@ -27,7 +27,7 @@ export default function EarningsSection({ userRole, dateRange }: EarningsSection
       try {
         setLoading(true)
         const response = await fetchAPI(
-          `/api/v1/payments/earnings?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`
+          `/api/v2/payments/earnings?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`
         )
         setEarningsData(response)
       } catch (error) {

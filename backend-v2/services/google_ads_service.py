@@ -82,7 +82,7 @@ class GoogleAdsService(BaseIntegrationService):
     
     @property
     def default_redirect_uri(self) -> str:
-        return os.getenv("GOOGLE_ADS_REDIRECT_URI", "http://localhost:8000/api/v1/integrations/google-ads/callback")
+        return os.getenv("GOOGLE_ADS_REDIRECT_URI", "http://localhost:8000/api/v2/integrations/google-ads/callback")
     
     def get_oauth_url(self, redirect_uri: str, state: str = None) -> str:
         """Generate OAuth authorization URL for Google Ads access"""

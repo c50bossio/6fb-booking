@@ -326,7 +326,7 @@ class AcuityParser(BaseBookingParser):
         """Instructions for exporting data from Acuity"""
         return {
             "csv_export": "Acuity Dashboard > Clients > Export Clients > Download CSV",
-            "api_access": "Use Acuity Scheduling API with /api/v1/clients endpoint",
+            "api_access": "Use Acuity Scheduling API with /api/v2/clients endpoint",
             "authentication": "Requires API user ID and API key",
             "date_format": "Acuity uses YYYY-MM-DD HH:MM:SS format for dates",
             "custom_fields": "Custom intake form fields are included in exports",

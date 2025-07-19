@@ -25,7 +25,7 @@ export default function PayoutsSection({ userRole, dateRange }: PayoutsSectionPr
     async function loadPayouts() {
       try {
         setLoading(true)
-        const response = await fetchAPI(`/api/v1/payments/payouts?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`)
+        const response = await fetchAPI(`/api/v2/payments/payouts?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`)
         setPayoutsData(response)
       } catch (error) {
         console.error('Error fetching payouts:', error)

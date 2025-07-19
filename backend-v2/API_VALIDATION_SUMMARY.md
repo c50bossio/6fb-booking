@@ -72,15 +72,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
 ## 🚀 Key API Endpoints Validated
 
 ### Authentication Endpoints
-- `POST /api/v1/auth/login` ✅ Working
-- `GET /api/v1/auth/me` ✅ Working  
-- `POST /api/v1/auth/refresh` ✅ Working
+- `POST /api/v2/auth/login` ✅ Working
+- `GET /api/v2/auth/me` ✅ Working  
+- `POST /api/v2/auth/refresh` ✅ Working
 
 ### Business Logic Endpoints
-- `GET /api/v1/bookings/slots` ✅ Working
-- `POST /api/v1/bookings` ✅ Working (with auth)
-- `GET /api/v1/enterprise/dashboard` ✅ Working (admin only)
-- `GET /api/v1/enterprise/locations` ✅ Working (admin only)
+- `GET /api/v2/bookings/slots` ✅ Working
+- `POST /api/v2/bookings` ✅ Working (with auth)
+- `GET /api/v2/enterprise/dashboard` ✅ Working (admin only)
+- `GET /api/v2/enterprise/locations` ✅ Working (admin only)
 
 ### System Endpoints  
 - `GET /health` ✅ Working

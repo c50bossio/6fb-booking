@@ -183,22 +183,22 @@
 ### 6.1 Critical Path Testing
 ```bash
 # 1. Test payment processing
-curl -X POST https://api.yourdomain.com/api/v1/payments/create-intent \
+curl -X POST https://api.yourdomain.com/api/v2/payments/create-intent \
   -H "Content-Type: application/json" \
   -d '{"amount": 100, "currency": "usd"}'
 
 # 2. Test email notifications
-curl -X POST https://api.yourdomain.com/api/v1/notifications/test-email \
+curl -X POST https://api.yourdomain.com/api/v2/notifications/test-email \
   -H "Content-Type: application/json" \
   -d '{"to": "test@yourdomain.com", "subject": "Production Test"}'
 
 # 3. Test SMS notifications  
-curl -X POST https://api.yourdomain.com/api/v1/notifications/test-sms \
+curl -X POST https://api.yourdomain.com/api/v2/notifications/test-sms \
   -H "Content-Type: application/json" \
   -d '{"to": "+1234567890", "message": "Production Test"}'
 
 # 4. Test error tracking
-curl -X POST https://api.yourdomain.com/api/v1/test-error
+curl -X POST https://api.yourdomain.com/api/v2/test-error
 
 # 5. Test frontend connectivity
 curl https://yourdomain.com/health

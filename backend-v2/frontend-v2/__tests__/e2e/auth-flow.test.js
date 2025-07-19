@@ -286,7 +286,7 @@ class AuthFlowTester {
     // Test the auth endpoint directly
     try {
       const response = await this.page.evaluate(async (backendUrl, credentials) => {
-        const response = await fetch(`${backendUrl}/api/v1/auth/login-simple`, {
+        const response = await fetch(`${backendUrl}/api/v2/auth/login-simple`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

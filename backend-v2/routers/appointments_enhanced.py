@@ -24,7 +24,7 @@ from validators.booking_validators import BookingValidator
 from services.booking_service import BookingService
 from utils.logging_config import setup_logger
 
-router = APIRouter(prefix="/api/v1/appointments", tags=["appointments-enhanced"])
+router = APIRouter(prefix="/api/v2/appointments", tags=["appointments-enhanced"])
 logger = setup_logger(__name__)
 
 

@@ -75,7 +75,7 @@ export default function TransactionsSection({ userRole, dateRange }: Transaction
           params.append('status', statusFilter)
         }
 
-        const response = await fetchAPI(`/api/v1/payments/history?${params}`)
+        const response = await fetchAPI(`/api/v2/payments/history?${params}`)
         setPayments(response.payments || [])
         setTotalPages(response.total_pages || 1)
       } catch (error) {
@@ -96,7 +96,7 @@ export default function TransactionsSection({ userRole, dateRange }: Transaction
         end_date: dateRange.endDate
       })
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/export?${params}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v2/payments/export?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

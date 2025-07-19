@@ -154,7 +154,7 @@ class MarketingSecurityMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         
-        if request.url.path.startswith("/api/v1/marketing"):
+        if request.url.path.startswith("/api/v2/marketing"):
             # Add security headers
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["X-Frame-Options"] = "DENY"

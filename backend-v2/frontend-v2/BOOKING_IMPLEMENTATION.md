@@ -78,9 +78,9 @@ getMyBookings()
 - Uses JWT token from localStorage
 
 ## Backend API Endpoints Used:
-- `GET /api/v1/bookings/slots?booking_date=YYYY-MM-DD`
-- `POST /api/v1/bookings` (body: {date, time, service})
-- `GET /api/v1/bookings`
+- `GET /api/v2/bookings/slots?booking_date=YYYY-MM-DD`
+- `POST /api/v2/bookings` (body: {date, time, service})
+- `GET /api/v2/bookings`
 
 ## Styling:
 - Tailwind CSS only

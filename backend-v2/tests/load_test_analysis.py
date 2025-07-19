@@ -135,7 +135,7 @@ class LoadTester:
         print("🚦 Rate Limiting Analysis...")
         
         # Test rapid requests to see if rate limiting works
-        endpoint = "/api/v1/services"
+        endpoint = "/api/v2/services"
         rapid_requests = 50
         
         response_codes = []
@@ -170,10 +170,10 @@ class LoadTester:
         print("🛡️ Error Handling Tests...")
         
         error_tests = [
-            ("Invalid JSON", "/api/v1/auth/login", "POST", "invalid json"),
-            ("Missing fields", "/api/v1/auth/login", "POST", {}),
-            ("Invalid endpoint", "/api/v1/nonexistent", "GET", None),
-            ("SQL injection attempt", "/api/v1/services?id=1'; DROP TABLE users; --", "GET", None)
+            ("Invalid JSON", "/api/v2/auth/login", "POST", "invalid json"),
+            ("Missing fields", "/api/v2/auth/login", "POST", {}),
+            ("Invalid endpoint", "/api/v2/nonexistent", "GET", None),
+            ("SQL injection attempt", "/api/v2/services?id=1'; DROP TABLE users; --", "GET", None)
         ]
         
         for test_name, endpoint, method, data in error_tests:
@@ -249,7 +249,7 @@ class LoadTester:
         # Test key endpoints under load
         endpoints_to_test = [
             ("/", "GET", None),
-            ("/api/v1/services", "GET", None),
+            ("/api/v2/services", "GET", None),
             ("/openapi.json", "GET", None)
         ]
         

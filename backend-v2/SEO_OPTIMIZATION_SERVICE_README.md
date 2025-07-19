@@ -255,9 +255,9 @@ python seo_optimization_example.py
 
 ### API Integration
 Ready for integration with existing API endpoints:
-- `/api/v1/reviews/*` - Review response optimization
-- `/api/v1/marketing/*` - Marketing content optimization
-- `/api/v1/analytics/*` - SEO performance tracking
+- `/api/v2/reviews/*` - Review response optimization
+- `/api/v2/marketing/*` - Marketing content optimization
+- `/api/v2/analytics/*` - SEO performance tracking
 
 ## 📋 Configuration
 

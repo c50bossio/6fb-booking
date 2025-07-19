@@ -340,7 +340,7 @@ uvicorn main:app --reload
 ```bash
 # Test basic functionality
 curl http://localhost:8000/health
-curl http://localhost:8000/api/v1/users/me
+curl http://localhost:8000/api/v2/users/me
 ```
 
 ### Planned Rollback (after testing)
@@ -414,7 +414,7 @@ uvicorn main:app --workers 4 --host 0.0.0.0 --port 8000
 curl https://api.bookedbarber.com/health
 
 # Basic functionality
-curl https://api.bookedbarber.com/api/v1/services
+curl https://api.bookedbarber.com/api/v2/services
 ```
 
 **6. Disable maintenance mode:**

@@ -201,7 +201,7 @@ class SecurityAuditValidator:
             # Test hash consistency
             request_data = {
                 "method": "POST",
-                "url": "/api/v1/payments/create-intent",
+                "url": "/api/v2/payments/create-intent",
                 "user_id": 123,
                 "body": {"amount": 100, "booking_id": 456}
             }

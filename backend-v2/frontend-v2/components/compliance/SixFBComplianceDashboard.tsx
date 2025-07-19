@@ -113,7 +113,7 @@ export default function SixFBComplianceDashboard() {
 
   const fetchComplianceData = async () => {
     try {
-      const response = await apiRequest('/api/v1/six-fb-compliance/dashboard', {
+      const response = await apiRequest('/api/v2/six-fb-compliance/dashboard', {
         method: 'GET'
       })
       
@@ -144,7 +144,7 @@ export default function SixFBComplianceDashboard() {
   const recalculateScore = async () => {
     setRecalculating(true)
     try {
-      const response = await apiRequest('/api/v1/six-fb-compliance/recalculate', {
+      const response = await apiRequest('/api/v2/six-fb-compliance/recalculate', {
         method: 'POST'
       })
       
@@ -167,7 +167,7 @@ export default function SixFBComplianceDashboard() {
 
   const completeTask = async (taskId: number) => {
     try {
-      await apiRequest(`/api/v1/six-fb-compliance/improvement-tasks/${taskId}/complete`, {
+      await apiRequest(`/api/v2/six-fb-compliance/improvement-tasks/${taskId}/complete`, {
         method: 'PUT'
       })
       

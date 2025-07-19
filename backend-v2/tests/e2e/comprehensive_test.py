@@ -94,7 +94,7 @@ class ComprehensiveE2ETests:
             
             start_time = time.time()
             register_response = await self.client.post(
-                "/api/v1/auth/register",
+                "/api/v2/auth/register",
                 json=register_data
             )
             response_time = time.time() - start_time
@@ -117,7 +117,7 @@ class ComprehensiveE2ETests:
                 
             # 2. Login
             login_response = await self.client.post(
-                "/api/v1/auth/login",
+                "/api/v2/auth/login",
                 data={
                     "username": test_email,
                     "password": "SecureTest123!"
@@ -132,7 +132,7 @@ class ComprehensiveE2ETests:
                 
                 # 3. Test token refresh
                 refresh_response = await self.client.post(
-                    "/api/v1/auth/refresh",
+                    "/api/v2/auth/refresh",
                     json={"refresh_token": tokens.get('refresh_token')}
                 )
                 
@@ -143,7 +143,7 @@ class ComprehensiveE2ETests:
                 # 4. Access protected endpoint
                 headers = {"Authorization": f"Bearer {self.test_data['token']}"}
                 profile_response = await self.client.get(
-                    "/api/v1/users/me",
+                    "/api/v2/users/me",
                     headers=headers
                 )
                 
@@ -153,7 +153,7 @@ class ComprehensiveE2ETests:
                     
                 # 5. Logout
                 logout_response = await self.client.post(
-                    "/api/v1/auth/logout",
+                    "/api/v2/auth/logout",
                     headers=headers
                 )
                 
@@ -198,7 +198,7 @@ class ComprehensiveE2ETests:
             }
             
             create_response = await self.client.post(
-                "/api/v1/businesses",
+                "/api/v2/businesses",
                 headers=headers,
                 json=business_data
             )
@@ -220,7 +220,7 @@ class ComprehensiveE2ETests:
                 }
                 
                 update_response = await self.client.put(
-                    f"/api/v1/businesses/{business_id}",
+                    f"/api/v2/businesses/{business_id}",
                     headers=headers,
                     json=update_data
                 )
@@ -238,7 +238,7 @@ class ComprehensiveE2ETests:
                 services_added = 0
                 for service in services:
                     service_response = await self.client.post(
-                        f"/api/v1/businesses/{business_id}/services",
+                        f"/api/v2/businesses/{business_id}/services",
                         headers=headers,
                         json=service
                     )
@@ -257,7 +257,7 @@ class ComprehensiveE2ETests:
                 }
                 
                 barber_response = await self.client.post(
-                    f"/api/v1/businesses/{business_id}/barbers",
+                    f"/api/v2/businesses/{business_id}/barbers",
                     headers=headers,
                     json=barber_data
                 )
@@ -268,7 +268,7 @@ class ComprehensiveE2ETests:
                     
                 # 5. Check analytics
                 analytics_response = await self.client.get(
-                    f"/api/v1/businesses/{business_id}/analytics",
+                    f"/api/v2/businesses/{business_id}/analytics",
                     headers=headers
                 )
                 
@@ -305,7 +305,7 @@ class ComprehensiveE2ETests:
             # 1. Search for availability
             tomorrow = (datetime.now() + timedelta(days=1)).date()
             availability_response = await self.client.get(
-                "/api/v1/appointments/availability",
+                "/api/v2/appointments/availability",
                 headers=headers,
                 params={
                     "date": tomorrow.isoformat(),
@@ -331,7 +331,7 @@ class ComprehensiveE2ETests:
                     appointment_data['business_id'] = self.test_data['business']['id']
                     
                 create_response = await self.client.post(
-                    "/api/v1/appointments",
+                    "/api/v2/appointments",
                     headers=headers,
                     json=appointment_data
                 )
@@ -345,7 +345,7 @@ class ComprehensiveE2ETests:
                     
                     # 3. Update appointment
                     update_response = await self.client.patch(
-                        f"/api/v1/appointments/{appointment_id}",
+                        f"/api/v2/appointments/{appointment_id}",
                         headers=headers,
                         json={"notes": "Updated E2E Test Appointment"}
                     )
@@ -356,7 +356,7 @@ class ComprehensiveE2ETests:
                         
                     # 4. Check reminders
                     reminders_response = await self.client.get(
-                        f"/api/v1/appointments/{appointment_id}/reminders",
+                        f"/api/v2/appointments/{appointment_id}/reminders",
                         headers=headers
                     )
                     
@@ -366,7 +366,7 @@ class ComprehensiveE2ETests:
                         
                     # 5. Cancel appointment
                     cancel_response = await self.client.delete(
-                        f"/api/v1/appointments/{appointment_id}",
+                        f"/api/v2/appointments/{appointment_id}",
                         headers=headers
                     )
                     
@@ -411,7 +411,7 @@ class ComprehensiveE2ETests:
                 payment_data['appointment_id'] = self.test_data['appointment']['id']
                 
             intent_response = await self.client.post(
-                "/api/v1/payments/create-intent",
+                "/api/v2/payments/create-intent",
                 headers=headers,
                 json=payment_data
             )
@@ -428,7 +428,7 @@ class ComprehensiveE2ETests:
                 }
                 
                 confirm_response = await self.client.post(
-                    "/api/v1/payments/confirm",
+                    "/api/v2/payments/confirm",
                     headers=headers,
                     json=confirm_data
                 )
@@ -450,7 +450,7 @@ class ComprehensiveE2ETests:
                 }
                 
                 webhook_response = await self.client.post(
-                    "/api/v1/webhooks/stripe",
+                    "/api/v2/webhooks/stripe",
                     json=webhook_data,
                     headers={"Stripe-Signature": "test_signature"}
                 )
@@ -461,7 +461,7 @@ class ComprehensiveE2ETests:
                     
                 # 4. Payment history
                 history_response = await self.client.get(
-                    "/api/v1/payments/history",
+                    "/api/v2/payments/history",
                     headers=headers
                 )
                 
@@ -490,32 +490,32 @@ class ComprehensiveE2ETests:
         
         try:
             # 1. Google OAuth endpoints
-            oauth_response = await self.client.get("/api/v1/auth/google/login")
+            oauth_response = await self.client.get("/api/v2/auth/google/login")
             if oauth_response.status_code == 200:
                 results['google_oauth'] = True
                 print("  ✅ Google OAuth endpoints configured")
                 
             # 2. Calendar endpoints
-            calendar_response = await self.client.get("/api/v1/calendar/auth")
+            calendar_response = await self.client.get("/api/v2/calendar/auth")
             if calendar_response.status_code in [200, 401]:
                 results['calendar_endpoints'] = True
                 print("  ✅ Calendar endpoints available")
                 
             # 3. GMB endpoints
-            gmb_response = await self.client.get("/api/v1/integrations/gmb/auth")
+            gmb_response = await self.client.get("/api/v2/integrations/gmb/auth")
             if gmb_response.status_code in [200, 401]:
                 results['gmb_endpoints'] = True
                 print("  ✅ GMB endpoints available")
                 
             # 4. Notification endpoints
-            notification_response = await self.client.get("/api/v1/notifications/templates")
+            notification_response = await self.client.get("/api/v2/notifications/templates")
             if notification_response.status_code in [200, 401]:
                 results['notification_endpoints'] = True
                 print("  ✅ Notification endpoints available")
                 
             # 5. Analytics tracking
             analytics_response = await self.client.post(
-                "/api/v1/analytics/track",
+                "/api/v2/analytics/track",
                 json={
                     "event": "page_view",
                     "properties": {"page": "test"}
@@ -538,8 +538,8 @@ class ComprehensiveE2ETests:
         
         endpoints = [
             ("/", "Root Endpoint"),
-            ("/api/v1/services", "Services List"),
-            ("/api/v1/businesses", "Business List"),
+            ("/api/v2/services", "Services List"),
+            ("/api/v2/businesses", "Business List"),
             ("/docs", "API Documentation")
         ]
         
@@ -593,7 +593,7 @@ class ComprehensiveE2ETests:
         try:
             # 1. Invalid authentication
             invalid_response = await self.client.get(
-                "/api/v1/users/me",
+                "/api/v2/users/me",
                 headers={"Authorization": "Bearer invalid_token"}
             )
             if invalid_response.status_code == 401:
@@ -602,7 +602,7 @@ class ComprehensiveE2ETests:
                 
             # 2. Validation errors
             validation_response = await self.client.post(
-                "/api/v1/auth/register",
+                "/api/v2/auth/register",
                 json={"email": "invalid", "password": "123"}
             )
             if validation_response.status_code == 422:
@@ -610,16 +610,16 @@ class ComprehensiveE2ETests:
                 print("  ✅ Validation errors handled correctly")
                 
             # 3. Not found errors
-            not_found_response = await self.client.get("/api/v1/users/99999")
+            not_found_response = await self.client.get("/api/v2/users/99999")
             if not_found_response.status_code == 404:
                 results['not_found_errors'] = True
                 print("  ✅ Not found errors handled correctly")
                 
             # 4. Rate limiting (make many requests)
             for i in range(200):
-                await self.client.get("/api/v1/auth/login")
+                await self.client.get("/api/v2/auth/login")
                 if i > 100:  # Check after threshold
-                    rate_response = await self.client.get("/api/v1/auth/login")
+                    rate_response = await self.client.get("/api/v2/auth/login")
                     if rate_response.status_code == 429:
                         results['rate_limiting'] = True
                         print("  ✅ Rate limiting working")

@@ -198,7 +198,7 @@ The tests use the following test credentials:
 #### Server Not Running
 ```bash
 # Check if servers are running
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/v2/health
 curl http://localhost:3000
 
 # Start servers if needed

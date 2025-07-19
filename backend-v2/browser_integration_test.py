@@ -152,16 +152,16 @@ def main():
         # Public endpoints
         ("/", False),
         ("/health", False),
-        ("/api/v1/health", False),
+        ("/api/v2/health", False),
         
         # Auth required endpoints
-        ("/api/v1/analytics/dashboard", True),
-        ("/api/v1/analytics/revenue", True),
-        ("/api/v1/analytics/appointments", True),
-        ("/api/v1/users/me", True),
-        ("/api/v1/appointments", True),
-        ("/api/v1/commissions", True),
-        ("/api/v1/clients", True),
+        ("/api/v2/analytics/dashboard", True),
+        ("/api/v2/analytics/revenue", True),
+        ("/api/v2/analytics/appointments", True),
+        ("/api/v2/users/me", True),
+        ("/api/v2/appointments", True),
+        ("/api/v2/commissions", True),
+        ("/api/v2/clients", True),
     ]
     
     for endpoint, requires_auth in api_endpoints:

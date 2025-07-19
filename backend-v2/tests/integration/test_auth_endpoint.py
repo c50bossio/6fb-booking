@@ -6,7 +6,7 @@ import requests
 import json
 
 def test_auth():
-    url = "http://localhost:8000/api/v1/auth-simple/login"
+    url = "http://localhost:8000/api/v2/auth-simple/login"
     data = {
         "email": "test-barber@6fb.com",
         "password": "testpass123"

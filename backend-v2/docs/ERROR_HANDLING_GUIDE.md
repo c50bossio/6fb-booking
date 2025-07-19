@@ -128,15 +128,15 @@ with SafeServiceOperation("create_booking", "BookingService"):
 ## Affected Endpoints
 
 The following high-risk endpoints have been updated:
-- `/api/v1/privacy/*` - GDPR endpoints
-- `/api/v1/billing/*` - Subscription management
-- `/api/v1/commissions/*` - Financial calculations
-- `/api/v1/payments/*` - Payment processing
-- `/api/v1/analytics/*` - Business analytics
-- `/api/v1/integrations/*` - Third-party integrations
-- `/api/v1/agents/*` - AI agent management
-- `/api/v1/organizations/*` - Multi-tenant operations
-- `/api/v1/webhooks/*` - External callbacks
+- `/api/v2/privacy/*` - GDPR endpoints
+- `/api/v2/billing/*` - Subscription management
+- `/api/v2/commissions/*` - Financial calculations
+- `/api/v2/payments/*` - Payment processing
+- `/api/v2/analytics/*` - Business analytics
+- `/api/v2/integrations/*` - Third-party integrations
+- `/api/v2/agents/*` - AI agent management
+- `/api/v2/organizations/*` - Multi-tenant operations
+- `/api/v2/webhooks/*` - External callbacks
 
 ## Testing Error Handling
 
@@ -155,7 +155,7 @@ def test_error_handling():
 ```python
 def test_endpoint_error_handling(client):
     # Test that endpoints return safe errors
-    response = client.post("/api/v1/bookings", json={"invalid": "data"})
+    response = client.post("/api/v2/bookings", json={"invalid": "data"})
     assert response.status_code == 400
     assert "error" in response.json()
     assert "traceback" not in response.json()["error"]

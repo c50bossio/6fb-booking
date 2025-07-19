@@ -92,4 +92,4 @@ Once login redirect is confirmed working:
 
 ---
 
-**Note**: The auth system is using a test bypass endpoint (`/api/v1/auth-test/login`) which accepts any credentials and returns a valid token. This is intentional for testing purposes.
+**Note**: The auth system is using a test bypass endpoint (`/api/v2/auth-test/login`) which accepts any credentials and returns a valid token. This is intentional for testing purposes.

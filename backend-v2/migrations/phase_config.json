@@ -2,359 +2,65 @@
   "phases": {
     "1": {
       "name": "Core Features",
-      "duration": "2 weeks",
+      "description": "Essential booking and authentication features",
+      "duration_weeks": 2,
       "features": {
         "enhanced_auth": {
-          "description": "Enhanced authentication with MFA, PIN auth, and RBAC",
-          "dependencies": [],
-          "models": ["User", "MFASettings", "Role", "Permission", "PINAuthentication"],
-          "services": ["AuthService", "RBACService", "MFAService", "PINService"],
-          "endpoints": [
-            "POST:/api/v2/auth/login",
-            "POST:/api/v2/auth/register",
-            "POST:/api/v2/auth/mfa/setup",
-            "POST:/api/v2/auth/mfa/verify",
-            "POST:/api/v2/auth/pin/login"
-          ],
-          "priority": 1
+          "description": "Multi-factor authentication with PIN and RBAC",
+          "priority": "high",
+          "models": ["User", "Role", "Permission"],
+          "services": ["AuthService", "RoleService"],
+          "endpoints": ["auth", "roles"],
+          "dependencies": []
         },
         "advanced_booking": {
-          "description": "Advanced booking with rules, constraints, and recurring appointments",
-          "dependencies": ["enhanced_auth"],
-          "models": [
-            "Service",
-            "ServiceCategory",
-            "BookingRule",
-            "RecurringAppointment",
-            "BarberAvailability"
-          ],
-          "services": [
-            "BookingService",
-            "AvailabilityService",
-            "RecurringService",
-            "BookingRulesEngine"
-          ],
-          "endpoints": [
-            "GET:/api/v2/bookings",
-            "POST:/api/v2/bookings",
-            "GET:/api/v2/services",
-            "GET:/api/v2/availability",
-            "POST:/api/v2/bookings/recurring"
-          ],
-          "priority": 2
+          "description": "Advanced booking with rules and constraints",
+          "priority": "high", 
+          "models": ["Booking", "BookingRule", "TimeSlot"],
+          "services": ["BookingService", "SchedulingService"],
+          "endpoints": ["bookings", "availability"],
+          "dependencies": ["enhanced_auth"]
         },
         "client_management": {
-          "description": "Client profiles, preferences, and communication settings",
-          "dependencies": ["enhanced_auth"],
-          "models": [
-            "Client",
-            "ClientPreference",
-            "ClientNote",
-            "CommunicationPreference"
-          ],
-          "services": [
-            "ClientService",
-            "PreferenceService",
-            "ClientHistoryService"
-          ],
-          "endpoints": [
-            "GET:/api/v2/clients",
-            "POST:/api/v2/clients",
-            "GET:/api/v2/clients/{id}",
-            "PUT:/api/v2/clients/{id}",
-            "GET:/api/v2/clients/{id}/preferences"
-          ],
-          "priority": 3
+          "description": "Comprehensive client profiles and preferences",
+          "priority": "medium",
+          "models": ["Client", "ClientPreference", "ClientHistory"],
+          "services": ["ClientService", "PreferenceService"],
+          "endpoints": ["clients", "preferences"],
+          "dependencies": ["enhanced_auth"]
         }
       }
     },
     "2": {
       "name": "Calendar & Scheduling",
-      "duration": "2 weeks",
+      "description": "Calendar integration and advanced scheduling",
+      "duration_weeks": 2,
       "features": {
         "unified_calendar": {
-          "description": "Unified calendar with drag-and-drop, conflict detection, and smart scheduling",
-          "dependencies": ["advanced_booking", "client_management"],
-          "models": [
-            "CalendarEvent",
-            "CalendarSettings",
-            "DragDropHistory",
-            "ConflictLog"
-          ],
-          "services": [
-            "CalendarService",
-            "DragDropService",
-            "ConflictResolutionService",
-            "SmartSchedulingService"
-          ],
-          "endpoints": [
-            "GET:/api/v2/calendar",
-            "GET:/api/v2/calendar/events",
-            "POST:/api/v2/calendar/events/move",
-            "POST:/api/v2/calendar/conflicts/resolve"
-          ],
-          "priority": 1
+          "description": "Drag-and-drop calendar with conflict detection",
+          "priority": "high",
+          "models": ["CalendarEvent", "ConflictRule"],
+          "services": ["CalendarService", "ConflictService"],
+          "endpoints": ["calendar", "events"],
+          "dependencies": ["advanced_booking"]
         },
         "google_calendar": {
-          "description": "Google Calendar two-way sync integration",
-          "dependencies": ["unified_calendar"],
-          "models": [
-            "GoogleCalendarSettings",
-            "SyncLog",
-            "CalendarMapping"
-          ],
-          "services": [
-            "GoogleCalendarService",
-            "SyncService",
-            "OAuthService"
-          ],
-          "endpoints": [
-            "GET:/api/v2/calendar/google/auth",
-            "POST:/api/v2/calendar/google/callback",
-            "POST:/api/v2/calendar/google/sync",
-            "GET:/api/v2/calendar/google/status"
-          ],
-          "priority": 2
+          "description": "Two-way Google Calendar synchronization",
+          "priority": "medium",
+          "models": ["GoogleSync", "CalendarMapping"],
+          "services": ["GoogleCalendarService", "SyncService"],
+          "endpoints": ["google-calendar", "sync"],
+          "dependencies": ["unified_calendar"]
         },
         "availability_management": {
           "description": "Working hours, breaks, and holiday management",
-          "dependencies": ["unified_calendar"],
-          "models": [
-            "WorkingHours",
-            "BreakTime",
-            "Holiday",
-            "BufferTimeRule"
-          ],
-          "services": [
-            "AvailabilityManagementService",
-            "HolidayService",
-            "BufferTimeService"
-          ],
-          "endpoints": [
-            "GET:/api/v2/availability/hours",
-            "PUT:/api/v2/availability/hours",
-            "POST:/api/v2/availability/breaks",
-            "GET:/api/v2/availability/holidays"
-          ],
-          "priority": 3
-        }
-      }
-    },
-    "3": {
-      "name": "Payment & Financial",
-      "duration": "2 weeks",
-      "features": {
-        "payment_processing": {
-          "description": "Multi-processor payment handling (Stripe, Square)",
-          "dependencies": ["advanced_booking"],
-          "models": [
-            "Payment",
-            "PaymentIntent",
-            "PaymentProcessor",
-            "RefundLog"
-          ],
-          "services": [
-            "PaymentService",
-            "StripeService",
-            "SquareService",
-            "RefundService"
-          ],
-          "endpoints": [
-            "POST:/api/v2/payments/create-intent",
-            "POST:/api/v2/payments/confirm",
-            "POST:/api/v2/payments/refund",
-            "GET:/api/v2/payments/history"
-          ],
-          "priority": 1
-        },
-        "stripe_connect": {
-          "description": "Stripe Connect for barber payouts",
-          "dependencies": ["payment_processing"],
-          "models": [
-            "StripeAccount",
-            "PayoutSchedule",
-            "Commission",
-            "Transfer"
-          ],
-          "services": [
-            "StripeConnectService",
-            "PayoutService",
-            "CommissionService"
-          ],
-          "endpoints": [
-            "POST:/api/v2/stripe/connect",
-            "GET:/api/v2/stripe/dashboard",
-            "POST:/api/v2/payouts/schedule",
-            "GET:/api/v2/payouts/history"
-          ],
-          "priority": 2
-        },
-        "gift_certificates": {
-          "description": "Gift certificate purchase and redemption",
-          "dependencies": ["payment_processing"],
-          "models": [
-            "GiftCertificate",
-            "CertificateTransaction",
-            "CertificateBalance"
-          ],
-          "services": [
-            "GiftCertificateService",
-            "RedemptionService",
-            "BalanceService"
-          ],
-          "endpoints": [
-            "POST:/api/v2/gift-certificates",
-            "GET:/api/v2/gift-certificates/{code}",
-            "POST:/api/v2/gift-certificates/redeem",
-            "GET:/api/v2/gift-certificates/balance"
-          ],
-          "priority": 3
-        }
-      }
-    },
-    "4": {
-      "name": "Communication & Marketing",
-      "duration": "2 weeks",
-      "features": {
-        "notification_system": {
-          "description": "Multi-channel notifications (Email, SMS, Push)",
-          "dependencies": ["client_management"],
-          "models": [
-            "NotificationTemplate",
-            "NotificationLog",
-            "NotificationPreference"
-          ],
-          "services": [
-            "NotificationService",
-            "EmailService",
-            "SMSService",
-            "PushService"
-          ],
-          "endpoints": [
-            "POST:/api/v2/notifications/send",
-            "GET:/api/v2/notifications/templates",
-            "PUT:/api/v2/notifications/preferences",
-            "GET:/api/v2/notifications/history"
-          ],
-          "priority": 1
-        },
-        "email_campaigns": {
-          "description": "Email campaign creation and management",
-          "dependencies": ["notification_system"],
-          "models": [
-            "EmailCampaign",
-            "CampaignTemplate",
-            "CampaignSegment",
-            "CampaignAnalytics"
-          ],
-          "services": [
-            "CampaignService",
-            "SegmentationService",
-            "AnalyticsTrackingService"
-          ],
-          "endpoints": [
-            "POST:/api/v2/campaigns",
-            "GET:/api/v2/campaigns",
-            "POST:/api/v2/campaigns/{id}/send",
-            "GET:/api/v2/campaigns/{id}/analytics"
-          ],
-          "priority": 2
-        },
-        "customer_communication": {
-          "description": "Automated appointment reminders and follow-ups",
-          "dependencies": ["notification_system"],
-          "models": [
-            "CommunicationFlow",
-            "MessageSchedule",
-            "FollowUpRule"
-          ],
-          "services": [
-            "ReminderService",
-            "FollowUpService",
-            "ReviewRequestService"
-          ],
-          "endpoints": [
-            "POST:/api/v2/communications/reminders",
-            "GET:/api/v2/communications/schedule",
-            "POST:/api/v2/communications/follow-up",
-            "POST:/api/v2/communications/review-request"
-          ],
-          "priority": 3
-        }
-      }
-    },
-    "5": {
-      "name": "Analytics & Reporting",
-      "duration": "2 weeks",
-      "features": {
-        "business_analytics": {
-          "description": "6FB methodology metrics and performance dashboards",
-          "dependencies": ["payment_processing", "advanced_booking"],
-          "models": [
-            "AnalyticsMetric",
-            "Dashboard",
-            "Report",
-            "KPI"
-          ],
-          "services": [
-            "AnalyticsService",
-            "DashboardService",
-            "ReportingService",
-            "KPIService"
-          ],
-          "endpoints": [
-            "GET:/api/v2/analytics/dashboard",
-            "GET:/api/v2/analytics/metrics",
-            "POST:/api/v2/analytics/reports",
-            "GET:/api/v2/analytics/kpis"
-          ],
-          "priority": 1
-        },
-        "ai_revenue_analytics": {
-          "description": "AI-powered revenue optimization and predictions",
-          "dependencies": ["business_analytics"],
-          "models": [
-            "RevenuePrediction",
-            "OptimizationSuggestion",
-            "BehaviorPattern",
-            "DemandForecast"
-          ],
-          "services": [
-            "AIAnalyticsService",
-            "PredictionService",
-            "OptimizationService",
-            "ForecastingService"
-          ],
-          "endpoints": [
-            "GET:/api/v2/ai/predictions",
-            "GET:/api/v2/ai/suggestions",
-            "GET:/api/v2/ai/patterns",
-            "GET:/api/v2/ai/forecast"
-          ],
-          "priority": 2
+          "priority": "medium",
+          "models": ["Availability", "WorkingHours", "Holiday"],
+          "services": ["AvailabilityService", "ScheduleService"],
+          "endpoints": ["availability", "schedule"],
+          "dependencies": ["unified_calendar"]
         }
       }
     }
-  },
-  "migration_rules": {
-    "pre_checks": [
-      "dependency_validation",
-      "duplication_detection",
-      "schema_compatibility"
-    ],
-    "post_checks": [
-      "unit_tests",
-      "integration_tests",
-      "performance_tests"
-    ],
-    "rollback_strategy": "git_based_with_db_snapshot"
-  },
-  "sub_agent_allocation": {
-    "max_parallel_agents": 3,
-    "agent_task_rules": [
-      "No overlapping model modifications",
-      "Independent service development",
-      "Endpoint namespace isolation"
-    ]
   }
 }

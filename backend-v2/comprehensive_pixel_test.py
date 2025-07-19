@@ -16,7 +16,7 @@ def test_pixel_system():
     
     # Step 1: Login
     print("\n1. Testing Login...")
-    login_response = requests.post(f"{BASE_URL}/api/v1/auth/login", json={
+    login_response = requests.post(f"{BASE_URL}/api/v2/auth/login", json={
         "email": "pixeltest@example.com",
         "password": "TestPass123"
     })
@@ -31,7 +31,7 @@ def test_pixel_system():
     
     # Step 2: Get current pixels
     print("\n2. Testing GET pixels...")
-    get_response = requests.get(f"{BASE_URL}/api/v1/customer-pixels/", headers=headers)
+    get_response = requests.get(f"{BASE_URL}/api/v2/customer-pixels/", headers=headers)
     
     if get_response.status_code != 200:
         print(f"❌ GET failed: {get_response.status_code} - {get_response.text}")
@@ -52,7 +52,7 @@ def test_pixel_system():
         "custom_tracking_code": "<script>console.log('Custom tracking');</script>"
     }
     
-    put_response = requests.put(f"{BASE_URL}/api/v1/customer-pixels/", 
+    put_response = requests.put(f"{BASE_URL}/api/v2/customer-pixels/", 
                                headers={**headers, "Content-Type": "application/json"}, 
                                json=update_data)
     
@@ -65,7 +65,7 @@ def test_pixel_system():
     
     # Step 4: Test pixel validation
     print("\n4. Testing pixel validation...")
-    test_response = requests.post(f"{BASE_URL}/api/v1/customer-pixels/test", headers=headers)
+    test_response = requests.post(f"{BASE_URL}/api/v2/customer-pixels/test", headers=headers)
     
     if test_response.status_code != 200:
         print(f"❌ Test failed: {test_response.status_code} - {test_response.text}")
@@ -79,7 +79,7 @@ def test_pixel_system():
     
     # Step 5: Test instructions
     print("\n5. Testing instructions...")
-    instructions_response = requests.post(f"{BASE_URL}/api/v1/customer-pixels/instructions?pixel_type=meta", 
+    instructions_response = requests.post(f"{BASE_URL}/api/v2/customer-pixels/instructions?pixel_type=meta", 
                                         headers=headers)
     
     if instructions_response.status_code != 200:
@@ -91,7 +91,7 @@ def test_pixel_system():
     
     # Step 6: Test public endpoint
     print("\n6. Testing public endpoint...")
-    public_response = requests.get(f"{BASE_URL}/api/v1/customer-pixels/public/test-pixel-shop")
+    public_response = requests.get(f"{BASE_URL}/api/v2/customer-pixels/public/test-pixel-shop")
     
     if public_response.status_code != 200:
         print(f"❌ Public endpoint failed: {public_response.status_code} - {public_response.text}")
@@ -102,7 +102,7 @@ def test_pixel_system():
     
     # Step 7: Test pixel removal
     print("\n7. Testing pixel removal...")
-    delete_response = requests.delete(f"{BASE_URL}/api/v1/customer-pixels/meta", headers=headers)
+    delete_response = requests.delete(f"{BASE_URL}/api/v2/customer-pixels/meta", headers=headers)
     
     if delete_response.status_code != 200:
         print(f"❌ Delete failed: {delete_response.status_code} - {delete_response.text}")
@@ -113,7 +113,7 @@ def test_pixel_system():
     
     # Step 8: Verify deletion
     print("\n8. Verifying deletion...")
-    verify_response = requests.get(f"{BASE_URL}/api/v1/customer-pixels/", headers=headers)
+    verify_response = requests.get(f"{BASE_URL}/api/v2/customer-pixels/", headers=headers)
     
     if verify_response.status_code != 200:
         print(f"❌ Verification failed: {verify_response.status_code} - {verify_response.text}")

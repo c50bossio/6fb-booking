@@ -32,7 +32,7 @@ from utils.error_handling import AppError, ValidationError, AuthenticationError,
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/privacy",
+    prefix="/api/v2/privacy",
     tags=["privacy", "gdpr"],
 )
 

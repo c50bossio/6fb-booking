@@ -32,7 +32,7 @@ class BookedBarberTester:
         """Login with test admin credentials"""
         print("🔐 Logging in as test admin...")
         response = self.session.post(
-            f"{BASE_URL}/api/v1/auth/login",
+            f"{BASE_URL}/api/v2/auth/login",
             json={
                 "email": TEST_ADMIN_EMAIL,
                 "password": TEST_ADMIN_PASSWORD
@@ -89,19 +89,19 @@ class BookedBarberTester:
         
         # API endpoints to test
         endpoints = [
-            ("/api/v1/auth/me", "GET", "User Profile"),
-            ("/api/v1/appointments", "GET", "Appointments List"),
-            ("/api/v1/services", "GET", "Services"),
-            ("/api/v1/analytics/overview", "GET", "Analytics Overview"),
-            ("/api/v1/analytics/appointments", "GET", "Appointment Analytics"),
-            ("/api/v1/payments/history", "GET", "Payment History"),
-            ("/api/v1/clients", "GET", "Clients List"),
-            ("/api/v1/notifications/stats", "GET", "Notification Stats"),
-            ("/api/v1/barbers", "GET", "Barbers List"),
-            ("/api/v1/bookings/my-bookings", "GET", "My Bookings"),
-            ("/api/v1/integrations", "GET", "Integrations"),
-            ("/api/v1/reviews", "GET", "Reviews"),
-            ("/api/v1/marketing/campaigns", "GET", "Marketing Campaigns")
+            ("/api/v2/auth/me", "GET", "User Profile"),
+            ("/api/v2/appointments", "GET", "Appointments List"),
+            ("/api/v2/services", "GET", "Services"),
+            ("/api/v2/analytics/overview", "GET", "Analytics Overview"),
+            ("/api/v2/analytics/appointments", "GET", "Appointment Analytics"),
+            ("/api/v2/payments/history", "GET", "Payment History"),
+            ("/api/v2/clients", "GET", "Clients List"),
+            ("/api/v2/notifications/stats", "GET", "Notification Stats"),
+            ("/api/v2/barbers", "GET", "Barbers List"),
+            ("/api/v2/bookings/my-bookings", "GET", "My Bookings"),
+            ("/api/v2/integrations", "GET", "Integrations"),
+            ("/api/v2/reviews", "GET", "Reviews"),
+            ("/api/v2/marketing/campaigns", "GET", "Marketing Campaigns")
         ]
         
         for endpoint, method, name in endpoints:

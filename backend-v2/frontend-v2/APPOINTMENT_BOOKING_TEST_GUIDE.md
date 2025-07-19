@@ -117,7 +117,7 @@ Once the test page confirms everything is working:
 
 ### If Login Fails:
 - Verify backend server is responding
-- Check API endpoint `/api/v1/auth-test/login`
+- Check API endpoint `/api/v2/auth-test/login`
 - Look at browser Network tab for failed requests
 
 ### If Booking Fails:

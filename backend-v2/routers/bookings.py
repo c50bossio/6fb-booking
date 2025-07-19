@@ -161,8 +161,8 @@ def redirect_my_bookings(
     # Return a helpful error with the correct endpoint
     raise HTTPException(
         status_code=301,
-        detail="This endpoint has moved. Please use GET /api/v1/bookings/ instead.",
-        headers={"Location": "/api/v1/bookings/"}
+        detail="This endpoint has moved. Please use GET /api/v2/bookings/ instead.",
+        headers={"Location": "/api/v2/bookings/"}
     )
 
 @router.get("/{booking_id}", response_model=schemas.BookingResponse)

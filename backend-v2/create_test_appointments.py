@@ -35,7 +35,7 @@ STATUSES = ["confirmed", "pending", "completed"]
 def login():
     """Login as admin and get token"""
     response = requests.post(
-        f"{API_URL}/api/v1/auth/login",
+        f"{API_URL}/api/v2/auth/login",
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
     )
     
@@ -51,7 +51,7 @@ def create_appointment(token, appointment_data):
     headers = {"Authorization": f"Bearer {token}"}
     
     response = requests.post(
-        f"{API_URL}/api/v1/appointments",
+        f"{API_URL}/api/v2/appointments",
         json=appointment_data,
         headers=headers
     )

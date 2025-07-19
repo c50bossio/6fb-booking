@@ -49,7 +49,7 @@ The 6FB Booking Platform demonstrates robust integration between frontend and ba
 
 ### User Login
 ```bash
-✅ Login endpoint: POST /api/v1/auth/login
+✅ Login endpoint: POST /api/v2/auth/login
 ✅ JWT token generation and return
 ✅ Token includes role information
 ✅ Refresh token provided
@@ -66,7 +66,7 @@ The 6FB Booking Platform demonstrates robust integration between frontend and ba
 
 ### Protected Routes
 ```bash
-✅ /api/v1/auth/me - Returns user profile when authenticated
+✅ /api/v2/auth/me - Returns user profile when authenticated
 ✅ 401 "Not authenticated" for requests without token
 ✅ 401 "Could not validate credentials" for invalid tokens
 ```
@@ -104,24 +104,24 @@ The 6FB Booking Platform demonstrates robust integration between frontend and ba
 ### Booking Management
 | Endpoint | Method | Status | Notes |
 |----------|--------|--------|-------|
-| `/api/v1/bookings/slots` | GET | ✅ | Returns available time slots |
-| `/api/v1/bookings/` | POST | ✅ | Creates new appointments |
-| `/api/v1/bookings/{id}` | GET | ✅ | Retrieves specific booking |
-| `/api/v1/bookings/slots/next-available` | GET | ✅ | Next available slot |
+| `/api/v2/bookings/slots` | GET | ✅ | Returns available time slots |
+| `/api/v2/bookings/` | POST | ✅ | Creates new appointments |
+| `/api/v2/bookings/{id}` | GET | ✅ | Retrieves specific booking |
+| `/api/v2/bookings/slots/next-available` | GET | ✅ | Next available slot |
 
 ### Payment Processing
 | Endpoint | Method | Status | Notes |
 |----------|--------|--------|-------|
-| `/api/v1/payments/create-intent` | POST | ⚠️ | Returns error (Stripe config issue) |
-| `/api/v1/payments/history` | GET | ✅ | Returns empty payment history |
-| `/api/v1/payments/reports` | GET | ✅ | Payment reporting available |
+| `/api/v2/payments/create-intent` | POST | ⚠️ | Returns error (Stripe config issue) |
+| `/api/v2/payments/history` | GET | ✅ | Returns empty payment history |
+| `/api/v2/payments/reports` | GET | ✅ | Payment reporting available |
 
 ### Analytics & Reporting
 | Endpoint | Method | Status | Notes |
 |----------|--------|--------|-------|
-| `/api/v1/analytics/dashboard` | GET | ✅ | Full analytics dashboard |
-| `/api/v1/analytics/revenue` | GET | ✅ | Revenue analytics |
-| `/api/v1/analytics/six-figure-barber` | GET | ✅ | 6FB methodology metrics |
+| `/api/v2/analytics/dashboard` | GET | ✅ | Full analytics dashboard |
+| `/api/v2/analytics/revenue` | GET | ✅ | Revenue analytics |
+| `/api/v2/analytics/six-figure-barber` | GET | ✅ | 6FB methodology metrics |
 
 ---
 
@@ -155,7 +155,7 @@ The 6FB Booking Platform demonstrates robust integration between frontend and ba
 ## 6. Data Consistency Verification ✅
 
 ### Booking Creation Flow
-1. **API Creation**: `POST /api/v1/bookings/` ✅
+1. **API Creation**: `POST /api/v2/bookings/` ✅
    ```json
    {
      "date": "2025-07-01",
@@ -178,7 +178,7 @@ The 6FB Booking Platform demonstrates robust integration between frontend and ba
    }
    ```
 
-3. **Data Retrieval**: `GET /api/v1/bookings/32` ✅
+3. **Data Retrieval**: `GET /api/v2/bookings/32` ✅
    - All data fields consistent
    - Proper timezone handling
    - Correct user association

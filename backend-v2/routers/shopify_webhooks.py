@@ -18,7 +18,7 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/webhooks/shopify", tags=["shopify-webhooks"])
+router = APIRouter(prefix="/api/v2/webhooks/shopify", tags=["shopify-webhooks"])
 
 
 def verify_shopify_webhook(data: bytes, signature: str, secret: str, timestamp: Optional[str] = None) -> bool:

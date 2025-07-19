@@ -71,7 +71,7 @@ const CancellationPolicyManager: React.FC = () => {
   const fetchPolicies = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/v1/cancellation/policies');
+      const response = await fetch('/api/v2/cancellation/policies');
       if (!response.ok) throw new Error('Failed to fetch policies');
       const data = await response.json();
       setPolicies(data);
@@ -123,8 +123,8 @@ const CancellationPolicyManager: React.FC = () => {
   const handleSave = async () => {
     try {
       const url = isCreating 
-        ? '/api/v1/cancellation/policies'
-        : `/api/v1/cancellation/policies/${selectedPolicy?.id}`;
+        ? '/api/v2/cancellation/policies'
+        : `/api/v2/cancellation/policies/${selectedPolicy?.id}`;
       
       const method = isCreating ? 'POST' : 'PUT';
       
@@ -153,7 +153,7 @@ const CancellationPolicyManager: React.FC = () => {
     if (!confirm(`Are you sure you want to delete "${policy.name}"?`)) return;
 
     try {
-      const response = await fetch(`/api/v1/cancellation/policies/${policy.id}`, {
+      const response = await fetch(`/api/v2/cancellation/policies/${policy.id}`, {
         method: 'DELETE'
       });
 
@@ -174,7 +174,7 @@ const CancellationPolicyManager: React.FC = () => {
 
   const createDefaultPolicies = async () => {
     try {
-      const response = await fetch('/api/v1/cancellation/policies/default', {
+      const response = await fetch('/api/v2/cancellation/policies/default', {
         method: 'POST'
       });
 

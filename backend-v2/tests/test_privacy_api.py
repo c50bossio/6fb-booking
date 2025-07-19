@@ -37,7 +37,7 @@ class TestCookieConsentAPI:
             }
         }
         
-        response = await async_client.post("/api/v1/privacy/cookie-consent", json=cookie_request)
+        response = await async_client.post("/api/v2/privacy/cookie-consent", json=cookie_request)
         
         assert response.status_code == 200
         data = response.json()
@@ -72,7 +72,7 @@ class TestCookieConsentAPI:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/cookie-consent",
+            "/api/v2/privacy/cookie-consent",
             json=cookie_request,
             headers=auth_headers
         )
@@ -121,7 +121,7 @@ class TestCookieConsentAPI:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/cookie-consent",
+            "/api/v2/privacy/cookie-consent",
             json=cookie_request,
             headers=auth_headers
         )
@@ -150,7 +150,7 @@ class TestCookieConsentAPI:
         db.add(consent)
         db.commit()
         
-        response = await async_client.get("/api/v1/privacy/cookie-consent", headers=auth_headers)
+        response = await async_client.get("/api/v2/privacy/cookie-consent", headers=auth_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -173,7 +173,7 @@ class TestCookieConsentAPI:
         db.add(consent)
         db.commit()
         
-        response = await async_client.get("/api/v1/privacy/cookie-consent?session_id=session-lookup")
+        response = await async_client.get("/api/v2/privacy/cookie-consent?session_id=session-lookup")
         
         assert response.status_code == 200
         data = response.json()
@@ -198,7 +198,7 @@ class TestCookieConsentAPI:
         db.add(consent)
         db.commit()
         
-        response = await async_client.get("/api/v1/privacy/cookie-consent?session_id=expired-session")
+        response = await async_client.get("/api/v2/privacy/cookie-consent?session_id=expired-session")
         
         assert response.status_code == 200
         assert response.json() is None
@@ -215,7 +215,7 @@ class TestCookieConsentAPI:
             }
         }
         
-        response = await async_client.post("/api/v1/privacy/cookie-consent", json=cookie_request)
+        response = await async_client.post("/api/v2/privacy/cookie-consent", json=cookie_request)
         
         assert response.status_code == 200
         data = response.json()
@@ -238,7 +238,7 @@ class TestConsentAPI:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/consent/terms",
+            "/api/v2/privacy/consent/terms",
             json=consent_request,
             headers=auth_headers
         )
@@ -281,7 +281,7 @@ class TestConsentAPI:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/consent/terms",
+            "/api/v2/privacy/consent/terms",
             json=consent_request,
             headers=auth_headers
         )
@@ -325,7 +325,7 @@ class TestConsentAPI:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/consent/bulk",
+            "/api/v2/privacy/consent/bulk",
             json=bulk_request,
             headers=auth_headers
         )
@@ -353,7 +353,7 @@ class TestConsentAPI:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/consent/bulk",
+            "/api/v2/privacy/consent/bulk",
             json=bulk_request,
             headers=auth_headers
         )
@@ -376,7 +376,7 @@ class TestConsentAPI:
             "status": "granted"
         }
         
-        response = await async_client.post("/api/v1/privacy/consent/terms", json=consent_request)
+        response = await async_client.post("/api/v2/privacy/consent/terms", json=consent_request)
         
         assert response.status_code == 401
 
@@ -388,7 +388,7 @@ class TestDataExportAPI:
     async def test_request_data_export(self, async_client: AsyncClient, db: Session, auth_headers: dict, test_user):
         """Test requesting a data export"""
         response = await async_client.get(
-            "/api/v1/privacy/export?format=json",
+            "/api/v2/privacy/export?format=json",
             headers=auth_headers
         )
         
@@ -422,7 +422,7 @@ class TestDataExportAPI:
         db.commit()
         
         response = await async_client.get(
-            "/api/v1/privacy/export?format=csv",
+            "/api/v2/privacy/export?format=csv",
             headers=auth_headers
         )
         
@@ -443,7 +443,7 @@ class TestDataExportAPI:
         db.commit()
         
         response = await async_client.get(
-            f"/api/v1/privacy/export/{export_request.request_id}",
+            f"/api/v2/privacy/export/{export_request.request_id}",
             headers=auth_headers
         )
         
@@ -459,7 +459,7 @@ class TestDataExportAPI:
     async def test_check_nonexistent_export_status(self, async_client: AsyncClient, auth_headers: dict):
         """Test checking status of non-existent export"""
         response = await async_client.get(
-            "/api/v1/privacy/export/NONEXISTENT-12345678-20250703",
+            "/api/v2/privacy/export/NONEXISTENT-12345678-20250703",
             headers=auth_headers
         )
         
@@ -480,7 +480,7 @@ class TestDataExportAPI:
         db.commit()
         
         response = await async_client.get(
-            f"/api/v1/privacy/export/{export_request.request_id}",
+            f"/api/v2/privacy/export/{export_request.request_id}",
             headers=auth_headers  # test_user headers, not admin
         )
         
@@ -499,7 +499,7 @@ class TestAccountDeletionAPI:
         }
         
         response = await async_client.delete(
-            "/api/v1/privacy/account",
+            "/api/v2/privacy/account",
             json=deletion_request,
             headers=auth_headers
         )
@@ -550,7 +550,7 @@ class TestAccountDeletionAPI:
         }
         
         response = await async_client.delete(
-            "/api/v1/privacy/account",
+            "/api/v2/privacy/account",
             json=deletion_request,
             headers=auth_headers
         )
@@ -606,7 +606,7 @@ class TestPrivacyStatusAPI:
         db.add(cookie_consent)
         db.commit()
         
-        response = await async_client.get("/api/v1/privacy/status", headers=auth_headers)
+        response = await async_client.get("/api/v2/privacy/status", headers=auth_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -639,7 +639,7 @@ class TestPrivacyStatusAPI:
         db.add(consent)
         db.commit()
         
-        response = await async_client.get("/api/v1/privacy/status", headers=auth_headers)
+        response = await async_client.get("/api/v2/privacy/status", headers=auth_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -658,7 +658,7 @@ class TestPrivacyStatusAPI:
         db.add(export_request)
         db.commit()
         
-        response = await async_client.get("/api/v1/privacy/status", headers=auth_headers)
+        response = await async_client.get("/api/v2/privacy/status", headers=auth_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -691,7 +691,7 @@ class TestPrivacyStatusAPI:
             db.add(entry)
         db.commit()
         
-        response = await async_client.get("/api/v1/privacy/audit-log", headers=auth_headers)
+        response = await async_client.get("/api/v2/privacy/audit-log", headers=auth_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -720,7 +720,7 @@ class TestPrivacyStatusAPI:
         db.commit()
         
         # Test first page
-        response = await async_client.get("/api/v1/privacy/audit-log?page=1&per_page=10", headers=auth_headers)
+        response = await async_client.get("/api/v2/privacy/audit-log?page=1&per_page=10", headers=auth_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -731,7 +731,7 @@ class TestPrivacyStatusAPI:
         assert len(data["entries"]) == 10
         
         # Test second page
-        response = await async_client.get("/api/v1/privacy/audit-log?page=2&per_page=10", headers=auth_headers)
+        response = await async_client.get("/api/v2/privacy/audit-log?page=2&per_page=10", headers=auth_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -757,7 +757,7 @@ class TestDataProcessingLogging:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/cookie-consent",
+            "/api/v2/privacy/cookie-consent",
             json=cookie_request,
             headers=auth_headers
         )
@@ -785,7 +785,7 @@ class TestDataProcessingLogging:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/consent/terms",
+            "/api/v2/privacy/consent/terms",
             json=consent_request,
             headers=auth_headers
         )
@@ -806,7 +806,7 @@ class TestDataProcessingLogging:
     @pytest.mark.asyncio
     async def test_export_request_logs_processing(self, async_client: AsyncClient, db: Session, auth_headers: dict, test_user):
         """Test that export requests create data processing logs"""
-        response = await async_client.get("/api/v1/privacy/export", headers=auth_headers)
+        response = await async_client.get("/api/v2/privacy/export", headers=auth_headers)
         
         assert response.status_code == 200
         
@@ -837,7 +837,7 @@ class TestPrivacyAPIErrorHandling:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/consent/terms",
+            "/api/v2/privacy/consent/terms",
             json=consent_request,
             headers=auth_headers
         )
@@ -853,7 +853,7 @@ class TestPrivacyAPIErrorHandling:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/consent/terms",
+            "/api/v2/privacy/consent/terms",
             json=consent_request,
             headers=auth_headers
         )
@@ -864,7 +864,7 @@ class TestPrivacyAPIErrorHandling:
     async def test_invalid_export_format(self, async_client: AsyncClient, auth_headers: dict):
         """Test handling of invalid export format"""
         response = await async_client.get(
-            "/api/v1/privacy/export?format=invalid_format",
+            "/api/v2/privacy/export?format=invalid_format",
             headers=auth_headers
         )
         
@@ -882,7 +882,7 @@ class TestPrivacyAPIErrorHandling:
             }
         }
         
-        response = await async_client.post("/api/v1/privacy/cookie-consent", json=cookie_request)
+        response = await async_client.post("/api/v2/privacy/cookie-consent", json=cookie_request)
         
         assert response.status_code == 422  # Validation error
     
@@ -895,7 +895,7 @@ class TestPrivacyAPIErrorHandling:
         }
         
         response = await async_client.post(
-            "/api/v1/privacy/consent/terms",
+            "/api/v2/privacy/consent/terms",
             json=consent_request,
             headers=auth_headers
         )

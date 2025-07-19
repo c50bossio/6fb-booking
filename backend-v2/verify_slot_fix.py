@@ -72,7 +72,7 @@ def test_slot_filtering(test_time: datetime) -> Dict:
     current_date = test_time.date()
     
     # Make API request
-    response = client.get(f"/api/v1/bookings/slots?booking_date={current_date}")
+    response = client.get(f"/api/v2/bookings/slots?booking_date={current_date}")
     
     if response.status_code != 200:
         return {
@@ -104,7 +104,7 @@ def test_slot_filtering(test_time: datetime) -> Dict:
     else:
         # Check tomorrow
         tomorrow = current_date + timedelta(days=1)
-        tomorrow_response = client.get(f"/api/v1/bookings/slots?booking_date={tomorrow}")
+        tomorrow_response = client.get(f"/api/v2/bookings/slots?booking_date={tomorrow}")
         if tomorrow_response.status_code == 200:
             tomorrow_data = tomorrow_response.json()
             tomorrow_slots = tomorrow_data.get("slots", [])

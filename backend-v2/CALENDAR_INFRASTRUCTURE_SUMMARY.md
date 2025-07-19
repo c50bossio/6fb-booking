@@ -26,17 +26,17 @@ This document summarizes the calendar infrastructure cleanup and consolidation c
 ## 🚀 **API Endpoints (Standardized)**
 
 ### Active Endpoints:
-- **`POST /api/v1/appointments`** - Create new appointment
-- **`GET /api/v1/appointments/slots`** - Get available time slots
-- **`POST /api/v1/appointments/quick`** - Create quick appointment (next available)
-- **`GET /api/v1/appointments`** - List user appointments
-- **`GET /api/v1/appointments/{id}`** - Get specific appointment
-- **`PUT /api/v1/appointments/{id}`** - Update appointment
-- **`DELETE /api/v1/appointments/{id}`** - Cancel appointment
-- **`POST /api/v1/appointments/{id}/reschedule`** - Reschedule appointment
+- **`POST /api/v2/appointments`** - Create new appointment
+- **`GET /api/v2/appointments/slots`** - Get available time slots
+- **`POST /api/v2/appointments/quick`** - Create quick appointment (next available)
+- **`GET /api/v2/appointments`** - List user appointments
+- **`GET /api/v2/appointments/{id}`** - Get specific appointment
+- **`PUT /api/v2/appointments/{id}`** - Update appointment
+- **`DELETE /api/v2/appointments/{id}`** - Cancel appointment
+- **`POST /api/v2/appointments/{id}/reschedule`** - Reschedule appointment
 
 ### Deprecated (Still Active but Marked for Removal):
-- **`/api/v1/bookings/*`** - Legacy booking endpoints (use appointments instead)
+- **`/api/v2/bookings/*`** - Legacy booking endpoints (use appointments instead)
 
 ## 🧹 **Components Removed**
 
@@ -96,7 +96,7 @@ const quickAppointment = await appointmentsAPI.createQuick({
 
 ## 🔧 **Key Improvements**
 
-1. **API Consistency**: All appointment creation now uses `/api/v1/appointments`
+1. **API Consistency**: All appointment creation now uses `/api/v2/appointments`
 2. **Reduced Duplication**: Removed 4 unused calendar components
 3. **Cleaner Codebase**: Removed debug scripts and test files
 4. **Better Error Handling**: Improved error messages in appointment creation

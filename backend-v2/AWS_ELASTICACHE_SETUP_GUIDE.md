@@ -218,7 +218,7 @@ git push origin main  # (if using auto-deploy)
 ### **3. Verify Deployment**
 ```bash
 # Check application logs for Redis connection
-curl https://your-api-domain.com/api/v1/cache/health
+curl https://your-api-domain.com/api/v2/cache/health
 
 # Expected response:
 {

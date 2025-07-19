@@ -33,9 +33,9 @@ The components are used in the booking flow at `/app/book/page.tsx`:
 ## API Integration
 
 The components integrate with the backend through these API endpoints:
-- `GET /api/v1/bookings/slots?booking_date=YYYY-MM-DD` - Get available slots
-- `POST /api/v1/bookings` - Create a booking
-- `GET /api/v1/bookings` - Get user's bookings
+- `GET /api/v2/bookings/slots?booking_date=YYYY-MM-DD` - Get available slots
+- `POST /api/v2/bookings` - Create a booking
+- `GET /api/v2/bookings` - Get user's bookings
 
 ## Styling
 

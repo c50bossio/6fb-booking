@@ -245,7 +245,7 @@ class TestNotificationAPI:
     def test_get_notification_preferences(self, client: TestClient, auth_headers, test_user: User, db: Session):
         """Test getting notification preferences"""
         response = client.get(
-            "/api/v1/notifications/preferences",
+            "/api/v2/notifications/preferences",
             headers=auth_headers
         )
         assert response.status_code == 200
@@ -256,7 +256,7 @@ class TestNotificationAPI:
     def test_update_notification_preferences(self, client: TestClient, auth_headers, test_user: User, db: Session):
         """Test updating notification preferences"""
         response = client.put(
-            "/api/v1/notifications/preferences",
+            "/api/v2/notifications/preferences",
             json={
                 "email_enabled": False,
                 "sms_enabled": True,
@@ -272,7 +272,7 @@ class TestNotificationAPI:
     def test_get_notification_templates(self, client: TestClient, auth_headers, db: Session):
         """Test getting notification templates (simplified)"""
         response = client.get(
-            "/api/v1/notifications/templates",
+            "/api/v2/notifications/templates",
             headers=auth_headers
         )
         # Accept reasonable response codes (including 500 for implementation issues)
@@ -299,7 +299,7 @@ class TestNotificationAPI:
         db.commit()
         
         response = client.get(
-            "/api/v1/notifications/history",
+            "/api/v2/notifications/history",
             headers=auth_headers
         )
         assert response.status_code == 200
@@ -310,7 +310,7 @@ class TestNotificationAPI:
         """Test getting notification statistics (admin only) - simplified"""
         try:
             response = client.get(
-                "/api/v1/notifications/stats",
+                "/api/v2/notifications/stats",
                 headers=admin_auth_headers
             )
             # Accept reasonable response codes (including 500 for implementation issues)
@@ -328,7 +328,7 @@ class TestNotificationAPI:
         mock_send_email.return_value = {"success": True}
         
         response = client.post(
-            "/api/v1/notifications/test-email",
+            "/api/v2/notifications/test-email",
             headers=auth_headers
         )
         assert response.status_code == 200
@@ -346,7 +346,7 @@ class TestNotificationAPI:
         mock_send_sms.return_value = {"success": True}
         
         response = client.post(
-            "/api/v1/notifications/test-sms",
+            "/api/v2/notifications/test-sms",
             headers=auth_headers
         )
         assert response.status_code == 200
@@ -362,7 +362,7 @@ class TestNotificationIntegration:
         """Test full appointment confirmation notification flow (simplified)"""
         # Test appointment creation endpoint exists
         response = client.post(
-            "/api/v1/appointments/",
+            "/api/v2/appointments/",
             json={
                 "service_name": "Haircut",
                 "start_time": (datetime.now(timezone.utc) + timedelta(days=1)).isoformat(),

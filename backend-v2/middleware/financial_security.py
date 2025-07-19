@@ -30,16 +30,16 @@ class FinancialSecurityMiddleware(BaseHTTPMiddleware):
     
     # Financial endpoints that need extra protection
     FINANCIAL_ENDPOINTS = {
-        "/api/v1/payments/create-intent",
-        "/api/v1/payments/confirm",
-        "/api/v1/payments/refunds",
-        "/api/v1/payments/payouts",
-        "/api/v1/payments/stripe-connect",
-        "/api/v1/payments/gift-certificates",
-        "/api/v1/commissions/calculate",
-        "/api/v1/commissions/payout",
-        "/api/v1/orders",
-        "/api/v1/pos/transactions",
+        "/api/v2/payments/create-intent",
+        "/api/v2/payments/confirm",
+        "/api/v2/payments/refunds",
+        "/api/v2/payments/payouts",
+        "/api/v2/payments/stripe-connect",
+        "/api/v2/payments/gift-certificates",
+        "/api/v2/commissions/calculate",
+        "/api/v2/commissions/payout",
+        "/api/v2/orders",
+        "/api/v2/pos/transactions",
     }
     
     def __init__(self, app, redis_client: Optional[redis.Redis] = None):
@@ -312,15 +312,15 @@ class FinancialRateLimiter:
         
         # Endpoint-specific limits (requests per minute)
         self.endpoint_limits = {
-            "/api/v1/payments/create-intent": 10,
-            "/api/v1/payments/confirm": 15,
-            "/api/v1/payments/refunds": 5,
-            "/api/v1/payments/payouts": 3,
-            "/api/v1/payments/stripe-connect/onboard": 3,
-            "/api/v1/payments/gift-certificates": 20,
-            "/api/v1/commissions/calculate": 30,
-            "/api/v1/orders": 30,
-            "/api/v1/pos/transactions": 60,
+            "/api/v2/payments/create-intent": 10,
+            "/api/v2/payments/confirm": 15,
+            "/api/v2/payments/refunds": 5,
+            "/api/v2/payments/payouts": 3,
+            "/api/v2/payments/stripe-connect/onboard": 3,
+            "/api/v2/payments/gift-certificates": 20,
+            "/api/v2/commissions/calculate": 30,
+            "/api/v2/orders": 30,
+            "/api/v2/pos/transactions": 60,
         }
         
         # Role-based multipliers

@@ -47,7 +47,7 @@ export default function AcceptInvitationPage({ params }: { params: { token: stri
 
   const fetchInvitation = async () => {
     try {
-      const response = await fetchAPI(`/api/v1/invitations/${params.token}`)
+      const response = await fetchAPI(`/api/v2/invitations/${params.token}`)
       setInvitation(response)
       
       // Pre-fill name if provided
@@ -83,7 +83,7 @@ export default function AcceptInvitationPage({ params }: { params: { token: stri
 
     setAccepting(true)
     try {
-      const response = await fetchAPI(`/api/v1/invitations/${params.token}/accept`, {
+      const response = await fetchAPI(`/api/v2/invitations/${params.token}/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

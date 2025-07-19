@@ -89,10 +89,10 @@ The frontend `node_modules` are not installed, preventing:
 2. **Environment**: `/backend-v2/.env` (OAuth credentials added)
 
 ### API Endpoints Ready
-- `POST /api/v1/integrations/connect` - OAuth initiation
-- `GET /api/v1/integrations/callback` - OAuth callback
-- `GET /api/v1/integrations/list` - List integrations
-- `GET /api/v1/integrations/{id}/health` - Health check
+- `POST /api/v2/integrations/connect` - OAuth initiation
+- `GET /api/v2/integrations/callback` - OAuth callback
+- `GET /api/v2/integrations/list` - List integrations
+- `GET /api/v2/integrations/{id}/health` - Health check
 - `POST /api/tracking/events` - Conversion tracking
 
 ## 📈 Business Impact

@@ -242,7 +242,7 @@ export default function TrackingAnalyticsDashboard({
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       // In production, this would call the actual tracking analytics API
-      // const response = await fetch(`/api/v1/tracking/analytics?range=${timeRange}`)
+      // const response = await fetch(`/api/v2/tracking/analytics?range=${timeRange}`)
       // const data = await response.json()
       
       const mockData = generateMockAnalytics()

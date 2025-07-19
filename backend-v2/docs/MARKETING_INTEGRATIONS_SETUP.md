@@ -47,8 +47,8 @@ Before setting up marketing integrations, ensure you have:
 # Create OAuth 2.0 Client ID
 # Application type: Web application
 # Authorized redirect URIs:
-# - https://yourdomain.com/api/v1/integrations/gmb/callback
-# - http://localhost:8000/api/v1/integrations/gmb/callback (development)
+# - https://yourdomain.com/api/v2/integrations/gmb/callback
+# - http://localhost:8000/api/v2/integrations/gmb/callback (development)
 ```
 
 ### 3. Configure Environment Variables
@@ -57,7 +57,7 @@ Before setting up marketing integrations, ensure you have:
 # Google My Business
 GOOGLE_CLIENT_ID=your-client-id
 GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_REDIRECT_URI=https://yourdomain.com/api/v1/integrations/gmb/callback
+GOOGLE_REDIRECT_URI=https://yourdomain.com/api/v2/integrations/gmb/callback
 GOOGLE_OAUTH_SCOPES=https://www.googleapis.com/auth/business.manage
 ```
 
@@ -65,7 +65,7 @@ GOOGLE_OAUTH_SCOPES=https://www.googleapis.com/auth/business.manage
 
 ```python
 # API Endpoint for OAuth flow
-POST /api/v1/integrations/gmb/connect
+POST /api/v2/integrations/gmb/connect
 
 # Response includes authorization URL
 {
@@ -74,14 +74,14 @@ POST /api/v1/integrations/gmb/connect
 
 # User completes OAuth flow
 # Callback handles token exchange
-GET /api/v1/integrations/gmb/callback?code=...&state=...
+GET /api/v2/integrations/gmb/callback?code=...&state=...
 ```
 
 ### 5. Fetch Business Locations
 
 ```python
 # Get connected locations
-GET /api/v1/marketing/gmb/locations
+GET /api/v2/marketing/gmb/locations
 
 # Response
 {
@@ -102,10 +102,10 @@ GET /api/v1/marketing/gmb/locations
 
 ```python
 # Fetch reviews
-GET /api/v1/reviews?location_id=123
+GET /api/v2/reviews?location_id=123
 
 # Auto-respond to review
-POST /api/v1/reviews/123/respond
+POST /api/v2/reviews/123/respond
 {
   "response_type": "positive_detailed",
   "custom_message": "Optional custom addition"
@@ -124,7 +124,7 @@ POST /api/v1/reviews/123/respond
 
 ```python
 # Add GTM configuration
-POST /api/v1/integrations/tracking/gtm
+POST /api/v2/integrations/tracking/gtm
 {
   "container_id": "GTM-XXXXXX",
   "enabled": true,
@@ -169,7 +169,7 @@ gtag('event', 'purchase', {
 
 ```python
 # Configure custom events
-POST /api/v1/tracking/events/configure
+POST /api/v2/tracking/events/configure
 {
   "custom_events": [
     {
@@ -195,7 +195,7 @@ POST /api/v1/tracking/events/configure
 
 ```python
 # Add Meta Pixel
-POST /api/v1/integrations/tracking/meta
+POST /api/v2/integrations/tracking/meta
 {
   "pixel_id": "1234567890",
   "enabled": true,
@@ -260,7 +260,7 @@ fbq('init', '1234567890', {
 
 ```python
 # Set up response templates
-POST /api/v1/reviews/templates
+POST /api/v2/reviews/templates
 {
   "templates": {
     "positive_brief": "Thank you for your 5-star review, {customer_name}! We appreciate your business.",
@@ -275,7 +275,7 @@ POST /api/v1/reviews/templates
 
 ```python
 # Configure auto-response rules
-POST /api/v1/reviews/auto-response/configure
+POST /api/v2/reviews/auto-response/configure
 {
   "enabled": true,
   "rules": [
@@ -303,7 +303,7 @@ POST /api/v1/reviews/auto-response/configure
 
 ```python
 # Configure SEO keywords for responses
-POST /api/v1/reviews/seo/configure
+POST /api/v2/reviews/seo/configure
 {
   "location_keywords": ["downtown", "main street"],
   "service_keywords": ["haircut", "beard trim", "fade"],
@@ -335,7 +335,7 @@ TWILIO_FROM_NUMBER=+1234567890
 
 ```python
 # Create marketing campaign
-POST /api/v1/marketing/campaigns
+POST /api/v2/marketing/campaigns
 {
   "name": "Holiday Special",
   "type": "email_sms",
@@ -407,7 +407,7 @@ const integrations: Integration[] = [
 
 ```python
 # Check integration health
-GET /api/v1/integrations/health
+GET /api/v2/integrations/health
 
 # Response
 {
@@ -446,7 +446,7 @@ JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 # Google My Business
 GOOGLE_CLIENT_ID=123456789.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_REDIRECT_URI=https://yourdomain.com/api/v1/integrations/gmb/callback
+GOOGLE_REDIRECT_URI=https://yourdomain.com/api/v2/integrations/gmb/callback
 
 # Google Tag Manager
 GTM_CONTAINER_ID=GTM-XXXXXX
@@ -482,11 +482,11 @@ ENABLE_AUTO_REVIEW_RESPONSE=true
 
 ```bash
 # Test OAuth flow
-curl -X POST http://localhost:8000/api/v1/integrations/gmb/connect \
+curl -X POST http://localhost:8000/api/v2/integrations/gmb/connect \
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # Verify locations
-curl http://localhost:8000/api/v1/marketing/gmb/locations \
+curl http://localhost:8000/api/v2/marketing/gmb/locations \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -511,7 +511,7 @@ window.dataLayer.push({
 
 ```python
 # Create test review
-POST /api/v1/reviews/test
+POST /api/v2/reviews/test
 {
   "rating": 5,
   "text": "Great haircut!",
@@ -520,7 +520,7 @@ POST /api/v1/reviews/test
 }
 
 # Check generated response
-GET /api/v1/reviews/test/response
+GET /api/v2/reviews/test/response
 ```
 
 ## GDPR Compliance
@@ -570,7 +570,7 @@ const consentManager = {
 
 ```python
 # Export customer data
-GET /api/v1/customers/{id}/export
+GET /api/v2/customers/{id}/export
 
 # Response includes all marketing data
 {
@@ -585,7 +585,7 @@ GET /api/v1/customers/{id}/export
 
 ```python
 # Delete customer marketing data
-DELETE /api/v1/customers/{id}/marketing-data
+DELETE /api/v2/customers/{id}/marketing-data
 
 # Removes:
 # - Marketing preferences
@@ -632,7 +632,7 @@ if (typeof gtag === 'undefined') {
 
 ```python
 # Verify advanced matching data
-GET /api/v1/tracking/meta/diagnostics
+GET /api/v2/tracking/meta/diagnostics
 
 # Common issues:
 # - Email not hashed properly
@@ -654,16 +654,16 @@ def format_phone_for_meta(phone: str) -> str:
 
 ```bash
 # Check webhook registration
-GET /api/v1/integrations/gmb/webhooks
+GET /api/v2/integrations/gmb/webhooks
 
 # Verify response templates
-GET /api/v1/reviews/templates
+GET /api/v2/reviews/templates
 
 # Check response queue
-GET /api/v1/reviews/response-queue
+GET /api/v2/reviews/response-queue
 
 # Common fix: Re-authenticate GMB
-POST /api/v1/integrations/gmb/reconnect
+POST /api/v2/integrations/gmb/reconnect
 ```
 
 ### Debug Mode
@@ -690,7 +690,7 @@ tail -f logs/marketing_integration.log
 ### Support Resources
 
 - **API Documentation**: `/docs/api/marketing`
-- **Integration Status**: `/api/v1/integrations/status`
+- **Integration Status**: `/api/v2/integrations/status`
 - **Health Dashboard**: `/admin/integrations/health`
 - **Support Email**: support@bookedbarber.com
 

@@ -59,7 +59,7 @@ class CalendarWebhookService:
     def __init__(self, db: Session):
         self.db = db
         self.webhook_secret = getattr(settings, 'GOOGLE_WEBHOOK_SECRET', None)
-        self.webhook_url = getattr(settings, 'GOOGLE_WEBHOOK_URL', 'http://localhost:8000/api/v1/calendar/webhook')
+        self.webhook_url = getattr(settings, 'GOOGLE_WEBHOOK_URL', 'http://localhost:8000/api/v2/calendar/webhook')
         
     def setup_calendar_watch(self, user: User) -> Optional[str]:
         """

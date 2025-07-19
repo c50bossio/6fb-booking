@@ -187,7 +187,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
     }
 
     try {
-      const response = await fetch('/api/v1/tracking/meta-conversions', {
+      const response = await fetch('/api/v2/tracking/meta-conversions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -252,7 +252,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
     }
 
     try {
-      const response = await fetch('/api/v1/tracking/meta-conversions-batch', {
+      const response = await fetch('/api/v2/tracking/meta-conversions-batch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

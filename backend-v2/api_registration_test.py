@@ -48,7 +48,7 @@ def test_registration_api():
     # Step 2: Test auth router
     print("\n🔍 Step 2: Testing Auth Router")
     try:
-        auth_test_response = requests.get("http://localhost:8000/api/v1/auth/test", timeout=5)
+        auth_test_response = requests.get("http://localhost:8000/api/v2/auth/test", timeout=5)
         if auth_test_response.status_code == 200:
             print("✅ Auth router is responding")
             print(f"   Response: {auth_test_response.json()}")
@@ -61,7 +61,7 @@ def test_registration_api():
     # Step 3: Test password policy endpoint
     print("\n🔍 Step 3: Testing Password Policy")
     try:
-        policy_response = requests.get("http://localhost:8000/api/v1/auth/password-policy", timeout=5)
+        policy_response = requests.get("http://localhost:8000/api/v2/auth/password-policy", timeout=5)
         if policy_response.status_code == 200:
             print("✅ Password policy endpoint working")
             policy_data = policy_response.json()
@@ -81,7 +81,7 @@ def test_registration_api():
         
         # Make registration request
         registration_response = requests.post(
-            "http://localhost:8000/api/v1/auth/register",
+            "http://localhost:8000/api/v2/auth/register",
             json=registration_data,
             headers=headers,
             timeout=10
@@ -136,7 +136,7 @@ def test_registration_api():
     print("\n🔍 Step 5: Testing Duplicate Registration (Should Fail)")
     try:
         duplicate_response = requests.post(
-            "http://localhost:8000/api/v1/auth/register",
+            "http://localhost:8000/api/v2/auth/register",
             json=registration_data,
             headers=headers,
             timeout=10

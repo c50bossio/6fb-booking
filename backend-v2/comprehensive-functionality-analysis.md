@@ -22,24 +22,24 @@ This comprehensive analysis tested all aspects of the BookedBarber application f
 
 ### ✅ Backend API - Working Endpoints (12)
 1. **Authentication System**
-   - User Profile (`/api/v1/auth/me`) ✅
-   - MFA Status (`/api/v1/mfa/status`) ✅
+   - User Profile (`/api/v2/auth/me`) ✅
+   - MFA Status (`/api/v2/mfa/status`) ✅
 
 2. **Core Business Logic**
-   - Appointments List (`/api/v1/appointments`) ✅
-   - Services Management (`/api/v1/services`) ✅
-   - Clients Management (`/api/v1/clients`) ✅
-   - Barbers Management (`/api/v1/barbers`) ✅
-   - My Bookings (`/api/v1/bookings/my`) ✅
+   - Appointments List (`/api/v2/appointments`) ✅
+   - Services Management (`/api/v2/services`) ✅
+   - Clients Management (`/api/v2/clients`) ✅
+   - Barbers Management (`/api/v2/barbers`) ✅
+   - My Bookings (`/api/v2/bookings/my`) ✅
 
 3. **Administrative Features**
-   - Booking Rules (`/api/v1/booking-rules`) ✅
-   - Organizations (`/api/v1/organizations`) ✅
-   - Notification Stats (`/api/v1/notifications/stats`) ✅
+   - Booking Rules (`/api/v2/booking-rules`) ✅
+   - Organizations (`/api/v2/organizations`) ✅
+   - Notification Stats (`/api/v2/notifications/stats`) ✅
 
 4. **Marketing & Business**
-   - Reviews System (`/api/v1/reviews`) ✅
-   - Marketing Campaigns (`/api/v1/marketing/campaigns`) ✅
+   - Reviews System (`/api/v2/reviews`) ✅
+   - Marketing Campaigns (`/api/v2/marketing/campaigns`) ✅
 
 ### ✅ Frontend - Working Pages (7)
 1. **Public Pages** (All functional)
@@ -57,12 +57,12 @@ This comprehensive analysis tested all aspects of the BookedBarber application f
 **Severity: HIGH** - These features are completely non-functional
 
 1. **Analytics System** (Complete failure)
-   - Analytics Dashboard (`/api/v1/analytics/dashboard`) 💥
-   - Appointment Analytics (`/api/v1/analytics/appointments`) 💥
-   - Revenue Analytics (`/api/v1/analytics/revenue`) 💥
+   - Analytics Dashboard (`/api/v2/analytics/dashboard`) 💥
+   - Appointment Analytics (`/api/v2/analytics/appointments`) 💥
+   - Revenue Analytics (`/api/v2/analytics/revenue`) 💥
 
 2. **Payment History** 
-   - Payment History (`/api/v1/payments/history`) 💥
+   - Payment History (`/api/v2/payments/history`) 💥
 
 **Root Cause:** Likely database query issues or missing data dependencies.
 
@@ -76,21 +76,21 @@ This comprehensive analysis tested all aspects of the BookedBarber application f
    - Integration Health (`/health/all`)
 
 2. Administrative features:
-   - Dashboard Data (`/api/v1/dashboard`)
-   - Calendar Events (`/api/v1/calendar/events`)
-   - Barber Availability (`/api/v1/barber-availability`)
-   - Admin Services (`/api/v1/admin/services`)
-   - Admin Webhooks (`/api/v1/admin/webhooks`)
+   - Dashboard Data (`/api/v2/dashboard`)
+   - Calendar Events (`/api/v2/calendar/events`)
+   - Barber Availability (`/api/v2/barber-availability`)
+   - Admin Services (`/api/v2/admin/services`)
+   - Admin Webhooks (`/api/v2/admin/webhooks`)
 
 3. Data management:
-   - Recurring Appointments (`/api/v1/recurring`)
-   - Import Data (`/api/v1/imports`)
-   - Export Data (`/api/v1/exports`)
+   - Recurring Appointments (`/api/v2/recurring`)
+   - Import Data (`/api/v2/imports`)
+   - Export Data (`/api/v2/exports`)
 
 4. Advanced features:
-   - Trial Monitoring (`/api/v1/trial-monitoring`)
-   - AI Analytics (`/api/v1/ai-analytics/insights`)
-   - Tracking Pixels (`/api/v1/tracking/pixels`)
+   - Trial Monitoring (`/api/v2/trial-monitoring`)
+   - AI Analytics (`/api/v2/ai-analytics/insights`)
+   - Tracking Pixels (`/api/v2/tracking/pixels`)
 
 ### 🚨 Frontend Hydration Issues
 **Severity: HIGH** - Affecting user experience
@@ -123,7 +123,7 @@ This comprehensive analysis tested all aspects of the BookedBarber application f
 
 ### 🔗 **Integrations - ROUTING ISSUES**
 - **Status:** 🔴 All integration endpoints return 404
-- **Issues:** Wrong URL routing (missing `/api/v1` prefix)
+- **Issues:** Wrong URL routing (missing `/api/v2` prefix)
 - **Impact:** Third-party integrations not accessible via API
 
 ### 👥 **User Management - WORKING**

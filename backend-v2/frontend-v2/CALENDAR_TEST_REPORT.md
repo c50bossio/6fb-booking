@@ -126,10 +126,10 @@ case 'move':
 **API Endpoints Status**:
 ```
 ✅ GET /                           - 200 OK
-⚠️ GET /api/v1/appointments        - 403 Forbidden (auth required)
-⚠️ GET /api/v1/users               - 403 Forbidden (auth required)
-❌ GET /api/v1/locations           - 404 Not Found
-❌ GET /api/v1/auth/profile        - 404 Not Found
+⚠️ GET /api/v2/appointments        - 403 Forbidden (auth required)
+⚠️ GET /api/v2/users               - 403 Forbidden (auth required)
+❌ GET /api/v2/locations           - 404 Not Found
+❌ GET /api/v2/auth/profile        - 404 Not Found
 ```
 
 **Authentication Flow**:
@@ -224,8 +224,8 @@ case 'move':
    - Show sample data without authentication
 
 2. **API Endpoint Coverage**
-   - Implement missing `/api/v1/locations` endpoint
-   - Fix `/api/v1/auth/profile` endpoint routing
+   - Implement missing `/api/v2/locations` endpoint
+   - Fix `/api/v2/auth/profile` endpoint routing
 
 3. **Performance Monitoring**
    - Add real-time performance metrics dashboard

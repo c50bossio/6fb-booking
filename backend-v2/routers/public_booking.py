@@ -37,7 +37,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/public/booking",
+    prefix="/api/v2/public/booking",
     tags=["public-booking"],
     responses={404: {"description": "Not found"}},
 )

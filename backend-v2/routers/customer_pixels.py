@@ -22,7 +22,7 @@ from schemas_new.tracking import (
 import re
 
 router = APIRouter(
-    prefix="/api/v1/customer-pixels",
+    prefix="/api/v2/customer-pixels",
     tags=["customer-pixels"],
     responses={404: {"description": "Not found"}},
 )

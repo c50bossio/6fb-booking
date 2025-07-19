@@ -28,39 +28,39 @@ The frontend makes calls to 100 distinct API endpoints across the following cate
 
 #### Authentication Endpoints (8 endpoints)
 ```
-✅ /api/v1/auth/login          - Connected
-✅ /api/v1/auth/register       - Connected  
-✅ /api/v1/auth/refresh        - Connected
-✅ /api/v1/auth/me             - Connected
-✅ /api/v1/auth/forgot-password - Connected
-✅ /api/v1/auth/reset-password - Connected
-✅ /api/v1/auth/change-password - Connected
-❌ /api/v1/auth/login-simple   - MISSING
-❌ /api/v1/auth/logout         - MISSING (likely exists as DELETE)
+✅ /api/v2/auth/login          - Connected
+✅ /api/v2/auth/register       - Connected  
+✅ /api/v2/auth/refresh        - Connected
+✅ /api/v2/auth/me             - Connected
+✅ /api/v2/auth/forgot-password - Connected
+✅ /api/v2/auth/reset-password - Connected
+✅ /api/v2/auth/change-password - Connected
+❌ /api/v2/auth/login-simple   - MISSING
+❌ /api/v2/auth/logout         - MISSING (likely exists as DELETE)
 ```
 
 #### Appointment/Booking Endpoints (12 endpoints)
 ```
-❌ /api/v1/appointments/slots/next-available - MISSING (exists as /api/v1/bookings/slots/next-available)
-❌ /api/v1/appointments/settings - MISSING
-❌ /api/v1/appointments/quick - MISSING
-❌ /api/v1/appointments/all/list - MISSING
-❌ /api/v1/appointments/enhanced - MISSING
-✅ /api/v1/appointments - Connected (partial)
-❌ /api/v1/bookings - MISSING (likely path mismatch)
+❌ /api/v2/appointments/slots/next-available - MISSING (exists as /api/v2/bookings/slots/next-available)
+❌ /api/v2/appointments/settings - MISSING
+❌ /api/v2/appointments/quick - MISSING
+❌ /api/v2/appointments/all/list - MISSING
+❌ /api/v2/appointments/enhanced - MISSING
+✅ /api/v2/appointments - Connected (partial)
+❌ /api/v2/bookings - MISSING (likely path mismatch)
 ```
 
 #### Payment Endpoints (10 endpoints)
 ```
-❌ /api/v1/payments/create-intent - MISSING
-❌ /api/v1/payments/confirm - MISSING
-❌ /api/v1/payments/refund - MISSING
-❌ /api/v1/payments/gift-certificates - MISSING
-❌ /api/v1/payments/gift-certificates/validate - MISSING
-❌ /api/v1/payments/reports - MISSING
-❌ /api/v1/payments/payouts - MISSING
-❌ /api/v1/payments/stripe-connect/onboard - MISSING
-❌ /api/v1/payments/stripe-connect/status - MISSING
+❌ /api/v2/payments/create-intent - MISSING
+❌ /api/v2/payments/confirm - MISSING
+❌ /api/v2/payments/refund - MISSING
+❌ /api/v2/payments/gift-certificates - MISSING
+❌ /api/v2/payments/gift-certificates/validate - MISSING
+❌ /api/v2/payments/reports - MISSING
+❌ /api/v2/payments/payouts - MISSING
+❌ /api/v2/payments/stripe-connect/onboard - MISSING
+❌ /api/v2/payments/stripe-connect/status - MISSING
 ```
 
 ### 1.2 Critical Missing Endpoints
@@ -68,33 +68,33 @@ The frontend makes calls to 100 distinct API endpoints across the following cate
 The following 21 endpoints are called by the frontend but missing from the backend:
 
 **Authentication (2 critical):**
-- `/api/v1/auth/login-simple` - Alternative login method
-- `/api/v1/auth/logout` - User logout functionality
+- `/api/v2/auth/login-simple` - Alternative login method
+- `/api/v2/auth/logout` - User logout functionality
 
 **Appointments (7 critical):**
-- `/api/v1/appointments/quick` - Quick booking feature
-- `/api/v1/appointments/settings` - Booking configuration
-- `/api/v1/appointments/slots/next-available` - Next available slot
-- `/api/v1/appointments/all/list` - All appointments list
-- `/api/v1/appointments/enhanced` - Enhanced appointment creation
-- `/api/v1/appointments/` - Appointment CRUD operations
-- `/api/v1/bookings` - Booking management
+- `/api/v2/appointments/quick` - Quick booking feature
+- `/api/v2/appointments/settings` - Booking configuration
+- `/api/v2/appointments/slots/next-available` - Next available slot
+- `/api/v2/appointments/all/list` - All appointments list
+- `/api/v2/appointments/enhanced` - Enhanced appointment creation
+- `/api/v2/appointments/` - Appointment CRUD operations
+- `/api/v2/bookings` - Booking management
 
 **Payments (9 critical):**
-- `/api/v1/payments/create-intent` - Payment processing
-- `/api/v1/payments/confirm` - Payment confirmation
-- `/api/v1/payments/refund` - Refund processing
-- `/api/v1/payments/gift-certificates` - Gift certificate management
-- `/api/v1/payments/gift-certificates/validate` - Gift certificate validation
-- `/api/v1/payments/reports` - Payment reporting
-- `/api/v1/payments/payouts` - Payout processing
-- `/api/v1/payments/stripe-connect/onboard` - Stripe Connect onboarding
-- `/api/v1/payments/stripe-connect/status` - Stripe Connect status
+- `/api/v2/payments/create-intent` - Payment processing
+- `/api/v2/payments/confirm` - Payment confirmation
+- `/api/v2/payments/refund` - Refund processing
+- `/api/v2/payments/gift-certificates` - Gift certificate management
+- `/api/v2/payments/gift-certificates/validate` - Gift certificate validation
+- `/api/v2/payments/reports` - Payment reporting
+- `/api/v2/payments/payouts` - Payout processing
+- `/api/v2/payments/stripe-connect/onboard` - Stripe Connect onboarding
+- `/api/v2/payments/stripe-connect/status` - Stripe Connect status
 
 **User Management (3 critical):**
-- `/api/v1/users` - User management
-- `/api/v1/users?role=barber` - Barber user filtering
-- `/api/v1/payments/gift-certificates/export` - Data export
+- `/api/v2/users` - User management
+- `/api/v2/users?role=barber` - Barber user filtering
+- `/api/v2/payments/gift-certificates/export` - Data export
 
 ## 2. Data Flow Integrity Analysis
 
@@ -119,8 +119,8 @@ The following 21 endpoints are called by the frontend but missing from the backe
 **Potential Mismatches Identified:**
 1. **Appointment Model:** Frontend expects `appointment_date` parameter while backend uses `date`
 2. **Booking Response:** Frontend normalizes appointment data with calculated `end_time`
-3. **User Profile:** Frontend calls `/api/v1/users/profile` but backend has `/api/v1/auth/me`
-4. **Service Categories:** Frontend expects `/api/v1/services/categories` structure
+3. **User Profile:** Frontend calls `/api/v2/users/profile` but backend has `/api/v2/auth/me`
+4. **Service Categories:** Frontend expects `/api/v2/services/categories` structure
 
 ### 2.3 Request/Response Validation
 
@@ -206,8 +206,8 @@ The frontend implements comprehensive validation:
 ### 5.1 Well-Connected Components
 
 **Dashboard Components:**
-- ✅ Analytics components connected to `/api/v1/analytics/*`
-- ✅ User management connected to `/api/v1/auth/me`
+- ✅ Analytics components connected to `/api/v2/analytics/*`
+- ✅ User management connected to `/api/v2/auth/me`
 - ✅ Calendar components with API integration
 
 **Booking Components:**
@@ -302,20 +302,20 @@ The frontend implements comprehensive validation:
 ### 9.1 Immediate Actions (Week 1)
 
 **CRITICAL - Implement Missing Payment Endpoints:**
-1. `/api/v1/payments/create-intent` - Stripe payment intent creation
-2. `/api/v1/payments/confirm` - Payment confirmation handling
-3. `/api/v1/payments/refund` - Refund processing
-4. `/api/v1/payments/stripe-connect/*` - Stripe Connect integration
+1. `/api/v2/payments/create-intent` - Stripe payment intent creation
+2. `/api/v2/payments/confirm` - Payment confirmation handling
+3. `/api/v2/payments/refund` - Refund processing
+4. `/api/v2/payments/stripe-connect/*` - Stripe Connect integration
 
 **CRITICAL - Fix Appointment System:**
-1. `/api/v1/appointments/quick` - Quick booking endpoint
-2. `/api/v1/appointments/settings` - Booking configuration
-3. `/api/v1/appointments/slots/next-available` - Available slot finder
-4. `/api/v1/bookings` - Unified booking management
+1. `/api/v2/appointments/quick` - Quick booking endpoint
+2. `/api/v2/appointments/settings` - Booking configuration
+3. `/api/v2/appointments/slots/next-available` - Available slot finder
+4. `/api/v2/bookings` - Unified booking management
 
 **CRITICAL - Complete Authentication:**
-1. `/api/v1/auth/logout` - Proper logout endpoint
-2. `/api/v1/auth/login-simple` - Alternative login method
+1. `/api/v2/auth/logout` - Proper logout endpoint
+2. `/api/v2/auth/login-simple` - Alternative login method
 
 ### 9.2 Short-term Actions (Week 2-3)
 
@@ -325,7 +325,7 @@ The frontend implements comprehensive validation:
 3. Add real-time calendar updates
 
 **HIGH PRIORITY - User Management:**
-1. `/api/v1/users` - User listing and management
+1. `/api/v2/users` - User listing and management
 2. User role filtering and permissions
 3. Admin panel functionality
 

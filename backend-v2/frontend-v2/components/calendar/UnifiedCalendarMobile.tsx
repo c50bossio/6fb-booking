@@ -214,7 +214,7 @@ export default function UnifiedCalendarMobile(props: UnifiedCalendarMobileProps)
 
     try {
       // Call API to cancel appointment
-      const response = await fetch(`/api/v1/appointments/${selectedAppointment.id}/cancel`, {
+      const response = await fetch(`/api/v2/appointments/${selectedAppointment.id}/cancel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

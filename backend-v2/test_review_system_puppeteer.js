@@ -47,14 +47,14 @@ class ReviewSystemPuppeteerTest {
         // Enable request/response logging
         await this.page.setRequestInterception(true);
         this.page.on('request', request => {
-            if (request.url().includes('/api/v1/reviews')) {
+            if (request.url().includes('/api/v2/reviews')) {
                 console.log(`📡 API Request: ${request.method()} ${request.url()}`);
             }
             request.continue();
         });
         
         this.page.on('response', response => {
-            if (response.url().includes('/api/v1/reviews')) {
+            if (response.url().includes('/api/v2/reviews')) {
                 console.log(`📡 API Response: ${response.status()} ${response.url()}`);
             }
         });
@@ -66,7 +66,7 @@ class ReviewSystemPuppeteerTest {
         try {
             // Test authentication endpoint
             const response = await this.page.evaluate(async (baseUrl, email, password) => {
-                const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
+                const res = await fetch(`${baseUrl}/api/v2/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -95,10 +95,10 @@ class ReviewSystemPuppeteerTest {
         console.log('\n📋 Testing Review API Endpoints...');
         
         const endpoints = [
-            { url: '/api/v1/reviews', method: 'GET', name: 'Get Reviews' },
-            { url: '/api/v1/reviews/auto-response/stats', method: 'GET', name: 'Auto-Response Stats' },
-            { url: '/api/v1/reviews/templates', method: 'GET', name: 'Review Templates' },
-            { url: '/api/v1/reviews/gmb/locations', method: 'GET', name: 'GMB Locations' }
+            { url: '/api/v2/reviews', method: 'GET', name: 'Get Reviews' },
+            { url: '/api/v2/reviews/auto-response/stats', method: 'GET', name: 'Auto-Response Stats' },
+            { url: '/api/v2/reviews/templates', method: 'GET', name: 'Review Templates' },
+            { url: '/api/v2/reviews/gmb/locations', method: 'GET', name: 'GMB Locations' }
         ];
 
         for (const endpoint of endpoints) {
@@ -135,7 +135,7 @@ class ReviewSystemPuppeteerTest {
         
         try {
             const response = await this.page.evaluate(async (baseUrl, token) => {
-                const res = await fetch(`${baseUrl}/api/v1/reviews/sync`, {
+                const res = await fetch(`${baseUrl}/api/v2/reviews/sync`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -168,7 +168,7 @@ class ReviewSystemPuppeteerTest {
         try {
             // Test unauthenticated access
             const response = await this.page.evaluate(async (baseUrl) => {
-                const res = await fetch(`${baseUrl}/api/v1/reviews`);
+                const res = await fetch(`${baseUrl}/api/v2/reviews`);
                 return { status: res.status };
             }, BASE_URL);
 
@@ -180,7 +180,7 @@ class ReviewSystemPuppeteerTest {
 
             // Test invalid token
             const invalidTokenResponse = await this.page.evaluate(async (baseUrl) => {
-                const res = await fetch(`${baseUrl}/api/v1/reviews`, {
+                const res = await fetch(`${baseUrl}/api/v2/reviews`, {
                     headers: { 'Authorization': 'Bearer invalid_token' }
                 });
                 return { status: res.status };
@@ -303,7 +303,7 @@ class ReviewSystemPuppeteerTest {
             // Check for review endpoints in documentation
             const hasReviewDocs = await this.page.evaluate(() => {
                 const text = document.body.textContent.toLowerCase();
-                return text.includes('reviews') && (text.includes('/api/v1/reviews') || text.includes('review'));
+                return text.includes('reviews') && (text.includes('/api/v2/reviews') || text.includes('review'));
             });
 
             if (hasReviewDocs) {
@@ -326,19 +326,19 @@ class ReviewSystemPuppeteerTest {
                 const results = [];
                 
                 // 1. Get reviews
-                const reviewsRes = await fetch(`${baseUrl}/api/v1/reviews`, {
+                const reviewsRes = await fetch(`${baseUrl}/api/v2/reviews`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 results.push({ step: 'Get Reviews', status: reviewsRes.status });
 
                 // 2. Get stats
-                const statsRes = await fetch(`${baseUrl}/api/v1/reviews/auto-response/stats`, {
+                const statsRes = await fetch(`${baseUrl}/api/v2/reviews/auto-response/stats`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 results.push({ step: 'Get Stats', status: statsRes.status });
 
                 // 3. Test sync (expected to fail without integration)
-                const syncRes = await fetch(`${baseUrl}/api/v1/reviews/sync`, {
+                const syncRes = await fetch(`${baseUrl}/api/v2/reviews/sync`, {
                     method: 'POST',
                     headers: { 
                         'Authorization': `Bearer ${token}`,

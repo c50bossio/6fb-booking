@@ -593,17 +593,17 @@ If you encounter login issues:
 3. Hard refresh browser: `Cmd+Shift+R` or `Ctrl+Shift+R`
 
 ### Bookings/Appointments Endpoint Confusion (Fixed 2025-07-03)
-**CRITICAL**: The endpoint `/api/v1/bookings/my` does NOT exist and never has!
+**CRITICAL**: The endpoint `/api/v2/bookings/my` does NOT exist and never has!
 
 - **Common Error**: 422 Unprocessable Entity when calling `/bookings/my`
 - **Root Cause**: Router interprets "my" as booking_id parameter
 - **Correct Endpoints**:
-  - `GET /api/v1/bookings/` - Get user's bookings (deprecated)
-  - `GET /api/v1/appointments/` - Get user's appointments (preferred)
+  - `GET /api/v2/bookings/` - Get user's bookings (deprecated)
+  - `GET /api/v2/appointments/` - Get user's appointments (preferred)
 - **Migration Status**: Moving from "bookings" → "appointments" terminology
 
 If you see 422 errors with `/bookings/my`:
-1. Change to `/api/v1/bookings/` or `/api/v1/appointments/`
+1. Change to `/api/v2/bookings/` or `/api/v2/appointments/`
 2. Check `ENDPOINT_MIGRATION_GUIDE.md` for full details
 3. Always use `/appointments` endpoints for new code
 4. Frontend `getMyBookings()` function already uses correct endpoint

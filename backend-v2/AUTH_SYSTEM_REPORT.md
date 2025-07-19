@@ -9,14 +9,14 @@ The authentication system for V2 has been **successfully completed and tested**.
 ### Core Authentication Endpoints
 All authentication endpoints are implemented and functional:
 
-1. **POST /api/v1/auth/register** - User registration with strong password validation
-2. **POST /api/v1/auth/login** - JWT-based login with access/refresh tokens
-3. **POST /api/v1/auth/refresh** - Token refresh with rotation for security
-4. **GET /api/v1/auth/me** - Get current user profile
-5. **POST /api/v1/auth/forgot-password** - Request password reset via email
-6. **POST /api/v1/auth/reset-password** - Reset password with secure token
-7. **POST /api/v1/auth/change-password** - Change password for authenticated users
-8. **PUT /api/v1/auth/timezone** - Update user timezone preferences
+1. **POST /api/v2/auth/register** - User registration with strong password validation
+2. **POST /api/v2/auth/login** - JWT-based login with access/refresh tokens
+3. **POST /api/v2/auth/refresh** - Token refresh with rotation for security
+4. **GET /api/v2/auth/me** - Get current user profile
+5. **POST /api/v2/auth/forgot-password** - Request password reset via email
+6. **POST /api/v2/auth/reset-password** - Reset password with secure token
+7. **POST /api/v2/auth/change-password** - Change password for authenticated users
+8. **PUT /api/v2/auth/timezone** - Update user timezone preferences
 
 ### Frontend Integration
 Complete frontend implementation with React/Next.js pages:

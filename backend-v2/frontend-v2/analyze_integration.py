@@ -92,7 +92,7 @@ def find_backend_endpoints() -> Dict[str, List[str]]:
                 for pattern in patterns:
                     matches = re.findall(pattern, content)
                     for method, endpoint in matches:
-                        full_endpoint = f"/api/v1{prefix}{endpoint}" if prefix else f"/api/v1{endpoint}"
+                        full_endpoint = f"/api/v2{prefix}{endpoint}" if prefix else f"/api/v2{endpoint}"
                         endpoints[full_endpoint].append(str(py_file))
                         
             except (UnicodeDecodeError, PermissionError):

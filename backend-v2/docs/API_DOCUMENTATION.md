@@ -32,7 +32,7 @@ Authorization: Bearer <access_token>
 
 #### Standard Login
 ```http
-POST /api/v1/auth/login
+POST /api/v2/auth/login
 Content-Type: application/json
 
 {
@@ -62,7 +62,7 @@ Content-Type: application/json
 If MFA is enabled, login requires an additional verification step:
 
 ```http
-POST /api/v1/mfa/verify
+POST /api/v2/mfa/verify
 Content-Type: application/json
 Authorization: Bearer <partial_token>
 
@@ -73,7 +73,7 @@ Authorization: Bearer <partial_token>
 
 #### Token Refresh
 ```http
-POST /api/v1/auth/refresh
+POST /api/v2/auth/refresh
 Content-Type: application/json
 
 {
@@ -133,7 +133,7 @@ X-RateLimit-Reset: 1625097600
   "detail": "Error description",
   "error_code": "BOOKING_CONFLICT",
   "timestamp": "2024-07-03T10:30:00Z",
-  "path": "/api/v1/appointments",
+  "path": "/api/v2/appointments",
   "request_id": "req_123456789"
 }
 ```
@@ -163,7 +163,7 @@ X-RateLimit-Reset: 1625097600
 
 #### User Registration
 ```http
-POST /api/v1/auth/register
+POST /api/v2/auth/register
 ```
 
 Create a new user account.
@@ -183,7 +183,7 @@ Create a new user account.
 
 #### Password Reset
 ```http
-POST /api/v1/auth/forgot-password
+POST /api/v2/auth/forgot-password
 ```
 
 Initiate password reset process.
@@ -197,7 +197,7 @@ Initiate password reset process.
 
 #### Change Password
 ```http
-PUT /api/v1/auth/change-password
+PUT /api/v2/auth/change-password
 ```
 
 Change user password (requires authentication).
@@ -214,7 +214,7 @@ Change user password (requires authentication).
 
 #### Get Current User
 ```http
-GET /api/v1/auth/me
+GET /api/v2/auth/me
 Authorization: Bearer <token>
 ```
 
@@ -237,7 +237,7 @@ Authorization: Bearer <token>
 
 #### Update User Profile
 ```http
-PUT /api/v1/users/me
+PUT /api/v2/users/me
 Authorization: Bearer <token>
 ```
 
@@ -255,7 +255,7 @@ Authorization: Bearer <token>
 
 #### List Appointments
 ```http
-GET /api/v1/appointments?start_date=2024-07-01&end_date=2024-07-31&status=confirmed
+GET /api/v2/appointments?start_date=2024-07-01&end_date=2024-07-31&status=confirmed
 Authorization: Bearer <token>
 ```
 
@@ -316,7 +316,7 @@ Authorization: Bearer <token>
 
 #### Create Appointment
 ```http
-POST /api/v1/appointments
+POST /api/v2/appointments
 Authorization: Bearer <token>
 ```
 
@@ -334,13 +334,13 @@ Authorization: Bearer <token>
 
 #### Update Appointment
 ```http
-PUT /api/v1/appointments/{appointment_id}
+PUT /api/v2/appointments/{appointment_id}
 Authorization: Bearer <token>
 ```
 
 #### Cancel Appointment
 ```http
-DELETE /api/v1/appointments/{appointment_id}
+DELETE /api/v2/appointments/{appointment_id}
 Authorization: Bearer <token>
 ```
 
@@ -356,7 +356,7 @@ Authorization: Bearer <token>
 
 #### Create Payment Intent
 ```http
-POST /api/v1/payments/create-intent
+POST /api/v2/payments/create-intent
 Authorization: Bearer <token>
 ```
 
@@ -384,7 +384,7 @@ Authorization: Bearer <token>
 
 #### Confirm Payment
 ```http
-POST /api/v1/payments/confirm
+POST /api/v2/payments/confirm
 Authorization: Bearer <token>
 ```
 
@@ -398,7 +398,7 @@ Authorization: Bearer <token>
 
 #### Payment History
 ```http
-GET /api/v1/payments/history?start_date=2024-07-01&end_date=2024-07-31
+GET /api/v2/payments/history?start_date=2024-07-01&end_date=2024-07-31
 Authorization: Bearer <token>
 ```
 
@@ -406,13 +406,13 @@ Authorization: Bearer <token>
 
 #### List Clients
 ```http
-GET /api/v1/clients?search=john&page=1&per_page=20
+GET /api/v2/clients?search=john&page=1&per_page=20
 Authorization: Bearer <token>
 ```
 
 #### Create Client
 ```http
-POST /api/v1/clients
+POST /api/v2/clients
 Authorization: Bearer <token>
 ```
 
@@ -430,7 +430,7 @@ Authorization: Bearer <token>
 
 #### Get Client Details
 ```http
-GET /api/v1/clients/{client_id}
+GET /api/v2/clients/{client_id}
 Authorization: Bearer <token>
 ```
 
@@ -458,13 +458,13 @@ Authorization: Bearer <token>
 
 #### Get Calendar Events
 ```http
-GET /api/v1/calendar/events?start=2024-07-01&end=2024-07-31
+GET /api/v2/calendar/events?start=2024-07-01&end=2024-07-31
 Authorization: Bearer <token>
 ```
 
 #### Sync with Google Calendar
 ```http
-POST /api/v1/calendar/sync
+POST /api/v2/calendar/sync
 Authorization: Bearer <token>
 ```
 
@@ -480,7 +480,7 @@ Authorization: Bearer <token>
 
 #### Calendar OAuth
 ```http
-GET /api/v1/calendar/oauth/initiate
+GET /api/v2/calendar/oauth/initiate
 Authorization: Bearer <token>
 ```
 
@@ -490,7 +490,7 @@ Authorization: Bearer <token>
 
 #### Get Performance Benchmarks
 ```http
-POST /api/v1/ai-analytics/benchmark
+POST /api/v2/ai-analytics/benchmark
 Authorization: Bearer <token>
 ```
 
@@ -518,7 +518,7 @@ Authorization: Bearer <token>
 
 #### Revenue Forecasting
 ```http
-POST /api/v1/ai-analytics/predict/revenue
+POST /api/v2/ai-analytics/predict/revenue
 Authorization: Bearer <token>
 ```
 
@@ -532,7 +532,7 @@ Authorization: Bearer <token>
 
 #### Client Churn Prediction
 ```http
-POST /api/v1/ai-analytics/predict/churn
+POST /api/v2/ai-analytics/predict/churn
 Authorization: Bearer <token>
 ```
 
@@ -540,13 +540,13 @@ Authorization: Bearer <token>
 
 #### Google My Business - Fetch Reviews
 ```http
-GET /api/v1/reviews?platform=google_my_business&status=new
+GET /api/v2/reviews?platform=google_my_business&status=new
 Authorization: Bearer <token>
 ```
 
 #### Generate Review Response
 ```http
-POST /api/v1/reviews/{review_id}/generate-response
+POST /api/v2/reviews/{review_id}/generate-response
 Authorization: Bearer <token>
 ```
 
@@ -560,7 +560,7 @@ Authorization: Bearer <token>
 
 #### Track Conversion Event
 ```http
-POST /api/v1/tracking/event
+POST /api/v2/tracking/event
 Authorization: Bearer <token>
 ```
 
@@ -582,13 +582,13 @@ Authorization: Bearer <token>
 
 #### Get User Consents
 ```http
-GET /api/v1/privacy/consents
+GET /api/v2/privacy/consents
 Authorization: Bearer <token>
 ```
 
 #### Update Consent
 ```http
-PUT /api/v1/privacy/consents
+PUT /api/v2/privacy/consents
 Authorization: Bearer <token>
 ```
 
@@ -610,7 +610,7 @@ Authorization: Bearer <token>
 
 #### Request Data Export
 ```http
-POST /api/v1/privacy/data-export
+POST /api/v2/privacy/data-export
 Authorization: Bearer <token>
 ```
 
@@ -628,7 +628,7 @@ Authorization: Bearer <token>
 
 #### Account Deletion
 ```http
-POST /api/v1/privacy/delete-account
+POST /api/v2/privacy/delete-account
 Authorization: Bearer <token>
 ```
 
@@ -636,7 +636,7 @@ Authorization: Bearer <token>
 
 #### Setup MFA
 ```http
-POST /api/v1/mfa/setup
+POST /api/v2/mfa/setup
 Authorization: Bearer <token>
 ```
 
@@ -654,7 +654,7 @@ Authorization: Bearer <token>
 
 #### Enable MFA
 ```http
-POST /api/v1/mfa/enable
+POST /api/v2/mfa/enable
 Authorization: Bearer <token>
 ```
 
@@ -667,7 +667,7 @@ Authorization: Bearer <token>
 
 #### Verify MFA
 ```http
-POST /api/v1/mfa/verify
+POST /api/v2/mfa/verify
 Authorization: Bearer <token>
 ```
 
@@ -690,7 +690,7 @@ BookedBarber V2 supports webhooks for real-time event notifications.
 ### Webhook Configuration
 
 ```http
-POST /api/v1/webhooks
+POST /api/v2/webhooks
 Authorization: Bearer <token>
 ```
 
@@ -763,7 +763,7 @@ List endpoints support pagination with the following parameters:
 
 Example:
 ```http
-GET /api/v1/appointments?sort_by=start_time&sort_order=asc
+GET /api/v2/appointments?sort_by=start_time&sort_order=asc
 ```
 
 ## File Uploads
@@ -771,7 +771,7 @@ GET /api/v1/appointments?sort_by=start_time&sort_order=asc
 ### Upload Profile Image
 
 ```http
-POST /api/v1/users/me/avatar
+POST /api/v2/users/me/avatar
 Authorization: Bearer <token>
 Content-Type: multipart/form-data
 
@@ -824,7 +824,7 @@ file: [binary_image_data]
 
 BookedBarber uses URL path versioning:
 
-- **Current Version**: `v1` (e.g., `/api/v1/appointments`)
+- **Current Version**: `v1` (e.g., `/api/v2/appointments`)
 - **Deprecation Policy**: 12 months notice before version retirement
 - **Backwards Compatibility**: Minor updates maintain compatibility
 

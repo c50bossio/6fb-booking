@@ -9,22 +9,22 @@ The test data service now supports creating multi-location enterprise data for t
 
 1. **Create test data with enterprise data**:
    ```bash
-   POST /api/v1/test-data/create?include_enterprise=true
+   POST /api/v2/test-data/create?include_enterprise=true
    ```
 
 2. **Create only enterprise data** (if you already have test data):
    ```bash
-   POST /api/v1/test-data/create-enterprise
+   POST /api/v2/test-data/create-enterprise
    ```
 
 3. **Refresh test data with enterprise**:
    ```bash
-   POST /api/v1/test-data/refresh?include_enterprise=true
+   POST /api/v2/test-data/refresh?include_enterprise=true
    ```
 
 4. **Check test data status** (includes enterprise counts):
    ```bash
-   GET /api/v1/test-data/status
+   GET /api/v2/test-data/status
    ```
 
 ### What Gets Created

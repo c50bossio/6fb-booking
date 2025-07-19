@@ -36,7 +36,7 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/products", tags=["products"])
+router = APIRouter(prefix="/api/v2/products", tags=["products"])
 
 
 # Product management endpoints

@@ -37,7 +37,7 @@
 4. **Configure Webhooks**
    ```bash
    # In Stripe Dashboard > Webhooks
-   # Add endpoint: https://yourdomain.com/api/v1/webhooks/stripe
+   # Add endpoint: https://yourdomain.com/api/v2/webhooks/stripe
    # Copy webhook secret:
    STRIPE_WEBHOOK_SECRET=whsec_YOUR_WEBHOOK_SECRET
    ```
@@ -186,10 +186,10 @@ SMS_APPOINTMENT_REMINDER_2H="Your appointment is in 2 hours at {time}. See you s
 2. **Configure Authorized Redirect URIs**
    ```bash
    # For development:
-   http://localhost:8000/api/v1/integrations/google/callback
+   http://localhost:8000/api/v2/integrations/google/callback
    
    # For production:
-   https://api.yourdomain.com/api/v1/integrations/google/callback
+   https://api.yourdomain.com/api/v2/integrations/google/callback
    ```
 
 3. **Update Configuration**
@@ -197,7 +197,7 @@ SMS_APPOINTMENT_REMINDER_2H="Your appointment is in 2 hours at {time}. See you s
    # Edit backend-v2/.env
    GOOGLE_CLIENT_ID=123456789-abcdef.apps.googleusercontent.com
    GOOGLE_CLIENT_SECRET=GOCSPX-your_client_secret_here
-   GOOGLE_REDIRECT_URI=https://api.yourdomain.com/api/v1/integrations/google/callback
+   GOOGLE_REDIRECT_URI=https://api.yourdomain.com/api/v2/integrations/google/callback
    
    # Enable features
    ENABLE_GOOGLE_CALENDAR=true
@@ -413,19 +413,19 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 curl http://localhost:8000/health
 
 # Frontend can reach backend
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/v2/health
 ```
 
 ### 2. Test Payment Processing
 ```bash
 # Test Stripe connection
-POST /api/v1/payments/test-connection
+POST /api/v2/payments/test-connection
 ```
 
 ### 3. Test Email Service
 ```bash
 # Send test email
-POST /api/v1/notifications/test-email
+POST /api/v2/notifications/test-email
 {
   "to": "test@yourdomain.com",
   "subject": "Test Email"
@@ -435,7 +435,7 @@ POST /api/v1/notifications/test-email
 ### 4. Test SMS Service
 ```bash
 # Send test SMS
-POST /api/v1/notifications/test-sms
+POST /api/v2/notifications/test-sms
 {
   "to": "+1234567890",
   "message": "Test SMS from BookedBarber"

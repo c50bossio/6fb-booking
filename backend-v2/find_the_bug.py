@@ -8,7 +8,7 @@ import requests
 from datetime import datetime, time
 
 # Login
-auth = requests.post("http://localhost:8000/api/v1/auth/login", 
+auth = requests.post("http://localhost:8000/api/v2/auth/login", 
                     json={"email": "test@example.com", "password": "Test123!"})
 token = auth.json()["access_token"]
 headers = {"Authorization": f"Bearer {token}"}
@@ -18,7 +18,7 @@ print("=" * 60)
 print(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 # Step 1: What does the API actually return for June 28?
-response = requests.get("http://localhost:8000/api/v1/bookings/slots?booking_date=2025-06-28", headers=headers)
+response = requests.get("http://localhost:8000/api/v2/bookings/slots?booking_date=2025-06-28", headers=headers)
 data = response.json()
 
 print(f"\n📊 API Response for June 28:")
@@ -47,7 +47,7 @@ if data.get('next_available'):
         print(f"  Slot is in future: {slot_time > current_time}")
         
         # Check if this slot is booked
-        bookings = requests.get("http://localhost:8000/api/v1/bookings/", headers=headers)
+        bookings = requests.get("http://localhost:8000/api/v2/bookings/", headers=headers)
         if bookings.status_code == 200:
             all_bookings = bookings.json()['bookings']
             slot_booked = any(b['start_time'] == na['datetime'] for b in all_bookings)
@@ -60,7 +60,7 @@ if data.get('next_available'):
 
 # Step 2: Check what the global next available says
 print("\n📊 Global Next Available:")
-global_resp = requests.get("http://localhost:8000/api/v1/bookings/slots/next-available", headers=headers)
+global_resp = requests.get("http://localhost:8000/api/v2/bookings/slots/next-available", headers=headers)
 if global_resp.status_code == 200:
     global_data = global_resp.json()
     print(f"  Date: {global_data['date']}")

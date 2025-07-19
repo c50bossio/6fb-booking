@@ -143,7 +143,7 @@ For managing business listings and reviews.
    - APIs & Services → Credentials
    - Create Credentials → OAuth client ID
    - Use same consent screen
-   - Add redirect URI: `http://localhost:8000/api/v1/integrations/gmb/callback`
+   - Add redirect URI: `http://localhost:8000/api/v2/integrations/gmb/callback`
 
 4. **Request Access** (if needed):
    - Some GMB APIs require approval
@@ -153,7 +153,7 @@ For managing business listings and reviews.
 ```env
 GMB_CLIENT_ID=xxxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
 GMB_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxxxxxxxxxx
-GMB_REDIRECT_URI=http://localhost:8000/api/v1/integrations/gmb/callback
+GMB_REDIRECT_URI=http://localhost:8000/api/v2/integrations/gmb/callback
 ```
 
 ---
@@ -181,8 +181,8 @@ For Facebook and Instagram integrations.
 4. **Add Products**:
    - Facebook Login → Set Up
    - Valid OAuth Redirect URIs:
-     - `http://localhost:8000/api/v1/integrations/meta/callback`
-     - `https://yourdomain.com/api/v1/integrations/meta/callback`
+     - `http://localhost:8000/api/v2/integrations/meta/callback`
+     - `https://yourdomain.com/api/v2/integrations/meta/callback`
 
 5. **Get Credentials**:
    - Settings → Basic
@@ -192,7 +192,7 @@ For Facebook and Instagram integrations.
 ```env
 META_CLIENT_ID=xxxxxxxxxxxxxxxxx
 META_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-META_REDIRECT_URI=http://localhost:8000/api/v1/integrations/meta/callback
+META_REDIRECT_URI=http://localhost:8000/api/v2/integrations/meta/callback
 ```
 
 ---
@@ -275,7 +275,7 @@ Already configured in the template. For production:
 
 3. **Configure Webhooks**:
    - Developers → Webhooks
-   - Add endpoint: `https://yourdomain.com/api/v1/webhooks/stripe`
+   - Add endpoint: `https://yourdomain.com/api/v2/webhooks/stripe`
    - Select events to listen to
 
 ### Configuration:

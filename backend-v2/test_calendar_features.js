@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 
 // Configuration
 const BASE_URL = 'http://localhost:3000';
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = 'http://localhost:8000/api/v2';
 const SCREENSHOT_DIR = './test-screenshots/features';
 
 // Test utilities

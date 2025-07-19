@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       
-      const backendResponse = await fetch(`${API_URL}/api/v1/privacy/consent`, {
+      const backendResponse = await fetch(`${API_URL}/api/v2/privacy/consent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     message: 'Use POST to submit consent preferences',
     endpoints: {
-      submit: 'POST /api/v1/privacy/consent',
+      submit: 'POST /api/v2/privacy/consent',
       privacy_policy: '/privacy',
       terms_of_service: '/terms'
     }

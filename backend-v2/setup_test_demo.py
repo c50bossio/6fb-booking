@@ -96,7 +96,7 @@ def test_login():
     }
     
     try:
-        response = requests.post(f"{API_BASE_URL}/api/v1/auth/login", json=login_data)
+        response = requests.post(f"{API_BASE_URL}/api/v2/auth/login", json=login_data)
         
         if response.status_code == 200:
             tokens = response.json()

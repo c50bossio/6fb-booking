@@ -12,9 +12,9 @@ def test_analytics_simple():
     print("Testing analytics endpoints without auth first...")
     
     endpoints = [
-        "/api/v1/analytics/dashboard",
-        "/api/v1/analytics/revenue", 
-        "/api/v1/analytics/appointments"
+        "/api/v2/analytics/dashboard",
+        "/api/v2/analytics/revenue", 
+        "/api/v2/analytics/appointments"
     ]
     
     for endpoint in endpoints:
@@ -47,7 +47,7 @@ def test_analytics_simple():
     
     try:
         # Check if login works at all
-        login_response = requests.post(f"{base_url}/api/v1/auth/login", json=login_data, timeout=5)
+        login_response = requests.post(f"{base_url}/api/v2/auth/login", json=login_data, timeout=5)
         print(f"Login attempt: {login_response.status_code}")
         print(f"Login response: {login_response.text}")
         

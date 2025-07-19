@@ -38,7 +38,7 @@ The BookedBarber V2 backend API testing revealed a **mixed system health status*
 ### ❌ **FAILING SYSTEMS** (Critical Issues)
 
 #### 1. **Authentication System** - 0/1 tests passed (0.0%)
-- ❌ **Login Endpoint**: 30+ second timeouts on POST `/api/v1/auth/login`
+- ❌ **Login Endpoint**: 30+ second timeouts on POST `/api/v2/auth/login`
 - ❌ **Token Generation**: Unable to obtain JWT tokens for testing
 - ❌ **Protected Endpoints**: Cannot test due to authentication failures
 
@@ -74,12 +74,12 @@ Services: 14 active services ($25-$55 range)
 ```
 Total Documented Endpoints: 341
 Main Categories:
-- Authentication (/api/v1/auth/*)
-- Appointments (/api/v1/appointments/*)
-- Payments (/api/v1/payments/*)
-- Analytics (/api/v1/analytics/*)
-- Marketing (/api/v1/marketing/*)
-- Integrations (/api/v1/integrations/*)
+- Authentication (/api/v2/auth/*)
+- Appointments (/api/v2/appointments/*)
+- Payments (/api/v2/payments/*)
+- Analytics (/api/v2/analytics/*)
+- Marketing (/api/v2/marketing/*)
+- Integrations (/api/v2/integrations/*)
 ```
 
 ### Performance Metrics
@@ -163,7 +163,7 @@ barber@example.com / barber123
 ### **Stripe Payment Integration**
 ```bash
 # Test webhook endpoints
-curl -X POST http://localhost:8000/api/v1/webhooks/stripe \
+curl -X POST http://localhost:8000/api/v2/webhooks/stripe \
   -H "Content-Type: application/json" \
   -d '{"test": "webhook"}'
 

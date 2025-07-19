@@ -77,8 +77,8 @@ After completing all 8 phases of fixes and improvements, the Six Figure Barber b
 ```
 GET /health                  → 200 OK ✅
 GET /docs                    → 200 OK ✅
-GET /api/v1/auth/me         → 403 Forbidden ✅ (correct unauthorized response)
-GET /api/v1/bookings/       → 403 Forbidden ✅ (correct unauthorized response)
+GET /api/v2/auth/me         → 403 Forbidden ✅ (correct unauthorized response)
+GET /api/v2/bookings/       → 403 Forbidden ✅ (correct unauthorized response)
 ```
 
 ### Frontend Pages Tested

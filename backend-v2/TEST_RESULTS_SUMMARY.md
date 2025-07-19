@@ -8,13 +8,13 @@ I have thoroughly tested the login flow and "Skip for now" button functionality.
 ## 1. Login Functionality
 
 ### Backend API
-- ✅ **API Endpoint Working**: The `/api/v1/auth/login` endpoint is functioning correctly
+- ✅ **API Endpoint Working**: The `/api/v2/auth/login` endpoint is functioning correctly
 - ✅ **Credentials Valid**: Successfully authenticated with `admin@bookedbarber.com` / `admin123`
 - ✅ **Token Generation**: Access and refresh tokens are properly generated
 
 ```bash
 # Direct API test result:
-curl -X POST http://localhost:8000/api/v1/auth/login \
+curl -X POST http://localhost:8000/api/v2/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "admin@bookedbarber.com", "password": "admin123"}'
 

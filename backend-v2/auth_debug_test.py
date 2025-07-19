@@ -27,7 +27,7 @@ def test_auth_timeout():
         print("2. Testing invalid login (should fail fast)...")
         start_time = time.time()
         payload = {"email": "nonexistent@example.com", "password": "wrongpassword"}
-        response = requests.post("http://localhost:8000/api/v1/auth/login", 
+        response = requests.post("http://localhost:8000/api/v2/auth/login", 
                                json=payload, timeout=10)
         elapsed = time.time() - start_time
         print(f"   ✅ Invalid login responded in {elapsed:.3f}s (Status: {response.status_code})")

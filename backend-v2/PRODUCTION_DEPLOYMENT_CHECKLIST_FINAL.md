@@ -102,11 +102,11 @@ alembic upgrade head
    - Login to dashboard.stripe.com
    - Switch to Live mode
    - Copy Secret Key and Publishable Key
-   - Configure webhook endpoint: `https://api.bookedbarber.com/api/v1/webhooks/stripe`
+   - Configure webhook endpoint: `https://api.bookedbarber.com/api/v2/webhooks/stripe`
 
 2. **Test Integration**
    ```bash
-   curl -X POST https://api.bookedbarber.com/api/v1/payments/test \
+   curl -X POST https://api.bookedbarber.com/api/v2/payments/test \
      -H "Authorization: Bearer $TEST_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{"amount": 100, "currency": "usd"}'
@@ -131,7 +131,7 @@ alembic upgrade head
 
 2. **Test SMS Delivery**
    ```bash
-   curl -X POST https://api.bookedbarber.com/api/v1/notifications/test-sms \
+   curl -X POST https://api.bookedbarber.com/api/v2/notifications/test-sms \
      -H "Authorization: Bearer $TEST_TOKEN" \
      -d '{"to": "+1234567890", "message": "Production test"}'
    ```
@@ -203,12 +203,12 @@ pytest -v --tb=short
 curl https://api.bookedbarber.com/health
 
 # Authentication flow
-curl -X POST https://api.bookedbarber.com/api/v1/auth/register \
+curl -X POST https://api.bookedbarber.com/api/v2/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "securepassword"}'
 
 # Booking creation
-curl -X POST https://api.bookedbarber.com/api/v1/appointments \
+curl -X POST https://api.bookedbarber.com/api/v2/appointments \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"service_id": 1, "datetime": "2025-07-10T10:00:00Z"}'

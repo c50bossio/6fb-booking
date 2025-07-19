@@ -59,23 +59,23 @@ The 6FB Booking System API validation has been completed with a comprehensive te
    - Response Time: ~20ms
    - Returns: `{"status":"healthy"}`
 
-2. **Authentication** - `POST /api/v1/auth/login`
+2. **Authentication** - `POST /api/v2/auth/login`
    - Status: OPERATIONAL  
    - Response Time: ~190ms
    - Returns: JWT access token + refresh token
 
-3. **User Profile** - `GET /api/v1/auth/me`
+3. **User Profile** - `GET /api/v2/auth/me`
    - Status: OPERATIONAL
    - Response Time: ~2ms
    - Returns: Complete user profile with role information
 
-4. **Booking Slots** - `GET /api/v1/bookings/slots`
+4. **Booking Slots** - `GET /api/v2/bookings/slots`
    - Status: OPERATIONAL
    - Response Time: ~50ms
    - Returns: Available time slots with business hours
    - Schema: ✅ Contains `date`, `slots`, `next_available`, `business_hours`
 
-5. **Enterprise Dashboard** - `GET /api/v1/enterprise/dashboard`
+5. **Enterprise Dashboard** - `GET /api/v2/enterprise/dashboard`
    - Status: OPERATIONAL
    - Response Time: ~100ms
    - Returns: Comprehensive business analytics
@@ -87,7 +87,7 @@ The 6FB Booking System API validation has been completed with a comprehensive te
 
 ### 1. Authentication Endpoints
 
-#### POST /api/v1/auth/login
+#### POST /api/v2/auth/login
 **Request Schema:**
 ```json
 {
@@ -106,7 +106,7 @@ The 6FB Booking System API validation has been completed with a comprehensive te
 ```
 **Status:** ✅ COMPLIANT
 
-#### GET /api/v1/auth/me
+#### GET /api/v2/auth/me
 **Response Schema:**
 ```json
 {
@@ -122,7 +122,7 @@ The 6FB Booking System API validation has been completed with a comprehensive te
 
 ### 2. Booking Endpoints
 
-#### GET /api/v1/bookings/slots
+#### GET /api/v2/bookings/slots
 **Response Schema:**
 ```json
 {
@@ -152,7 +152,7 @@ The 6FB Booking System API validation has been completed with a comprehensive te
 
 ### 3. Enterprise Endpoints
 
-#### GET /api/v1/enterprise/dashboard
+#### GET /api/v2/enterprise/dashboard
 **Response Schema:** 
 ```json
 {
@@ -370,7 +370,7 @@ No critical security or functional issues identified. The identified issues are 
 
 ### API Design
 - RESTful principles followed
-- Consistent URL patterns (/api/v1/...)
+- Consistent URL patterns (/api/v2/...)
 - Appropriate HTTP methods usage
 - Good separation of concerns (auth, bookings, enterprise)
 

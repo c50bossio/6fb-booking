@@ -54,7 +54,7 @@ class ErrorHandlingTester {
             const nonExistentPages = [
                 '/this-page-does-not-exist',
                 '/admin/non-existent-route',
-                '/api/v1/invalid-endpoint',
+                '/api/v2/invalid-endpoint',
                 '/user/99999999',
                 '/booking/invalid-id'
             ];
@@ -227,7 +227,7 @@ class ErrorHandlingTester {
             
             let requestCount = 0;
             this.page.on('request', (request) => {
-                if (request.url().includes('/api/v1/dashboard')) {
+                if (request.url().includes('/api/v2/dashboard')) {
                     requestCount++;
                     if (requestCount < 3) {
                         // Fail first 2 requests

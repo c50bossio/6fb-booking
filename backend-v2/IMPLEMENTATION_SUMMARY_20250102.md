@@ -87,10 +87,10 @@
 #### 3. Commission Router (New)
 - **Location**: `/routers/commissions.py`
 - Endpoints:
-  - GET `/api/v1/commissions` - List commissions
-  - GET `/api/v1/commissions/{barber_id}` - Detailed breakdown
-  - GET `/api/v1/commissions/preview/payout` - Preview payout amount
-  - GET `/api/v1/commissions/export` - Export as CSV
+  - GET `/api/v2/commissions` - List commissions
+  - GET `/api/v2/commissions/{barber_id}` - Detailed breakdown
+  - GET `/api/v2/commissions/preview/payout` - Preview payout amount
+  - GET `/api/v2/commissions/export` - Export as CSV
 
 ### Phase 4: Integration Updates ✅ COMPLETED
 

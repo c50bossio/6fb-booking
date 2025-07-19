@@ -121,9 +121,9 @@ RATE_LIMIT_PER_DAY=10000
 
 ### Monitoring API Endpoints
 ```bash
-GET /api/v1/cache/health      # Overall cache health
-GET /api/v1/cache/stats       # Detailed performance metrics
-GET /api/v1/cache/monitor     # Real-time monitoring data
+GET /api/v2/cache/health      # Overall cache health
+GET /api/v2/cache/stats       # Detailed performance metrics
+GET /api/v2/cache/monitor     # Real-time monitoring data
 ```
 
 ## 🚀 Production Deployment Steps
@@ -157,7 +157,7 @@ git push origin main
 ### 5. **Monitor Performance**
 ```bash
 # Check cache performance after deployment
-curl https://your-api-domain.com/api/v1/cache/health
+curl https://your-api-domain.com/api/v2/cache/health
 ```
 
 ## 🔒 Security Considerations

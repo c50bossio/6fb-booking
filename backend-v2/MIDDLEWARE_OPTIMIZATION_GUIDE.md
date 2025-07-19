@@ -36,7 +36,7 @@ else:
     # Full production middleware stack
     app.add_middleware(SentryEnhancementMiddleware, secret_key=secret_key)
     app.add_middleware(RequestValidationMiddleware)
-    app.add_middleware(APIKeyValidationMiddleware, protected_paths={"/api/v1/webhooks", "/api/v1/internal"})
+    app.add_middleware(APIKeyValidationMiddleware, protected_paths={"/api/v2/webhooks", "/api/v2/internal"})
     app.add_middleware(MultiTenancyMiddleware)
     app.add_middleware(FinancialSecurityMiddleware)
     app.add_middleware(MFAEnforcementMiddleware)

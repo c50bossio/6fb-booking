@@ -15,7 +15,7 @@ export function TestDataIndicator() {
   useEffect(() => {
     const checkTestDataStatus = async () => {
       try {
-        const data = await fetchAPI('/api/v1/test-data/status')
+        const data = await fetchAPI('/api/v2/test-data/status')
         setHasTestData(data.has_test_data)
       } catch (error) {
         console.error('Failed to check test data status:', error)

@@ -34,7 +34,7 @@ const sampleData = {
 console.log("🚀 About to call registerComplete...");
 console.log("📦 Sample data:", sampleData);
 
-// This should call /api/v1/auth/register-complete
+// This should call /api/v2/auth/register-complete
 registerComplete(sampleData).then(result => {
   console.log("✅ registerComplete succeeded:", result);
 }).catch(error => {

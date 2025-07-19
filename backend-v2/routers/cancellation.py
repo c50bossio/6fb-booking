@@ -13,7 +13,7 @@ from models.cancellation import (
 )
 from services.cancellation_service import CancellationPolicyService
 
-router = APIRouter(prefix="/api/v1/cancellation", tags=["cancellation"])
+router = APIRouter(prefix="/api/v2/cancellation", tags=["cancellation"])
 
 # Pydantic models for API
 class CancellationPolicyCreate(BaseModel):

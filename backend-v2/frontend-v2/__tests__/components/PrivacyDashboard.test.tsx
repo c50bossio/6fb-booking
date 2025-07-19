@@ -457,7 +457,7 @@ describe('PrivacyDashboard', () => {
       const confirmButton = screen.getByRole('button', { name: 'Request Deletion' })
       await user.click(confirmButton)
       
-      expect(mockFetch).toHaveBeenCalledWith('/api/v1/privacy/delete-account', {
+      expect(mockFetch).toHaveBeenCalledWith('/api/v2/privacy/delete-account', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
