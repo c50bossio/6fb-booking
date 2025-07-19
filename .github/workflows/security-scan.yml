@@ -71,7 +71,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload dependency scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dependency-scan-results
           path: |
@@ -131,7 +131,7 @@ jobs:
         uses: github/codeql-action/analyze@v2
 
       - name: Upload code scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: code-scan-results
           path: |
@@ -208,7 +208,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload container scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: container-scan-results
           path: |
@@ -245,7 +245,7 @@ jobs:
           fi
 
       - name: Upload secrets scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: secrets-scan-results
           path: |
@@ -296,7 +296,7 @@ jobs:
           checkov -d . --framework terraform,cloudformation,kubernetes,dockerfile
 
       - name: Upload compliance scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: compliance-scan-results
           path: |
@@ -314,7 +314,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download all scan results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: scan-results/
 
@@ -342,7 +342,7 @@ jobs:
           echo "status=$?" >> $GITHUB_OUTPUT
 
       - name: Upload security assessment
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-assessment
           path: |
@@ -423,10 +423,11 @@ jobs:
     steps:
       - name: Send security alert to Slack
         uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}
         with:
           status: 'warning'
           channel: '#security-alerts'
-          webhook_url: ${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}
           custom_payload: |
             {
               "blocks": [
