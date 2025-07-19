@@ -9,9 +9,11 @@ import {
 } from './AppointmentUndoRedo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, Clock, User, Trash2, Edit, RotateCcw } from 'lucide-react'
+import { Calendar, Clock, User, Trash2, Edit, RotateCcw, Loader2 } from 'lucide-react'
 import { apiRequest } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'
+import { LoadingSpinner, LoadingSkeleton } from '@/components/LoadingStates'
+import { cn } from '@/lib/utils'
 
 interface Appointment {
   id: number
@@ -27,6 +29,7 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
   const { addAction } = useAppointmentUndoRedo()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isRescheduling, setIsRescheduling] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -110,6 +113,7 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
   }
 
   const handleCancel = async () => {
+    setIsCancelling(true)
     try {
       addAction({
         type: 'cancel',
@@ -134,11 +138,16 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
         description: 'Failed to cancel appointment',
         variant: 'destructive'
       })
+    } finally {
+      setIsCancelling(false)
     }
   }
 
   return (
-    <Card>
+    <Card className={cn(
+      "transition-all duration-200",
+      (isDeleting || isRescheduling || isCancelling) && "opacity-70"
+    )}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg">{appointment.service_name}</CardTitle>
@@ -147,28 +156,43 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
               variant="ghost"
               size="icon"
               onClick={handleReschedule}
-              disabled={isRescheduling}
+              disabled={isRescheduling || isDeleting || isCancelling}
               title="Reschedule"
+              className="relative"
             >
-              <Clock className="h-4 w-4" />
+              {isRescheduling ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Clock className="h-4 w-4" />
+              )}
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleCancel}
-              disabled={appointment.status === 'cancelled'}
+              disabled={appointment.status === 'cancelled' || isCancelling || isDeleting || isRescheduling}
               title="Cancel"
+              className="relative"
             >
-              <RotateCcw className="h-4 w-4" />
+              {isCancelling ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RotateCcw className="h-4 w-4" />
+              )}
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleDelete}
-              disabled={isDeleting}
+              disabled={isDeleting || isRescheduling || isCancelling}
               title="Delete"
+              className="relative"
             >
-              <Trash2 className="h-4 w-4" />
+              {isDeleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -209,8 +233,12 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
 export default function AppointmentManagementWithUndo() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const fetchAppointments = async () => {
+    if (!loading && !isRefreshing) {
+      setIsRefreshing(true)
+    }
     try {
       const response = await apiRequest('/api/v2/appointments', {
         method: 'GET'
@@ -224,6 +252,7 @@ export default function AppointmentManagementWithUndo() {
       })
     } finally {
       setLoading(false)
+      setIsRefreshing(false)
     }
   }
 
@@ -235,15 +264,32 @@ export default function AppointmentManagementWithUndo() {
     <AppointmentUndoRedoProvider onActionComplete={fetchAppointments}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Appointment Management</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold">Appointment Management</h2>
+            {isRefreshing && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <LoadingSpinner size="sm" />
+                <span>Refreshing...</span>
+              </div>
+            )}
+          </div>
           <AppointmentUndoRedoControls />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {loading ? (
-            <div className="col-span-full text-center py-8">
-              Loading appointments...
-            </div>
+            <>
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="h-64">
+                  <CardHeader className="pb-3">
+                    <LoadingSkeleton lines={1} className="h-6" />
+                  </CardHeader>
+                  <CardContent>
+                    <LoadingSkeleton lines={4} showAvatar />
+                  </CardContent>
+                </Card>
+              ))}
+            </>
           ) : appointments.length === 0 ? (
             <div className="col-span-full text-center py-8 text-muted-foreground">
               No appointments found

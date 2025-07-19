@@ -41,8 +41,7 @@ export function SocialAccountsManager() {
       const accounts = await getLinkedAccounts()
       setLinkedAccounts(accounts)
     } catch (error) {
-      console.error('Failed to load linked accounts:', error)
-    } finally {
+      } finally {
       setIsLoading(false)
     }
   }

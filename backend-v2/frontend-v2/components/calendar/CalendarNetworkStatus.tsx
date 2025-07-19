@@ -50,8 +50,7 @@ export function CalendarNetworkStatus({
         const stats = getDebugStats()
         setDebugStats(stats)
       } catch (error) {
-        console.warn('Failed to get debug stats:', error)
-      }
+        }
     }
 
     updateStats()

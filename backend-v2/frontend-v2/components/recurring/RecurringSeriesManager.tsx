@@ -147,8 +147,7 @@ export default function RecurringSeriesManager({
         }
       }
     } catch (error) {
-      console.error('Error fetching series:', error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -179,8 +178,7 @@ export default function RecurringSeriesManager({
         setSeriesAppointments(appointments.filter((apt: any) => apt.recurring_series_id === seriesId));
       }
     } catch (error) {
-      console.error('Error fetching series appointments:', error);
-    }
+      }
   };
 
   const handleSeriesAction = async (action: string, seriesId: number) => {
@@ -231,8 +229,7 @@ export default function RecurringSeriesManager({
         }
       }
     } catch (error) {
-      console.error('Error performing series action:', error);
-    } finally {
+      } finally {
       setActionLoading(false);
     }
   };
@@ -267,11 +264,10 @@ export default function RecurringSeriesManager({
         setSelectedAppointments([]);
         setActionData({});
         
-        console.log(`Successfully ${actionData.action}d ${result.affected_appointments.length} appointment(s)`);
+        `);
       }
     } catch (error) {
-      console.error('Error performing appointment action:', error);
-    } finally {
+      } finally {
       setActionLoading(false);
     }
   };
@@ -513,8 +509,7 @@ export default function RecurringSeriesManager({
                         size="sm"
                         onClick={() => {
                           // Navigate to appointment details
-                          console.log('View appointment details:', appointment.appointment_id);
-                        }}
+                          }}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

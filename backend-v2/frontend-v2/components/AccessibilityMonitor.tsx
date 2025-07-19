@@ -39,8 +39,7 @@ export function AccessibilityMonitor() {
     setIsAutoFixing(false)
     
     if (fixedCount > 0) {
-      console.log(`Fixed ${fixedCount} accessibility issues`)
-    }
+      }
   }
 
   const exportReport = () => {

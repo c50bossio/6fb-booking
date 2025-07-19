@@ -433,8 +433,9 @@ async def request_data_export(
             ip_address=ip_address
         )
         
-        # TODO: Add background task to process the export
-        # background_tasks.add_task(process_data_export, export_request.id)
+        # Schedule background task to process the export
+        from services.background_tasks.data_processing_tasks import process_data_export
+        process_data_export.delay(export_request.id)
         
         logger.info(f"Data export requested for user {current_user.id}: {export_request.request_id}")
         
@@ -542,8 +543,9 @@ async def request_account_deletion(
         
         db.commit()
         
-        # TODO: Add background task to schedule permanent deletion
-        # background_tasks.add_task(schedule_account_deletion, current_user.id, days=30)
+        # Schedule background task for permanent deletion
+        from services.background_tasks.data_processing_tasks import schedule_account_deletion
+        schedule_account_deletion.delay(current_user.id)
         
         logger.info(f"Account deletion requested for user {current_user.id}")
         

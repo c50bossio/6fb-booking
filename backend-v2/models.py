@@ -275,6 +275,14 @@ class User(Base):
         
         self.role_migrated = True
         return True
+    
+    # GDPR and Deletion Tracking Fields
+    
+    # Account deactivation and deletion tracking
+    deactivated_at = Column(DateTime, nullable=True)  # When user account was deactivated
+    deletion_scheduled_at = Column(DateTime, nullable=True, index=True)  # When deletion is scheduled for
+    deleted_at = Column(DateTime, nullable=True, index=True)  # When account was actually deleted
+    deletion_metadata = Column(Text, nullable=True)  # JSON metadata about deletion process
 
 
 class Appointment(Base):

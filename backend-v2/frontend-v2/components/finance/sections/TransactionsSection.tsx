@@ -79,8 +79,7 @@ export default function TransactionsSection({ userRole, dateRange }: Transaction
         setPayments(response.payments || [])
         setTotalPages(response.total_pages || 1)
       } catch (error) {
-        console.error('Error fetching transactions:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }
@@ -114,8 +113,7 @@ export default function TransactionsSection({ userRole, dateRange }: Transaction
         window.URL.revokeObjectURL(url)
       }
     } catch (error) {
-      console.error('Error exporting transactions:', error)
-    }
+      }
   }
 
   const filteredPayments = payments.filter(payment => {

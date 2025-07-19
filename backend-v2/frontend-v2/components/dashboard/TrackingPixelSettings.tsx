@@ -91,7 +91,6 @@ export default function TrackingPixelSettings() {
       const response = await getCustomerPixels()
       setPixels(response)
     } catch (error) {
-      console.error('Failed to fetch pixels:', error)
       toast.error('Failed to load tracking pixels')
     } finally {
       setLoading(false)
@@ -105,7 +104,6 @@ export default function TrackingPixelSettings() {
         const response = await getPixelInstructions(type)
         return { type, data: response }
       } catch (error) {
-        console.error(`Failed to fetch ${type} instructions:`, error)
         return null
       }
     })
@@ -136,7 +134,6 @@ export default function TrackingPixelSettings() {
         setLastSaved(new Date())
         // Only show error toasts, not success (less intrusive)
       } catch (error: any) {
-        console.error('Failed to auto-save pixels:', error)
         const errorMessage = error.message || 'Failed to save tracking pixels'
         toast.error(errorMessage)
       } finally {
@@ -158,7 +155,6 @@ export default function TrackingPixelSettings() {
         }
       })
     } catch (error) {
-      console.error('Failed to test pixels:', error)
       toast.error('Failed to test tracking pixels')
     } finally {
       setTesting(false)
@@ -282,7 +278,6 @@ export default function TrackingPixelSettings() {
           }))
         }
       } catch (error) {
-        console.error(`Failed to test ${field}:`, error)
         setTestingStatus(prev => ({
           ...prev,
           [field]: 'error'
@@ -641,7 +636,6 @@ export default function TrackingPixelSettings() {
       await fetchPixels()
       toast.success(`${pixelType.toUpperCase()} pixel removed`)
     } catch (error) {
-      console.error('Failed to remove pixel:', error)
       toast.error('Failed to remove pixel')
     }
   }

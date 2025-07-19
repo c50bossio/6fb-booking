@@ -101,8 +101,7 @@ export function ErrorHandler({
       await action.action()
       onAction?.(errorId, actionId)
     } catch (err) {
-      console.error('Error action failed:', err)
-    } finally {
+      } finally {
       // Clear loading state
       setActionStates(prev => ({
         ...prev,

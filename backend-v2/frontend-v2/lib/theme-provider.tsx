@@ -80,8 +80,7 @@ export function ThemeProvider({
       localStorage.setItem(storageKey, newTheme);
     } catch (e) {
       // Handle localStorage errors
-      console.warn('Failed to save theme preference:', e);
-    }
+      }
 
     // Apply theme
     const resolved = newTheme === 'system' ? getSystemTheme() : newTheme;

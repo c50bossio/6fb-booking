@@ -54,7 +54,6 @@ export default function TimeOffManager({ barberId, onSuccess, onError }: TimeOff
       
       setTimeOffRequests(timeOff)
     } catch (error) {
-      console.error('Failed to load time off:', error)
       onError('Failed to load time off requests')
     } finally {
       setLoading(false)
@@ -95,7 +94,6 @@ export default function TimeOffManager({ barberId, onSuccess, onError }: TimeOff
       setShowAddModal(false)
       loadTimeOff()
     } catch (error: any) {
-      console.error('Error creating time off:', error)
       const errorMessage = error?.message || 'Failed to create time off request'
       onError(errorMessage)
     }

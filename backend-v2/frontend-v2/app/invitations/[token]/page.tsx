@@ -55,7 +55,6 @@ export default function AcceptInvitationPage({ params }: { params: { token: stri
         setName(`${response.first_name || ""} ${response.last_name || ""}`.trim())
       }
     } catch (error: any) {
-      console.error("Failed to fetch invitation:", error)
       setError(error.response?.data?.detail || "Invalid or expired invitation")
     } finally {
       setLoading(false)

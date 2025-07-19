@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Clock, Star, Shield, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEnhancedConversionTracking } from '@/hooks/useEnhancedConversionTracking'
 import { useCustomerPixels } from '@/hooks/useCustomerPixels'
+import { useToast } from '@/hooks/use-toast'
 
 interface ConversionOptimizedBookingProps {
   organizationSlug: string
@@ -85,6 +86,7 @@ export default function ConversionOptimizedBooking({
   primaryColor = '#000000',
   accentColor = '#FFD700'
 }: ConversionOptimizedBookingProps) {
+  const { toast } = useToast()
   // Enhanced conversion tracking
   const { trackEvent, trackPageView, trackBeginCheckout, trackAddPaymentInfo, trackPurchase } = useEnhancedConversionTracking(organizationSlug)
   
@@ -187,7 +189,10 @@ export default function ConversionOptimizedBooking({
     })
     
     // Show success message
-    alert('Booking confirmed! You will receive a confirmation email shortly.')
+    toast({
+      title: "Booking Confirmed!",
+      description: 'You will receive a confirmation email shortly.',
+    })
   }
 
   const selectedServiceData = selectedService ? PREMIUM_SERVICES.find(s => s.id === selectedService) : null

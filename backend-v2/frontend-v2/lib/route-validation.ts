@@ -221,9 +221,7 @@ export function debugRoutes(): void {
   
   console.group('🛣️ Route Validation Debug')
   
-  console.log('Valid Routes:', Object.values(VALID_ROUTES))
-  console.log('Forbidden Routes:', FORBIDDEN_ROUTES)
-  
+  )
   // Test some common routes
   const testRoutes = ['/', '/login', '/register', '/demo', '/auth/signup', '/invalid-route']
   
@@ -232,12 +230,7 @@ export function debugRoutes(): void {
     const redirect = getRedirectTarget(route)
     const final = validateAndRedirect(route)
     
-    console.log(`Route: ${route}`)
-    console.log(`  Valid: ${isValid}`)
-    console.log(`  Redirect: ${redirect || 'none'}`)
-    console.log(`  Final: ${final}`)
-    console.log('')
-  })
+    })
   
   console.groupEnd()
 }
@@ -262,8 +255,7 @@ export function validateLinkHref(href: string): string {
   const validatedRoute = validateAndRedirect(href)
   
   if (process.env.NODE_ENV === 'development' && validatedRoute !== href) {
-    console.warn(`Link href '${href}' was redirected to '${validatedRoute}'`)
-  }
+    }
   
   return validatedRoute
 }

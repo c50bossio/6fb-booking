@@ -53,7 +53,6 @@ export default function CalendarSettingsPage() {
         router.push('/dashboard')
       }
     } catch (error) {
-      console.error('Error checking user auth:', error)
       router.push('/login')
     }
   }
@@ -71,7 +70,6 @@ export default function CalendarSettingsPage() {
         setSelectedCalendarId(response.selected_calendar_id || null)
       }
     } catch (err) {
-      console.error('Error checking calendar status:', err)
       setError('Failed to check calendar connection status')
     } finally {
       setLoading(false)
@@ -86,7 +84,6 @@ export default function CalendarSettingsPage() {
       // Redirect to Google OAuth
       window.location.href = authorization_url
     } catch (err) {
-      console.error('Error initiating calendar connection:', err)
       setError('Failed to start calendar connection')
       setConnecting(false)
     }
@@ -100,7 +97,6 @@ export default function CalendarSettingsPage() {
         setCalendars([])
         setSelectedCalendarId(null)
       } catch (err) {
-        console.error('Error disconnecting calendar:', err)
         setError('Failed to disconnect calendar')
       }
     }
@@ -112,7 +108,6 @@ export default function CalendarSettingsPage() {
       setSelectedCalendarId(calendarId)
       setError(null)
     } catch (err) {
-      console.error('Error selecting calendar:', err)
       setError('Failed to select calendar')
     }
   }

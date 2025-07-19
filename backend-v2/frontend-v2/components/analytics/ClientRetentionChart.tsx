@@ -50,7 +50,6 @@ export default function ClientRetentionChart({ userId, timeRange }: ClientRetent
         )
         setAnalytics(data)
       } catch (err) {
-        console.error('Failed to fetch client retention analytics:', err)
         const errorMessage = err instanceof Error ? err.message : 'Failed to load retention data'
         setError(errorMessage)
       } finally {

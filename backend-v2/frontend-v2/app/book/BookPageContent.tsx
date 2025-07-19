@@ -27,7 +27,6 @@ import { useTimeSlotsCache } from '@/hooks/useTimeSlotsCache'
 import CachePerformanceIndicator from '@/components/CachePerformanceIndicator'
 import { keyboardHelpers, screenReaderHelpers, useScreenReader, generateId } from '@/lib/accessibility'
 
-
 const SERVICES = [
   { id: 'Haircut', name: 'Haircut', duration: '30 min', price: '$30', amount: 30 },
   { id: 'Shave', name: 'Shave', duration: '20 min', price: '$20', amount: 20 },
@@ -59,8 +58,7 @@ export default function BookPage() {
     onCacheUpdate: () => {
       // Optional: show a subtle indicator that data was refreshed
       if (refreshing) {
-        console.log('📡 Cache refreshed in background')
-      }
+        }
     }
   })
   const [quickBooking, setQuickBooking] = useState(false)
@@ -135,7 +133,6 @@ export default function BookPage() {
         })
         setBookingDates(dates)
       } catch (err) {
-        console.log('User not authenticated - guest booking mode')
         setIsAuthenticated(false)
         // Don't redirect - allow guest booking
       }
@@ -276,7 +273,6 @@ export default function BookPage() {
         }
       }
     } catch (err: any) {
-      console.error('Quick booking failed:', err)
       setError(getErrorMessage(err))
     } finally {
       setQuickBooking(false)
@@ -340,7 +336,6 @@ export default function BookPage() {
         }
       }
     } catch (err: any) {
-      console.error('Booking failed:', err)
       setError(getErrorMessage(err))
     } finally {
       setSubmitting(false)

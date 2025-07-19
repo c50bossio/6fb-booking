@@ -112,8 +112,7 @@ export default function AgentAnalyticsPage() {
       
       setAnalytics(transformedAnalytics)
     } catch (error) {
-      console.error('Failed to load analytics:', error)
-    } finally {
+      } finally {
       setLoading(false)
     }
   }

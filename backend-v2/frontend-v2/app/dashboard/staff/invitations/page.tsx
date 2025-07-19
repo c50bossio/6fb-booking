@@ -117,7 +117,6 @@ export default function StaffInvitationsPage() {
       setPendingCount(response.pending_count)
       setAcceptedCount(response.accepted_count)
     } catch (error) {
-      console.error("Failed to fetch invitations:", error)
       toast({
         title: "Error",
         description: "Failed to load invitations",

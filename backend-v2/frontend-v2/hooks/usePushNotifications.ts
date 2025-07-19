@@ -48,8 +48,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
           setIsSubscribed(subscribed)
         }
       } catch (error) {
-        console.error('Failed to check notification status:', error)
-      } finally {
+        } finally {
         setIsLoading(false)
       }
     }
@@ -127,7 +126,6 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   // Show a notification
   const showNotification = useCallback((options: NotificationOptions) => {
     if (!isSupported || permission !== 'granted') {
-      console.warn('Cannot show notification: not supported or permission not granted')
       return
     }
 

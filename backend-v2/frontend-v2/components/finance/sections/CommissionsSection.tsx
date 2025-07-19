@@ -34,8 +34,7 @@ export default function CommissionsSection({ userRole }: CommissionsSectionProps
         }
         setCommissionsData(mockData)
       } catch (error) {
-        console.error('Error fetching commissions:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }

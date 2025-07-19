@@ -80,7 +80,6 @@ export function PaymentSetup({
       
       setStep('payment')
     } catch (error) {
-      console.error('Failed to start trial:', error)
       setErrors({ general: 'Failed to start trial. Please try again.' })
     } finally {
       setLoading(false)
@@ -107,7 +106,6 @@ export function PaymentSetup({
         paymentMethodAdded: true
       })
     } catch (error) {
-      console.error('Payment setup error:', error)
       setErrors({ general: 'Failed to complete payment setup' })
     } finally {
       setLoading(false)

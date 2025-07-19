@@ -31,8 +31,7 @@ export interface StripeError {
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
 if (!stripePublishableKey) {
-  console.warn('Stripe publishable key not found. Payment features will be disabled.')
-}
+  }
 
 // Singleton instance of Stripe
 let stripePromise: Promise<Stripe | null> | null = null

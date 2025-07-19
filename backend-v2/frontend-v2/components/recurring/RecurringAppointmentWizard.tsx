@@ -231,7 +231,6 @@ export default function RecurringAppointmentWizard({
       });
 
     } catch (error) {
-      console.error('Error generating preview:', error);
       setErrors({ preview: 'Failed to generate preview' });
     } finally {
       setLoading(false);

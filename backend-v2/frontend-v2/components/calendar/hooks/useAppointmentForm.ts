@@ -155,7 +155,6 @@ export function useTimeSlots() {
       // For now, just set empty array
       setSlots([])
     } catch (err) {
-      console.error('Failed to load time slots:', err)
       setError('Failed to load available times')
     } finally {
       setLoading(false)

@@ -97,8 +97,7 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
         setServices(servicesData)
         setBarbers(barbersData)
       } catch (err) {
-        console.error('Failed to fetch data:', err)
-      }
+        }
     }
     fetchData()
     
@@ -176,7 +175,6 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
       const previewData = await previewPatternOccurrences(pattern)
       setPreview(previewData)
     } catch (err) {
-      console.error('Failed to generate preview:', err)
       setError('Failed to generate preview. Please try again.')
     } finally {
       setLoadingPreview(false)
@@ -205,7 +203,6 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
       await createRecurringPattern(pattern)
       onPatternCreated()
     } catch (err: any) {
-      console.error('Failed to create pattern:', err)
       setError(err.message || 'Failed to create recurring pattern. Please try again.')
     } finally {
       setSubmitting(false)

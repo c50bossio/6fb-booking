@@ -21,8 +21,7 @@ export default function ClientsSection({ userRole }: ClientsSectionProps) {
         const response = await fetchAPI('/api/v2/clients')
         setClients(response.clients || [])
       } catch (error) {
-        console.error('Error fetching clients:', error)
-      } finally {
+        } finally {
         setLoading(false)
       }
     }

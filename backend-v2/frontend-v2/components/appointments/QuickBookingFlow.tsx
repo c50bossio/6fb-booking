@@ -125,7 +125,6 @@ export default function QuickBookingFlow({
         setFrequentServices(servicesData.slice(0, 3))
       }
     } catch (err) {
-      console.error('Failed to load services:', err)
       toast({
         title: 'Error',
         description: 'Failed to load services. Please try again.',
@@ -157,7 +156,6 @@ export default function QuickBookingFlow({
         setSelectedTime(available[0].time)
       }
     } catch (err) {
-      console.error('Failed to load time slots:', err)
       toast({
         title: 'Error',
         description: 'Failed to load available times.',
@@ -174,8 +172,7 @@ export default function QuickBookingFlow({
       const response = await searchClients(searchTerm)
       setClients(response.clients || [])
     } catch (err) {
-      console.error('Failed to search clients:', err)
-    } finally {
+      } finally {
       setLoadingClients(false)
     }
   }
@@ -209,7 +206,6 @@ export default function QuickBookingFlow({
       
       onSuccess?.(result)
     } catch (err: any) {
-      console.error('Failed to create appointment:', err)
       toast({
         title: 'Error',
         description: err.message || 'Failed to create appointment.',

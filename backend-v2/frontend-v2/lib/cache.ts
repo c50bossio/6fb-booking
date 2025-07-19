@@ -261,8 +261,7 @@ class IntelligentCache {
         return data
       })
       .catch(error => {
-        console.warn(`Background refresh failed for ${key}:`, error)
-      })
+        })
       .finally(() => {
         this.refreshPromises.delete(key)
       })

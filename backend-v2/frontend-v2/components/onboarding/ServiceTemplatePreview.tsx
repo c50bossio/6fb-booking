@@ -51,8 +51,7 @@ export const ServiceTemplatePreview: React.FC<ServiceTemplatePreviewProps> = ({
       await onApply(template)
       onClose()
     } catch (error) {
-      console.error('Error applying template:', error)
-    } finally {
+      } finally {
       setApplyLoading(false)
     }
   }

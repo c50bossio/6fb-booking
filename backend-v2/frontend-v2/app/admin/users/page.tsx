@@ -56,8 +56,7 @@ function AdminUsersPageContent() {
         role: user.role || 'user'
       })
     } catch (error) {
-      console.error('Failed to load current user:', error)
-    }
+      }
   }
 
   const loadUsers = async () => {

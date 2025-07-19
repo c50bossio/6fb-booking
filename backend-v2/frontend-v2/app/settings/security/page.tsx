@@ -308,8 +308,7 @@ export default function SecuritySettingsPage() {
         email="user@example.com"
         onResend={async () => {
           // Mock resend
-          console.log('Resending code...')
-        }}
+          }}
       />
     </div>
   )

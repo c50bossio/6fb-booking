@@ -103,8 +103,7 @@ export default function PaymentsPage() {
       setPayments(response.payments);
       setTotalPages(response.total_pages);
     } catch (error) {
-      console.error('Error fetching payments:', error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -133,8 +132,7 @@ export default function PaymentsPage() {
         gift_certificate_usage: report.revenue.gift_certificates_used,
       });
     } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
+      }
   };
 
   const handleRefund = async (payment: Payment) => {
@@ -175,8 +173,7 @@ export default function PaymentsPage() {
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Error exporting payments:', error);
-    }
+      }
   };
 
   const filteredPayments = payments.filter(payment => {

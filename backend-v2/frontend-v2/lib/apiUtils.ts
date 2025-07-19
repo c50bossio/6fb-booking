@@ -91,7 +91,7 @@ export class APIPerformanceMonitor {
       
       // Log slow requests
       if (duration > 1000) {
-        console.warn(`⚠️ Slow API call to ${endpoint}: ${duration.toFixed(2)}ms`)
+        }ms`)
       }
     }
   }
@@ -125,8 +125,7 @@ export class APIPerformanceMonitor {
 
   static logSummary() {
     const summary = this.getMetrics()
-    console.log('📊 API Performance Summary:', summary)
-  }
+    }
 }
 
 // Validation helper

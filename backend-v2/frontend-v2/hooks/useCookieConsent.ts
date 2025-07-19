@@ -64,7 +64,6 @@ export const useCookieConsent = () => {
           }
         }
       } catch (error) {
-        console.warn('Error loading cookie consent preferences:', error)
         localStorage.removeItem(STORAGE_KEY)
       } finally {
         setIsLoading(false)
@@ -101,11 +100,9 @@ export const useCookieConsent = () => {
         })
       } catch (apiError) {
         // API save failed, but localStorage succeeded
-        console.warn('Failed to save consent to API:', apiError)
-      }
+        }
       
     } catch (error) {
-      console.error('Error saving cookie consent preferences:', error)
       throw error
     } finally {
       setIsSaving(false)
@@ -199,8 +196,7 @@ export const useCookieConsent = () => {
         const newHistory = [...history, preferences].slice(-10) // Keep last 10 entries
         localStorage.setItem('cookie-consent-history', JSON.stringify(newHistory))
       } catch (error) {
-        console.warn('Error saving consent history:', error)
-      }
+        }
     }
   }, [preferences, getConsentHistory])
 

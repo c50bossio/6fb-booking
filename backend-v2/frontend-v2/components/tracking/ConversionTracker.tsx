@@ -122,18 +122,14 @@ export const trackConversion = (
   params?: ConversionEventParams
 ) => {
   if (debugMode) {
-    console.log('[ConversionTracker] Event:', eventType, params)
-  }
+    }
   
   // Track via scriptLoader (handles consent internally)
   trackScriptEvent(eventType, params)
   
   // Log to console in development
   if (process.env.NODE_ENV === 'development') {
-    console.log('🎯 Conversion Event:', {
-      type: eventType,
-      params,
-      timestamp: new Date().toISOString(),
+    .toISOString(),
     })
   }
 }
@@ -158,7 +154,6 @@ export const trackEnhancedPageView = (params?: {
 export const trackBookingPurchase = (purchaseData: PurchaseEventParams) => {
   // Ensure required fields
   if (!purchaseData.transaction_id || !purchaseData.value || !purchaseData.items?.length) {
-    console.error('[ConversionTracker] Invalid purchase data:', purchaseData)
     return
   }
   
@@ -224,15 +219,13 @@ export const useConversionTracking = (options?: { debug?: boolean }) => {
     
     if (requiresAnalytics && !canLoadAnalytics) {
       if (debugMode) {
-        console.log('[ConversionTracker] Analytics consent required for:', eventType)
-      }
+        }
       return
     }
     
     if (requiresMarketing && !canLoadMarketing) {
       if (debugMode) {
-        console.log('[ConversionTracker] Marketing consent required for:', eventType)
-      }
+        }
       return
     }
     

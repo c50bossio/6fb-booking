@@ -94,7 +94,6 @@ export async function subscribeToPushNotifications(userId: string): Promise<Push
 
     return subscription
   } catch (error) {
-    console.error('Failed to subscribe to push notifications:', error)
     throw error
   }
 }
@@ -144,7 +143,6 @@ export async function unsubscribeFromPushNotifications(userId: string): Promise<
       await removePushSubscription(userId, subscription.endpoint)
     }
   } catch (error) {
-    console.error('Failed to unsubscribe from push notifications:', error)
     throw error
   }
 }
@@ -201,7 +199,6 @@ export async function getCurrentPushSubscription(): Promise<PushSubscription | n
 // Show a local notification (for testing)
 export function showLocalNotification(options: NotificationOptions): void {
   if (!isPushNotificationSupported() || Notification.permission !== 'granted') {
-    console.warn('Cannot show notification: permission not granted')
     return
   }
 

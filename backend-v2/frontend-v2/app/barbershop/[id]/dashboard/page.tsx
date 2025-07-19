@@ -129,7 +129,6 @@ export default function BarbershopDashboardPage() {
         
         setUser(userData)
       } catch (error) {
-        console.error('Auth check failed:', error)
         router.push('/login')
       } finally {
         setAuthLoading(false)

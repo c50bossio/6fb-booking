@@ -206,8 +206,7 @@ export function getAriaRequired(required: boolean): 'true' | undefined {
 export function ensureTouchTarget(element: HTMLElement, minSize: number = 44): void {
   const rect = element.getBoundingClientRect()
   if (rect.width < minSize || rect.height < minSize) {
-    console.warn(`Touch target is smaller than ${minSize}px:`, element)
-  }
+    }
 }
 
 // High contrast mode detection
@@ -920,12 +919,11 @@ export const a11yTestUtils = {
     if (audit.issues.length > 0) {
       console.group('🚨 Accessibility Violations Found')
       audit.issues.forEach(({ element, issue, severity }) => {
-        console.warn(`[${severity.toUpperCase()}] ${issue}`, element)
+        }] ${issue}`, element)
       })
       console.groupEnd()
     } else {
-      console.log('✅ No accessibility violations found')
-    }
+      }
   },
 
   /**
@@ -975,12 +973,11 @@ export const a11yTestUtils = {
     if (violations.length > 0) {
       console.group('🎨 Color Contrast Violations')
       violations.forEach(({ element, ratio, required }) => {
-        console.warn(`Contrast ratio ${ratio.toFixed(2)} is below required ${required}:1`, element)
+        } is below required ${required}:1`, element)
       })
       console.groupEnd()
     } else {
-      console.log('✅ All color contrasts meet WCAG AA standards')
-    }
+      }
   },
 }
 

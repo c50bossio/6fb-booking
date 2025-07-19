@@ -146,9 +146,7 @@ export const ContrastValidators = {
     const result = validateContrast(bgColor, textColor, 'Analytics Card')
     
     if (!result.passesAA) {
-      console.warn(`Analytics card contrast issue: ${result.recommendation}`)
-      console.warn('Consider using SAFE_DARK_MODE_PAIRS.cardDefault or cardSecondary')
-    }
+      }
     
     return result
   },
@@ -160,9 +158,7 @@ export const ContrastValidators = {
     const result = validateContrast(bgColor, textColor, 'Progress Display')
     
     if (!result.passesAA) {
-      console.warn(`Progress display contrast issue: ${result.recommendation}`)
-      console.warn('Use dark:bg-gray-700 with dark:text-white for progress bars')
-    }
+      }
     
     return result
   },
@@ -174,9 +170,7 @@ export const ContrastValidators = {
     const result = validateContrast(bgColor, textColor, 'Action Item')
     
     if (!result.passesAA) {
-      console.warn(`Action item contrast issue: ${result.recommendation}`)
-      console.warn('Use dark:bg-gray-800 with dark:text-white for action items')
-    }
+      }
     
     return result
   }
@@ -194,14 +188,12 @@ export function auditComponentContrast(componentName: string, colorPairs: ColorP
     const result = validateContrast(pair.background, pair.text, pair.context)
     
     if (result.passesAA) {
-      console.log(`✅ Pair ${index + 1}: ${result.ratio} (${pair.context || 'No context'})`)
+      `)
     } else {
-      console.error(`❌ Pair ${index + 1}: ${result.ratio} - ${result.recommendation}`)
       allPassed = false
     }
   })
   
-  console.log(allPassed ? '🎉 All color pairs pass WCAG AA standards!' : '⚠️  Some color pairs need attention')
   console.groupEnd()
   
   return allPassed

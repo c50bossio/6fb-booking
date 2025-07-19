@@ -46,8 +46,7 @@ export function reportBookingError(
   level: 'error' | 'warning' | 'fatal' = 'error'
 ): void {
   // Development stub - log to console instead
-  console.error('Booking Error:', error.message, context)
-}
+  }
 
 export function reportPaymentError(
   error: Error,
@@ -55,8 +54,7 @@ export function reportPaymentError(
   level: 'error' | 'warning' | 'fatal' = 'error'
 ): void {
   // Development stub - log to console instead
-  console.error('Payment Error:', error.message, paymentContext)
-}
+  }
 
 export function reportApiError(
   error: Error,
@@ -64,8 +62,7 @@ export function reportApiError(
   level: 'error' | 'warning' | 'fatal' = 'error'
 ): void {
   // Development stub - log to console instead
-  console.error('API Error:', error.message, apiContext)
-}
+  }
 
 export async function trackPerformance<T>(
   operation: string,
@@ -89,8 +86,7 @@ export function captureUserFeedback(
   eventId?: string
 ): void {
   // Development stub - log to console
-  console.log('User Feedback:', feedback)
-}
+  }
 
 export function initializeSentryContext(context: any): void {
   // Development stub - no tracking
@@ -111,14 +107,22 @@ export async function withSentryContext<T>(
 
 // Minimal Sentry-like export for compatibility
 export const Sentry = {
-  captureException: (error: Error) => console.error('Exception:', error),
-  captureMessage: (message: string) => console.log('Message:', message),
+  captureException: (error: Error) => ,
+  captureMessage: (message: string) => ,
   addBreadcrumb: (breadcrumb: any) => {},
   setUser: (user: any) => {},
   setTag: (key: string, value: any) => {},
   setContext: (key: string, context: any) => {},
-  withScope: (fn: (scope: any) => void) => fn({}),
+  withScope: (fn: (scope: any) => any) => {
+    const scope = {
+      setTag: (key: string, value: any) => {},
+      setContext: (key: string, context: any) => {},
+      setUser: (user: any) => {},
+      addBreadcrumb: (breadcrumb: any) => {},
+    }
+    return fn(scope)
+  },
   startSpan: (options: any, fn: () => any) => fn(),
   lastEventId: () => 'dev-mode',
-  captureUserFeedback: (feedback: any) => console.log('Feedback:', feedback),
+  captureUserFeedback: (feedback: any) => ,
 }

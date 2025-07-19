@@ -90,8 +90,6 @@ export default function ClientRegistrationPage() {
         router.push('/client-dashboard')
       }
     } catch (error: any) {
-      console.error('Registration error:', error)
-      
       let errorMessage = 'Failed to create account. Please try again.'
       
       if (error.response?.data?.detail) {

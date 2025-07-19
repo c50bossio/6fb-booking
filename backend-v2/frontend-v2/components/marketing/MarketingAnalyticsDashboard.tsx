@@ -130,7 +130,6 @@ export default function MarketingAnalyticsDashboard({ organizationId }: Marketin
       setData(analyticsData)
       
     } catch (err) {
-      console.error('Error fetching marketing analytics:', err)
       setError(err instanceof Error ? err.message : 'Failed to load analytics')
     } finally {
       setLoading(false)
@@ -156,11 +155,9 @@ export default function MarketingAnalyticsDashboard({ organizationId }: Marketin
       if (response.ok) {
         const result = await response.json()
         // TODO: Handle actual file download
-        console.log('Export prepared:', result)
-      }
+        }
     } catch (err) {
-      console.error('Export failed:', err)
-    }
+      }
   }
 
   useEffect(() => {

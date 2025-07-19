@@ -111,7 +111,6 @@ export default function FinancialAnalyticsPage() {
         await new Promise(resolve => setTimeout(resolve, 800))
 
       } catch (err) {
-        console.error('Failed to load financial analytics:', err)
         setError(err instanceof Error ? err.message : 'Failed to load analytics data')
       } finally {
         setLoading(false)

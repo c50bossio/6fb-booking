@@ -124,8 +124,7 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
             }),
           });
         } catch (notificationError) {
-          console.error('Failed to send notification:', notificationError);
-        }
+          }
       }
       
       onComplete();

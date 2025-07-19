@@ -45,8 +45,7 @@ export default function AITimeSuggestions({
         const response = await getMyBookings()
         setClientHistory(response.bookings || [])
       } catch (error) {
-        console.log('No client history available - using default suggestions')
-      }
+        }
     }
     fetchClientHistory()
   }, [])
@@ -77,7 +76,6 @@ export default function AITimeSuggestions({
 
         setSuggestions(suggestedSlots)
       } catch (error) {
-        console.error('Failed to generate AI suggestions:', error)
         setSuggestions([])
       } finally {
         setLoading(false)

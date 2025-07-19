@@ -24,11 +24,7 @@ export async function POST(request: NextRequest) {
     // 3. Create audit trail
     
     // For now, just acknowledge the consent was received
-    console.log('Cookie consent received:', {
-      categories,
-      consentDate,
-      version,
-      userAgent: request.headers.get('user-agent'),
+    ,
       ip: request.ip || request.headers.get('x-forwarded-for'),
       timestamp: new Date().toISOString()
     })
@@ -57,10 +53,8 @@ export async function POST(request: NextRequest) {
       })
 
       if (!backendResponse.ok) {
-        console.warn('Failed to forward consent to backend:', backendResponse.status)
-      }
+        }
     } catch (backendError) {
-      console.warn('Backend consent forwarding failed:', backendError)
       // Don't fail the request if backend is down
     }
 
@@ -71,7 +65,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error handling consent:', error)
     return NextResponse.json(
       { error: 'Failed to process consent preferences' },
       { status: 500 }

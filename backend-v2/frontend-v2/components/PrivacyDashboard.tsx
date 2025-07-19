@@ -21,12 +21,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ConfirmationDialog } from '@/components/ui/dialog'
 import useCookieConsent, { type CookieCategories, type ConsentPreferences } from '@/hooks/useCookieConsent'
 import { initializeScripts } from '@/lib/scriptLoader'
+import { useToast } from '@/hooks/use-toast'
 
 interface PrivacyDashboardProps {
   className?: string
 }
 
 const PrivacyDashboard: React.FC<PrivacyDashboardProps> = ({ className }) => {
+  const { toast } = useToast()
   const {
     preferences,
     isLoading,
@@ -87,8 +89,7 @@ const PrivacyDashboard: React.FC<PrivacyDashboardProps> = ({ className }) => {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Error exporting data:', error)
-    } finally {
+      } finally {
       setIsExporting(false)
     }
   }
@@ -107,14 +108,20 @@ const PrivacyDashboard: React.FC<PrivacyDashboardProps> = ({ className }) => {
 
       if (response.ok) {
         // Account deletion initiated
-        alert('Account deletion request submitted. You will receive an email with further instructions.')
+        toast({
+          title: "Success",
+          description: 'Account deletion request submitted. You will receive an email with further instructions.',
+        })
         setShowDeleteDialog(false)
       } else {
         throw new Error('Failed to submit deletion request')
       }
     } catch (error) {
-      console.error('Error requesting account deletion:', error)
-      alert('Failed to submit deletion request. Please contact support.')
+      toast({
+        title: "Error",
+        description: 'Failed to submit deletion request. Please contact support.',
+        variant: "destructive",
+      })
     } finally {
       setIsDeleting(false)
     }

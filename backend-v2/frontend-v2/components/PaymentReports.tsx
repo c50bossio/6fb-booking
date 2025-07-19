@@ -97,8 +97,7 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
       });
       setReportData(response);
     } catch (error) {
-      console.error('Error fetching report data:', error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -142,8 +141,7 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Error exporting report:', error);
-    }
+      }
   };
 
   if (loading) {

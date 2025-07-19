@@ -117,14 +117,12 @@ export default function AIInsightsPanel({ userId, className = '', onInsightClick
             benchmarkData[metric] = data.benchmark_data
           }
         } catch (err) {
-          console.warn(`Failed to load ${metric} benchmark:`, err)
-        }
+          }
       }
       
       setBenchmarks(benchmarkData)
     } catch (err) {
-      console.error('Error loading benchmarks:', err)
-    }
+      }
   }
 
   const transformCoachingToInsights = (coachingData: any): AIInsight[] => {

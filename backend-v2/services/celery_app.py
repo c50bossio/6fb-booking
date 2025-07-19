@@ -120,6 +120,13 @@ celery_app.conf.beat_schedule = {
         'schedule': crontab(minute='*/10'),
         'options': {'queue': 'data_processing'}
     },
+    
+    # Check for scheduled account deletions daily at 3 AM
+    'check-scheduled-deletions': {
+        'task': 'services.background_tasks.data_processing_tasks.check_scheduled_deletions',
+        'schedule': crontab(hour=3, minute=0),
+        'options': {'queue': 'data_processing'}
+    },
 }
 
 # Environment-specific configuration

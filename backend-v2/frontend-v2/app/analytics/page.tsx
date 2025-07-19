@@ -118,7 +118,6 @@ function UnifiedAnalyticsContent() {
 
         setAnalyticsData(data)
       } catch (err) {
-        console.error('Failed to load analytics:', err)
         setError(err instanceof Error ? err.message : 'Failed to load analytics')
       } finally {
         setLoading(false)

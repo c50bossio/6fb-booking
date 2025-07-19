@@ -51,8 +51,7 @@ export default function SMSConversationView({ onClose }: SMSConversationViewProp
       setConversations(data)
     } catch (err) {
       setError('Failed to load conversations')
-      console.error('Error loading conversations:', err)
-    } finally {
+      } finally {
       setLoadingConversations(false)
     }
   }
@@ -82,8 +81,7 @@ export default function SMSConversationView({ onClose }: SMSConversationViewProp
       }
     } catch (err) {
       setError('Failed to load messages')
-      console.error('Error loading messages:', err)
-    } finally {
+      } finally {
       setLoading(false)
     }
   }
@@ -119,8 +117,7 @@ export default function SMSConversationView({ onClose }: SMSConversationViewProp
       )
     } catch (err) {
       setError('Failed to send message')
-      console.error('Error sending message:', err)
-    } finally {
+      } finally {
       setSending(false)
     }
   }

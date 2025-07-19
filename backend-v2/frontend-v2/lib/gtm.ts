@@ -245,8 +245,7 @@ class GTMManager {
         }
       }
     } catch (error) {
-      console.error('Error parsing GTM custom dimensions:', error);
-    }
+      }
   }
   
   private parseCustomMetrics(): void {
@@ -259,8 +258,7 @@ class GTMManager {
         }
       }
     } catch (error) {
-      console.error('Error parsing GTM custom metrics:', error);
-    }
+      }
   }
   
   private initializeConsent(): void {
@@ -280,8 +278,7 @@ class GTMManager {
         try {
           this.consentGranted = { ...this.consentGranted, ...JSON.parse(storedConsent) };
         } catch (error) {
-          console.error('Error parsing stored consent:', error);
-        }
+          }
       }
     }
   }
@@ -325,8 +322,6 @@ class GTMManager {
       }
       
     } catch (error) {
-      console.error('Error initializing GTM:', error);
-      
       // Fallback to GA4 if available
       if (this.config.fallbackTracking) {
         this.setupFallbackTracking();
@@ -410,7 +405,6 @@ class GTMManager {
         };
         
         script.onerror = (error) => {
-          console.error('Error loading GTM script:', error);
           reject(error);
         };
         
@@ -613,7 +607,6 @@ class GTMManager {
     
     // Basic validation
     if (!event.event || typeof event.event !== 'string') {
-      console.error('GTM event missing or invalid event name:', event);
       return false;
     }
     
@@ -621,7 +614,6 @@ class GTMManager {
     if (event.ecommerce?.items) {
       for (const item of event.ecommerce.items) {
         if (!item.item_id || !item.item_name) {
-          console.error('GTM ecommerce item missing required fields:', item);
           return false;
         }
       }
@@ -674,8 +666,7 @@ class GTMManager {
   
   private log(message: string, ...args: any[]): void {
     if (this.config.logEvents || this.config.debugMode) {
-      console.log(`[GTM] ${message}`, ...args);
-    }
+      }
   }
   
   // Public Methods
@@ -707,7 +698,6 @@ class GTMManager {
       }
       
     } catch (error) {
-      console.error('Error tracking GTM event:', error);
       return false;
     }
   }
@@ -759,7 +749,6 @@ class GTMManager {
       
       return true;
     } catch (error) {
-      console.error('Error flushing GTM batch:', error);
       return false;
     }
   }
@@ -769,7 +758,6 @@ class GTMManager {
       this.push(event);
       return true;
     } catch (error) {
-      console.error('Error sending GTM event:', error);
       return false;
     }
   }

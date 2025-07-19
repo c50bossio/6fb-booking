@@ -22,7 +22,6 @@ export default function LogoutPage() {
         // Redirect to login page
         router.push('/login')
       } catch (error) {
-        console.error('Logout error:', error)
         // Still redirect to login even if logout fails
         router.push('/login')
       }

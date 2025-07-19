@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useToast } from '@/hooks/use-toast'
 
 export default function TestDrag() {
+  const { toast } = useToast()
   const [draggedItem, setDraggedItem] = useState<string | null>(null)
   
   return (
@@ -16,13 +18,11 @@ export default function TestDrag() {
             key={item}
             draggable
             onDragStart={(e) => {
-              console.log(`🚀 Drag started: ${item}`)
               setDraggedItem(item)
               e.dataTransfer.effectAllowed = 'move'
               e.dataTransfer.setData('text/plain', item)
             }}
             onDragEnd={() => {
-              console.log(`🛑 Drag ended: ${item}`)
               setDraggedItem(null)
             }}
             className={`p-2 bg-blue-500 text-white rounded cursor-move ${
@@ -47,8 +47,10 @@ export default function TestDrag() {
           e.preventDefault()
           e.currentTarget.style.backgroundColor = ''
           const data = e.dataTransfer.getData('text/plain')
-          console.log(`✅ Dropped: ${data}`)
-          alert(`Dropped: ${data}`)
+          toast({
+            title: "Item Dropped",
+            description: `Dropped: ${data}`,
+          })
         }}
         className="border-2 border-dashed border-gray-400 p-4 rounded"
       >

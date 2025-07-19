@@ -52,7 +52,6 @@ export default function RevenueChart({
       }, 150)
       
     } catch (err) {
-      console.error('Failed to fetch revenue analytics:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to load revenue data'
       setError(errorMessage)
       setIsAnimating(false)

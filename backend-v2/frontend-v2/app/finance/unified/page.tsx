@@ -160,10 +160,8 @@ function UnifiedFinanceContent() {
             giftCertificateBalance: paymentsResponse.revenue?.gift_certificates_used || 0
           })
         } catch (err) {
-          console.error('Failed to load financial summary:', err)
-        }
+          }
       } catch (err) {
-        console.error('Failed to load financial data:', err)
         setError(err instanceof Error ? err.message : 'Failed to load data')
       } finally {
         setLoading(false)

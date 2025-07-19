@@ -169,8 +169,7 @@ export default function BlackoutDateManager({
         }
       }
     } catch (error) {
-      console.error('Error fetching blackouts:', error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -231,14 +230,11 @@ export default function BlackoutDateManager({
         await fetchBlackouts();
         setShowCreateDialog(false);
         resetForm();
-        console.log('Blackout date created successfully');
-      } else {
+        } else {
         const error = await response.json();
-        console.error('Error creating blackout:', error);
-      }
+        }
     } catch (error) {
-      console.error('Error creating blackout:', error);
-    }
+      }
   };
 
   const updateBlackout = async () => {
@@ -264,14 +260,11 @@ export default function BlackoutDateManager({
         await fetchBlackouts();
         setEditingBlackout(null);
         resetForm();
-        console.log('Blackout date updated successfully');
-      } else {
+        } else {
         const error = await response.json();
-        console.error('Error updating blackout:', error);
-      }
+        }
     } catch (error) {
-      console.error('Error updating blackout:', error);
-    }
+      }
   };
 
   const deleteBlackout = async (blackoutId: number) => {
@@ -291,13 +284,10 @@ export default function BlackoutDateManager({
 
       if (response.ok) {
         await fetchBlackouts();
-        console.log('Blackout date deleted successfully');
-      } else {
-        console.error('Error deleting blackout');
-      }
+        } else {
+        }
     } catch (error) {
-      console.error('Error deleting blackout:', error);
-    }
+      }
   };
 
   const fetchImpactReport = async (blackoutId: number) => {
@@ -316,8 +306,7 @@ export default function BlackoutDateManager({
         setShowImpactDialog(true);
       }
     } catch (error) {
-      console.error('Error fetching impact report:', error);
-    }
+      }
   };
 
   const checkBlackoutConflict = async (date: string, time?: string) => {
@@ -353,8 +342,7 @@ export default function BlackoutDateManager({
         return result;
       }
     } catch (error) {
-      console.error('Error checking blackout conflict:', error);
-    }
+      }
     return null;
   };
 

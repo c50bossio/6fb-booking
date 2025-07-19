@@ -132,7 +132,6 @@ export default function EnterpriseDashboardPage() {
         
         setAnalytics(analyticsData)
       } catch (err) {
-        console.error('Failed to load enterprise analytics:', err)
         setError(err instanceof Error ? err.message : 'Failed to load analytics')
       } finally {
         setLoading(false)

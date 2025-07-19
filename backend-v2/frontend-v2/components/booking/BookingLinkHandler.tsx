@@ -68,16 +68,13 @@ export default function BookingLinkHandler({
 
         // If there are validation errors, show a warning but continue
         if (!validation.isValid && hasUrlParams) {
-          console.warn('Booking URL has validation errors:', validation.errors)
-        }
+          }
 
         // If there are warnings, log them
         if (validation.warnings.length > 0) {
-          console.warn('Booking URL warnings:', validation.warnings)
-        }
+          }
 
       } catch (error) {
-        console.error('Failed to parse booking URL parameters:', error)
         setState({
           isLoading: false,
           parameters: {},
@@ -368,7 +365,6 @@ export function useBookingLinkParams() {
         setValidation(validationResult)
         setIsLoading(false)
       } catch (error) {
-        console.error('Failed to parse booking URL parameters:', error)
         setParameters({})
         setValidation(null)
         setIsLoading(false)

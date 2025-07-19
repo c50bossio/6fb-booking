@@ -9,9 +9,11 @@ import VirtualList from '@/components/VirtualList'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { LoadingSpinner, ErrorDisplay } from '@/components/LoadingStates'
+import { useToast } from '@/hooks/use-toast'
 
 export default function MyBookingsPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [bookings, setBookings] = useState<BookingResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -67,8 +69,11 @@ export default function MyBookingsPage() {
       // Reload bookings after successful cancellation
       await loadBookings()
     } catch (err: any) {
-      // TODO: Show error in toast instead of alert
-      alert(err.message || 'Failed to cancel booking')
+      toast({
+        title: "Error",
+        description: err.message || 'Failed to cancel booking',
+        variant: "destructive",
+      })
     } finally {
       setCancellingId(null)
     }
@@ -90,7 +95,6 @@ export default function MyBookingsPage() {
       const response = await appointmentsAPI.getAvailableSlots(date)
       setAvailableSlots(response.slots)
     } catch (err: any) {
-      console.error('Failed to load available slots:', err)
       setAvailableSlots([])
     } finally {
       setLoadingSlots(false)
@@ -109,7 +113,11 @@ export default function MyBookingsPage() {
 
   const handleRescheduleSubmit = async () => {
     if (!selectedBooking || !rescheduleDate || !rescheduleTime) {
-      alert('Please select both date and time')
+      toast({
+        title: "Validation Error",
+        description: 'Please select both date and time',
+        variant: "destructive",
+      })
       return
     }
 
@@ -123,8 +131,16 @@ export default function MyBookingsPage() {
       setAvailableSlots([])
       // Reload bookings after successful reschedule
       await loadBookings()
+      toast({
+        title: "Success",
+        description: 'Booking rescheduled successfully',
+      })
     } catch (err: any) {
-      alert(err.message || 'Failed to reschedule booking')
+      toast({
+        title: "Error",
+        description: err.message || 'Failed to reschedule booking',
+        variant: "destructive",
+      })
     } finally {
       setReschedulingId(null)
     }

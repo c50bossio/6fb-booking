@@ -111,14 +111,9 @@ export function runAccessControlTests(): {
  * Print test results in a readable format
  */
 export function printAccessControlTestResults(): void {
-  console.log('\n=== ACCESS CONTROL TEST RESULTS ===\n')
-  
   const testResults = runAccessControlTests()
   
-  console.log(`Total tests: ${testResults.total}`)
-  console.log(`Passed: ${testResults.passed}`)
-  console.log(`Failed: ${testResults.failed}`)
-  console.log(`Success rate: ${Math.round((testResults.passed / testResults.total) * 100)}%\n`)
+  * 100)}%\n`)
 
   // Print detailed results
   testResults.results.forEach((result, index) => {
@@ -126,19 +121,12 @@ export function printAccessControlTestResults(): void {
     const expectedStr = result.expected ? 'ALLOW' : 'DENY'
     const actualStr = result.actual ? 'ALLOW' : 'DENY'
     
-    console.log(`${status} Test ${index + 1}: ${result.scenario}`)
-    console.log(`   Expected: ${expectedStr}, Actual: ${actualStr}`)
-    
     if (result.error) {
-      console.log(`   Error: ${result.error}`)
-    }
+      }
     
-    console.log()
-  })
+    })
 
   // Print route access summary
-  console.log('\n=== ROUTE ACCESS SUMMARY ===\n')
-  
   const routesByRole = {
     'super_admin': routeAccessControl.filter(r => r.allowedRoles.includes('super_admin')),
     'admin': routeAccessControl.filter(r => r.allowedRoles.includes('admin')),
@@ -147,12 +135,11 @@ export function printAccessControlTestResults(): void {
   }
 
   Object.entries(routesByRole).forEach(([role, routes]) => {
-    console.log(`${role.toUpperCase()} has access to ${routes.length} routes:`)
+    } has access to ${routes.length} routes:`)
     routes.forEach(route => {
-      console.log(`  - ${route.path}${route.description ? ` (${route.description})` : ''}`)
+      ` : ''}`)
     })
-    console.log()
-  })
+    })
 }
 
 /**
@@ -178,13 +165,11 @@ export function validateRoleHierarchy(): boolean {
     
     for (const shouldInclude of test.shouldInclude) {
       if (!equivalentRoles.includes(shouldInclude)) {
-        console.error(`❌ Role hierarchy error: ${test.role} should include ${shouldInclude}`)
         return false
       }
     }
   }
 
-  console.log('✅ Role hierarchy validation passed')
   return true
 }
 

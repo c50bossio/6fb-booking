@@ -54,7 +54,6 @@ export default function BarberEarningsPage() {
         
         setUser(profile as UserProfile);
       } catch (error) {
-        console.error('Error fetching user profile:', error);
         setAuthError(true);
         router.push('/login');
       }
@@ -114,8 +113,7 @@ export default function BarberEarningsPage() {
       
       setPayments(paymentHistory.payments);
     } catch (error) {
-      console.error('Error fetching earnings data:', error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -149,8 +147,7 @@ export default function BarberEarningsPage() {
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Error exporting earnings:', error);
-    }
+      }
   };
 
   if (loading) {

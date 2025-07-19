@@ -127,8 +127,7 @@ const LegalDocument: React.FC<LegalDocumentProps> = ({
   const handleDownload = () => {
     // Convert document to PDF or downloadable format
     // This would typically use a library like jsPDF or similar
-    console.log('Download functionality would be implemented here')
-  }
+    }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

@@ -85,7 +85,6 @@ export default function OrganizationBookingPage() {
         setOrganization(organizationData)
         
       } catch (err) {
-        console.error('Failed to fetch organization data:', err)
         if (err instanceof Error && err.message === 'Organization not found') {
           setError('This booking page doesn\'t exist or has been disabled.')
         } else {

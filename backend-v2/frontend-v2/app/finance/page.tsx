@@ -134,7 +134,6 @@ export default function FinanceHubPage() {
         // const summary = await getFinancialSummary()
         // setFinancialSummary(summary)
       } catch (err) {
-        console.error('Failed to load financial data:', err)
         setError(err instanceof Error ? err.message : 'Failed to load data')
       } finally {
         setLoading(false)

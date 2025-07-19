@@ -111,7 +111,6 @@ export function useTimeSlotsCache(options: UsTimeSlotsOptions = {}): UseTimeSlot
       
       onCacheUpdate?.()
     } catch (err: any) {
-      console.error('Failed to load time slots:', err)
       setError(err.message || 'Failed to load time slots')
       setTimeSlots([])
     } finally {
@@ -133,7 +132,6 @@ export function useTimeSlotsCache(options: UsTimeSlotsOptions = {}): UseTimeSlot
       
       onCacheUpdate?.()
     } catch (err: any) {
-      console.warn('Failed to load next available slot:', err)
       // Don't set error for next available - it's not critical
       setNextAvailable(null)
     } finally {
@@ -199,8 +197,7 @@ export function useTimeSlotsCache(options: UsTimeSlotsOptions = {}): UseTimeSlot
             await loadNextAvailable(true)
             // Don't refresh time slots in background unless user is actively viewing them
           } catch (err) {
-            console.warn('Background refresh failed:', err)
-          }
+            }
         }
         scheduleRefresh() // Schedule next refresh
       }, 2 * 60 * 1000) // 2 minutes

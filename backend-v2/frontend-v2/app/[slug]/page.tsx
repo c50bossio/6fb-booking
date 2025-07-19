@@ -92,7 +92,6 @@ export default function OrganizationLandingPageRoute() {
         setLandingData(data)
         
       } catch (err) {
-        console.error('Failed to fetch landing page data:', err)
         if (err instanceof Error && err.message.includes('not found')) {
           setError('This landing page doesn\'t exist or has been disabled.')
         } else {
@@ -129,8 +128,7 @@ export default function OrganizationLandingPageRoute() {
             })
           })
         } catch (error) {
-          console.error('Failed to track page view:', error)
-        }
+          }
       }
     }
 

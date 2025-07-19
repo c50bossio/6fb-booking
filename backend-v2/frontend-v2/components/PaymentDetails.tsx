@@ -54,8 +54,7 @@ export default function PaymentDetails({ payment, onClose, onRefund }: PaymentDe
       setReceiptSent(true);
       setTimeout(() => setReceiptSent(false), 3000);
     } catch (error) {
-      console.error('Error sending receipt:', error);
-    } finally {
+      } finally {
       setSendingReceipt(false);
     }
   };

@@ -378,7 +378,6 @@ export const storageUtils = {
       if (typeof window === 'undefined') return fallback
       return localStorage.getItem(key) || fallback
     } catch (error) {
-      console.warn(`Failed to get localStorage item "${key}":`, error)
       return fallback
     }
   },
@@ -392,7 +391,6 @@ export const storageUtils = {
       localStorage.setItem(key, value)
       return true
     } catch (error) {
-      console.warn(`Failed to set localStorage item "${key}":`, error)
       return false
     }
   },
@@ -406,7 +404,6 @@ export const storageUtils = {
       localStorage.removeItem(key)
       return true
     } catch (error) {
-      console.warn(`Failed to remove localStorage item "${key}":`, error)
       return false
     }
   }
@@ -422,8 +419,7 @@ export const debugUtils = {
   log: (component: string, message: string, data?: any) => {
     if (process.env.NODE_ENV === 'development') {
       const timestamp = new Date().toISOString()
-      console.log(`[${timestamp}] ${component}: ${message}`, data || '')
-    }
+      }
   },
 
   /**
@@ -435,7 +431,7 @@ export const debugUtils = {
     const end = performance.now()
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`Performance [${name}]: ${(end - start).toFixed(2)}ms`)
+      .toFixed(2)}ms`)
     }
     
     return result

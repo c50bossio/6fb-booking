@@ -295,7 +295,7 @@ export async function getAvailabilitySummary(
         total: slots.length
       })
     } catch (err) {
-      console.error(`Failed to get slots for ${format(current, 'yyyy-MM-dd')}:`, err)
+      }:`, err)
     }
     
     current.setDate(current.getDate() + 1)

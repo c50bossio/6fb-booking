@@ -40,7 +40,6 @@ export function useCustomerPixels(organizationSlug: string | undefined) {
         const pixels: CustomerPixels = await response.json()
 
         if (!pixels.tracking_enabled) {
-          console.log('Tracking disabled for this organization')
           return
         }
 
@@ -71,7 +70,6 @@ export function useCustomerPixels(organizationSlug: string | undefined) {
 
         setPixelsLoaded(true)
       } catch (err) {
-        console.error('Failed to load customer pixels:', err)
         setError('Failed to load tracking pixels')
       }
     }
@@ -225,8 +223,7 @@ function loadCustomCode(code: string) {
       document.body.appendChild(element)
     })
   } catch (err) {
-    console.error('Failed to load custom tracking code:', err)
-  }
+    }
 }
 
 /**
