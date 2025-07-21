@@ -847,8 +847,6 @@ def create_booking(
             models.User.id == appointment.barber_id
         ).first()
     
-    total_time = time_module.time() - function_start_time
-    
     return appointment
 
 def create_guest_booking(
@@ -1285,7 +1283,7 @@ def update_booking(
             new_start_time_business = business_tz.localize(datetime.combine(new_date, time(hour, minute)))
         else:
             # Keep existing time but on new date
-            old_time = booking.start_time_module.time()
+            old_time = booking.start_time.time()
             new_start_time_business = business_tz.localize(datetime.combine(new_date, old_time))
         
         # Convert to UTC for storage

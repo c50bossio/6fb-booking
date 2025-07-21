@@ -598,7 +598,7 @@ If you encounter login issues:
 - **Common Error**: 422 Unprocessable Entity when calling `/bookings/my`
 - **Root Cause**: Router interprets "my" as booking_id parameter
 - **Correct Endpoints**:
-  - `GET /api/v1/bookings/` - Get user's bookings (deprecated)
+  - `GET /api/v1/bookings/` - Get user's bookings
   - `GET /api/v1/appointments/` - Get user's appointments (preferred)
 - **Migration Status**: Moving from "bookings" → "appointments" terminology
 

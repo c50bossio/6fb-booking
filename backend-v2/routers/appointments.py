@@ -12,7 +12,7 @@ from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
 from utils.input_validation import validate_datetime, ValidationError as InputValidationError
 from schemas_new.validation import AppointmentCreateRequest
-import time as time_module
+import time
 
 """
 Appointment router - Standardized appointment endpoints using consistent terminology.
@@ -156,21 +156,12 @@ def create_appointment(
     request_id = getattr(request.state, 'request_id', str(uuid.uuid4())[:8])
     logger.info(f"APPOINTMENT_API [{request_id}]: Got request ID")
     
-    start_time = time_module.time()
+    start_time = time.time()
     logger.info(f"APPOINTMENT_API [{request_id}]: Got start time")
     
-    # Add a hard timeout of 30 seconds for the entire appointment creation
-    import signal
-    logger.info(f"APPOINTMENT_API [{request_id}]: Imported signal")
-    
-    def timeout_handler(signum, frame):
-        logger.error(f"APPOINTMENT_API [{request_id}]: Hard timeout after 30 seconds")
-        raise HTTPException(status_code=504, detail="Appointment creation timed out")
-    
-    # Set timeout signal
-    old_handler = signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(30)  # 30 second timeout
-    logger.info(f"APPOINTMENT_API [{request_id}]: Timeout handler set")
+    # Note: Removed signal-based timeout as it doesn't work in FastAPI thread pools
+    # FastAPI has built-in request timeout handling
+    logger.info(f"APPOINTMENT_API [{request_id}]: Starting appointment creation without signal timeout")
     
     # Log request initiation
     logger.info(
@@ -190,7 +181,7 @@ def create_appointment(
             booking_date = appointment.date
         
         # Log schema validation success
-        schema_validation_time = time_module.time()
+        schema_validation_time = time.time()
         logger.info(f"APPOINTMENT_API [{request_id}]: Schema validation completed in {schema_validation_time - start_time:.3f}s")
         
         # Log before calling service
@@ -200,7 +191,7 @@ def create_appointment(
             f"user_id={current_user.id}, barber_id={getattr(appointment, 'barber_id', None)}"
         )
         
-        service_start_time = time_module.time()
+        service_start_time = time.time()
         
         # Use existing booking service with correct signature
         db_appointment = booking_service.create_booking(
@@ -214,7 +205,7 @@ def create_appointment(
             barber_id=getattr(appointment, 'barber_id', None)
         )
         
-        service_end_time = time_module.time()
+        service_end_time = time.time()
         service_duration = service_end_time - service_start_time
         
         # Log service completion
@@ -224,15 +215,13 @@ def create_appointment(
         )
         
         # Log total API request time
-        total_time = time_module.time() - start_time
+        total_time = time.time() - start_time
         logger.info(
             f"APPOINTMENT_API [{request_id}]: Request completed successfully in {total_time:.3f}s "
             f"(Schema: {schema_validation_time - start_time:.3f}s, Service: {service_duration:.3f}s)"
         )
         
-        # Clear timeout
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, old_handler)
+        # Note: No timeout cleanup needed since we removed signal-based timeout
         
         # Invalidate related cache after successful creation
         if db_appointment:
@@ -246,12 +235,10 @@ def create_appointment(
         return db_appointment
         
     except HTTPException as http_exc:
-        # Clear timeout on exception
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, old_handler)
+        # Note: No timeout cleanup needed since we removed signal-based timeout
         
         # Log HTTP exceptions with timing
-        error_time = time_module.time() - start_time
+        error_time = time.time() - start_time
         logger.error(
             f"APPOINTMENT_API [{request_id}]: HTTP exception after {error_time:.3f}s - "
             f"Status: {http_exc.status_code}, Detail: {http_exc.detail}"
@@ -259,12 +246,10 @@ def create_appointment(
         raise
         
     except Exception as e:
-        # Clear timeout on exception
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, old_handler)
+        # Note: No timeout cleanup needed since we removed signal-based timeout
         
         # Log unexpected exceptions with timing and full context
-        error_time = time_module.time() - start_time
+        error_time = time.time() - start_time
         logger.error(
             f"APPOINTMENT_API [{request_id}]: Unexpected error after {error_time:.3f}s - "
             f"Type: {type(e).__name__}, Message: {str(e)}, "

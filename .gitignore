@@ -210,3 +210,4 @@ aws_credentials*
 backend-v2/aws_credentials*
 backend-v2/production_keys*
 
+mcp-servers/

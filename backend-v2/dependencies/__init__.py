@@ -84,6 +84,30 @@ def get_optional_user(token: str = Depends(security), db: Session = Depends(get_
     except HTTPException:
         return None
 
+def get_current_organization(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get current user's organization"""
+    # For now, return a mock organization or get from user's organization_id
+    # This is a simplified implementation for the homepage builder dependency
+    if hasattr(current_user, 'organization_id') and current_user.organization_id:
+        from models import Organization
+        organization = db.query(Organization).filter(Organization.id == current_user.organization_id).first()
+        if organization:
+            return organization
+    
+    # Return a mock organization for admin users
+    if current_user.role in ["admin", "super_admin"]:
+        class MockOrganization:
+            id = 1
+            name = "BookedBarber Admin"
+            type = "enterprise"
+            
+        return MockOrganization()
+    
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="No organization found for user"
+    )
+
 # Export commonly used dependencies
 __all__ = [
     'get_current_user', 
@@ -93,5 +117,6 @@ __all__ = [
     'require_organization_access',
     'require_barber_or_admin',
     'require_admin_role',
-    'get_optional_user'
+    'get_optional_user',
+    'get_current_organization'
 ]

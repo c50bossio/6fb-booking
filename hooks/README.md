@@ -8,7 +8,7 @@ These hooks implement Phase 1 Core Development Workflow with 4 critical validati
 
 1. **Commit Message Validation** - Enforces conventional commits format
 2. **Branch Protection** - Prevents direct pushes to protected branches
-3. **V2-Only Architecture** - Blocks modifications to deprecated V1 directories
+3. **Clean V2 Architecture** - Maintains V2-only codebase integrity
 4. **Dependency Security** - Scans for known vulnerabilities
 
 ## 🚀 Quick Start
@@ -105,7 +105,7 @@ chmod +x .git/hooks/*
 
 ### 3. V2-Only Architecture (`pre-commit-v2-only`)
 
-**Purpose**: Prevents accidental modifications to deprecated V1 directories.
+**Purpose**: Maintains clean V2-only architecture by preventing access to non-existent legacy paths.
 
 **Architecture Policy**:
 - ✅ **ALLOWED**: `backend-v2/` (V2 Backend - FastAPI)
@@ -114,19 +114,17 @@ chmod +x .git/hooks/*
 - ✅ **ALLOWED**: `docs/` (Documentation)
 - ✅ **ALLOWED**: `monitoring/` (Monitoring config)
 - ✅ **ALLOWED**: `hooks/` (Git hooks)
-- ❌ **BLOCKED**: `backend-v2/` (V1 Backend - DEPRECATED)
-- ❌ **BLOCKED**: `backend-v2/frontend-v2/` (V1 Frontend - DEPRECATED)
-
 **Why This Matters**:
-- V1 codebase is deprecated and unmaintained
-- All new features must use V2 architecture
+- Maintains clean V2-only architecture
+- Prevents accidental legacy code creation
+- Enforces modern development practices
 - Prevents developer confusion and technical debt
 - Ensures consistent development practices
 
-**Migration Guide**:
+**V2 Directory Structure**:
 ```
-V1 backend-v2/   → V2 backend-v2/
-V1 backend-v2/frontend-v2/  → V2 backend-v2/frontend-v2/
+✅ backend-v2/              # V2 Backend (Active)
+✅ backend-v2/frontend-v2/  # V2 Frontend (Active)
 ```
 
 **Bypass**: `git commit --no-verify` (discuss with team first)
