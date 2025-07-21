@@ -147,7 +147,7 @@
     },
     {
       "name": "test_runner",
-      "description": "Run relevant tests after significant changes",
+      "description": "Run worktree-appropriate tests after significant changes",
       "event": "PostToolUse",
       "matchers": [
         "Edit(file_path:*/backend-v2/*.py)",
@@ -160,9 +160,9 @@
         "MultiEdit(file_path:*/frontend-v2/*.ts)",
         "MultiEdit(file_path:*/frontend-v2/*.tsx)"
       ],
-      "command": "/Users/bossio/6fb-booking/.claude/hooks/smart-test-runner.sh",
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/worktree-aware-test-runner.sh",
       "blocking": false,
-      "message": "🧪 Running relevant tests for changes..."
+      "message": "🧪 Running worktree-appropriate tests..."
     },
     {
       "name": "frontend_page_verification",
@@ -311,12 +311,12 @@
     },
     {
       "name": "pre_development_cleanup",
-      "description": "Clean up all Next.js processes before development starts",
+      "description": "Worktree-aware cleanup before development starts",
       "event": "Start",
       "matchers": ["*"],
-      "command": "/Users/bossio/6fb-booking/.claude/scripts/cleanup-all-servers.sh",
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/worktree-startup-cleanup.sh",
       "blocking": true,
-      "message": "🧹 Cleaning up existing Next.js processes..."
+      "message": "🧹 Performing worktree-aware startup cleanup..."
     },
     {
       "name": "server_conflict_detection",
@@ -425,6 +425,34 @@
       "command": "/Users/bossio/6fb-booking/.claude/hooks/superclaude-ui-review.sh",
       "blocking": false,
       "message": "🎨 Running SuperClaude UI review..."
+    },
+    {
+      "name": "worktree_validation",
+      "description": "Validate worktree context and environment before operations",
+      "event": "PreToolUse",
+      "matchers": [
+        "Bash(command:*npm run dev*)",
+        "Bash(command:*uvicorn*)",
+        "Bash(command:*start*dev*)",
+        "Bash(command:*./scripts/start-dev-session*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/worktree-context-detection.sh validate",
+      "blocking": true,
+      "message": "🌳 Validating worktree environment..."
+    },
+    {
+      "name": "worktree_context_awareness",
+      "description": "Set worktree context for all development operations",
+      "event": "PreToolUse",
+      "matchers": [
+        "Bash(command:*)",
+        "Edit(file_path:*)",
+        "Write(file_path:*)",
+        "MultiEdit(file_path:*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/worktree-context-detection.sh info",
+      "blocking": false,
+      "message": "🌳 Setting worktree context..."
     },
     {
       "name": "notification_summary",

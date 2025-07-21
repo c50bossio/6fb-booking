@@ -20,6 +20,30 @@ BACKEND_URL="${BACKEND_URL:-http://localhost:8000}"
 FRONTEND_URL="${FRONTEND_URL:-http://localhost:3000}"
 DOMAIN="${DOMAIN:-localhost}"
 
+# Function to detect if we're in a worktree context
+detect_worktree_context() {
+    local current_path=$(pwd)
+    
+    # Check for worktree indicators
+    if [[ "$current_path" == *"/6fb-booking-features/"* ]] || 
+       [[ "$current_path" == *"/6fb-booking-staging"* ]]; then
+        return 0
+    fi
+    return 1
+}
+
+# Check if we should use worktree-aware version
+if detect_worktree_context; then
+    log "Detected worktree environment - delegating to worktree-aware health check" "$BLUE"
+    
+    if [ -f "$SCRIPT_DIR/health-check-worktree.sh" ]; then
+        exec "$SCRIPT_DIR/health-check-worktree.sh" "$@"
+    else
+        error "Worktree-aware health check script not found"
+        exit 1
+    fi
+fi
+
 # Test results
 TESTS_PASSED=0
 TESTS_FAILED=0

@@ -17,9 +17,34 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+# Function to detect if we're in a worktree context
+detect_worktree_context() {
+    local current_path=$(pwd)
+    
+    # Check for worktree indicators
+    if [[ "$current_path" == *"/6fb-booking-features/"* ]] || 
+       [[ "$current_path" == *"/6fb-booking-staging"* ]]; then
+        return 0
+    fi
+    return 1
+}
+
 # Get script directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+# Check if we should use worktree-aware version
+if detect_worktree_context; then
+    echo -e "${BLUE}Detected worktree environment - using worktree-aware testing${NC}"
+    echo ""
+    
+    if [ -f "$SCRIPT_DIR/parallel-tests-worktree.sh" ]; then
+        exec "$SCRIPT_DIR/parallel-tests-worktree.sh" "$@"
+    else
+        echo -e "${RED}✗ Error: worktree-aware testing script not found${NC}"
+        exit 1
+    fi
+fi
 
 # Create temporary directory for test results
 TEST_RESULTS_DIR="$PROJECT_ROOT/test-results-$(date +%Y%m%d-%H%M%S)"
