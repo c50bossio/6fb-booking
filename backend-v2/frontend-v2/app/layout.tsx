@@ -7,8 +7,9 @@ import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import CookieConsent from '@/components/CookieConsent'
 import { ToastProvider } from '@/hooks/useToast'
-import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
-import { ServiceWorkerUpdate } from '@/components/ServiceWorkerUpdate'
+// PWA components disabled for development
+// import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
+// import { ServiceWorkerUpdate } from '@/components/ServiceWorkerUpdate'
 
 // Optimized Inter configuration for better performance
 const inter = Inter({ 
@@ -183,8 +184,9 @@ export default function RootLayout({
               </AppLayout>
               <Toaster />
               <CookieConsent />
-              <PWAInstallPrompt />
-              <ServiceWorkerUpdate />
+              {/* PWA features disabled for development */}
+              {/* <PWAInstallPrompt />
+              <ServiceWorkerUpdate /> */}
             </ErrorBoundary>
           </ToastProvider>
         </QueryProvider>

@@ -20,7 +20,7 @@ import pytz
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/notification-preferences", tags=["notification-preferences"])
+router = APIRouter(prefix="/api/v2/notification-preferences", tags=["notification-preferences"])
 
 def get_client_ip(request: Request) -> str:
     """Get client IP address from request"""
@@ -433,7 +433,7 @@ async def update_preferences_public(
         
         # Redirect to success page
         return RedirectResponse(
-            url=f"/api/v1/notification-preferences/preference-center/{token}?updated=true",
+            url=f"/api/v2/notification-preferences/preference-center/{token}?updated=true",
             status_code=303
         )
         
@@ -659,7 +659,7 @@ def generate_preference_center_html(user: User, preferences: NotificationPrefere
                 ✅ Your preferences have been updated successfully!
             </div>''' if updated else ''}
 
-            <form method="POST" action="/api/v1/notification-preferences/preference-center/{token}">
+            <form method="POST" action="/api/v2/notification-preferences/preference-center/{token}">
                 
                 <div class="section">
                     <h2>Communication Channels</h2>
@@ -727,13 +727,13 @@ def generate_preference_center_html(user: User, preferences: NotificationPrefere
                 </div>
 
                 <div class="quick-actions">
-                    <a href="/api/v1/notification-preferences/unsubscribe?token={token}&unsubscribe_type=marketing_only">
+                    <a href="/api/v2/notification-preferences/unsubscribe?token={token}&unsubscribe_type=marketing_only">
                         Unsubscribe from marketing only
                     </a>
-                    <a href="/api/v1/notification-preferences/unsubscribe?token={token}&unsubscribe_type=email_all">
+                    <a href="/api/v2/notification-preferences/unsubscribe?token={token}&unsubscribe_type=email_all">
                         Unsubscribe from all emails
                     </a>
-                    <a href="/api/v1/notification-preferences/unsubscribe?token={token}&unsubscribe_type=all">
+                    <a href="/api/v2/notification-preferences/unsubscribe?token={token}&unsubscribe_type=all">
                         Unsubscribe from everything
                     </a>
                 </div>

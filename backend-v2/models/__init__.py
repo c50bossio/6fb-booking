@@ -20,6 +20,7 @@ Appointment = models_file.Appointment
 Payment = models_file.Payment
 Service = models_file.Service
 BarberAvailability = models_file.BarberAvailability
+BarberProfile = models_file.BarberProfile
 PasswordResetToken = models_file.PasswordResetToken
 Payout = models_file.Payout
 GiftCertificate = models_file.GiftCertificate
@@ -127,7 +128,7 @@ from .guest_booking import (
 
 __all__ = [
     # Main models from parent models.py
-    'UnifiedUserRole', 'User', 'Appointment', 'Payment', 'Service', 'BarberAvailability',
+    'UnifiedUserRole', 'User', 'Appointment', 'Payment', 'Service', 'BarberAvailability', 'BarberProfile',
     'PasswordResetToken', 'Payout', 'GiftCertificate', 'Client', 'Refund',
     'BookingSettings', 'ServiceCategoryEnum', 'ServicePricingRule', 'ServiceBookingRule',
     'ServiceTemplate', 'ServiceTemplateCategory', 'UserServiceTemplate',
