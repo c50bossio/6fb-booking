@@ -33,7 +33,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/integrations",
+    prefix="/api/v2/integrations",
     tags=["integrations"],
     dependencies=[Depends(get_current_user)]
 )

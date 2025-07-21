@@ -3108,6 +3108,248 @@ class LocationUpdate(BaseModel):
     chairs_count: Optional[int] = Field(None, ge=1)
     is_active: Optional[bool] = None
 
+# ================================================================================
+# BARBER PROFILE SCHEMAS
+# ================================================================================
+
+class BarberProfileBase(BaseModel):
+    """Base schema for barber profile"""
+    bio: Optional[str] = Field(None, max_length=2000, description="Detailed biography/description")
+    years_experience: Optional[int] = Field(None, ge=0, le=50, description="Years of barbering experience")
+    profile_image_url: Optional[str] = Field(None, description="URL to profile image")
+    
+    # Social Media & Web Presence
+    instagram_handle: Optional[str] = Field(None, max_length=100, description="Instagram handle without @")
+    website_url: Optional[str] = Field(None, description="Personal/business website URL")
+    
+    # Skills & Expertise
+    specialties: Optional[List[str]] = Field(None, description="List of specialties (e.g., beard trimming, hair styling)")
+    certifications: Optional[List[str]] = Field(None, description="List of certifications/licenses")
+    
+    # Pricing
+    hourly_rate: Optional[float] = Field(None, ge=0, description="Base hourly rate")
+    
+    # Profile visibility
+    is_active: Optional[bool] = Field(True, description="Profile visibility")
+
+    @validator('instagram_handle')
+    def validate_instagram_handle(cls, v):
+        """Validate Instagram handle format"""
+        if v is not None:
+            # Remove @ if present at the beginning
+            v = v.lstrip('@')
+            # Check length and format
+            if len(v) < 1 or len(v) > 30:
+                raise ValueError('Instagram handle must be between 1 and 30 characters')
+            # Basic format validation (alphanumeric, dots, underscores)
+            import re
+            if not re.match(r'^[a-zA-Z0-9._]+$', v):
+                raise ValueError('Instagram handle can only contain letters, numbers, dots, and underscores')
+        return v
+    
+    @validator('website_url')
+    def validate_website_url(cls, v):
+        """Validate website URL format"""
+        if v is not None:
+            import re
+            url_pattern = re.compile(
+                r'^https?://'  # http:// or https://
+                r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
+                r'localhost|'  # localhost...
+                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+                r'(?::\d+)?'  # optional port
+                r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+            if not url_pattern.match(v):
+                raise ValueError('Invalid website URL format')
+        return v
+    
+    @validator('specialties')
+    def validate_specialties(cls, v):
+        """Validate specialties list"""
+        if v is not None:
+            if len(v) > 20:
+                raise ValueError('Cannot have more than 20 specialties')
+            # Check for duplicates
+            if len(v) != len(set(v)):
+                raise ValueError('Duplicate specialties are not allowed')
+            # Validate each specialty length
+            for specialty in v:
+                if len(specialty.strip()) < 2:
+                    raise ValueError('Each specialty must be at least 2 characters long')
+                if len(specialty.strip()) > 50:
+                    raise ValueError('Each specialty must be at most 50 characters long')
+        return v
+    
+    @validator('certifications')
+    def validate_certifications(cls, v):
+        """Validate certifications list"""
+        if v is not None:
+            if len(v) > 15:
+                raise ValueError('Cannot have more than 15 certifications')
+            # Check for duplicates
+            if len(v) != len(set(v)):
+                raise ValueError('Duplicate certifications are not allowed')
+            # Validate each certification length
+            for cert in v:
+                if len(cert.strip()) < 2:
+                    raise ValueError('Each certification must be at least 2 characters long')
+                if len(cert.strip()) > 100:
+                    raise ValueError('Each certification must be at most 100 characters long')
+        return v
+
+
+class BarberProfileCreate(BarberProfileBase):
+    """Schema for creating a barber profile"""
+    pass
+
+
+class BarberProfileUpdate(BaseModel):
+    """Schema for updating a barber profile"""
+    bio: Optional[str] = Field(None, max_length=2000, description="Detailed biography/description")
+    years_experience: Optional[int] = Field(None, ge=0, le=50, description="Years of barbering experience")
+    profile_image_url: Optional[str] = Field(None, description="URL to profile image")
+    
+    # Social Media & Web Presence
+    instagram_handle: Optional[str] = Field(None, max_length=100, description="Instagram handle without @")
+    website_url: Optional[str] = Field(None, description="Personal/business website URL")
+    
+    # Skills & Expertise
+    specialties: Optional[List[str]] = Field(None, description="List of specialties")
+    certifications: Optional[List[str]] = Field(None, description="List of certifications/licenses")
+    
+    # Pricing
+    hourly_rate: Optional[float] = Field(None, ge=0, description="Base hourly rate")
+    
+    # Profile visibility
+    is_active: Optional[bool] = Field(None, description="Profile visibility")
+
+    @validator('instagram_handle')
+    def validate_instagram_handle(cls, v):
+        """Validate Instagram handle format"""
+        if v is not None:
+            # Remove @ if present at the beginning
+            v = v.lstrip('@')
+            # Check length and format
+            if len(v) < 1 or len(v) > 30:
+                raise ValueError('Instagram handle must be between 1 and 30 characters')
+            # Basic format validation (alphanumeric, dots, underscores)
+            import re
+            if not re.match(r'^[a-zA-Z0-9._]+$', v):
+                raise ValueError('Instagram handle can only contain letters, numbers, dots, and underscores')
+        return v
+    
+    @validator('website_url')
+    def validate_website_url(cls, v):
+        """Validate website URL format"""
+        if v is not None:
+            import re
+            url_pattern = re.compile(
+                r'^https?://'  # http:// or https://
+                r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
+                r'localhost|'  # localhost...
+                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+                r'(?::\d+)?'  # optional port
+                r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+            if not url_pattern.match(v):
+                raise ValueError('Invalid website URL format')
+        return v
+    
+    @validator('specialties')
+    def validate_specialties(cls, v):
+        """Validate specialties list"""
+        if v is not None:
+            if len(v) > 20:
+                raise ValueError('Cannot have more than 20 specialties')
+            # Check for duplicates
+            if len(v) != len(set(v)):
+                raise ValueError('Duplicate specialties are not allowed')
+            # Validate each specialty length
+            for specialty in v:
+                if len(specialty.strip()) < 2:
+                    raise ValueError('Each specialty must be at least 2 characters long')
+                if len(specialty.strip()) > 50:
+                    raise ValueError('Each specialty must be at most 50 characters long')
+        return v
+    
+    @validator('certifications')
+    def validate_certifications(cls, v):
+        """Validate certifications list"""
+        if v is not None:
+            if len(v) > 15:
+                raise ValueError('Cannot have more than 15 certifications')
+            # Check for duplicates
+            if len(v) != len(set(v)):
+                raise ValueError('Duplicate certifications are not allowed')
+            # Validate each certification length
+            for cert in v:
+                if len(cert.strip()) < 2:
+                    raise ValueError('Each certification must be at least 2 characters long')
+                if len(cert.strip()) > 100:
+                    raise ValueError('Each certification must be at most 100 characters long')
+        return v
+
+
+class BarberProfileResponse(BarberProfileBase):
+    """Schema for barber profile response"""
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+    
+    # Include user information if needed
+    user_name: Optional[str] = Field(None, description="Barber's name from User model")
+    user_email: Optional[str] = Field(None, description="Barber's email from User model")
+    
+    class Config:
+        from_attributes = True
+
+
+class BarberProfileWithUserResponse(BaseModel):
+    """Enhanced barber profile response with full user details"""
+    # Profile data
+    id: int
+    user_id: int
+    bio: Optional[str] = None
+    years_experience: Optional[int] = None
+    profile_image_url: Optional[str] = None
+    instagram_handle: Optional[str] = None
+    website_url: Optional[str] = None
+    specialties: Optional[List[str]] = None
+    certifications: Optional[List[str]] = None
+    hourly_rate: Optional[float] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    
+    # User data
+    user_name: str
+    user_email: str
+    user_phone: Optional[str] = None
+    user_role: str
+    user_is_active: bool
+    user_created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class ImageUploadResponse(BaseModel):
+    """Response for image upload"""
+    success: bool
+    message: str
+    image_url: Optional[str] = None
+    file_size: Optional[int] = None
+    content_type: Optional[str] = None
+
+
+class BarberProfileListResponse(BaseModel):
+    """List response for barber profiles"""
+    profiles: List[BarberProfileWithUserResponse]
+    total: int
+    active_count: int
+    inactive_count: int
+
+
 # Model rebuilds to resolve forward references
 SMSConversationResponse.model_rebuild()
 OrganizationResponse.model_rebuild()

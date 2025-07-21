@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile, changePassword, updateUserTimezone, updateUserProfile, type User } from '@/lib/api'
 import TimezoneSelector from '@/components/TimezoneSelector'
+import BarberProfileEditor from '@/components/barber/BarberProfileEditor'
 
 export default function ProfilePage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'info' | 'password' | 'timezone'>('info')
+  const [activeTab, setActiveTab] = useState<'info' | 'barber' | 'password' | 'timezone'>('info')
   
   // Profile editing state
   const [profileData, setProfileData] = useState({ name: '', email: '' })
@@ -37,6 +38,10 @@ export default function ProfilePage() {
   const [savingTimezone, setSavingTimezone] = useState(false)
   const [timezoneMessage, setTimezoneMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
+  // Barber profile state
+  const [barberProfile, setBarberProfile] = useState<any>(null)
+  const [loadingBarberProfile, setLoadingBarberProfile] = useState(false)
+
   useEffect(() => {
     async function fetchUser() {
       try {
@@ -50,6 +55,11 @@ export default function ProfilePage() {
           name: userData.name || '',
           email: userData.email || ''
         })
+        
+        // Load barber profile if user is a barber
+        if (userData.unified_role === 'barber' || userData.unified_role === 'individual_barber' || userData.role === 'barber') {
+          fetchBarberProfile()
+        }
       } catch (error: any) {
         if (error.message.includes('401')) {
           router.push('/login')
@@ -61,6 +71,13 @@ export default function ProfilePage() {
 
     fetchUser()
   }, [router])
+
+  // Load barber profile when user changes
+  useEffect(() => {
+    if (user && isBarber(user)) {
+      fetchBarberProfile()
+    }
+  }, [user])
 
   // Validate password strength
   const validatePassword = (password: string) => {
@@ -188,6 +205,64 @@ export default function ProfilePage() {
     }
   }
 
+  // Helper function to check if user is a barber
+  const isBarber = (user: User | null) => {
+    if (!user) return false
+    return user.unified_role === 'barber' || user.unified_role === 'individual_barber' || user.role === 'barber'
+  }
+
+  // Barber profile functions
+  const fetchBarberProfile = async () => {
+    if (!user || !isBarber(user)) return
+    
+    setLoadingBarberProfile(true)
+    try {
+      // Mock fetch - replace with actual API call
+      // const profile = await fetchAPI(`/api/v1/barbers/${user.id}/profile`)
+      
+      // For now, return mock data
+      const mockProfile = {
+        bio: '',
+        profileImageUrl: '',
+        specialties: [],
+        experienceLevel: 'junior',
+        hourlyRate: 0,
+        socialMedia: {
+          instagram: '',
+          facebook: '',
+          twitter: ''
+        }
+      }
+      setBarberProfile(mockProfile)
+    } catch (error) {
+      console.error('Failed to fetch barber profile:', error)
+    } finally {
+      setLoadingBarberProfile(false)
+    }
+  }
+
+  const saveBarberProfile = async (data: any) => {
+    if (!user) throw new Error('User not found')
+    
+    try {
+      // Mock save - replace with actual API call
+      // const updatedProfile = await fetchAPI(`/api/v1/barbers/${user.id}/profile`, {
+      //   method: 'PUT',
+      //   body: JSON.stringify(data)
+      // })
+      
+      console.log('Saving barber profile:', data)
+      setBarberProfile(data)
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+    } catch (error) {
+      console.error('Failed to save barber profile:', error)
+      throw error
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -230,6 +305,18 @@ export default function ProfilePage() {
             >
               Profile Information
             </button>
+            {isBarber(user) && (
+              <button
+                onClick={() => setActiveTab('barber')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'barber'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Barber Profile
+              </button>
+            )}
             <button
               onClick={() => setActiveTab('password')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -345,6 +432,17 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Barber Profile Tab */}
+        {activeTab === 'barber' && isBarber(user) && (
+          <div className="space-y-6">
+            <BarberProfileEditor
+              initialData={barberProfile}
+              onSave={saveBarberProfile}
+              loading={loadingBarberProfile}
+            />
           </div>
         )}
 

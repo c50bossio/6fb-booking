@@ -277,6 +277,71 @@ class User(Base):
         return True
 
 
+class BarberProfile(Base):
+    """Enhanced barber profile model with comprehensive business information"""
+    __tablename__ = "barber_profiles"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True, index=True)
+    
+    # Profile Information
+    bio = Column(Text, nullable=True)  # Detailed biography/description
+    years_experience = Column(Integer, nullable=True)  # Years of barbering experience
+    profile_image_url = Column(String, nullable=True)  # URL to profile image
+    
+    # Social Media & Web Presence
+    instagram_handle = Column(String, nullable=True)  # Instagram handle without @
+    website_url = Column(String, nullable=True)  # Personal/business website URL
+    
+    # Skills & Expertise
+    specialties = Column(JSON, nullable=True)  # Array of specialties (e.g., ["beard trimming", "hair styling"])
+    certifications = Column(JSON, nullable=True)  # Array of certifications/licenses
+    
+    # Pricing
+    hourly_rate = Column(Float, nullable=True)  # Base hourly rate
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)  # Profile visibility
+    
+    # Relationship to User
+    user = relationship("User", backref="barber_profile", uselist=False)
+    
+    # Indexes for performance
+    __table_args__ = (
+        Index('ix_barber_profiles_user_id', 'user_id'),
+        Index('ix_barber_profiles_active', 'is_active'),
+        Index('ix_barber_profiles_created_at', 'created_at'),
+    )
+    
+    def __repr__(self):
+        return f"<BarberProfile(user_id={self.user_id}, years_experience={self.years_experience})>"
+    
+    @property 
+    def instagram_url(self):
+        """Return full Instagram URL if handle exists"""
+        if self.instagram_handle:
+            # Remove @ if it exists and construct URL
+            handle = self.instagram_handle.lstrip('@')
+            return f"https://instagram.com/{handle}"
+        return None
+    
+    @property
+    def display_specialties(self):
+        """Return specialties as comma-separated string for display"""
+        if self.specialties and isinstance(self.specialties, list):
+            return ", ".join(self.specialties)
+        return ""
+    
+    @property
+    def display_certifications(self):
+        """Return certifications as comma-separated string for display"""
+        if self.certifications and isinstance(self.certifications, list):
+            return ", ".join(self.certifications)
+        return ""
+
+
 class Appointment(Base):
     __tablename__ = "appointments"
     

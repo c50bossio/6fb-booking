@@ -22,14 +22,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 from main import app
 from database import get_db, Base
-from models import User, Appointment, Payment, Location, Service
-from services.booking_service import BookingService
+from models import User, Appointment, Payment, Organization, Service
+import services.booking_service as booking_service
 from services.payment_service import PaymentService
 from services.notification_service import NotificationService
-from services.integration_service import IntegrationService
-from services.gmb_service import GMBService
-from utils.encryption import EncryptionService
-from config.settings import settings
+from services.integration_service import BaseIntegrationService
+from services.gmb_service import GMBService  
+import utils.encryption
+from config import settings
 
 
 class TestSystemIntegration:

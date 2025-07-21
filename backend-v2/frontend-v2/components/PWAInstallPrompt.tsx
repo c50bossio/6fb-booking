@@ -125,6 +125,10 @@ export function useServiceWorker() {
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false)
 
   useEffect(() => {
+    // Service worker disabled for development - skip registration
+    console.log('Service Worker registration disabled for development')
+    return
+    
     if ('serviceWorker' in navigator) {
       // Register service worker
       navigator.serviceWorker

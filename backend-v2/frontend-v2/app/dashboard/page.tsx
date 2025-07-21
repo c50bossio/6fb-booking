@@ -106,8 +106,8 @@ function DashboardContent() {
         }
         setUser(userData)
         
-        // Check if user needs onboarding
-        if (!userData.onboarding_completed && userData.is_new_user !== false) {
+        // Check if user needs onboarding (skip for super_admin)
+        if (!userData.onboarding_completed && userData.is_new_user !== false && userData.role !== 'super_admin') {
           console.log('Dashboard: Redirecting new user to welcome page')
           router.push('/dashboard/welcome')
           return

@@ -25,12 +25,10 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from main import app
 from database import get_db, Base
-from models.user import User
-from models.appointment import Appointment
-from models.payment import Payment
+from models import User, Appointment, Payment
 
 
-class TestMetrics:
+class E2EMetrics:
     """Track test metrics and performance"""
     
     def __init__(self):
@@ -133,7 +131,7 @@ class E2ETestRunner:
     def __init__(self):
         self.base_url = "http://localhost:8000"
         self.frontend_url = "http://localhost:3000"
-        self.metrics = TestMetrics()
+        self.metrics = E2EMetrics()
         self.test_client = httpx.AsyncClient(base_url=self.base_url, timeout=30.0)
         self.test_data = {}
         

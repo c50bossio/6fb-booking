@@ -29,7 +29,7 @@ from tests.factories import (
     create_full_test_scenario
 )
 from models import User, Client, Service, Appointment, Payment, BookingRule
-from services.booking_service import BookingService
+import services.booking_service as booking_service
 from services.payment_service import PaymentService
 from services.notification_service import NotificationService
 from services.google_calendar_service import GoogleCalendarService

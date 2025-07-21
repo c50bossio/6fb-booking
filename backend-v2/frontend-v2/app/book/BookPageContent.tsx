@@ -26,6 +26,7 @@ import { useCustomerPixels, fireConversionEvent } from '@/hooks/useCustomerPixel
 import { useTimeSlotsCache } from '@/hooks/useTimeSlotsCache'
 import CachePerformanceIndicator from '@/components/CachePerformanceIndicator'
 import { keyboardHelpers, screenReaderHelpers, useScreenReader, generateId } from '@/lib/accessibility'
+import ProgressiveGuestForm, { GuestInfo } from '@/components/booking/ProgressiveGuestForm'
 
 
 const SERVICES = [
@@ -70,6 +71,7 @@ export default function BookPage() {
   const [bookingId, setBookingId] = useState<number | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [guestInfo, setGuestInfo] = useState<GuestInformation>({ first_name: '', last_name: '', email: '', phone: '' })
+  const [progressiveGuestInfo, setProgressiveGuestInfo] = useState<GuestInfo>({ name: '', email: '', phone: '' })
   const [guestBookingResponse, setGuestBookingResponse] = useState<GuestBookingResponse | null>(null)
   const [useCalendarView, setUseCalendarView] = useState(false)
 
@@ -962,7 +964,7 @@ export default function BookPage() {
 
         {/* Step 3.5: Guest Information (for non-authenticated users) */}
         {step === 3.5 && isAuthenticated === false && (
-          <div className="max-w-md mx-auto">
+          <div className="max-w-2xl mx-auto">
             <div className="flex items-center justify-between mb-8">
               <Button
                 onClick={() => setStep(3)}
@@ -980,100 +982,46 @@ export default function BookPage() {
               <div className="w-16" /> {/* Spacer for centering */}
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <p className="text-gray-600 mb-6">Please provide your contact information to complete the booking.</p>
-              
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      First Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      value={guestInfo.first_name}
-                      onChange={(e) => setGuestInfo({ ...guestInfo, first_name: e.target.value })}
-                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="John"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      value={guestInfo.last_name}
-                      onChange={(e) => setGuestInfo({ ...guestInfo, last_name: e.target.value })}
-                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="Doe"
-                      required
-                    />
-                  </div>
-                </div>
+            <ProgressiveGuestForm
+              guestInfo={progressiveGuestInfo}
+              onGuestInfoChange={(info) => {
+                setProgressiveGuestInfo(info)
+                // Convert ProgressiveGuestForm format to BookPageContent format
+                const nameParts = info.name.split(' ')
+                setGuestInfo({
+                  first_name: nameParts[0] || '',
+                  last_name: nameParts.slice(1).join(' ') || '',
+                  email: info.email,
+                  phone: info.phone
+                })
+              }}
+              onSubmit={async () => {
+                // Validate that all fields are filled
+                if (!progressiveGuestInfo.name.trim() || !progressiveGuestInfo.email.trim() || !progressiveGuestInfo.phone.trim()) {
+                  setError('Please complete all required fields')
+                  return
+                }
                 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={guestInfo.email}
-                    onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
-                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="john.doe@example.com"
-                    required
-                  />
-                </div>
+                const nameParts = progressiveGuestInfo.name.split(' ')
+                if (nameParts.length < 2) {
+                  setError('Please enter both first and last name')
+                  return
+                }
                 
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    value={guestInfo.phone}
-                    onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
-                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="(555) 123-4567"
-                    required
-                  />
-                </div>
-              </div>
-
-              {error && (
-                <div className="mt-4">
-                  <div className="text-red-600 text-sm">{error}</div>
-                </div>
-              )}
-
-              <Button
-                onClick={() => {
-                  if (!guestInfo.first_name || !guestInfo.last_name || !guestInfo.email || !guestInfo.phone) {
-                    setError('Please fill in all required fields')
-                    return
-                  }
-                  setError(null)
-                  // For guest users, go back to create the booking
-                  if (quickBooking) {
-                    handleQuickBooking()
-                  } else {
-                    handleConfirmBooking()
-                  }
-                }}
-                variant="primary"
-                size="lg"
-                fullWidth
-                className="mt-6"
-              >
-                Continue to Confirmation
-              </Button>
-            </div>
+                setError(null)
+                // For guest users, go back to create the booking
+                if (quickBooking) {
+                  await handleQuickBooking()
+                } else {
+                  await handleConfirmBooking()
+                }
+              }}
+              onBack={() => setStep(3)}
+              loading={submitting}
+              error={error}
+              className="w-full"
+              showProgress={true}
+            />
           </div>
         )}
 
