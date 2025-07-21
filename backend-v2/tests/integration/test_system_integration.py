@@ -26,9 +26,9 @@ from models import User, Appointment, Payment, Organization, Service
 import services.booking_service as booking_service
 from services.payment_service import PaymentService
 from services.notification_service import NotificationService
-from services.integration_service import IntegrationService
-from services.gmb_service import GMBService
-from utils.encryption import EncryptionService
+from services.integration_service import BaseIntegrationService
+from services.gmb_service import GMBService  
+import utils.encryption
 from config.settings import settings
 
 

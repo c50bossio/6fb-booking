@@ -7,8 +7,8 @@ from sqlalchemy import select
 
 from services.conversion_tracking_service import ConversionTrackingService
 from models.tracking import (
-    ConversionEvent, ConversionGoal, CampaignSource, 
-    UserLifetimeValue, ConversionAttribution
+    ConversionEvent, ConversionGoal
+    # CampaignSource, UserLifetimeValue, ConversionAttribution  # Not available
 )
 from models import User
 from models import Appointment
