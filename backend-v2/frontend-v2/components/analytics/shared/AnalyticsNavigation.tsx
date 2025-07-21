@@ -30,6 +30,20 @@ const defaultSections: AnalyticsSection[] = [
     description: 'Comprehensive business metrics'
   },
   {
+    id: 'enhanced',
+    label: 'Enhanced Analytics',
+    href: '/analytics/enhanced',
+    icon: <TrophyIcon className="w-5 h-5" />,
+    description: 'Advanced analytics with AI insights and performance metrics'
+  },
+  {
+    id: 'sixfigure',
+    label: 'Six Figure Analytics',
+    href: '/analytics/sixfigure',
+    icon: <StarIcon className="w-5 h-5" />,
+    description: 'Track progress toward six-figure income with 6FB methodology'
+  },
+  {
     id: 'revenue',
     label: 'Revenue',
     href: '/analytics/revenue',
@@ -47,7 +61,7 @@ const defaultSections: AnalyticsSection[] = [
     id: 'performance',
     label: 'Performance',
     href: '/analytics/performance',
-    icon: <TrophyIcon className="w-5 h-5" />,
+    icon: <CalendarDaysIcon className="w-5 h-5" />,
     description: 'Operational efficiency metrics'
   },
   {

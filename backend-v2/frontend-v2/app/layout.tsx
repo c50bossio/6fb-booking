@@ -6,7 +6,6 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import CookieConsent from '@/components/CookieConsent'
-import { DevHealthMonitor } from '@/components/DevHealthMonitor'
 import { ToastProvider } from '@/hooks/useToast'
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
 import { ServiceWorkerUpdate } from '@/components/ServiceWorkerUpdate'
@@ -184,7 +183,6 @@ export default function RootLayout({
               </AppLayout>
               <Toaster />
               <CookieConsent />
-              <DevHealthMonitor />
               <PWAInstallPrompt />
               <ServiceWorkerUpdate />
             </ErrorBoundary>

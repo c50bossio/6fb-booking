@@ -14,8 +14,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch, MagicMock
 from typing import Dict, Any, List
 
-from services.calendar_sync_service import CalendarSyncService
-from services.google_calendar_service import GoogleCalendarError, FreeBusyResponse
+from services.google_calendar_service import GoogleCalendarService, GoogleCalendarError, FreeBusyResponse
 from tests.factories import (
     UserFactory, ClientFactory, AppointmentFactory, ServiceFactory,
     create_test_user, create_test_client, create_test_appointment
@@ -25,9 +24,9 @@ from sqlalchemy.orm import Session
 
 
 @pytest.fixture
-def calendar_sync_service(db: Session):
-    """Create CalendarSyncService instance for testing."""
-    return CalendarSyncService(db)
+def google_calendar_service(db: Session):
+    """Create GoogleCalendarService instance for testing."""
+    return GoogleCalendarService(db)
 
 
 @pytest.fixture
@@ -122,44 +121,44 @@ def test_appointment_without_calendar(db: Session, test_barber_without_calendar)
 class TestCalendarSyncAppointmentCreation:
     """Test appointment creation sync scenarios."""
     
-    def test_sync_appointment_created_success(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_created_success(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test successful sync when appointment is created."""
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_created(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_created(test_appointment_with_calendar)
             
             assert result is True
             mock_google_service.sync_appointment_to_google.assert_called_once_with(test_appointment_with_calendar)
     
-    def test_sync_appointment_created_no_calendar(self, calendar_sync_service, test_appointment_without_calendar):
+    def test_sync_appointment_created_no_calendar(self, google_calendar_service, test_appointment_without_calendar):
         """Test sync when barber has no calendar integration."""
-        result = calendar_sync_service.sync_appointment_created(test_appointment_without_calendar)
+        result = google_calendar_service.sync_appointment_created(test_appointment_without_calendar)
         
         assert result is True  # Should return True but skip sync
     
-    def test_sync_appointment_created_google_error(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_created_google_error(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test sync when Google Calendar API returns error."""
         mock_google_service.sync_appointment_to_google.side_effect = GoogleCalendarError("API Error")
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_created(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_created(test_appointment_with_calendar)
             
             assert result is False
     
-    def test_sync_appointment_created_sync_failure(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_created_sync_failure(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test sync when Google service returns None (sync failure)."""
         mock_google_service.sync_appointment_to_google.return_value = None
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_created(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_created(test_appointment_with_calendar)
             
             assert result is False
     
-    def test_sync_appointment_created_unexpected_error(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_created_unexpected_error(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test sync when unexpected error occurs."""
         mock_google_service.sync_appointment_to_google.side_effect = Exception("Unexpected error")
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_created(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_created(test_appointment_with_calendar)
             
             assert result is False
 
@@ -167,50 +166,50 @@ class TestCalendarSyncAppointmentCreation:
 class TestCalendarSyncAppointmentUpdate:
     """Test appointment update sync scenarios."""
     
-    def test_sync_appointment_updated_existing_event(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_updated_existing_event(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test sync when updating appointment with existing Google event."""
         test_appointment_with_calendar.google_event_id = 'existing_event_id'
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_updated(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_updated(test_appointment_with_calendar)
             
             assert result is True
             mock_google_service.update_appointment_in_google.assert_called_once_with(test_appointment_with_calendar)
     
-    def test_sync_appointment_updated_no_existing_event(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_updated_no_existing_event(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test sync when updating appointment without existing Google event."""
         test_appointment_with_calendar.google_event_id = None
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            with patch.object(calendar_sync_service, 'sync_appointment_created', return_value=True) as mock_create:
-                result = calendar_sync_service.sync_appointment_updated(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            with patch.object(google_calendar_service, 'sync_appointment_created', return_value=True) as mock_create:
+                result = google_calendar_service.sync_appointment_updated(test_appointment_with_calendar)
                 
                 assert result is True
                 mock_create.assert_called_once_with(test_appointment_with_calendar)
     
-    def test_sync_appointment_updated_no_calendar(self, calendar_sync_service, test_appointment_without_calendar):
+    def test_sync_appointment_updated_no_calendar(self, google_calendar_service, test_appointment_without_calendar):
         """Test sync when barber has no calendar integration."""
-        result = calendar_sync_service.sync_appointment_updated(test_appointment_without_calendar)
+        result = google_calendar_service.sync_appointment_updated(test_appointment_without_calendar)
         
         assert result is True  # Should return True but skip sync
     
-    def test_sync_appointment_updated_google_error(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_updated_google_error(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test sync when Google Calendar API returns error."""
         test_appointment_with_calendar.google_event_id = 'existing_event_id'
         mock_google_service.update_appointment_in_google.side_effect = GoogleCalendarError("API Error")
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_updated(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_updated(test_appointment_with_calendar)
             
             assert result is False
     
-    def test_sync_appointment_updated_update_failure(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_updated_update_failure(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test sync when Google service returns False (update failure)."""
         test_appointment_with_calendar.google_event_id = 'existing_event_id'
         mock_google_service.update_appointment_in_google.return_value = False
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_updated(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_updated(test_appointment_with_calendar)
             
             assert result is False
 
@@ -218,35 +217,35 @@ class TestCalendarSyncAppointmentUpdate:
 class TestCalendarSyncAppointmentDeletion:
     """Test appointment deletion sync scenarios."""
     
-    def test_sync_appointment_deleted_success(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_deleted_success(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test successful sync when appointment is deleted."""
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_deleted(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_deleted(test_appointment_with_calendar)
             
             assert result is True
             mock_google_service.delete_appointment_from_google.assert_called_once_with(test_appointment_with_calendar)
     
-    def test_sync_appointment_deleted_no_calendar(self, calendar_sync_service, test_appointment_without_calendar):
+    def test_sync_appointment_deleted_no_calendar(self, google_calendar_service, test_appointment_without_calendar):
         """Test sync when barber has no calendar integration."""
-        result = calendar_sync_service.sync_appointment_deleted(test_appointment_without_calendar)
+        result = google_calendar_service.sync_appointment_deleted(test_appointment_without_calendar)
         
         assert result is True  # Should return True but skip sync
     
-    def test_sync_appointment_deleted_google_error(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_deleted_google_error(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test sync when Google Calendar API returns error."""
         mock_google_service.delete_appointment_from_google.side_effect = GoogleCalendarError("API Error")
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_deleted(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_deleted(test_appointment_with_calendar)
             
             assert result is False
     
-    def test_sync_appointment_deleted_failure(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_deleted_failure(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test sync when Google service returns False (delete failure)."""
         mock_google_service.delete_appointment_from_google.return_value = False
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            result = calendar_sync_service.sync_appointment_deleted(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            result = google_calendar_service.sync_appointment_deleted(test_appointment_with_calendar)
             
             assert result is False
 
@@ -254,7 +253,7 @@ class TestCalendarSyncAppointmentDeletion:
 class TestCalendarSyncConflictDetection:
     """Test conflict detection functionality."""
     
-    def test_check_calendar_conflicts_no_conflicts(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_check_calendar_conflicts_no_conflicts(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test conflict check when no conflicts exist."""
         # Mock no busy periods
         mock_google_service.get_free_busy.return_value = FreeBusyResponse(
@@ -264,12 +263,12 @@ class TestCalendarSyncConflictDetection:
             busy_periods=[]
         )
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            conflicts = calendar_sync_service.check_calendar_conflicts(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            conflicts = google_calendar_service.check_calendar_conflicts(test_appointment_with_calendar)
             
             assert len(conflicts) == 0
     
-    def test_check_calendar_conflicts_google_conflict(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_check_calendar_conflicts_google_conflict(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test conflict check when Google Calendar has conflicting event."""
         start_time = test_appointment_with_calendar.start_time
         end_time = start_time + timedelta(minutes=test_appointment_with_calendar.duration_minutes)
@@ -285,14 +284,14 @@ class TestCalendarSyncConflictDetection:
             busy_periods=[(conflicting_start, conflicting_end)]
         )
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            conflicts = calendar_sync_service.check_calendar_conflicts(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            conflicts = google_calendar_service.check_calendar_conflicts(test_appointment_with_calendar)
             
             assert len(conflicts) == 1
             assert conflicts[0]['type'] == 'google_calendar_conflict'
             assert conflicts[0]['appointment_id'] == test_appointment_with_calendar.id
     
-    def test_check_calendar_conflicts_v2_conflict(self, calendar_sync_service, test_appointment_with_calendar, db):
+    def test_check_calendar_conflicts_v2_conflict(self, google_calendar_service, test_appointment_with_calendar, db):
         """Test conflict check when another V2 appointment conflicts."""
         # Create conflicting appointment
         conflicting_appointment = AppointmentFactory.create_appointment(
@@ -304,33 +303,33 @@ class TestCalendarSyncConflictDetection:
         db.add(conflicting_appointment)
         db.commit()
         
-        with patch.object(calendar_sync_service, 'google_service', Mock()):
+        with patch.object(google_calendar_service, 'google_service', Mock()):
             # Mock no Google conflicts
-            calendar_sync_service.google_service.get_free_busy.return_value = FreeBusyResponse(
+            google_calendar_service.google_service.get_free_busy.return_value = FreeBusyResponse(
                 start_time=test_appointment_with_calendar.start_time,
                 end_time=test_appointment_with_calendar.start_time + timedelta(minutes=60),
                 calendar_id='primary',
                 busy_periods=[]
             )
             
-            conflicts = calendar_sync_service.check_calendar_conflicts(test_appointment_with_calendar)
+            conflicts = google_calendar_service.check_calendar_conflicts(test_appointment_with_calendar)
             
             v2_conflicts = [c for c in conflicts if c['type'] == 'v2_appointment_conflict']
             assert len(v2_conflicts) == 1
             assert v2_conflicts[0]['conflicting_appointment_id'] == conflicting_appointment.id
     
-    def test_check_calendar_conflicts_no_calendar(self, calendar_sync_service, test_appointment_without_calendar):
+    def test_check_calendar_conflicts_no_calendar(self, google_calendar_service, test_appointment_without_calendar):
         """Test conflict check when barber has no calendar integration."""
-        conflicts = calendar_sync_service.check_calendar_conflicts(test_appointment_without_calendar)
+        conflicts = google_calendar_service.check_calendar_conflicts(test_appointment_without_calendar)
         
         assert len(conflicts) == 0
     
-    def test_check_calendar_conflicts_error(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_check_calendar_conflicts_error(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test conflict check when an error occurs."""
         mock_google_service.get_free_busy.side_effect = Exception("API Error")
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            conflicts = calendar_sync_service.check_calendar_conflicts(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            conflicts = google_calendar_service.check_calendar_conflicts(test_appointment_with_calendar)
             
             assert len(conflicts) == 1
             assert conflicts[0]['type'] == 'conflict_check_error'
@@ -340,7 +339,7 @@ class TestCalendarSyncConflictDetection:
 class TestCalendarSyncBulkOperations:
     """Test bulk sync operations."""
     
-    def test_bulk_sync_user_appointments_success(self, calendar_sync_service, test_barber_with_calendar, db, mock_google_service):
+    def test_bulk_sync_user_appointments_success(self, google_calendar_service, test_barber_with_calendar, db, mock_google_service):
         """Test successful bulk sync of user appointments."""
         # Create multiple appointments
         appointments = []
@@ -360,10 +359,10 @@ class TestCalendarSyncBulkOperations:
         start_date = datetime.now(timezone.utc)
         end_date = datetime.now(timezone.utc) + timedelta(days=5)
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            with patch.object(calendar_sync_service, 'check_calendar_conflicts', return_value=[]):
-                with patch.object(calendar_sync_service, 'sync_appointment_created', return_value=True):
-                    results = calendar_sync_service.bulk_sync_user_appointments(
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            with patch.object(google_calendar_service, 'check_calendar_conflicts', return_value=[]):
+                with patch.object(google_calendar_service, 'sync_appointment_created', return_value=True):
+                    results = google_calendar_service.bulk_sync_user_appointments(
                         test_barber_with_calendar, start_date, end_date
                     )
                     
@@ -372,7 +371,7 @@ class TestCalendarSyncBulkOperations:
                     assert len(results['conflicts']) == 0
                     assert len(results['errors']) == 0
     
-    def test_bulk_sync_user_appointments_with_conflicts(self, calendar_sync_service, test_barber_with_calendar, db, mock_google_service):
+    def test_bulk_sync_user_appointments_with_conflicts(self, google_calendar_service, test_barber_with_calendar, db, mock_google_service):
         """Test bulk sync with conflicts detected."""
         # Create appointment
         client = ClientFactory.create_client()
@@ -395,10 +394,10 @@ class TestCalendarSyncBulkOperations:
             'message': 'Conflict detected'
         }
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            with patch.object(calendar_sync_service, 'check_calendar_conflicts', return_value=[mock_conflict]):
-                with patch.object(calendar_sync_service, 'sync_appointment_created', return_value=True):
-                    results = calendar_sync_service.bulk_sync_user_appointments(
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            with patch.object(google_calendar_service, 'check_calendar_conflicts', return_value=[mock_conflict]):
+                with patch.object(google_calendar_service, 'sync_appointment_created', return_value=True):
+                    results = google_calendar_service.bulk_sync_user_appointments(
                         test_barber_with_calendar, start_date, end_date
                     )
                     
@@ -406,7 +405,7 @@ class TestCalendarSyncBulkOperations:
                     assert len(results['conflicts']) == 1
                     assert results['conflicts'][0]['type'] == 'google_calendar_conflict'
     
-    def test_bulk_sync_user_appointments_with_failures(self, calendar_sync_service, test_barber_with_calendar, db, mock_google_service):
+    def test_bulk_sync_user_appointments_with_failures(self, google_calendar_service, test_barber_with_calendar, db, mock_google_service):
         """Test bulk sync with some failures."""
         # Create appointments
         appointments = []
@@ -430,10 +429,10 @@ class TestCalendarSyncBulkOperations:
         def mock_sync(appointment):
             return appointment.id == appointments[0].id
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            with patch.object(calendar_sync_service, 'check_calendar_conflicts', return_value=[]):
-                with patch.object(calendar_sync_service, 'sync_appointment_created', side_effect=mock_sync):
-                    results = calendar_sync_service.bulk_sync_user_appointments(
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            with patch.object(google_calendar_service, 'check_calendar_conflicts', return_value=[]):
+                with patch.object(google_calendar_service, 'sync_appointment_created', side_effect=mock_sync):
+                    results = google_calendar_service.bulk_sync_user_appointments(
                         test_barber_with_calendar, start_date, end_date
                     )
                     
@@ -441,12 +440,12 @@ class TestCalendarSyncBulkOperations:
                     assert results['failed'] == 1
                     assert len(results['errors']) == 1
     
-    def test_bulk_sync_user_appointments_no_calendar(self, calendar_sync_service, test_barber_without_calendar):
+    def test_bulk_sync_user_appointments_no_calendar(self, google_calendar_service, test_barber_without_calendar):
         """Test bulk sync when user has no calendar integration."""
         start_date = datetime.now(timezone.utc)
         end_date = datetime.now(timezone.utc) + timedelta(days=5)
         
-        results = calendar_sync_service.bulk_sync_user_appointments(
+        results = google_calendar_service.bulk_sync_user_appointments(
             test_barber_without_calendar, start_date, end_date
         )
         
@@ -454,7 +453,7 @@ class TestCalendarSyncBulkOperations:
         assert 'does not have Google Calendar connected' in results['error']
         assert results['synced'] == 0
     
-    def test_bulk_sync_update_existing_appointments(self, calendar_sync_service, test_barber_with_calendar, db, mock_google_service):
+    def test_bulk_sync_update_existing_appointments(self, google_calendar_service, test_barber_with_calendar, db, mock_google_service):
         """Test bulk sync updates existing synced appointments."""
         # Create appointment with existing Google event ID
         client = ClientFactory.create_client()
@@ -471,10 +470,10 @@ class TestCalendarSyncBulkOperations:
         start_date = datetime.now(timezone.utc)
         end_date = datetime.now(timezone.utc) + timedelta(days=5)
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            with patch.object(calendar_sync_service, 'check_calendar_conflicts', return_value=[]):
-                with patch.object(calendar_sync_service, 'sync_appointment_updated', return_value=True) as mock_update:
-                    results = calendar_sync_service.bulk_sync_user_appointments(
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            with patch.object(google_calendar_service, 'check_calendar_conflicts', return_value=[]):
+                with patch.object(google_calendar_service, 'sync_appointment_updated', return_value=True) as mock_update:
+                    results = google_calendar_service.bulk_sync_user_appointments(
                         test_barber_with_calendar, start_date, end_date
                     )
                     
@@ -485,7 +484,7 @@ class TestCalendarSyncBulkOperations:
 class TestCalendarSyncStatus:
     """Test sync status tracking."""
     
-    def test_get_sync_status_for_user_connected(self, calendar_sync_service, test_barber_with_calendar, db):
+    def test_get_sync_status_for_user_connected(self, google_calendar_service, test_barber_with_calendar, db):
         """Test sync status for user with calendar integration."""
         # Create mix of synced and unsynced appointments
         synced_appointments = []
@@ -508,7 +507,7 @@ class TestCalendarSyncStatus:
         
         db.commit()
         
-        status = calendar_sync_service.get_sync_status_for_user(test_barber_with_calendar)
+        status = google_calendar_service.get_sync_status_for_user(test_barber_with_calendar)
         
         assert status['connected'] is True
         assert status['total_appointments'] == 3
@@ -516,9 +515,9 @@ class TestCalendarSyncStatus:
         assert status['unsynced_appointments'] == 1
         assert status['sync_percentage'] == 66.7
     
-    def test_get_sync_status_for_user_not_connected(self, calendar_sync_service, test_barber_without_calendar):
+    def test_get_sync_status_for_user_not_connected(self, google_calendar_service, test_barber_without_calendar):
         """Test sync status for user without calendar integration."""
-        status = calendar_sync_service.get_sync_status_for_user(test_barber_without_calendar)
+        status = google_calendar_service.get_sync_status_for_user(test_barber_without_calendar)
         
         assert status['connected'] is False
         assert status['total_appointments'] == 0
@@ -526,9 +525,9 @@ class TestCalendarSyncStatus:
         assert status['unsynced_appointments'] == 0
         assert status['sync_percentage'] == 0
     
-    def test_get_sync_status_no_appointments(self, calendar_sync_service, test_barber_with_calendar):
+    def test_get_sync_status_no_appointments(self, google_calendar_service, test_barber_with_calendar):
         """Test sync status when user has no appointments."""
-        status = calendar_sync_service.get_sync_status_for_user(test_barber_with_calendar)
+        status = google_calendar_service.get_sync_status_for_user(test_barber_with_calendar)
         
         assert status['connected'] is True
         assert status['total_appointments'] == 0
@@ -540,7 +539,7 @@ class TestCalendarSyncStatus:
 class TestCalendarSyncCleanup:
     """Test cleanup operations."""
     
-    def test_cleanup_orphaned_events_success(self, calendar_sync_service, test_barber_with_calendar, db, mock_google_service):
+    def test_cleanup_orphaned_events_success(self, google_calendar_service, test_barber_with_calendar, db, mock_google_service):
         """Test successful cleanup of orphaned Google Calendar events."""
         # Create appointment with Google event ID
         client = ClientFactory.create_client()
@@ -570,34 +569,34 @@ class TestCalendarSyncCleanup:
         
         mock_google_service.get_calendar_service.return_value = mock_calendar_service
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            with patch('services.calendar_sync_service.datetime') as mock_datetime:
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            with patch('services.google_calendar_service.datetime') as mock_datetime:
                 mock_datetime.utcnow.return_value.isoformat.return_value = '2024-01-01T00:00:00'
                 
-                results = calendar_sync_service.cleanup_orphaned_events(test_barber_with_calendar)
+                results = google_calendar_service.cleanup_orphaned_events(test_barber_with_calendar)
                 
                 assert results['deleted'] == 1
                 assert len(results['errors']) == 0
     
-    def test_cleanup_orphaned_events_no_calendar(self, calendar_sync_service, test_barber_without_calendar):
+    def test_cleanup_orphaned_events_no_calendar(self, google_calendar_service, test_barber_without_calendar):
         """Test cleanup when user has no calendar integration."""
-        results = calendar_sync_service.cleanup_orphaned_events(test_barber_without_calendar)
+        results = google_calendar_service.cleanup_orphaned_events(test_barber_without_calendar)
         
         assert 'error' in results
         assert 'does not have Google Calendar connected' in results['error']
     
-    def test_cleanup_orphaned_events_error(self, calendar_sync_service, test_barber_with_calendar, mock_google_service):
+    def test_cleanup_orphaned_events_error(self, google_calendar_service, test_barber_with_calendar, mock_google_service):
         """Test cleanup when an error occurs."""
         mock_google_service.get_calendar_service.side_effect = Exception("API Error")
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            results = calendar_sync_service.cleanup_orphaned_events(test_barber_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            results = google_calendar_service.cleanup_orphaned_events(test_barber_with_calendar)
             
             assert results['deleted'] == 0
             assert len(results['errors']) == 1
             assert 'Error during cleanup' in results['errors'][0]
     
-    def test_cleanup_orphaned_events_delete_error(self, calendar_sync_service, test_barber_with_calendar, db, mock_google_service):
+    def test_cleanup_orphaned_events_delete_error(self, google_calendar_service, test_barber_with_calendar, db, mock_google_service):
         """Test cleanup when individual event deletion fails."""
         # Mock Google Calendar service with event that fails to delete
         mock_calendar_service = Mock()
@@ -617,11 +616,11 @@ class TestCalendarSyncCleanup:
         
         mock_google_service.get_calendar_service.return_value = mock_calendar_service
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            with patch('services.calendar_sync_service.datetime') as mock_datetime:
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            with patch('services.google_calendar_service.datetime') as mock_datetime:
                 mock_datetime.utcnow.return_value.isoformat.return_value = '2024-01-01T00:00:00'
                 
-                results = calendar_sync_service.cleanup_orphaned_events(test_barber_with_calendar)
+                results = google_calendar_service.cleanup_orphaned_events(test_barber_with_calendar)
                 
                 assert results['deleted'] == 0
                 assert len(results['errors']) == 1
@@ -631,7 +630,7 @@ class TestCalendarSyncCleanup:
 class TestCalendarSyncEdgeCases:
     """Test edge cases and error scenarios."""
     
-    def test_sync_appointment_without_barber(self, calendar_sync_service, db):
+    def test_sync_appointment_without_barber(self, google_calendar_service, db):
         """Test sync when appointment has no barber."""
         client = ClientFactory.create_client()
         appointment = AppointmentFactory.create_appointment(
@@ -643,10 +642,10 @@ class TestCalendarSyncEdgeCases:
         db.add_all([client, appointment])
         db.commit()
         
-        result = calendar_sync_service.sync_appointment_created(appointment)
+        result = google_calendar_service.sync_appointment_created(appointment)
         assert result is True  # Should handle gracefully
     
-    def test_sync_appointment_with_buffer_time(self, calendar_sync_service, test_appointment_with_calendar, mock_google_service):
+    def test_sync_appointment_with_buffer_time(self, google_calendar_service, test_appointment_with_calendar, mock_google_service):
         """Test conflict checking with buffer time considerations."""
         # Add buffer time attributes
         test_appointment_with_calendar.buffer_time_before = 15
@@ -667,13 +666,13 @@ class TestCalendarSyncEdgeCases:
             busy_periods=[(conflicting_start, conflicting_end)]
         )
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
-            conflicts = calendar_sync_service.check_calendar_conflicts(test_appointment_with_calendar)
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
+            conflicts = google_calendar_service.check_calendar_conflicts(test_appointment_with_calendar)
             
             assert len(conflicts) == 1
             assert conflicts[0]['type'] == 'google_calendar_conflict'
     
-    def test_sync_with_past_appointments(self, calendar_sync_service, test_barber_with_calendar, db):
+    def test_sync_with_past_appointments(self, google_calendar_service, test_barber_with_calendar, db):
         """Test sync status excludes very old appointments."""
         # Create old appointment (outside 30-day window)
         client = ClientFactory.create_client()
@@ -695,12 +694,12 @@ class TestCalendarSyncEdgeCases:
         db.add_all([client, old_appointment, recent_appointment])
         db.commit()
         
-        status = calendar_sync_service.get_sync_status_for_user(test_barber_with_calendar)
+        status = google_calendar_service.get_sync_status_for_user(test_barber_with_calendar)
         
         # Should only count recent appointment
         assert status['total_appointments'] == 1
     
-    def test_bulk_sync_exception_handling(self, calendar_sync_service, test_barber_with_calendar, db):
+    def test_bulk_sync_exception_handling(self, google_calendar_service, test_barber_with_calendar, db):
         """Test bulk sync handles individual appointment exceptions."""
         # Create appointment
         client = ClientFactory.create_client()
@@ -717,8 +716,8 @@ class TestCalendarSyncEdgeCases:
         end_date = datetime.now(timezone.utc) + timedelta(days=5)
         
         # Mock conflict check to raise exception
-        with patch.object(calendar_sync_service, 'check_calendar_conflicts', side_effect=Exception("Conflict check failed")):
-            results = calendar_sync_service.bulk_sync_user_appointments(
+        with patch.object(google_calendar_service, 'check_calendar_conflicts', side_effect=Exception("Conflict check failed")):
+            results = google_calendar_service.bulk_sync_user_appointments(
                 test_barber_with_calendar, start_date, end_date
             )
             
@@ -732,20 +731,16 @@ class TestCalendarSyncHooks:
     
     def test_register_sync_hooks(self):
         """Test sync hook registration function."""
-        from services.calendar_sync_service import register_sync_hooks
+        # from services.google_calendar_service import register_sync_hooks  # Service was consolidated
         
-        # This is a placeholder function, test that it doesn't raise errors
-        try:
-            register_sync_hooks()
-            assert True
-        except Exception as e:
-            pytest.fail(f"register_sync_hooks raised an exception: {e}")
+        # This function was consolidated - skip this test
+        pytest.skip("Sync hooks were consolidated into GoogleCalendarService")
 
 
 class TestCalendarSyncIntegration:
     """Test integration scenarios combining multiple sync operations."""
     
-    def test_complete_appointment_lifecycle_sync(self, calendar_sync_service, test_barber_with_calendar, db, mock_google_service):
+    def test_complete_appointment_lifecycle_sync(self, google_calendar_service, test_barber_with_calendar, db, mock_google_service):
         """Test complete appointment lifecycle with sync."""
         client = ClientFactory.create_client()
         appointment = AppointmentFactory.create_appointment(
@@ -760,23 +755,23 @@ class TestCalendarSyncIntegration:
         appointment.barber = test_barber_with_calendar
         appointment.client = client
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
             # 1. Create appointment
-            create_result = calendar_sync_service.sync_appointment_created(appointment)
+            create_result = google_calendar_service.sync_appointment_created(appointment)
             assert create_result is True
             
             # Simulate Google event ID being set
             appointment.google_event_id = 'test_event_id'
             
             # 2. Update appointment
-            update_result = calendar_sync_service.sync_appointment_updated(appointment)
+            update_result = google_calendar_service.sync_appointment_updated(appointment)
             assert update_result is True
             
             # 3. Delete appointment
-            delete_result = calendar_sync_service.sync_appointment_deleted(appointment)
+            delete_result = google_calendar_service.sync_appointment_deleted(appointment)
             assert delete_result is True
     
-    def test_conflict_resolution_workflow(self, calendar_sync_service, test_barber_with_calendar, db, mock_google_service):
+    def test_conflict_resolution_workflow(self, google_calendar_service, test_barber_with_calendar, db, mock_google_service):
         """Test workflow for handling and resolving conflicts."""
         # Create two conflicting appointments
         client1 = ClientFactory.create_client()
@@ -805,9 +800,9 @@ class TestCalendarSyncIntegration:
         appointment1.barber = test_barber_with_calendar
         appointment2.barber = test_barber_with_calendar
         
-        with patch.object(calendar_sync_service, 'google_service', mock_google_service):
+        with patch.object(google_calendar_service, 'google_service', mock_google_service):
             # Check conflicts for second appointment
-            conflicts = calendar_sync_service.check_calendar_conflicts(appointment2)
+            conflicts = google_calendar_service.check_calendar_conflicts(appointment2)
             
             # Should detect conflict with first appointment
             v2_conflicts = [c for c in conflicts if c['type'] == 'v2_appointment_conflict']

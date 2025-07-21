@@ -42,6 +42,8 @@ import {
   RectangleStackIcon,
   DevicePhoneMobileIcon,
   ShoppingBagIcon,
+  RocketLaunchIcon,
+  SparklesIcon,
   // Solid versions for mobile
   HomeIcon as HomeIconSolid,
   CalendarIcon as CalendarIconSolid,
@@ -269,6 +271,14 @@ export const navigationItems: NavigationItem[] = [
         icon: LinkIcon,
         roles: ['admin', 'super_admin'],
         description: 'Trackable booking URLs and QR codes'
+      },
+      {
+        name: 'Smart CTAs',
+        href: '/automation/smart-cta',
+        icon: SparklesIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'AI-powered call-to-action generation',
+        isNew: true
       }
     ]
   },
@@ -276,11 +286,18 @@ export const navigationItems: NavigationItem[] = [
   // Finance Hub - Comprehensive financial management
   {
     name: 'Finance Hub',
-    href: '/finance',
+    href: '/payments/financial-center',
     icon: BanknotesIcon,
     roles: ['admin', 'barber', 'super_admin'],
     description: 'Comprehensive financial management',
     children: [
+      {
+        name: 'Financial Center',
+        href: '/payments/financial-center',
+        icon: CurrencyDollarIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Advanced financial management center'
+      },
       {
         name: 'Payment Overview',
         href: '/payments',
@@ -338,6 +355,53 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
+  // Service Management Hub
+  {
+    name: 'Service Center',
+    href: '/services/service-center',
+    icon: ScissorsIcon,
+    roles: ['barber', 'admin', 'super_admin'],
+    description: 'Complete service management and optimization',
+    isNew: true,
+    children: [
+      {
+        name: 'Service Center',
+        href: '/services/service-center',
+        icon: ScissorsIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Main service management hub'
+      },
+      {
+        name: 'Service Analytics',
+        href: '/services/service-center?tab=analytics',
+        icon: ChartBarIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Service performance and profitability'
+      },
+      {
+        name: 'Service Templates',
+        href: '/services/service-center?tab=templates',
+        icon: BeakerIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Automated service templates'
+      },
+      {
+        name: 'Pricing Optimization',
+        href: '/services/service-center?tab=optimization',
+        icon: RocketLaunchIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Revenue and pricing optimization'
+      },
+      {
+        name: '6FB Compliance',
+        href: '/services/service-center?tab=compliance',
+        icon: StarIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Six Figure Barber alignment'
+      }
+    ]
+  },
+
   // Analytics & Insights
   {
     name: 'Analytics',
@@ -347,11 +411,35 @@ export const navigationItems: NavigationItem[] = [
     description: 'Business performance insights',
     children: [
       {
+        name: 'Analytics Hub',
+        href: '/analytics/hub',
+        icon: ChartPieIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Comprehensive analytics suite with all available dashboards',
+        isNew: true
+      },
+      {
         name: 'Overview',
         href: '/analytics/overview',
         icon: PresentationChartLineIcon,
         roles: ['barber', 'admin', 'super_admin'],
         description: 'Analytics overview dashboard'
+      },
+      {
+        name: 'Enhanced Analytics',
+        href: '/analytics/enhanced',
+        icon: RocketLaunchIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Advanced analytics with AI insights and performance metrics',
+        isNew: true
+      },
+      {
+        name: 'Six Figure Analytics',
+        href: '/analytics/sixfigure',
+        icon: AcademicCapIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Track progress toward six-figure income with 6FB methodology',
+        isNew: true
       },
       {
         name: 'Revenue Analytics',
@@ -442,6 +530,60 @@ export const navigationItems: NavigationItem[] = [
     roles: ['barber', 'admin', 'super_admin'],
     description: 'Track Six Figure Barber methodology alignment',
     isNew: true
+  },
+  
+  // Automation Hub - Comprehensive business automation suite
+  {
+    name: 'Automation Hub',
+    href: '/automation',
+    icon: RocketLaunchIcon,
+    roles: ['admin', 'super_admin'],
+    description: 'Comprehensive business automation and AI-powered features',
+    isNew: true,
+    children: [
+      {
+        name: 'Automation Overview',
+        href: '/automation',
+        icon: RocketLaunchIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Main automation dashboard and overview'
+      },
+      {
+        name: 'Service Templates',
+        href: '/automation/service-templates',
+        icon: BeakerIcon,
+        roles: ['admin', 'super_admin'],
+        description: '30+ Six Figure Barber methodology templates'
+      },
+      {
+        name: 'Smart CTA Generator',
+        href: '/automation/smart-cta',
+        icon: ChatBubbleLeftRightIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'AI-powered call-to-action generation and optimization'
+      },
+      {
+        name: 'Homepage Builder',
+        href: '/settings/homepage-builder',
+        icon: RectangleStackIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Professional homepage builder with live preview'
+      },
+      {
+        name: 'Progressive Forms',
+        href: '/automation/progressive-validation',
+        icon: ClipboardDocumentListIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Smart form validation and user experience optimization'
+      },
+      {
+        name: 'AI Agents',
+        href: '/ai-agents',
+        icon: BeakerIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Intelligent business automation and assistance'
+      }
+    ]
   },
   
   // Enterprise section (super_admin only)
@@ -719,19 +861,19 @@ export const quickActions: QuickAction[] = [
   
   // Admin quick actions
   {
+    name: 'Service Center',
+    href: '/services/service-center',
+    icon: ScissorsIcon,
+    description: 'Complete service management hub',
+    roles: ['admin', 'super_admin', 'barber'],
+    color: 'primary'
+  },
+  {
     name: 'Manage Services',
     href: '/admin/services',
     icon: ScissorsIcon,
     description: 'Add or edit services',
-    roles: ['admin', 'super_admin'],
-    color: 'primary'
-  },
-  {
-    name: 'Service Dashboard',
-    href: '/services/dashboard',
-    icon: ChartBarIcon,
-    description: 'Comprehensive service analytics',
-    roles: ['admin', 'super_admin', 'barber']
+    roles: ['admin', 'super_admin']
   },
   {
     name: 'Send Notification',

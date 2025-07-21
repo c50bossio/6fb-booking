@@ -1,18 +1,11 @@
 'use client'
 
-import React, { useEffect, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import ValidatedInput from '@/components/ui/ValidatedInput'
-import FormValidationProgress from '@/components/ui/FormValidationProgress'
-import { useProgressiveValidation, FieldConfig } from '@/hooks/useProgressiveValidation'
-import { logger } from '@/lib/logger'
-import { 
-  getRegionAria,
-  getButtonAria,
-  ScreenReaderOnly,
-  SCREEN_READER_INSTRUCTIONS
-} from '@/lib/accessibility'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Progress } from '@/components/ui/progress'
 
 export interface GuestInfo {
   name: string
@@ -31,95 +24,6 @@ export interface ProgressiveGuestFormProps {
   showProgress?: boolean
 }
 
-// Form field configurations with validation rules
-const FORM_FIELDS: FieldConfig[] = [
-  {
-    name: 'name',
-    label: 'Full Name',
-    rules: {
-      required: true,
-      minLength: 2,
-      maxLength: 100,
-      custom: (value: string) => {
-        // Check for at least first and last name
-        const trimmed = value.trim()
-        const parts = trimmed.split(/\s+/)
-        if (parts.length < 2) {
-          return 'Please enter your first and last name'
-        }
-        // Check for reasonable name characters
-        if (!/^[a-zA-Z\s'-]+$/.test(trimmed)) {
-          return 'Please use only letters, spaces, apostrophes, and hyphens'
-        }
-        return null
-      }
-    },
-    validateOnChange: true,
-    validateOnBlur: true,
-    debounceMs: 500
-  },
-  {
-    name: 'email',
-    label: 'Email Address',
-    rules: {
-      required: true,
-      email: true,
-      maxLength: 255,
-      custom: (value: string) => {
-        // Additional email validation beyond basic format
-        const trimmed = value.trim().toLowerCase()
-        
-        // Check for common typos in domains
-        const commonDomainTypos = [
-          'gmial.com', 'gmai.com', 'yahooo.com', 'hotmial.com'
-        ]
-        if (commonDomainTypos.some(typo => trimmed.includes(typo))) {
-          return 'Please check your email address for typos'
-        }
-        
-        // Check for reasonable length
-        if (trimmed.length > 254) {
-          return 'Email address is too long'
-        }
-        
-        return null
-      }
-    },
-    validateOnChange: true,
-    validateOnBlur: true,
-    debounceMs: 300
-  },
-  {
-    name: 'phone',
-    label: 'Phone Number',
-    rules: {
-      required: true,
-      phone: true,
-      custom: (value: string) => {
-        // Remove all non-digit characters for validation
-        const digitsOnly = value.replace(/\D/g, '')
-        
-        // Check for US phone number format
-        if (digitsOnly.length === 10) {
-          // US format without country code
-          return null
-        } else if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
-          // US format with country code
-          return null
-        } else if (digitsOnly.length >= 10 && digitsOnly.length <= 15) {
-          // International format
-          return null
-        }
-        
-        return 'Please enter a valid phone number (e.g., (555) 123-4567)'
-      }
-    },
-    validateOnChange: true,
-    validateOnBlur: true,
-    debounceMs: 500
-  }
-]
-
 export default function ProgressiveGuestForm({
   guestInfo,
   onGuestInfoChange,
@@ -130,104 +34,88 @@ export default function ProgressiveGuestForm({
   className,
   showProgress = true
 }: ProgressiveGuestFormProps) {
-  // Initialize progressive validation
-  const validation = useProgressiveValidation(FORM_FIELDS, guestInfo)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Update parent component when form values change
-  useEffect(() => {
-    const newGuestInfo: GuestInfo = {
-      name: validation.values.name || '',
-      email: validation.values.email || '',
-      phone: validation.values.phone || ''
-    }
-    
-    // Only update if values have actually changed to prevent infinite loops
-    if (
-      newGuestInfo.name !== guestInfo.name ||
-      newGuestInfo.email !== guestInfo.email ||
-      newGuestInfo.phone !== guestInfo.phone
-    ) {
-      onGuestInfoChange(newGuestInfo)
-    }
-  }, [validation.values, guestInfo, onGuestInfoChange])
+  // Calculate completion percentage
+  const getCompletionPercentage = () => {
+    const fields = [guestInfo.name, guestInfo.email, guestInfo.phone]
+    const completedFields = fields.filter(field => field.trim().length > 0).length
+    return Math.round((completedFields / fields.length) * 100)
+  }
 
-  // Handle form submission
+  // Basic validation
+  const validateField = (name: string, value: string) => {
+    const newErrors = { ...errors }
+
+    switch (name) {
+      case 'name':
+        if (!value.trim()) {
+          newErrors.name = 'Name is required'
+        } else if (value.trim().split(' ').length < 2) {
+          newErrors.name = 'Please enter first and last name'
+        } else {
+          delete newErrors.name
+        }
+        break
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!value.trim()) {
+          newErrors.email = 'Email is required'
+        } else if (!emailRegex.test(value)) {
+          newErrors.email = 'Please enter a valid email'
+        } else {
+          delete newErrors.email
+        }
+        break
+      case 'phone':
+        const phoneRegex = /^\+?[\d\s\-\(\)]+$/
+        if (!value.trim()) {
+          newErrors.phone = 'Phone number is required'
+        } else if (!phoneRegex.test(value) || value.replace(/\D/g, '').length < 10) {
+          newErrors.phone = 'Please enter a valid phone number'
+        } else {
+          delete newErrors.phone
+        }
+        break
+    }
+
+    setErrors(newErrors)
+    return !newErrors[name]
+  }
+
+  const handleChange = (field: keyof GuestInfo, value: string) => {
+    const newGuestInfo = { ...guestInfo, [field]: value }
+    onGuestInfoChange(newGuestInfo)
+    validateField(field, value)
+  }
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    logger.booking.info(40, 'Progressive guest form submission started', {
-      completionPercentage: validation.getValidationSummary().completionPercentage,
-      hasErrors: validation.hasErrors,
-      touchedFields: validation.touchedFields.length
-    })
 
-    try {
-      // Validate all fields before submission
-      const isValid = await validation.validateAllFields()
-      
-      if (!isValid) {
-        logger.booking.warn(41, 'Form submission blocked due to validation errors', {
-          errors: validation.getValidationSummary().allErrors,
-          invalidFields: validation.getValidationSummary().invalidFields
-        })
-        
-        // Focus on first error field
-        const firstError = validation.getValidationSummary().firstError
-        if (firstError) {
-          const errorElement = document.getElementById(firstError.field)
-          errorElement?.focus()
-        }
-        
-        return
-      }
+    // Validate all fields
+    const isNameValid = validateField('name', guestInfo.name)
+    const isEmailValid = validateField('email', guestInfo.email)
+    const isPhoneValid = validateField('phone', guestInfo.phone)
 
-      // All validation passed, proceed with submission
+    if (isNameValid && isEmailValid && isPhoneValid) {
       await onSubmit()
-      
-      logger.booking.info(42, 'Progressive guest form submission completed successfully', {
-        formData: {
-          nameLength: validation.values.name.length,
-          emailDomain: validation.values.email.split('@')[1] || '',
-          phoneDigits: validation.values.phone.replace(/\D/g, '').length
-        }
-      })
-
-    } catch (submitError) {
-      logger.booking.error(43, 'Progressive guest form submission failed', submitError, {
-        validationState: validation.getValidationSummary()
-      })
     }
-  }, [validation, onSubmit])
+  }, [guestInfo, onSubmit])
 
-  // Phone number formatting
-  const formatPhoneNumber = useCallback((value: string) => {
-    // Remove all non-digit characters
-    const digitsOnly = value.replace(/\D/g, '')
-    
-    // Apply US phone number formatting
-    if (digitsOnly.length <= 3) {
-      return digitsOnly
-    } else if (digitsOnly.length <= 6) {
-      return `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3)}`
-    } else if (digitsOnly.length <= 10) {
-      return `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3, 6)}-${digitsOnly.slice(6)}`
-    } else {
-      // Handle longer numbers (international)
-      return `+${digitsOnly.slice(0, 1)} (${digitsOnly.slice(1, 4)}) ${digitsOnly.slice(4, 7)}-${digitsOnly.slice(7, 11)}`
-    }
-  }, [])
+  const isFormValid = Object.keys(errors).length === 0 && 
+    guestInfo.name.trim() && 
+    guestInfo.email.trim() && 
+    guestInfo.phone.trim()
 
-  // Get validation summary for progress display
-  const validationSummary = validation.getValidationSummary()
+  const completionPercentage = getCompletionPercentage()
 
   return (
     <section className={className} aria-labelledby="guest-info-title">
       <div className="flex items-center space-x-4 mb-6">
         <button
           onClick={onBack}
-          className="p-2 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="p-2 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
           aria-label="Go back to date and time selection"
-          title="Go back to date and time selection"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -235,25 +123,28 @@ export default function ProgressiveGuestForm({
           <h2 id="guest-info-title" className="text-2xl font-bold text-gray-900">
             Your Information
           </h2>
-          <p className="text-gray-600" id="guest-info-description">
-            We'll need some details to confirm your booking. All fields are validated in real-time.
+          <p className="text-gray-600">
+            We'll need some details to confirm your booking.
           </p>
-          <ScreenReaderOnly>
-            {SCREEN_READER_INSTRUCTIONS.step3}
-          </ScreenReaderOnly>
         </div>
       </div>
 
       {/* Form Progress Indicator */}
       {showProgress && (
         <div className="mb-6">
-          <FormValidationProgress
-            validationSummary={validationSummary}
-            title="Booking Information Progress"
-            showDetails={validationSummary.touchedFields > 0}
-            animated={true}
-            showSuccessMessage={true}
-          />
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Booking Information Progress</span>
+              <span>{completionPercentage}%</span>
+            </div>
+            <Progress 
+              value={completionPercentage} 
+              className="w-full"
+            />
+            {completionPercentage === 100 && isFormValid && (
+              <p className="text-sm text-green-600">✓ All fields completed successfully</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -262,86 +153,70 @@ export default function ProgressiveGuestForm({
         <div 
           className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
           role="alert"
-          aria-live="polite"
         >
-          <div className="flex items-center space-x-2">
-            <span className="text-red-700">{error}</span>
-          </div>
+          <span className="text-red-700">{error}</span>
         </div>
       )}
 
       {/* Form */}
       <div className="bg-white rounded-lg p-6 border">
-        <form 
-          onSubmit={handleSubmit}
-          className="space-y-6"
-          {...getRegionAria('form')}
-          aria-describedby="guest-info-description"
-          noValidate
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name Field */}
-          <ValidatedInput
-            id="guest-name"
-            label="Full Name"
-            type="text"
-            placeholder="Enter your first and last name"
-            required={true}
-            maxLength={100}
-            showCharacterCount={true}
-            helpText="Please enter your first and last name as they appear on your ID"
-            {...validation.getFieldProps('name')}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="guest-name">Full Name *</Label>
+            <Input
+              id="guest-name"
+              type="text"
+              placeholder="Enter your first and last name"
+              value={guestInfo.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              className={errors.name ? 'border-red-500' : ''}
+              maxLength={100}
+            />
+            {errors.name && (
+              <p className="text-sm text-red-600">{errors.name}</p>
+            )}
+          </div>
 
           {/* Email Field */}
-          <ValidatedInput
-            id="guest-email"
-            label="Email Address"
-            type="email"
-            placeholder="Enter your email address"
-            required={true}
-            maxLength={255}
-            helpText="We'll send your booking confirmation to this email"
-            {...validation.getFieldProps('email')}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="guest-email">Email Address *</Label>
+            <Input
+              id="guest-email"
+              type="email"
+              placeholder="Enter your email address"
+              value={guestInfo.email}
+              onChange={(e) => handleChange('email', e.target.value)}
+              className={errors.email ? 'border-red-500' : ''}
+              maxLength={255}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-600">{errors.email}</p>
+            )}
+          </div>
 
-          {/* Phone Field with Formatting */}
-          <ValidatedInput
-            id="guest-phone"
-            label="Phone Number"
-            type="tel"
-            placeholder="(555) 123-4567"
-            required={true}
-            maxLength={20}
-            helpText="We'll send SMS reminders to this number"
-            value={formatPhoneNumber(validation.values.phone || '')}
-            onChange={(value) => {
-              // Store unformatted value for validation
-              const digitsOnly = value.replace(/\D/g, '')
-              validation.setValue('phone', digitsOnly)
-            }}
-            onBlur={validation.getFieldProps('phone').onBlur}
-            onFocus={validation.getFieldProps('phone').onFocus}
-            error={validation.getFieldProps('phone').error}
-            touched={validation.getFieldProps('phone').touched}
-            focused={validation.getFieldProps('phone').focused}
-            isValidating={validation.getFieldProps('phone').isValidating}
-            aria-invalid={validation.getFieldProps('phone')['aria-invalid']}
-            aria-describedby={validation.getFieldProps('phone')['aria-describedby']}
-          />
+          {/* Phone Field */}
+          <div className="space-y-2">
+            <Label htmlFor="guest-phone">Phone Number *</Label>
+            <Input
+              id="guest-phone"
+              type="tel"
+              placeholder="(555) 123-4567"
+              value={guestInfo.phone}
+              onChange={(e) => handleChange('phone', e.target.value)}
+              className={errors.phone ? 'border-red-500' : ''}
+              maxLength={20}
+            />
+            {errors.phone && (
+              <p className="text-sm text-red-600">{errors.phone}</p>
+            )}
+          </div>
 
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={loading || !validation.isValid}
-            className="w-full py-3 px-6 bg-black text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            {...getButtonAria(
-              loading ? 'Creating Your Booking' : 'Continue to Payment',
-              loading,
-              loading || !validation.isValid,
-              validation.isValid 
-                ? 'Proceed to secure payment to confirm your booking'
-                : `Complete all fields to continue (${validationSummary.invalidFields + (validationSummary.totalFields - validationSummary.validFields - validationSummary.invalidFields)} remaining)`
-            )}
+            disabled={loading || !isFormValid}
+            className="w-full py-3 px-6 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {loading ? (
               <>
@@ -349,29 +224,17 @@ export default function ProgressiveGuestForm({
                 Creating Your Booking...
               </>
             ) : (
-              <>Continue to Payment {validation.isValid && '→'}</>
+              <>Continue to Payment →</>
             )}
           </Button>
 
           {/* Form Help Text */}
-          {!validation.isValid && validationSummary.touchedFields > 0 && (
+          {!isFormValid && completionPercentage > 0 && (
             <div className="text-sm text-gray-600 text-center p-2 bg-blue-50 rounded border border-blue-200">
               Please complete all fields with valid information to continue
             </div>
           )}
         </form>
-      </div>
-
-      {/* Accessibility Live Region for Form Updates */}
-      <div 
-        aria-live="polite" 
-        aria-atomic="true" 
-        className="sr-only"
-      >
-        {validationSummary.completionPercentage}% of form completed. 
-        {validationSummary.invalidFields > 0 && 
-          `${validationSummary.invalidFields} field${validationSummary.invalidFields !== 1 ? 's' : ''} need${validationSummary.invalidFields === 1 ? 's' : ''} attention.`
-        }
       </div>
     </section>
   )

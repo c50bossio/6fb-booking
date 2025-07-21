@@ -19,19 +19,18 @@ import stripe
 from typing import Dict, Any, List
 
 from services.payment_service import PaymentService
-from services.stripe_connect_service import StripeConnectService
 from tests.factories import (
     UserFactory, PaymentFactory, AppointmentFactory,
     create_test_user, create_test_appointment
 )
-from models import User, Payment, Appointment, Payout, StripeAccount
+from models import User, Payment, Appointment, Payout
 from sqlalchemy.orm import Session
 
 
 @pytest.fixture
-def stripe_connect_service(db: Session):
-    """Create StripeConnectService instance for testing."""
-    return StripeConnectService(db)
+def payment_service(db: Session):
+    """Create PaymentService instance for testing."""
+    return PaymentService(db)
 
 
 @pytest.fixture
@@ -110,10 +109,10 @@ def test_completed_payments(db: Session, test_barber_verified):
 class TestStripeConnectOnboarding:
     """Test Stripe Connect onboarding flow."""
     
-    @patch('services.stripe_connect_service.stripe.Account.create')
-    @patch('services.stripe_connect_service.stripe.AccountLink.create')
+    @patch('services.payment_service.stripe.Account.create')
+    @patch('services.payment_service.stripe.AccountLink.create')
     def test_create_express_account_success(self, mock_link_create, mock_account_create, 
-                                          stripe_connect_service, test_barber_new):
+                                          payment_service, test_barber_new):
         """Test successful Express account creation."""
         # Mock Stripe responses
         mock_account_create.return_value = MagicMock(
@@ -127,7 +126,7 @@ class TestStripeConnectOnboarding:
             url="https://connect.stripe.com/express/onboarding/acct_express_123"
         )
         
-        result = stripe_connect_service.create_express_account(
+        result = payment_service.create_express_account(
             barber=test_barber_new,
             return_url="https://app.example.com/onboarding/return",
             refresh_url="https://app.example.com/onboarding/refresh"
@@ -162,41 +161,41 @@ class TestStripeConnectOnboarding:
         assert result['type'] == "express"
         
         # Verify barber updated
-        stripe_connect_service.db.refresh(test_barber_new)
+        payment_service.db.refresh(test_barber_new)
         assert test_barber_new.stripe_account_id == "acct_express_123"
         assert test_barber_new.stripe_account_status == "pending"
     
-    @patch('services.stripe_connect_service.stripe.Account.create')
+    @patch('services.payment_service.stripe.Account.create')
     def test_create_express_account_stripe_error(self, mock_account_create, 
-                                               stripe_connect_service, test_barber_new):
+                                               payment_service, test_barber_new):
         """Test Express account creation with Stripe error."""
         mock_account_create.side_effect = stripe.error.StripeError("Account creation failed")
         
         with pytest.raises(Exception, match="Failed to create Stripe Connect account"):
-            stripe_connect_service.create_express_account(
+            payment_service.create_express_account(
                 barber=test_barber_new,
                 return_url="https://app.example.com/return",
                 refresh_url="https://app.example.com/refresh"
             )
     
-    def test_create_express_account_existing_account(self, stripe_connect_service, test_barber_verified):
+    def test_create_express_account_existing_account(self, payment_service, test_barber_verified):
         """Test creating Express account when barber already has one."""
         with pytest.raises(ValueError, match="Barber already has a Stripe Connect account"):
-            stripe_connect_service.create_express_account(
+            payment_service.create_express_account(
                 barber=test_barber_verified,
                 return_url="https://app.example.com/return",
                 refresh_url="https://app.example.com/refresh"
             )
     
-    @patch('services.stripe_connect_service.stripe.AccountLink.create')
+    @patch('services.payment_service.stripe.AccountLink.create')
     def test_create_onboarding_link_existing_account(self, mock_link_create, 
-                                                   stripe_connect_service, test_barber_pending):
+                                                   payment_service, test_barber_pending):
         """Test creating onboarding link for existing pending account."""
         mock_link_create.return_value = MagicMock(
             url="https://connect.stripe.com/express/onboarding/refresh/acct_pending_123"
         )
         
-        result = stripe_connect_service.create_onboarding_link(
+        result = payment_service.create_onboarding_link(
             account_id=test_barber_pending.stripe_account_id,
             return_url="https://app.example.com/return",
             refresh_url="https://app.example.com/refresh"
@@ -211,13 +210,13 @@ class TestStripeConnectOnboarding:
             type="account_onboarding"
         )
     
-    @patch('services.stripe_connect_service.stripe.AccountLink.create')
-    def test_create_onboarding_link_stripe_error(self, mock_link_create, stripe_connect_service):
+    @patch('services.payment_service.stripe.AccountLink.create')
+    def test_create_onboarding_link_stripe_error(self, mock_link_create, payment_service):
         """Test onboarding link creation with Stripe error."""
         mock_link_create.side_effect = stripe.error.StripeError("Link creation failed")
         
         with pytest.raises(Exception, match="Failed to create onboarding link"):
-            stripe_connect_service.create_onboarding_link(
+            payment_service.create_onboarding_link(
                 account_id="acct_test_123",
                 return_url="https://app.example.com/return",
                 refresh_url="https://app.example.com/refresh"
@@ -227,8 +226,8 @@ class TestStripeConnectOnboarding:
 class TestStripeConnectAccountVerification:
     """Test account verification and status checking."""
     
-    @patch('services.stripe_connect_service.stripe.Account.retrieve')
-    def test_get_account_status_complete(self, mock_retrieve, stripe_connect_service, test_barber_verified):
+    @patch('services.payment_service.stripe.Account.retrieve')
+    def test_get_account_status_complete(self, mock_retrieve, payment_service, test_barber_verified):
         """Test getting status of complete account."""
         mock_retrieve.return_value = MagicMock(
             id=test_barber_verified.stripe_account_id,
@@ -247,7 +246,7 @@ class TestStripeConnectAccountVerification:
             }
         )
         
-        status = stripe_connect_service.get_account_status(test_barber_verified.stripe_account_id)
+        status = payment_service.get_account_status(test_barber_verified.stripe_account_id)
         
         assert status['account_id'] == test_barber_verified.stripe_account_id
         assert status['details_submitted'] is True
@@ -258,8 +257,8 @@ class TestStripeConnectAccountVerification:
         assert status['capabilities']['card_payments'] == 'active'
         assert status['capabilities']['transfers'] == 'active'
     
-    @patch('services.stripe_connect_service.stripe.Account.retrieve')
-    def test_get_account_status_pending(self, mock_retrieve, stripe_connect_service, test_barber_pending):
+    @patch('services.payment_service.stripe.Account.retrieve')
+    def test_get_account_status_pending(self, mock_retrieve, payment_service, test_barber_pending):
         """Test getting status of pending account."""
         mock_retrieve.return_value = MagicMock(
             id=test_barber_pending.stripe_account_id,
@@ -278,7 +277,7 @@ class TestStripeConnectAccountVerification:
             }
         )
         
-        status = stripe_connect_service.get_account_status(test_barber_pending.stripe_account_id)
+        status = payment_service.get_account_status(test_barber_pending.stripe_account_id)
         
         assert status['verification_status'] == 'pending'
         assert status['details_submitted'] is False
@@ -286,8 +285,8 @@ class TestStripeConnectAccountVerification:
         assert len(status['requirements']['currently_due']) == 2
         assert 'individual.first_name' in status['requirements']['currently_due']
     
-    @patch('services.stripe_connect_service.stripe.Account.retrieve')
-    def test_get_account_status_restricted(self, mock_retrieve, stripe_connect_service, test_barber_verified):
+    @patch('services.payment_service.stripe.Account.retrieve')
+    def test_get_account_status_restricted(self, mock_retrieve, payment_service, test_barber_verified):
         """Test getting status of restricted account."""
         mock_retrieve.return_value = MagicMock(
             id=test_barber_verified.stripe_account_id,
@@ -306,23 +305,23 @@ class TestStripeConnectAccountVerification:
             }
         )
         
-        status = stripe_connect_service.get_account_status(test_barber_verified.stripe_account_id)
+        status = payment_service.get_account_status(test_barber_verified.stripe_account_id)
         
         assert status['verification_status'] == 'restricted'
         assert status['payouts_enabled'] is False
         assert len(status['requirements']['past_due']) == 1
         assert status['capabilities']['transfers'] == 'inactive'
     
-    @patch('services.stripe_connect_service.stripe.Account.retrieve')
-    def test_get_account_status_stripe_error(self, mock_retrieve, stripe_connect_service):
+    @patch('services.payment_service.stripe.Account.retrieve')
+    def test_get_account_status_stripe_error(self, mock_retrieve, payment_service):
         """Test account status retrieval with Stripe error."""
         mock_retrieve.side_effect = stripe.error.StripeError("Account not found")
         
         with pytest.raises(Exception, match="Failed to retrieve account status"):
-            stripe_connect_service.get_account_status("acct_nonexistent")
+            payment_service.get_account_status("acct_nonexistent")
     
-    @patch('services.stripe_connect_service.stripe.Account.retrieve')
-    def test_verify_account_capabilities_success(self, mock_retrieve, stripe_connect_service, test_barber_verified):
+    @patch('services.payment_service.stripe.Account.retrieve')
+    def test_verify_account_capabilities_success(self, mock_retrieve, payment_service, test_barber_verified):
         """Test verifying account capabilities."""
         mock_retrieve.return_value = MagicMock(
             capabilities={
@@ -333,15 +332,15 @@ class TestStripeConnectAccountVerification:
             charges_enabled=True
         )
         
-        result = stripe_connect_service.verify_account_capabilities(test_barber_verified.stripe_account_id)
+        result = payment_service.verify_account_capabilities(test_barber_verified.stripe_account_id)
         
         assert result['ready_for_payments'] is True
         assert result['ready_for_payouts'] is True
         assert result['capabilities']['card_payments'] == 'active'
         assert result['capabilities']['transfers'] == 'active'
     
-    @patch('services.stripe_connect_service.stripe.Account.retrieve')
-    def test_verify_account_capabilities_not_ready(self, mock_retrieve, stripe_connect_service, test_barber_pending):
+    @patch('services.payment_service.stripe.Account.retrieve')
+    def test_verify_account_capabilities_not_ready(self, mock_retrieve, payment_service, test_barber_pending):
         """Test verifying account capabilities when not ready."""
         mock_retrieve.return_value = MagicMock(
             capabilities={
@@ -352,7 +351,7 @@ class TestStripeConnectAccountVerification:
             charges_enabled=False
         )
         
-        result = stripe_connect_service.verify_account_capabilities(test_barber_pending.stripe_account_id)
+        result = payment_service.verify_account_capabilities(test_barber_pending.stripe_account_id)
         
         assert result['ready_for_payments'] is False
         assert result['ready_for_payouts'] is False
@@ -362,8 +361,8 @@ class TestStripeConnectAccountVerification:
 class TestStripeConnectPayouts:
     """Test payout processing functionality."""
     
-    @patch('services.stripe_connect_service.stripe.Transfer.create')
-    def test_create_payout_success(self, mock_transfer_create, stripe_connect_service, 
+    @patch('services.payment_service.stripe.Transfer.create')
+    def test_create_payout_success(self, mock_transfer_create, payment_service, 
                                  test_barber_verified, test_completed_payments):
         """Test successful payout creation."""
         # Mock Stripe transfer
@@ -378,7 +377,7 @@ class TestStripeConnectPayouts:
         start_date = datetime.now(timezone.utc) - timedelta(days=7)
         end_date = datetime.now(timezone.utc)
         
-        result = stripe_connect_service.create_payout(
+        result = payment_service.create_payout(
             barber_id=test_barber_verified.id,
             start_date=start_date,
             end_date=end_date,
@@ -405,7 +404,7 @@ class TestStripeConnectPayouts:
         assert result['status'] == 'pending'
         
         # Verify payout record created
-        payout = stripe_connect_service.db.query(Payout).filter(
+        payout = payment_service.db.query(Payout).filter(
             Payout.barber_id == test_barber_verified.id
         ).first()
         assert payout is not None
@@ -413,45 +412,45 @@ class TestStripeConnectPayouts:
         assert payout.stripe_transfer_id == "tr_payout_123"
         assert payout.status == 'pending'
     
-    def test_create_payout_no_stripe_account(self, stripe_connect_service, test_barber_new):
+    def test_create_payout_no_stripe_account(self, payment_service, test_barber_new):
         """Test payout creation when barber has no Stripe account."""
         with pytest.raises(ValueError, match="Barber does not have a verified Stripe Connect account"):
-            stripe_connect_service.create_payout(
+            payment_service.create_payout(
                 barber_id=test_barber_new.id,
                 start_date=datetime.now(timezone.utc) - timedelta(days=7),
                 end_date=datetime.now(timezone.utc),
                 amount=100.0
             )
     
-    def test_create_payout_pending_account(self, stripe_connect_service, test_barber_pending):
+    def test_create_payout_pending_account(self, payment_service, test_barber_pending):
         """Test payout creation when account is pending verification."""
         with pytest.raises(ValueError, match="Barber does not have a verified Stripe Connect account"):
-            stripe_connect_service.create_payout(
+            payment_service.create_payout(
                 barber_id=test_barber_pending.id,
                 start_date=datetime.now(timezone.utc) - timedelta(days=7),
                 end_date=datetime.now(timezone.utc),
                 amount=100.0
             )
     
-    @patch('services.stripe_connect_service.stripe.Transfer.create')
-    def test_create_payout_stripe_error(self, mock_transfer_create, stripe_connect_service, test_barber_verified):
+    @patch('services.payment_service.stripe.Transfer.create')
+    def test_create_payout_stripe_error(self, mock_transfer_create, payment_service, test_barber_verified):
         """Test payout creation with Stripe error."""
         mock_transfer_create.side_effect = stripe.error.StripeError("Transfer failed")
         
         with pytest.raises(Exception, match="Failed to create payout"):
-            stripe_connect_service.create_payout(
+            payment_service.create_payout(
                 barber_id=test_barber_verified.id,
                 start_date=datetime.now(timezone.utc) - timedelta(days=7),
                 end_date=datetime.now(timezone.utc),
                 amount=100.0
             )
     
-    def test_calculate_payout_amount(self, stripe_connect_service, test_barber_verified, test_completed_payments):
+    def test_calculate_payout_amount(self, payment_service, test_barber_verified, test_completed_payments):
         """Test payout amount calculation."""
         start_date = datetime.now(timezone.utc) - timedelta(days=7)
         end_date = datetime.now(timezone.utc)
         
-        result = stripe_connect_service.calculate_payout_amount(
+        result = payment_service.calculate_payout_amount(
             barber_id=test_barber_verified.id,
             start_date=start_date,
             end_date=end_date
@@ -463,12 +462,12 @@ class TestStripeConnectPayouts:
         assert result['average_payment'] == 75.0
         assert len(result['payment_breakdown']) == 5
     
-    def test_calculate_payout_amount_no_payments(self, stripe_connect_service, test_barber_verified):
+    def test_calculate_payout_amount_no_payments(self, payment_service, test_barber_verified):
         """Test payout calculation when no payments exist."""
         start_date = datetime.now(timezone.utc) - timedelta(days=30)
         end_date = datetime.now(timezone.utc) - timedelta(days=20)
         
-        result = stripe_connect_service.calculate_payout_amount(
+        result = payment_service.calculate_payout_amount(
             barber_id=test_barber_verified.id,
             start_date=start_date,
             end_date=end_date
@@ -478,8 +477,8 @@ class TestStripeConnectPayouts:
         assert result['payment_count'] == 0
         assert result['payment_breakdown'] == []
     
-    @patch('services.stripe_connect_service.stripe.Transfer.retrieve')
-    def test_get_payout_status(self, mock_transfer_retrieve, stripe_connect_service, test_barber_verified):
+    @patch('services.payment_service.stripe.Transfer.retrieve')
+    def test_get_payout_status(self, mock_transfer_retrieve, payment_service, test_barber_verified):
         """Test getting payout status from Stripe."""
         # Create payout record
         payout = Payout(
@@ -489,8 +488,8 @@ class TestStripeConnectPayouts:
             status="pending",
             created_at=datetime.now(timezone.utc)
         )
-        stripe_connect_service.db.add(payout)
-        stripe_connect_service.db.commit()
+        payment_service.db.add(payout)
+        payment_service.db.commit()
         
         # Mock Stripe response
         mock_transfer_retrieve.return_value = MagicMock(
@@ -501,7 +500,7 @@ class TestStripeConnectPayouts:
             destination_payment="py_test_123"
         )
         
-        result = stripe_connect_service.get_payout_status("tr_status_test")
+        result = payment_service.get_payout_status("tr_status_test")
         
         assert result['transfer_id'] == "tr_status_test"
         assert result['status'] == "paid"
@@ -509,11 +508,11 @@ class TestStripeConnectPayouts:
         assert result['destination_payment'] == "py_test_123"
         
         # Verify payout record updated
-        stripe_connect_service.db.refresh(payout)
+        payment_service.db.refresh(payout)
         assert payout.status == "paid"
     
-    @patch('services.stripe_connect_service.stripe.Transfer.retrieve')
-    def test_get_payout_status_failed(self, mock_transfer_retrieve, stripe_connect_service, test_barber_verified):
+    @patch('services.payment_service.stripe.Transfer.retrieve')
+    def test_get_payout_status_failed(self, mock_transfer_retrieve, payment_service, test_barber_verified):
         """Test getting status of failed payout."""
         payout = Payout(
             barber_id=test_barber_verified.id,
@@ -521,8 +520,8 @@ class TestStripeConnectPayouts:
             stripe_transfer_id="tr_failed_test",
             status="pending"
         )
-        stripe_connect_service.db.add(payout)
-        stripe_connect_service.db.commit()
+        payment_service.db.add(payout)
+        payment_service.db.commit()
         
         mock_transfer_retrieve.return_value = MagicMock(
             id="tr_failed_test",
@@ -531,7 +530,7 @@ class TestStripeConnectPayouts:
             failure_message="The destination account is closed."
         )
         
-        result = stripe_connect_service.get_payout_status("tr_failed_test")
+        result = payment_service.get_payout_status("tr_failed_test")
         
         assert result['status'] == "failed"
         assert result['failure_code'] == "account_closed"
@@ -541,7 +540,7 @@ class TestStripeConnectPayouts:
 class TestStripeConnectWebhooks:
     """Test webhook processing for Stripe Connect events."""
     
-    def test_process_account_updated_webhook(self, stripe_connect_service, test_barber_pending, db):
+    def test_process_account_updated_webhook(self, payment_service, test_barber_pending, db):
         """Test processing account.updated webhook."""
         webhook_data = {
             'type': 'account.updated',
@@ -559,7 +558,7 @@ class TestStripeConnectWebhooks:
             }
         }
         
-        result = stripe_connect_service.process_webhook(webhook_data)
+        result = payment_service.process_webhook(webhook_data)
         
         assert result['processed'] is True
         assert result['event_type'] == 'account.updated'
@@ -568,7 +567,7 @@ class TestStripeConnectWebhooks:
         db.refresh(test_barber_pending)
         assert test_barber_pending.stripe_account_status == 'active'
     
-    def test_process_transfer_paid_webhook(self, stripe_connect_service, test_barber_verified, db):
+    def test_process_transfer_paid_webhook(self, payment_service, test_barber_verified, db):
         """Test processing transfer.paid webhook."""
         # Create pending payout
         payout = Payout(
@@ -593,7 +592,7 @@ class TestStripeConnectWebhooks:
             }
         }
         
-        result = stripe_connect_service.process_webhook(webhook_data)
+        result = payment_service.process_webhook(webhook_data)
         
         assert result['processed'] is True
         assert result['event_type'] == 'transfer.paid'
@@ -603,7 +602,7 @@ class TestStripeConnectWebhooks:
         assert payout.status == 'completed'
         assert payout.completed_at is not None
     
-    def test_process_transfer_failed_webhook(self, stripe_connect_service, test_barber_verified, db):
+    def test_process_transfer_failed_webhook(self, payment_service, test_barber_verified, db):
         """Test processing transfer.failed webhook."""
         payout = Payout(
             barber_id=test_barber_verified.id,
@@ -627,7 +626,7 @@ class TestStripeConnectWebhooks:
             }
         }
         
-        result = stripe_connect_service.process_webhook(webhook_data)
+        result = payment_service.process_webhook(webhook_data)
         
         assert result['processed'] is True
         assert result['event_type'] == 'transfer.failed'
@@ -637,7 +636,7 @@ class TestStripeConnectWebhooks:
         assert payout.status == 'failed'
         assert payout.failure_reason == 'account_closed: Destination account is closed'
     
-    def test_process_capability_updated_webhook(self, stripe_connect_service, test_barber_pending, db):
+    def test_process_capability_updated_webhook(self, payment_service, test_barber_pending, db):
         """Test processing capability.updated webhook."""
         webhook_data = {
             'type': 'capability.updated',
@@ -650,14 +649,14 @@ class TestStripeConnectWebhooks:
             }
         }
         
-        result = stripe_connect_service.process_webhook(webhook_data)
+        result = payment_service.process_webhook(webhook_data)
         
         assert result['processed'] is True
         assert result['event_type'] == 'capability.updated'
         assert result['capability'] == 'card_payments'
         assert result['status'] == 'active'
     
-    def test_process_unknown_webhook(self, stripe_connect_service):
+    def test_process_unknown_webhook(self, payment_service):
         """Test processing unknown webhook type."""
         webhook_data = {
             'type': 'unknown.event',
@@ -666,13 +665,13 @@ class TestStripeConnectWebhooks:
             }
         }
         
-        result = stripe_connect_service.process_webhook(webhook_data)
+        result = payment_service.process_webhook(webhook_data)
         
         assert result['processed'] is False
         assert result['event_type'] == 'unknown.event'
         assert result['message'] == 'Unhandled webhook type'
     
-    def test_process_webhook_missing_data(self, stripe_connect_service):
+    def test_process_webhook_missing_data(self, payment_service):
         """Test processing webhook with missing data."""
         webhook_data = {
             'type': 'account.updated'
@@ -680,18 +679,18 @@ class TestStripeConnectWebhooks:
         }
         
         with pytest.raises(ValueError, match="Invalid webhook data format"):
-            stripe_connect_service.process_webhook(webhook_data)
+            payment_service.process_webhook(webhook_data)
 
 
 class TestStripeConnectReporting:
     """Test reporting and analytics for Stripe Connect."""
     
-    def test_get_barber_earnings_summary(self, stripe_connect_service, test_barber_verified, test_completed_payments):
+    def test_get_barber_earnings_summary(self, payment_service, test_barber_verified, test_completed_payments):
         """Test getting barber earnings summary."""
         start_date = datetime.now(timezone.utc) - timedelta(days=30)
         end_date = datetime.now(timezone.utc)
         
-        summary = stripe_connect_service.get_barber_earnings_summary(
+        summary = payment_service.get_barber_earnings_summary(
             barber_id=test_barber_verified.id,
             start_date=start_date,
             end_date=end_date
@@ -704,7 +703,7 @@ class TestStripeConnectReporting:
         assert summary['platform_fees'] == 125.0  # 5 payments × $25
         assert len(summary['daily_breakdown']) > 0
     
-    def test_get_payout_history(self, stripe_connect_service, test_barber_verified, db):
+    def test_get_payout_history(self, payment_service, test_barber_verified, db):
         """Test getting payout history for barber."""
         # Create payout records
         payouts = []
@@ -722,7 +721,7 @@ class TestStripeConnectReporting:
         db.add_all(payouts)
         db.commit()
         
-        history = stripe_connect_service.get_payout_history(
+        history = payment_service.get_payout_history(
             barber_id=test_barber_verified.id,
             limit=10
         )
@@ -737,7 +736,7 @@ class TestStripeConnectReporting:
         assert history['payouts'][1]['amount'] == 200.0
         assert history['payouts'][1]['status'] == 'completed'
     
-    def test_get_connect_account_dashboard_data(self, stripe_connect_service, test_barber_verified, test_completed_payments, db):
+    def test_get_connect_account_dashboard_data(self, payment_service, test_barber_verified, test_completed_payments, db):
         """Test getting comprehensive dashboard data."""
         # Add a payout
         payout = Payout(
@@ -751,14 +750,14 @@ class TestStripeConnectReporting:
         db.add(payout)
         db.commit()
         
-        with patch.object(stripe_connect_service, 'get_account_status') as mock_status:
+        with patch.object(payment_service, 'get_account_status') as mock_status:
             mock_status.return_value = {
                 'verification_status': 'complete',
                 'payouts_enabled': True,
                 'charges_enabled': True
             }
             
-            dashboard = stripe_connect_service.get_connect_account_dashboard_data(test_barber_verified.id)
+            dashboard = payment_service.get_connect_account_dashboard_data(test_barber_verified.id)
             
             assert dashboard['account_status']['verification_status'] == 'complete'
             assert dashboard['earnings']['total_earnings'] == 375.0
@@ -766,7 +765,7 @@ class TestStripeConnectReporting:
             assert dashboard['payouts']['total_paid_out'] == 200.0
             assert dashboard['payouts']['payout_count'] == 1
     
-    def test_calculate_pending_payout_amount(self, stripe_connect_service, test_barber_verified, test_completed_payments, db):
+    def test_calculate_pending_payout_amount(self, payment_service, test_barber_verified, test_completed_payments, db):
         """Test calculating pending payout amount."""
         # Mark some payments as already paid out
         last_payout = Payout(
@@ -786,7 +785,7 @@ class TestStripeConnectReporting:
             payment.payout_status = 'paid'
         db.commit()
         
-        pending_amount = stripe_connect_service.calculate_pending_payout_amount(test_barber_verified.id)
+        pending_amount = payment_service.calculate_pending_payout_amount(test_barber_verified.id)
         
         # Should be 3 remaining payments × $75 = $225
         assert pending_amount == 225.0
@@ -795,7 +794,7 @@ class TestStripeConnectReporting:
 class TestStripeConnectSecurity:
     """Test security measures for Stripe Connect."""
     
-    def test_validate_webhook_signature(self, stripe_connect_service):
+    def test_validate_webhook_signature(self, payment_service):
         """Test webhook signature validation."""
         payload = '{"type": "account.updated"}'
         signature = "t=1234567890,v1=test_signature"
@@ -803,7 +802,7 @@ class TestStripeConnectSecurity:
         with patch('stripe.Webhook.construct_event') as mock_construct:
             mock_construct.return_value = {"type": "account.updated"}
             
-            result = stripe_connect_service.validate_webhook_signature(
+            result = payment_service.validate_webhook_signature(
                 payload=payload,
                 signature=signature,
                 webhook_secret="whsec_test_secret"
@@ -814,14 +813,14 @@ class TestStripeConnectSecurity:
                 payload, signature, "whsec_test_secret"
             )
     
-    def test_validate_webhook_signature_invalid(self, stripe_connect_service):
+    def test_validate_webhook_signature_invalid(self, payment_service):
         """Test webhook signature validation with invalid signature."""
         with patch('stripe.Webhook.construct_event') as mock_construct:
             mock_construct.side_effect = stripe.error.SignatureVerificationError(
                 "Invalid signature", "sig_invalid"
             )
             
-            result = stripe_connect_service.validate_webhook_signature(
+            result = payment_service.validate_webhook_signature(
                 payload="invalid_payload",
                 signature="invalid_signature",
                 webhook_secret="whsec_test_secret"
@@ -829,9 +828,9 @@ class TestStripeConnectSecurity:
             
             assert result is None
     
-    def test_validate_payout_eligibility(self, stripe_connect_service, test_barber_verified, test_completed_payments):
+    def test_validate_payout_eligibility(self, payment_service, test_barber_verified, test_completed_payments):
         """Test payout eligibility validation."""
-        result = stripe_connect_service.validate_payout_eligibility(
+        result = payment_service.validate_payout_eligibility(
             barber_id=test_barber_verified.id,
             amount=375.0
         )
@@ -839,9 +838,9 @@ class TestStripeConnectSecurity:
         assert result['eligible'] is True
         assert result['available_amount'] == 375.0
     
-    def test_validate_payout_eligibility_insufficient_funds(self, stripe_connect_service, test_barber_verified):
+    def test_validate_payout_eligibility_insufficient_funds(self, payment_service, test_barber_verified):
         """Test payout eligibility with insufficient funds."""
-        result = stripe_connect_service.validate_payout_eligibility(
+        result = payment_service.validate_payout_eligibility(
             barber_id=test_barber_verified.id,
             amount=1000.0  # More than available
         )
@@ -849,9 +848,9 @@ class TestStripeConnectSecurity:
         assert result['eligible'] is False
         assert 'insufficient funds' in result['reason'].lower()
     
-    def test_validate_payout_eligibility_unverified_account(self, stripe_connect_service, test_barber_pending):
+    def test_validate_payout_eligibility_unverified_account(self, payment_service, test_barber_pending):
         """Test payout eligibility with unverified account."""
-        result = stripe_connect_service.validate_payout_eligibility(
+        result = payment_service.validate_payout_eligibility(
             barber_id=test_barber_pending.id,
             amount=100.0
         )
@@ -863,21 +862,21 @@ class TestStripeConnectSecurity:
 class TestStripeConnectEdgeCases:
     """Test edge cases and error scenarios."""
     
-    def test_handle_account_restriction(self, stripe_connect_service, test_barber_verified, db):
+    def test_handle_account_restriction(self, payment_service, test_barber_verified, db):
         """Test handling account restriction scenarios."""
         # Update account to restricted status
         test_barber_verified.stripe_account_status = 'restricted'
         db.commit()
         
         with pytest.raises(ValueError, match="account is restricted"):
-            stripe_connect_service.create_payout(
+            payment_service.create_payout(
                 barber_id=test_barber_verified.id,
                 start_date=datetime.now(timezone.utc) - timedelta(days=7),
                 end_date=datetime.now(timezone.utc),
                 amount=100.0
             )
     
-    def test_handle_duplicate_payout_request(self, stripe_connect_service, test_barber_verified, db):
+    def test_handle_duplicate_payout_request(self, payment_service, test_barber_verified, db):
         """Test handling duplicate payout requests."""
         start_date = datetime.now(timezone.utc) - timedelta(days=7)
         end_date = datetime.now(timezone.utc)
@@ -895,37 +894,37 @@ class TestStripeConnectEdgeCases:
         db.commit()
         
         with pytest.raises(ValueError, match="Payout already exists for this period"):
-            stripe_connect_service.create_payout(
+            payment_service.create_payout(
                 barber_id=test_barber_verified.id,
                 start_date=start_date,
                 end_date=end_date,
                 amount=100.0
             )
     
-    def test_handle_zero_amount_payout(self, stripe_connect_service, test_barber_verified):
+    def test_handle_zero_amount_payout(self, payment_service, test_barber_verified):
         """Test handling zero amount payout."""
         with pytest.raises(ValueError, match="Payout amount must be greater than zero"):
-            stripe_connect_service.create_payout(
+            payment_service.create_payout(
                 barber_id=test_barber_verified.id,
                 start_date=datetime.now(timezone.utc) - timedelta(days=7),
                 end_date=datetime.now(timezone.utc),
                 amount=0.0
             )
     
-    def test_handle_negative_amount_payout(self, stripe_connect_service, test_barber_verified):
+    def test_handle_negative_amount_payout(self, payment_service, test_barber_verified):
         """Test handling negative amount payout."""
         with pytest.raises(ValueError, match="Payout amount must be greater than zero"):
-            stripe_connect_service.create_payout(
+            payment_service.create_payout(
                 barber_id=test_barber_verified.id,
                 start_date=datetime.now(timezone.utc) - timedelta(days=7),
                 end_date=datetime.now(timezone.utc),
                 amount=-100.0
             )
     
-    def test_handle_nonexistent_barber(self, stripe_connect_service):
+    def test_handle_nonexistent_barber(self, payment_service):
         """Test handling operations with non-existent barber."""
         with pytest.raises(ValueError, match="Barber not found"):
-            stripe_connect_service.create_payout(
+            payment_service.create_payout(
                 barber_id=99999,
                 start_date=datetime.now(timezone.utc) - timedelta(days=7),
                 end_date=datetime.now(timezone.utc),
