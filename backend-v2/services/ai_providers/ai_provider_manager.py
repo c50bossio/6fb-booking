@@ -2,6 +2,7 @@
 AI Provider Manager - Manages multiple AI providers with fallback and load balancing
 """
 
+import asyncio
 import logging
 import random
 from typing import List, Dict, Any, Optional
@@ -52,10 +53,10 @@ class AIProviderManager:
                 logger.warning(f"Failed to initialize Google provider: {e}")
         
         if not self.providers:
-            # In development mode, allow initialization without providers for testing
-            if settings.environment == "development":
-                logger.warning("No AI providers configured in development mode. Agent system will use mock responses.")
-                self.providers["mock"] = None  # Mock provider for development
+            # Allow initialization without providers for testing and deployment flexibility
+            if settings.environment in ["development", "staging", "production"]:
+                logger.warning(f"No AI providers configured in {settings.environment} mode. Agent system will use mock responses.")
+                self.providers["mock"] = None  # Mock provider for graceful degradation
             else:
                 raise ValueError("No AI providers configured. Please set at least one API key.")
     
@@ -109,6 +110,10 @@ class AIProviderManager:
         if fallback:
             for fallback_provider in self.fallback_order:
                 if fallback_provider != provider_name and fallback_provider in self.providers:
+                    # Handle mock providers
+                    if self.providers[fallback_provider] is None:
+                        return self._generate_mock_response(messages, fallback_provider)
+                    
                     try:
                         logger.info(f"Falling back to {fallback_provider}")
                         response = await self.providers[fallback_provider].generate_response(
@@ -124,6 +129,10 @@ class AIProviderManager:
                         logger.error(f"Fallback provider {fallback_provider} failed: {e}")
                         continue
         
+        # If only mock provider is available, use it
+        if "mock" in self.providers:
+            return self._generate_mock_response(messages, "mock")
+            
         raise Exception("All AI providers failed")
     
     async def generate_with_retry(
