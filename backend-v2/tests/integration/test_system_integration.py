@@ -29,7 +29,7 @@ from services.notification_service import NotificationService
 from services.integration_service import BaseIntegrationService
 from services.gmb_service import GMBService  
 import utils.encryption
-from config.settings import settings
+from config import settings
 
 
 class TestSystemIntegration:
