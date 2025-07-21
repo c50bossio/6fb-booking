@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal'
 import { getProfile } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'
 import { generateOrganizationBookingURL } from '@/lib/booking-link-generator'
@@ -19,6 +20,7 @@ import {
   ArrowDownTrayIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
+import QRCodeGenerator from '@/components/booking/QRCodeGenerator'
 
 interface ShortURL {
   id: string
@@ -54,6 +56,8 @@ export default function BookingLinksPage() {
   const [shortUrls, setShortUrls] = useState<ShortURL[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showQRGenerator, setShowQRGenerator] = useState(false)
+  const [selectedUrlForQR, setSelectedUrlForQR] = useState<ShortURL | null>(null)
   const [services, setServices] = useState<any[]>([])
   const [barbers, setBarbers] = useState<any[]>([])
   const [locations, setLocations] = useState<any[]>([])
@@ -217,6 +221,11 @@ export default function BookingLinksPage() {
     return `${window.location.origin}/book/${shortCode}`
   }
 
+  const openQRGenerator = (url: ShortURL) => {
+    setSelectedUrlForQR(url)
+    setShowQRGenerator(true)
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -357,34 +366,43 @@ export default function BookingLinksPage() {
               </div>
 
               {/* QR Code Section */}
-              {url.qr_code && (
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <QrCodeIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {url.qr_code.scans} scans
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => window.open(url.qr_code!.design_url, '_blank')}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-                        title="View QR Code"
-                      >
-                        <EyeIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      </button>
-                      <button
-                        onClick={() => downloadQRCode(url.short_code)}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-                        title="Download QR Code"
-                      >
-                        <ArrowDownTrayIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      </button>
-                    </div>
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <QrCodeIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {url.qr_code ? `${url.qr_code.scans} scans` : 'Generate QR Code'}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openQRGenerator(url)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                      title="Generate Custom QR Code"
+                    >
+                      <QrCodeIcon className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                    </button>
+                    {url.qr_code && (
+                      <>
+                        <button
+                          onClick={() => window.open(url.qr_code!.design_url, '_blank')}
+                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                          title="View QR Code"
+                        >
+                          <EyeIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        </button>
+                        <button
+                          onClick={() => downloadQRCode(url.short_code)}
+                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                          title="Download QR Code"
+                        >
+                          <ArrowDownTrayIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Expiration */}
               {url.expires_at && (
@@ -398,10 +416,16 @@ export default function BookingLinksPage() {
       </div>
 
       {/* Create Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Create Booking Link</h2>
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create Booking Link"
+        size="md"
+        position="center"
+        closeOnOverlayClick={true}
+        closeOnEscape={true}
+      >
+        <ModalBody>
             
             <div className="space-y-4">
               <div>
@@ -510,18 +534,44 @@ export default function BookingLinksPage() {
                 />
               </div>
             </div>
+        </ModalBody>
 
-            <div className="flex gap-3 mt-6">
-              <Button onClick={createBookingLink} className="flex-1">
-                Create Link
-              </Button>
-              <Button variant="outline" onClick={() => setShowCreateModal(false)} className="flex-1">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+        <ModalFooter>
+          <Button variant="outline" onClick={() => setShowCreateModal(false)}>
+            Cancel
+          </Button>
+          <Button onClick={createBookingLink}>
+            Create Link
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* QR Code Generator Modal */}
+      <Modal
+        isOpen={showQRGenerator && !!selectedUrlForQR}
+        onClose={() => setShowQRGenerator(false)}
+        title={selectedUrlForQR ? `Generate QR Code: ${selectedUrlForQR.title}` : ''}
+        size="4xl"
+        position="center"
+        closeOnOverlayClick={true}
+        closeOnEscape={true}
+      >
+        <ModalBody>
+          {selectedUrlForQR && (
+            <QRCodeGenerator
+              bookingUrl={getFullUrl(selectedUrlForQR.short_code)}
+              title={`QR Code for ${selectedUrlForQR.title}`}
+              description={selectedUrlForQR.description || `Share this QR code for ${selectedUrlForQR.title}`}
+              showColorPicker={true}
+              showSizeSelector={true}
+              showDownloadButton={true}
+              showShareButton={true}
+              showCopyButton={true}
+              className="border-0 shadow-none bg-transparent p-0"
+            />
+          )}
+        </ModalBody>
+      </Modal>
     </div>
   )
 }

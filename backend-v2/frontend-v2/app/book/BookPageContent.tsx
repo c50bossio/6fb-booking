@@ -35,6 +35,13 @@ const SERVICES = [
   { id: 'Haircut & Shave', name: 'Haircut & Shave', duration: '45 min', price: '$45', amount: 45 }
 ]
 
+// Six Figure Barber service mapping for pricing
+const SERVICE_NAMES_FOR_PRICING = {
+  'Haircut': 'haircut',
+  'Shave': 'straight razor shave', 
+  'Haircut & Shave': 'haircut & shave'
+}
+
 export default function BookPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
@@ -55,12 +62,13 @@ export default function BookPage() {
     isDataStale
   } = useTimeSlotsCache({
     service: selectedService || undefined,
+    barberId: selectedBarberId || undefined, // Pass barber context to cache
     preloadNearbyDates: true,
     backgroundRefresh: true,
     onCacheUpdate: () => {
       // Optional: show a subtle indicator that data was refreshed
       if (refreshing) {
-        console.log('📡 Cache refreshed in background')
+        console.log('📡 Cache refreshed in background - barber availability updated')
       }
     }
   })
@@ -74,6 +82,10 @@ export default function BookPage() {
   const [progressiveGuestInfo, setProgressiveGuestInfo] = useState<GuestInfo>({ name: '', email: '', phone: '' })
   const [guestBookingResponse, setGuestBookingResponse] = useState<GuestBookingResponse | null>(null)
   const [useCalendarView, setUseCalendarView] = useState(false)
+  
+  // Six Figure Barber pricing state
+  const [dynamicPricing, setDynamicPricing] = useState<{[serviceId: string]: any}>({})
+  const [loadingPricing, setLoadingPricing] = useState(false)
 
   // Accessibility state for keyboard navigation
   const [focusedServiceIndex, setFocusedServiceIndex] = useState<number>(-1)
@@ -89,8 +101,58 @@ export default function BookPage() {
   // Get organization slug from URL parameter
   const organizationSlug = searchParams.get('org') || searchParams.get('shop') || undefined
   
+  // Get barber context from URL parameters
+  const selectedBarberId = searchParams.get('barber')
+  const selectedBarberName = searchParams.get('barberName')
+  const barberExperience = searchParams.get('experience')
+  const barberSpecialties = searchParams.get('specialties')?.split(',') || []
+  const barberHourlyRate = searchParams.get('hourlyRate')
+  const isPremiumTier = searchParams.get('tier') === 'premium'
+  const suggestedPrice = searchParams.get('suggestedPrice')
+  
   // Load customer tracking pixels
   const { pixelsLoaded, error: pixelError } = useCustomerPixels(organizationSlug)
+  
+  // Load Six Figure Barber dynamic pricing when barber is selected
+  const loadDynamicPricing = async () => {
+    if (!selectedBarberId) return
+    
+    setLoadingPricing(true)
+    try {
+      const pricingPromises = SERVICES.map(async (service) => {
+        const serviceName = SERVICE_NAMES_FOR_PRICING[service.id as keyof typeof SERVICE_NAMES_FOR_PRICING] || service.id.toLowerCase()
+        
+        const pricingResult = await appointmentsAPI.calculateServicePrice(
+          serviceName,
+          selectedBarberId,
+          undefined, // client_id - we'll add this for logged-in users later
+          selectedDate && selectedTime ? 
+            new Date(`${selectedDate.toISOString().split('T')[0]}T${selectedTime}:00`).toISOString() : 
+            undefined
+        )
+        
+        return {
+          serviceId: service.id,
+          pricing: pricingResult
+        }
+      })
+      
+      const results = await Promise.all(pricingPromises)
+      const pricingMap: {[serviceId: string]: any} = {}
+      
+      results.forEach(result => {
+        pricingMap[result.serviceId] = result.pricing
+      })
+      
+      setDynamicPricing(pricingMap)
+      console.log('🎯 Six Figure Barber pricing loaded:', pricingMap)
+    } catch (error) {
+      console.warn('Failed to load dynamic pricing:', error)
+      // Fallback to default pricing
+    } finally {
+      setLoadingPricing(false)
+    }
+  }
   
   useEffect(() => {
     setUserTimezone(getTimezoneDisplayName())
@@ -149,6 +211,13 @@ export default function BookPage() {
   useEffect(() => {
     loadNextAvailable().catch(console.warn)
   }, [loadNextAvailable])
+
+  // Load dynamic pricing when barber context or appointment details change
+  useEffect(() => {
+    if (selectedBarberId) {
+      loadDynamicPricing()
+    }
+  }, [selectedBarberId, selectedDate, selectedTime])
 
   // Load time slots when date is selected
   useEffect(() => {
@@ -497,6 +566,84 @@ export default function BookPage() {
             </TimezoneTooltip>
           </div>
         )}
+
+        {/* Barber Information Banner */}
+        {selectedBarberId && selectedBarberName && (
+          <div className="mb-6 max-w-2xl mx-auto">
+            <Card className="border-l-4 border-l-primary-500 bg-gradient-to-r from-primary-50 to-white">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      Booking with {selectedBarberName}
+                      {isPremiumTier && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          Premium
+                        </span>
+                      )}
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Availability-Aware
+                      </span>
+                    </h3>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                      {barberExperience && (
+                        <span className="capitalize">{barberExperience} Barber</span>
+                      )}
+                      {barberHourlyRate && (
+                        <span>From ${barberHourlyRate}/hour</span>
+                      )}
+                      {barberSpecialties.length > 0 && (
+                        <span className="hidden sm:inline">
+                          Specializes in {barberSpecialties.slice(0, 2).join(', ')}
+                          {barberSpecialties.length > 2 && ` +${barberSpecialties.length - 2} more`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {isPremiumTier && (
+                    <div className="text-right text-sm">
+                      <span className="text-gray-500">Six Figure Barber</span>
+                      <div className="font-semibold text-primary-600">Premium Experience</div>
+                    </div>
+                  )}
+                </div>
+                {suggestedPrice && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Suggested service pricing:</span>
+                      <span className="font-semibold text-green-600">${suggestedPrice}</span>
+                    </div>
+                  </div>
+                )}
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <div className="flex items-start gap-2 text-sm text-blue-700">
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>
+                      Time slots shown are specifically available for {selectedBarberName}. 
+                      Only slots when this barber is working and available will be displayed.
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-center">
@@ -644,15 +791,101 @@ export default function BookPage() {
                       <div 
                         className="text-xl font-bold text-primary-600"
                         id={`service-${service.id}-price`}
-                        aria-label={`Price: ${service.price}`}
+                        aria-label={`Price: ${dynamicPricing[service.id]?.final_price ? `$${dynamicPricing[service.id].final_price}` : service.price}`}
                       >
-                        {service.price}
+                        {loadingPricing ? (
+                          <div className="flex items-center gap-2">
+                            <div className="animate-spin h-4 w-4 border-2 border-primary-600 border-t-transparent rounded-full"></div>
+                            <span className="text-sm">Calculating...</span>
+                          </div>
+                        ) : dynamicPricing[service.id] ? (
+                          <div className="text-right">
+                            <div className="text-xl font-bold">
+                              ${dynamicPricing[service.id].final_price}
+                            </div>
+                            {dynamicPricing[service.id].six_figure_insights?.is_premium_positioning && (
+                              <div className="text-xs text-yellow-600 font-medium">
+                                Premium
+                              </div>
+                            )}
+                            {dynamicPricing[service.id].pricing_breakdown?.time_premium_reason && (
+                              <div className="text-xs text-blue-600">
+                                {dynamicPricing[service.id].pricing_breakdown.time_premium_reason}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          service.price
+                        )}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
+            
+            {/* Six Figure Barber Pricing Insights */}
+            {selectedBarberId && Object.keys(dynamicPricing).length > 0 && (
+              <div className="max-w-2xl mx-auto mt-8">
+                <Card className="border-l-4 border-l-yellow-500 bg-gradient-to-r from-yellow-50 to-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                          <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                          Six Figure Barber Premium Pricing
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Smart Pricing Active
+                          </span>
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Prices are dynamically calculated based on barber expertise, service complexity, and optimal time slots to maximize value.
+                        </p>
+                        
+                        {/* Show pricing factors for the first service with dynamic pricing */}
+                        {(() => {
+                          const firstServiceWithPricing = Object.values(dynamicPricing)[0]
+                          if (!firstServiceWithPricing) return null
+                          
+                          return (
+                            <div className="mt-3 text-xs text-gray-500 space-y-1">
+                              <div className="flex justify-between">
+                                <span>Barber Experience Level:</span>
+                                <span className="font-medium capitalize">
+                                  {firstServiceWithPricing.pricing_breakdown?.barber_experience_level || 'Mid'}
+                                </span>
+                              </div>
+                              {firstServiceWithPricing.pricing_breakdown?.client_tier && (
+                                <div className="flex justify-between">
+                                  <span>Client Tier Bonus:</span>
+                                  <span className="font-medium">
+                                    {((firstServiceWithPricing.pricing_breakdown.client_tier_bonus - 1) * 100).toFixed(0)}%
+                                  </span>
+                                </div>
+                              )}
+                              {firstServiceWithPricing.pricing_breakdown?.time_premium > 1 && (
+                                <div className="flex justify-between">
+                                  <span>Premium Time Slot:</span>
+                                  <span className="font-medium text-blue-600">
+                                    +{((firstServiceWithPricing.pricing_breakdown.time_premium - 1) * 100).toFixed(0)}%
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         )}
 

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Modal Test - BookedBarber V2</title>
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .success { border-color: #10b981; background: #ecfdf5; }
+        .error { border-color: #ef4444; background: #fef2f2; }
+        .warning { border-color: #f59e0b; background: #fffbeb; }
+        button {
+            background: #14b8a6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover { background: #0f766e; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        .close:hover { color: #000; }
+        #qrcode {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .url-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .status.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .status.error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 QR Modal Functionality Test</h1>
+        <p>Testing the QR modal functionality implementation for BookedBarber V2</p>
+
+        <!-- Test 1: Basic QR Code Generation -->
+        <div class="test-section" id="test1">
+            <h3>Test 1: Basic QR Code Generation</h3>
+            <p>Test if we can generate QR codes using the QRCode library</p>
+            <button onclick="testBasicQRGeneration()">Generate Test QR Code</button>
+            <div id="basic-qr-result"></div>
+        </div>
+
+        <!-- Test 2: Header Dropdown QR Icon Simulation -->
+        <div class="test-section" id="test2">
+            <h3>Test 2: Header Dropdown QR Icon Simulation</h3>
+            <p>Simulate the header dropdown QR icon functionality</p>
+            <button onclick="simulateHeaderQRIcon()">Simulate Header QR Click</button>
+            <div id="header-qr-result"></div>
+        </div>
+
+        <!-- Test 3: ShareBookingModal QR Functionality -->
+        <div class="test-section" id="test3">
+            <h3>Test 3: ShareBookingModal QR Functionality</h3>
+            <p>Simulate the ShareBookingModal QR button functionality</p>
+            <button onclick="simulateShareModalQR()">Simulate Share Modal QR</button>
+            <div id="share-modal-result"></div>
+        </div>
+
+        <!-- Test 4: QR Code Service Functions -->
+        <div class="test-section" id="test4">
+            <h3>Test 4: QR Code Service Functions</h3>
+            <p>Test the QR code service functions (validation, generation, download)</p>
+            <button onclick="testQRServiceFunctions()">Test QR Service</button>
+            <div id="service-test-result"></div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>QR Code for Booking</h2>
+            <div id="qrcode"></div>
+            <div class="qr-controls">
+                <button onclick="downloadQRCode()">Download PNG</button>
+                <button onclick="copyBookingURL()">Copy URL</button>
+                <button onclick="shareBookingURL()">Share</button>
+            </div>
+            <div class="url-display" id="bookingUrlDisplay"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentQRData = null;
+        let currentBookingURL = '';
+
+        // Test 1: Basic QR Code Generation
+        function testBasicQRGeneration() {
+            const resultDiv = document.getElementById('basic-qr-result');
+            resultDiv.innerHTML = '<div class="status">Generating QR code...</div>';
+            
+            const testURL = 'https://book.example.com/test-barber';
+            
+            try {
+                // Create a canvas for the QR code
+                const canvas = document.createElement('canvas');
+                QRCode.toCanvas(canvas, testURL, {
+                    width: 256,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }, function (error) {
+                    if (error) {
+                        resultDiv.innerHTML = `<div class="status error">Error: ${error}</div>`;
+                        console.error('QR Code generation error:', error);
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="status success">✅ QR Code generated successfully!</div>
+                            <div style="text-align: center; margin: 15px 0;">
+                                ${canvas.outerHTML}
+                            </div>
+                            <div class="url-display">${testURL}</div>
+                        `;
+                        console.log('QR Code generated successfully');
+                    }
+                });
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+                console.error('QR Code generation failed:', error);
+            }
+        }
+
+        // Test 2: Header Dropdown QR Icon Simulation
+        function simulateHeaderQRIcon() {
+            const resultDiv = document.getElementById('header-qr-result');
+            resultDiv.innerHTML = '<div class="status">Simulating header QR icon click...</div>';
+            
+            // Simulate the header QR functionality
+            const bookingURL = `${window.location.origin}/book/summer2025`;
+            const serviceName = 'Summer Special';
+            
+            setTimeout(() => {
+                resultDiv.innerHTML = `
+                    <div class="status success">✅ Header QR icon functionality simulated</div>
+                    <p><strong>Action:</strong> QR modal should open with booking URL</p>
+                    <p><strong>URL:</strong> ${bookingURL}</p>
+                    <p><strong>Service:</strong> ${serviceName}</p>
+                    <button onclick="openQRModal('${bookingURL}', '${serviceName}')">Open QR Modal</button>
+                `;
+                console.log('Header QR icon simulation completed');
+            }, 500);
+        }
+
+        // Test 3: ShareBookingModal QR Functionality
+        function simulateShareModalQR() {
+            const resultDiv = document.getElementById('share-modal-result');
+            resultDiv.innerHTML = '<div class="status">Simulating ShareBookingModal QR functionality...</div>';
+            
+            const bookingURL = 'https://book.6fb.com/your-business';
+            const businessName = 'Test Business';
+            
+            setTimeout(() => {
+                resultDiv.innerHTML = `
+                    <div class="status success">✅ ShareBookingModal QR functionality simulated</div>
+                    <p><strong>Action:</strong> QR code generation triggered from share modal</p>
+                    <p><strong>Business:</strong> ${businessName}</p>
+                    <p><strong>URL:</strong> ${bookingURL}</p>
+                    <button onclick="openQRModal('${bookingURL}', '${businessName}')">Open QR Modal</button>
+                `;
+                console.log('ShareBookingModal QR simulation completed');
+            }, 500);
+        }
+
+        // Test 4: QR Service Functions
+        function testQRServiceFunctions() {
+            const resultDiv = document.getElementById('service-test-result');
+            resultDiv.innerHTML = '<div class="status">Testing QR service functions...</div>';
+            
+            let results = [];
+            
+            // Test URL validation
+            const testURLs = [
+                'https://book.example.com/valid',
+                'invalid-url',
+                'https://book.6fb.com/test',
+                ''
+            ];
+            
+            testURLs.forEach(url => {
+                const isValid = validateBookingUrl(url);
+                results.push(`URL "${url}": ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+            });
+            
+            // Test filename generation
+            const filename = generateQRCodeFilename('test-booking', 'medium');
+            results.push(`Generated filename: ${filename}`);
+            
+            setTimeout(() => {
+                resultDiv.innerHTML = `
+                    <div class="status success">✅ QR service functions tested</div>
+                    <ul>
+                        ${results.map(result => `<li>${result}</li>`).join('')}
+                    </ul>
+                `;
+                console.log('QR service functions test completed');
+            }, 300);
+        }
+
+        // QR Service Helper Functions (simplified versions)
+        function validateBookingUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            try {
+                new URL(url);
+                return url.includes('book') || url.includes('appointment');
+            } catch {
+                return false;
+            }
+        }
+
+        function generateQRCodeFilename(prefix, size) {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            return `${prefix}-${size}-${timestamp}.png`;
+        }
+
+        // QR Modal Functions
+        function openQRModal(bookingURL, serviceName) {
+            currentBookingURL = bookingURL;
+            document.getElementById('bookingUrlDisplay').textContent = bookingURL;
+            
+            // Clear previous QR code
+            const qrDiv = document.getElementById('qrcode');
+            qrDiv.innerHTML = '<div class="status">Generating QR code...</div>';
+            
+            // Generate QR code
+            QRCode.toCanvas(document.createElement('canvas'), bookingURL, {
+                width: 300,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function (error, canvas) {
+                if (error) {
+                    qrDiv.innerHTML = `<div class="status error">Error generating QR code: ${error}</div>`;
+                } else {
+                    qrDiv.innerHTML = '';
+                    qrDiv.appendChild(canvas);
+                    currentQRData = canvas;
+                }
+            });
+            
+            // Show modal
+            document.getElementById('qrModal').style.display = 'block';
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+
+        function downloadQRCode() {
+            if (currentQRData) {
+                const link = document.createElement('a');
+                link.download = generateQRCodeFilename('booking-qr', 'large');
+                link.href = currentQRData.toDataURL();
+                link.click();
+                console.log('QR code download initiated');
+            }
+        }
+
+        function copyBookingURL() {
+            if (currentBookingURL) {
+                navigator.clipboard.writeText(currentBookingURL).then(() => {
+                    alert('Booking URL copied to clipboard!');
+                    console.log('Booking URL copied to clipboard');
+                }).catch(err => {
+                    console.error('Failed to copy URL:', err);
+                });
+            }
+        }
+
+        function shareBookingURL() {
+            if (navigator.share && currentBookingURL) {
+                navigator.share({
+                    title: 'Book an Appointment',
+                    text: 'Schedule your appointment with us',
+                    url: currentBookingURL,
+                }).then(() => {
+                    console.log('Booking URL shared successfully');
+                }).catch(err => {
+                    console.log('Share cancelled or failed:', err);
+                    // Fallback to copy
+                    copyBookingURL();
+                });
+            } else {
+                // Fallback to copy
+                copyBookingURL();
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close modal when clicking the X
+            document.querySelector('.close').onclick = closeQRModal;
+            
+            // Close modal when clicking outside
+            document.getElementById('qrModal').onclick = function(event) {
+                if (event.target === this) {
+                    closeQRModal();
+                }
+            };
+            
+            console.log('QR Modal Test Page loaded successfully');
+        });
+
+        // ESC key to close modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeQRModal();
+            }
+        });
+    </script>
+</body>
+</html>

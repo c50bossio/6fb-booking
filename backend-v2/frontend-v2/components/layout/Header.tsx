@@ -167,7 +167,7 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
 
   return (
     <header className={`
-      sticky top-0 z-40 
+      sticky top-0 z-50 
       ${colors.background.card} border-b ${colors.border.default}
       backdrop-blur-ios bg-white/90 dark:bg-gray-900/90
       transition-colors duration-200
@@ -551,13 +551,17 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
         </div>
       </div>
       
-      {/* QR Code Modal */}
-      <QRCodeShareModal
-        isOpen={qrModal.isOpen}
-        onClose={qrModal.closeModal}
-        bookingUrl={qrModal.bookingUrl}
-        serviceName={qrModal.serviceName}
-      />
+      {/* QR Code Modal - Using Portal for proper rendering */}
+      {qrModal.isOpen && (
+        <Portal>
+          <QRCodeShareModal
+            isOpen={qrModal.isOpen}
+            onClose={qrModal.closeModal}
+            bookingUrl={qrModal.bookingUrl}
+            serviceName={qrModal.serviceName}
+          />
+        </Portal>
+      )}
     </header>
   )
 }

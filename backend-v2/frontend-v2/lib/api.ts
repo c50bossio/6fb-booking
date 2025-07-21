@@ -1220,6 +1220,33 @@ export async function getBarbers(): Promise<User[]> {
   return fetchAPI('/api/v2/barbers')
 }
 
+// Barber profile interface
+export interface BarberProfileData {
+  id: number
+  user_id: number
+  bio?: string
+  years_experience?: number
+  profile_image_url?: string
+  instagram_handle?: string
+  website_url?: string
+  specialties: string[]
+  certifications: string[]
+  hourly_rate?: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  user_name: string
+  user_email: string
+  user_phone?: string
+  user_role: string
+  user_is_active: boolean
+  user_created_at: string
+}
+
+export async function getBarberProfile(barberId: number): Promise<BarberProfileData> {
+  return fetchAPI(`/api/v2/barbers/${barberId}/profile`)
+}
+
 export interface Timezone {
   value: string
   label: string
@@ -5672,6 +5699,87 @@ export const appointmentsAPI = {
     const params = new URLSearchParams({ appointment_date: appointmentDate })
     if (timezone) params.append('timezone', timezone)
     return fetchAPI(`/api/v2/appointments/slots?${params}`)
+  },
+
+  // Enhanced: Get available slots with barber-specific availability
+  async getAvailableSlotsForBarber(appointmentDate: string, barberId: string, timezone?: string): Promise<SlotsResponse> {
+    const params = new URLSearchParams({ 
+      appointment_date: appointmentDate,
+      barber_id: barberId
+    })
+    if (timezone) params.append('timezone', timezone)
+    
+    console.log('🔗 Calling barber-specific slots API:', `/api/v2/appointments/slots?${params.toString()}`)
+    return fetchAPI(`/api/v2/appointments/slots?${params.toString()}`)
+  },
+
+  // Enhanced: Check if specific barber is available for a time slot
+  async checkBarberAvailability(barberId: string, checkDate: string, startTime: string, endTime: string): Promise<any> {
+    const params = new URLSearchParams({
+      check_date: checkDate,
+      start_time: startTime,
+      end_time: endTime
+    })
+    
+    return fetchAPI(`/api/v2/barber-availability/check/${barberId}?${params.toString()}`)
+  },
+
+  // Enhanced: Get comprehensive barber schedule with availability
+  async getBarberSchedule(barberId: string, startDate: string, endDate: string, timezone?: string): Promise<any> {
+    const params = new URLSearchParams({
+      start_date: startDate,
+      end_date: endDate
+    })
+    if (timezone) params.append('timezone', timezone)
+    
+    return fetchAPI(`/api/v2/barber-availability/schedule/${barberId}?${params.toString()}`)
+  },
+
+  // Enhanced: Get all available barbers for a specific time slot
+  async getAvailableBarbers(checkDate: string, startTime: string, endTime: string, serviceId?: string): Promise<AvailableBarbersResponse> {
+    const params = new URLSearchParams({
+      check_date: checkDate,
+      start_time: startTime,
+      end_time: endTime
+    })
+    if (serviceId) params.append('service_id', serviceId)
+    
+    return fetchAPI(`/api/v2/barber-availability/available-barbers?${params.toString()}`)
+  },
+
+  // Six Figure Barber Premium Pricing Integration
+  async calculateServicePrice(serviceName: string, barberId: string, clientId?: string, appointmentDateTime?: string, basePrice?: number): Promise<any> {
+    return fetchAPI('/api/v1/six-figure-pricing/calculate-price', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_name: serviceName,
+        barber_id: parseInt(barberId),
+        client_id: clientId ? parseInt(clientId) : null,
+        appointment_datetime: appointmentDateTime,
+        base_price: basePrice
+      })
+    })
+  },
+
+  async getBarberPricingRecommendations(barberId: string, analysisDays: number = 30): Promise<any> {
+    return fetchAPI(`/api/v1/six-figure-pricing/barber-recommendations/${barberId}?analysis_days=${analysisDays}`)
+  },
+
+  async getServicePricingMatrix(barberExperience: string = 'mid', clientTier: string = 'new', includeTimePremiums: boolean = true): Promise<any> {
+    const params = new URLSearchParams({
+      barber_experience: barberExperience,
+      client_tier: clientTier,
+      include_time_premiums: includeTimePremiums.toString()
+    })
+    return fetchAPI(`/api/v1/six-figure-pricing/service-pricing-matrix?${params.toString()}`)
+  },
+
+  async getRevenueOptimizationInsights(barberId: string, targetAnnualRevenue: number = 100000): Promise<any> {
+    const params = new URLSearchParams({
+      target_annual_revenue: targetAnnualRevenue.toString()
+    })
+    return fetchAPI(`/api/v1/six-figure-pricing/revenue-optimization/${barberId}?${params.toString()}`)
   },
 
   // Create new appointment

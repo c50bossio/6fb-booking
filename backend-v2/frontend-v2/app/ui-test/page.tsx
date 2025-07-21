@@ -6,7 +6,7 @@ import { ThemeToggle, SimpleThemeToggle } from '@/components/ThemeToggle';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 
 /**
  * Comprehensive Toggle Component Testing Suite

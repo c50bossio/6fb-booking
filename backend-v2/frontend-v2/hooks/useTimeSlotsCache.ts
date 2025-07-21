@@ -23,6 +23,8 @@ interface UsTimeSlotsOptions {
   preloadRange?: number
   /** Service filter for time slots */
   service?: string
+  /** Barber ID for barber-specific availability */
+  barberId?: string
   /** Whether to enable background refresh */
   backgroundRefresh?: boolean
   /** Callback when cache is updated */
@@ -59,6 +61,7 @@ export function useTimeSlotsCache(options: UsTimeSlotsOptions = {}): UseTimeSlot
     preloadNearbyDates: autoPreload = true,
     preloadRange = 3,
     service,
+    barberId,
     backgroundRefresh = true,
     onCacheUpdate
   } = options
@@ -100,7 +103,18 @@ export function useTimeSlotsCache(options: UsTimeSlotsOptions = {}): UseTimeSlot
       }
       setError(null)
 
-      const response: SlotsResponse = await getCachedTimeSlots(date, service, forceRefresh)
+      // Use barber-specific API if barberId is provided
+      let response: SlotsResponse
+      if (barberId) {
+        // Import the enhanced appointmentsAPI for barber-specific slots
+        const { appointmentsAPI } = await import('@/lib/api')
+        response = await appointmentsAPI.getAvailableSlotsForBarber(date, barberId)
+        console.log('🎯 Loaded barber-specific slots:', { date, barberId, slotsCount: response.slots?.length })
+      } else {
+        // Use the cached version for general slots
+        response = await getCachedTimeSlots(date, service, forceRefresh)
+      }
+      
       setTimeSlots(response.slots || [])
       setLastRefresh(new Date())
       
@@ -118,7 +132,7 @@ export function useTimeSlotsCache(options: UsTimeSlotsOptions = {}): UseTimeSlot
       setLoading(false)
       setRefreshing(false)
     }
-  }, [service, autoPreload, onCacheUpdate])
+  }, [service, barberId, autoPreload, onCacheUpdate])
 
   // Load next available slot
   const loadNextAvailable = useCallback(async (forceRefresh = false): Promise<void> => {
@@ -127,6 +141,8 @@ export function useTimeSlotsCache(options: UsTimeSlotsOptions = {}): UseTimeSlot
         setRefreshing(true)
       }
 
+      // For barber-specific booking, we could enhance this to get barber-specific next available
+      // For now, use the general next available slot
       const result = await getCachedNextAvailableSlot(service, forceRefresh)
       setNextAvailable(result)
       setLastRefresh(new Date())
@@ -139,7 +155,7 @@ export function useTimeSlotsCache(options: UsTimeSlotsOptions = {}): UseTimeSlot
     } finally {
       setRefreshing(false)
     }
-  }, [service, onCacheUpdate])
+  }, [service, barberId, onCacheUpdate])
 
   // Refresh all data
   const refreshAll = useCallback(async (): Promise<void> => {
