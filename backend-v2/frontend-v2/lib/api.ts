@@ -6448,6 +6448,87 @@ export async function getPublicTrackingPixels(organizationSlug: string): Promise
   return fetchAPI(`/api/v2/customer-pixels/public/${organizationSlug}`, {}, false)
 }
 
+// Client Tiers API Types
+export interface TierDashboardMetrics {
+  total_clients: number
+  tier_distribution: {
+    bronze: number
+    silver: number
+    gold: number
+    platinum: number
+  }
+  revenue_by_tier: {
+    bronze: number
+    silver: number
+    gold: number
+    platinum: number
+  }
+  tier_trends: {
+    month: string
+    bronze: number
+    silver: number
+    gold: number
+    platinum: number
+  }[]
+}
+
+export interface ClientTierAnalysis {
+  client_id: number
+  current_tier: string
+  recommended_tier: string
+  total_revenue: number
+  visit_frequency: number
+  last_visit: string
+}
+
+export interface BulkTierAnalysisResult {
+  total_processed: number
+  updated_count: number
+  errors: string[]
+  tier_changes: {
+    client_id: number
+    old_tier: string
+    new_tier: string
+  }[]
+}
+
+// Client Tiers API Functions - Updated to use new V2 endpoints
+export async function getTierDashboardMetrics(): Promise<TierDashboardMetrics> {
+  return fetchAPI('/api/v1/client-tiers/')
+}
+
+export async function getClientTierAnalysis(clientId: number): Promise<ClientTierAnalysis> {
+  return fetchAPI(`/api/v1/client-tiers/client/${clientId}`)
+}
+
+export async function updateClientTier(clientId: number): Promise<any> {
+  // This would be used to manually recalculate a single client's tier
+  return fetchAPI(`/api/v1/client-tiers/calculate-bulk`, {
+    method: 'POST',
+    body: JSON.stringify({ client_ids: [clientId] })
+  })
+}
+
+export async function bulkCalculateClientTiers(clientIds?: number[]): Promise<BulkTierAnalysisResult> {
+  const body = clientIds ? { client_ids: clientIds } : {}
+  return fetchAPI('/api/v1/client-tiers/calculate-bulk', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  })
+}
+
+export async function getRevenueOptimizationAnalytics(): Promise<any> {
+  return fetchAPI('/api/v1/client-tiers/analytics/revenue-optimization')
+}
+
+// AI Agents API Functions
+export async function toggleAgentStatus(agentId: string, status: 'active' | 'paused'): Promise<void> {
+  await fetchAPI(`/api/v2/ai-agents/${agentId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ status })
+  })
+}
+
 // Export API client objects for backwards compatibility
 export const api = {
   login,

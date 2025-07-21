@@ -442,6 +442,14 @@ export const navigationItems: NavigationItem[] = [
         isNew: true
       },
       {
+        name: 'Client Tiers',
+        href: '/analytics/client-tiers',
+        icon: UsersIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Six Figure Barber client tier analytics and revenue optimization',
+        isNew: true
+      },
+      {
         name: 'Revenue Analytics',
         href: '/analytics/revenue',
         icon: CurrencyDollarIcon,
