@@ -9,7 +9,7 @@ services:
     env: python
     region: oregon
     plan: starter # Using starter for staging to save costs
-    buildCommand: cd backend-v2 && pip install -r requirements.txt
+    buildCommand: cd backend-v2 && apt-get update && apt-get install -y libmagic1 && pip install -r requirements.txt
     startCommand: cd backend-v2 && uvicorn main:app --host 0.0.0.0 --port $PORT --log-level debug
     envVars:
       - key: PYTHON_VERSION
