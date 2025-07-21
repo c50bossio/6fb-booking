@@ -452,3 +452,14 @@ class RedisCacheService:
 
 # Global cache service instance
 cache_service = RedisCacheService()
+
+
+# Convenience function for getting Redis client
+def get_redis_client() -> Optional[redis.Redis]:
+    """
+    Get Redis client instance for use in other services.
+    
+    Returns None if Redis is not available, allowing services to gracefully degrade.
+    """
+    global cache_service
+    return cache_service.redis_manager.get_client()

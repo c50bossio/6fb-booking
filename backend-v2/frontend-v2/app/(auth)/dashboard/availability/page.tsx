@@ -32,14 +32,10 @@ export default function AvailabilityPage() {
   console.log('User data:', user)
   
   // Check if user has access to availability management
-  // Allowed roles: BARBER, SHOP_OWNER, ENTERPRISE_OWNER, admin roles
+  // Allowed roles: BARBER, admin roles based on develop branch role system
   const hasAvailabilityAccess = user?.role === 'barber' || 
                                 user?.role === 'admin' || 
-                                user?.role === 'super_admin' ||
-                                user?.unified_role === 'BARBER' || 
-                                user?.unified_role === 'SHOP_OWNER' ||
-                                user?.unified_role === 'ENTERPRISE_OWNER' ||
-                                user?.unified_role === 'SUPER_ADMIN'
+                                user?.role === 'super_admin'
 
   if (!hasAvailabilityAccess) {
     return (
