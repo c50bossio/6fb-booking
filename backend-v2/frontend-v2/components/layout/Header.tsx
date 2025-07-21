@@ -21,6 +21,7 @@ import { SimpleThemeToggle } from '@/components/ThemeToggle'
 import { navigation, getUserMenuItems } from '@/lib/navigation'
 import { Logo } from '@/components/ui/Logo'
 import { Portal } from '@/components/ui/Portal'
+import QRCodeShareModal, { useQRCodeShareModal } from '@/components/booking/QRCodeShareModal'
 
 interface HeaderProps {
   user: User | null
@@ -46,6 +47,9 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
   const shareButtonRef = useRef<HTMLButtonElement>(null)
   const router = useRouter()
   const { colors, isDark } = useThemeStyles()
+  
+  // QR Code modal hook
+  const qrModal = useQRCodeShareModal()
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -304,11 +308,11 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
                           Popular Links
                         </p>
                         <div className="mt-1">
-                          <button
-                            onClick={() => window.open(`${window.location.origin}/book/summer2025`, '_blank')}
-                            className="w-full p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
-                          >
-                            <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => window.open(`${window.location.origin}/book/summer2025`, '_blank')}
+                              className="flex-1 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
+                            >
                               <div>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                   Summer Special
@@ -317,9 +321,19 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
                                   /book/summer2025 • 234 clicks
                                 </p>
                               </div>
-                              <QrCodeIcon className="w-4 h-4 text-gray-400" />
-                            </div>
-                          </button>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setShowShareMenu(false)
+                                qrModal.openModal(`${window.location.origin}/book/summer2025`, 'Summer Special')
+                              }}
+                              className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                              title="Generate QR Code"
+                            >
+                              <QrCodeIcon className="w-4 h-4 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400" />
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -536,6 +550,14 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           </div>
         </div>
       </div>
+      
+      {/* QR Code Modal */}
+      <QRCodeShareModal
+        isOpen={qrModal.isOpen}
+        onClose={qrModal.closeModal}
+        bookingUrl={qrModal.bookingUrl}
+        serviceName={qrModal.serviceName}
+      />
     </header>
   )
 }
