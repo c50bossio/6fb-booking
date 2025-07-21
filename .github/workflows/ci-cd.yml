@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -583,7 +583,7 @@ jobs:
     name: Build and Push Docker Images V2
     needs: [test-backend, test-frontend, test-hook-performance]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     permissions:
       contents: read
@@ -659,7 +659,7 @@ jobs:
     name: Deploy to Staging
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/main'
     environment: staging
 
     steps:
@@ -673,7 +673,7 @@ jobs:
         key: ${{ secrets.STAGING_SSH_KEY }}
         script: |
           cd /opt/6fb-platform-v2
-          git pull origin develop
+          git pull origin main
           docker-compose -f docker-compose.staging.yml pull
           docker-compose -f docker-compose.staging.yml up -d
           docker system prune -f
