@@ -8,8 +8,8 @@ import json
 from main import app
 from models import User
 from models.tracking import (
-    ConversionEvent, ConversionGoal, CampaignSource,
-    UserLifetimeValue, ConversionAttribution
+    ConversionEvent, ConversionGoal
+    # CampaignSource, UserLifetimeValue, ConversionAttribution  # Not available
 )
 
 
