@@ -7,7 +7,8 @@ from database import engine, Base
 import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, payments, payment_rate_limits, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, homepage_builder
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, homepage_builder
+# payment_rate_limits temporarily disabled due to FastAPI error
 # service_templates temporarily disabled due to FastAPI error
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
@@ -306,7 +307,7 @@ app.include_router(mfa.router, prefix="/api/v1")  # Multi-Factor Authentication 
 app.include_router(bookings.router, prefix="/api/v1")
 app.include_router(appointments.router, prefix="/api/v1")  # Standardized appointment endpoints
 app.include_router(payments.router, prefix="/api/v1")
-app.include_router(payment_rate_limits.router, prefix="/api/v1")  # Payment rate limiting monitoring and management
+# app.include_router(payment_rate_limits.router, prefix="/api/v1")  # Payment rate limiting monitoring and management - temporarily disabled
 app.include_router(clients.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(timezones.router, prefix="/api/v1")

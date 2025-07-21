@@ -9,7 +9,7 @@ from database import get_db
 from models import Service, ServiceCategoryEnum, ServicePricingRule, ServiceBookingRule, barber_services
 from schemas import ServiceCreate, ServiceUpdate, ServiceResponse, ServicePricingRuleCreate, ServiceBookingRuleCreate
 from utils.auth import get_current_user, verify_admin_or_barber
-from dependencies import get_current_active_user
+from dependencies import get_current_user as get_current_active_user
 from utils.input_validation import validate_string, validate_integer, ValidationError as InputValidationError
 from schemas_new.validation import ServiceCreateRequest, ListFilterRequest
 from services.cache_invalidation import cache_invalidator

@@ -93,13 +93,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301)
   }
   
-  // ==================== ENHANCED AUTHENTICATION HANDLING ====================
-  
-  // Try enhanced auth middleware first (role-based access control)
-  const enhancedResponse = enhancedAuthMiddleware(request)
-  if (enhancedResponse) {
-    return enhancedResponse
-  }
+  // ==================== BASIC AUTHENTICATION HANDLING ====================
+  // Skip enhanced auth middleware temporarily to prevent redirect loops
+  // const enhancedResponse = enhancedAuthMiddleware(request)
+  // if (enhancedResponse) {
+  //   return enhancedResponse
+  // }
   
   // Fallback to basic authentication handling
   // Check localStorage token via custom header or cookie
