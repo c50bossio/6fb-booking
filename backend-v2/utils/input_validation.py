@@ -5,7 +5,11 @@ Prevents injection attacks, data corruption, and resource exhaustion.
 
 import re
 import os
-import magic
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
 from typing import Optional, List, Dict, Any, Union
 from datetime import datetime, date, timedelta
 from decimal import Decimal, InvalidOperation
@@ -380,17 +384,20 @@ async def validate_file_upload(
     if allowed_mime_types is None:
         allowed_mime_types = ALLOWED_MIME_TYPES
     
-    try:
-        mime = magic.Magic(mime=True)
-        detected_mime = mime.from_buffer(content)
-        
-        if detected_mime not in allowed_mime_types:
-            raise ValidationError(
-                f"Invalid {field_name} content type. File content does not match extension."
-            )
-    except Exception:
-        # If magic fails, at least check the extension
-        pass
+    # Verify MIME type using file content if magic is available
+    if MAGIC_AVAILABLE:
+        try:
+            mime = magic.Magic(mime=True)
+            detected_mime = mime.from_buffer(content)
+            
+            if detected_mime not in allowed_mime_types:
+                raise ValidationError(
+                    f"Invalid {field_name} content type. File content does not match extension."
+                )
+        except Exception:
+            # If magic fails, fall back to extension validation only
+            pass
+    # If magic is not available, rely on extension validation only
     
     return file
 
