@@ -53,7 +53,7 @@ class OAuthService:
             'google': OAuthProvider('google', {
                 'client_id': os.getenv('GOOGLE_CLIENT_ID'),
                 'client_secret': os.getenv('GOOGLE_CLIENT_SECRET'),
-                'redirect_uri': f"http://localhost:8000/auth/callback",
+                'redirect_uri': f"http://localhost:8000/api/google-calendar/oauth/callback",
                 'auth_url': 'https://accounts.google.com/o/oauth2/v2/auth',
                 'token_url': 'https://oauth2.googleapis.com/token',
                 'user_info_url': 'https://www.googleapis.com/oauth2/v2/userinfo',

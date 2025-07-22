@@ -1,12 +1,13 @@
 from dotenv import load_dotenv
 load_dotenv()  # Load environment variables first
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
-from database import engine, Base
+from database import engine, Base, get_db
+from sqlalchemy.orm import Session
 import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
@@ -399,6 +400,41 @@ def health_check():
         health_status["sentry"] = {"enabled": False}
     
     return health_status
+
+@app.get("/auth/callback")
+async def oauth_callback_simple(
+    code: str = Query(..., description="Authorization code"),
+    state: str = Query(..., description="CSRF state parameter"),
+    error: str = Query(None, description="OAuth error"),
+    db: Session = Depends(get_db)
+):
+    """Simple OAuth callback that determines provider from state"""
+    from api.v1.oauth import OAuthService
+    from fastapi.responses import RedirectResponse
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    # Handle OAuth errors
+    if error:
+        logger.error(f"OAuth error: {error}")
+        return RedirectResponse(url=f"http://localhost:3000/auth/oauth-error?error={error}")
+    
+    oauth_service = OAuthService(db)
+    
+    # Try to determine provider from state (both Google and Facebook should work)
+    try:
+        # First try Google
+        result = await oauth_service.handle_callback("google", code, state)
+        return RedirectResponse(url=f"http://localhost:3000/auth/oauth-success?provider=google")
+    except:
+        try:
+            # Then try Facebook
+            result = await oauth_service.handle_callback("facebook", code, state)
+            return RedirectResponse(url=f"http://localhost:3000/auth/oauth-success?provider=facebook")
+        except Exception as e:
+            logger.error(f"OAuth callback failed: {e}")
+            return RedirectResponse(url=f"http://localhost:3000/auth/oauth-error?error=callback_failed")
 
 @app.post("/test/notifications")
 async def test_notifications(email: str = "test@example.com", phone: str = "+1234567890"):
