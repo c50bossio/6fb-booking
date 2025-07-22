@@ -1,0 +1,25 @@
+{
+  "email": "owner@barbershop.com",
+  "password": "TestPassword123!",
+  "firstName": "Jane",
+  "lastName": "Owner",
+  "phone": "+1234567890",
+  "user_type": "barbershop",
+  "businessType": "studio",
+  "businessName": "Elite Barbershop",
+  "description": "Premium barbering services",
+  "address": {
+    "street": "456 Elite Ave",
+    "city": "Downtown",
+    "state": "CA",
+    "zipCode": "90210"
+  },
+  "website": "https://elitebarbershop.com",
+  "chairCount": 3,
+  "consent": {
+    "terms": true,
+    "privacy": true,
+    "marketing": false,
+    "testData": false
+  }
+}

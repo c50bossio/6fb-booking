@@ -1,0 +1,30 @@
+{
+  "email": "ceo@barberchain.com",
+  "password": "TestPassword123!",
+  "firstName": "CEO",
+  "lastName": "Enterprise",
+  "phone": "+1555123456",
+  "user_type": "barbershop",
+  "businessType": "enterprise",
+  "businessName": "Barber Chain Corp",
+  "description": "Multi-location barbering enterprise",
+  "address": {
+    "street": "789 Corporate Blvd",
+    "city": "Business District",
+    "state": "NY",
+    "zipCode": "10001"
+  },
+  "website": "https://barberchain.com",
+  "chairCount": 50,
+  "pricingInfo": {
+    "tier": "enterprise",
+    "chairs": 50,
+    "monthlyTotal": 1250
+  },
+  "consent": {
+    "terms": true,
+    "privacy": true,
+    "marketing": true,
+    "testData": false
+  }
+}
