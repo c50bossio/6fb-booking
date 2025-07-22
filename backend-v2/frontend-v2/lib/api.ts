@@ -1932,6 +1932,210 @@ export async function getClientTierAnalytics(
   return fetchAPI(`/api/v1/analytics/client-tiers?${params.toString()}`)
 }
 
+// Service Profitability Analytics Types
+export interface ServiceMetrics {
+  service_name: string
+  category: string
+  total_revenue: number
+  total_bookings: number
+  average_price: number
+  completion_rate: number
+  revenue_per_hour: number
+  premium_service: boolean
+  six_figure_score: number
+  growth_trend: 'increasing' | 'stable' | 'declining'
+  recommendations: string[]
+}
+
+export interface ServiceBundleOpportunity {
+  bundle_services: string[]
+  frequency: number
+  average_bundle_value: number
+  recommended_bundle_price: number
+  bundle_score: number
+}
+
+export interface ServiceProfitabilityAnalysis {
+  summary: {
+    total_services: number
+    total_revenue: number
+    analysis_period_days: number
+  }
+  service_metrics: ServiceMetrics[]
+  category_breakdown: {
+    [category: string]: {
+      total_revenue: number
+      total_bookings: number
+      average_price: number
+      completion_rate: number
+      premium_percentage: number
+      six_figure_score: number
+    }
+  }
+  premium_services: {
+    premium_service_count: number
+    standard_service_count: number
+    premium_revenue_percentage: number
+    premium_average_price: number
+    standard_average_price: number
+    upgrade_opportunities: Array<{
+      service_name: string
+      current_price: number
+      premium_threshold: number
+      price_increase_needed: number
+      potential_revenue_increase: number
+    }>
+    premium_services: Array<{
+      name: string
+      revenue: number
+      bookings: number
+      avg_price: number
+      six_figure_score: number
+    }>
+  }
+  bundling_opportunities: ServiceBundleOpportunity[]
+  pricing_recommendations: {
+    underpriced_services: Array<{
+      service_name: string
+      current_price: number
+      recommended_price: number
+      price_increase: number
+      potential_additional_revenue: number
+      confidence: 'high' | 'medium' | 'low'
+    }>
+    overpriced_services: Array<{
+      service_name: string
+      current_price: number
+      completion_rate: number
+      suggested_action: string
+    }>
+    premium_conversion_targets: Array<{
+      service_name: string
+      current_price: number
+      premium_threshold: number
+      six_figure_score: number
+      conversion_strategy: string
+    }>
+  }
+  six_figure_insights: {
+    six_figure_alignment_score: number
+    premium_service_percentage: number
+    premium_target_gap: number
+    revenue_per_hour_analysis: {
+      average_rph: number
+      high_efficiency_services: number
+      low_efficiency_services: number
+    }
+    service_mix_recommendations: string[]
+    six_figure_action_items: string[]
+  }
+  performance_benchmarks: {
+    average_service_price: number
+    median_service_price: number
+    average_completion_rate: number
+    average_revenue_per_hour: number
+    premium_service_percentage: number
+    six_figure_score_average: number
+  }
+}
+
+export interface ServiceOptimizationRecommendations {
+  pricing?: {
+    underpriced_services: Array<{
+      service_name: string
+      current_price: number
+      recommended_price: number
+      price_increase: number
+      potential_additional_revenue: number
+      confidence: string
+    }>
+    overpriced_services: Array<{
+      service_name: string
+      current_price: number
+      completion_rate: number
+      suggested_action: string
+    }>
+    premium_conversion_targets: Array<{
+      service_name: string
+      current_price: number
+      premium_threshold: number
+      six_figure_score: number
+      conversion_strategy: string
+    }>
+  }
+  premium?: {
+    current_premium_percentage: number
+    target_premium_percentage: number
+    upgrade_opportunities: Array<{
+      service_name: string
+      current_price: number
+      premium_threshold: number
+      price_increase_needed: number
+      potential_revenue_increase: number
+    }>
+    premium_services: Array<{
+      name: string
+      revenue: number
+      bookings: number
+      avg_price: number
+      six_figure_score: number
+    }>
+  }
+  bundling?: {
+    opportunities: ServiceBundleOpportunity[]
+    potential_revenue: number
+  }
+  efficiency?: {
+    low_efficiency_services: Array<{
+      service_name: string
+      current_rph: number
+      target_rph: number
+      improvement_needed: number
+      recommendations: string[]
+    }>
+    average_revenue_per_hour: number
+  }
+}
+
+/**
+ * Get comprehensive service profitability analysis
+ */
+export async function getServiceProfitabilityAnalytics(
+  userId?: number,
+  analysisPeriodDays: number = 90
+): Promise<ServiceProfitabilityAnalysis> {
+  const params = new URLSearchParams()
+  params.append('analysis_period_days', analysisPeriodDays.toString())
+  
+  if (userId) {
+    params.append('user_id', userId.toString())
+  }
+  
+  const response = await fetchAPI(`/api/v1/analytics/service-profitability?${params.toString()}`)
+  return response.profitability_analysis
+}
+
+/**
+ * Get targeted service optimization recommendations
+ */
+export async function getServiceOptimizationRecommendations(
+  userId?: number,
+  focusArea: 'all' | 'pricing' | 'premium' | 'bundling' | 'efficiency' = 'all'
+): Promise<{
+  recommendations: ServiceOptimizationRecommendations
+  six_figure_action_items: string[]
+  focus_area: string
+}> {
+  const params = new URLSearchParams()
+  params.append('focus_area', focusArea)
+  
+  if (userId) {
+    params.append('user_id', userId.toString())
+  }
+  
+  return fetchAPI(`/api/v1/analytics/service-optimization?${params.toString()}`)
+}
+
 export async function getDashboardAnalytics(
   userId?: number,
   startDate?: string,

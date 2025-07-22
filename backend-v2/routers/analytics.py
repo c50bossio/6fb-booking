@@ -526,6 +526,159 @@ async def get_client_tier_analytics(
         logger.error(f"Error calculating client tier analytics for user {target_user_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Error calculating client tier analytics: {str(e)}")
 
+@router.get("/service-profitability")
+async def get_service_profitability_analytics(
+    user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
+    analysis_period_days: int = Query(90, description="Days of history for profitability analysis"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get comprehensive service profitability analysis based on Six Figure methodology
+    """
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    if not checker.has_permission(Permission.VIEW_BASIC_ANALYTICS):
+        raise HTTPException(status_code=403, detail="You don't have permission to view analytics")
+    
+    # If trying to view another user's data, need system admin permission
+    if user_id and user_id != current_user.id:
+        if not checker.has_permission(Permission.SYSTEM_ADMIN):
+            raise HTTPException(status_code=403, detail="You don't have permission to view other users' analytics")
+    
+    # Determine target user
+    target_user_id = user_id if user_id else current_user.id
+    
+    try:
+        from services.service_profitability_service import ServiceProfitabilityService
+        
+        profitability_service = ServiceProfitabilityService(db)
+        analysis = profitability_service.analyze_service_profitability(target_user_id, analysis_period_days)
+        
+        return {
+            "status": "success",
+            "user_id": target_user_id,
+            "analysis_period_days": analysis_period_days,
+            "profitability_analysis": {
+                "summary": {
+                    "total_services": analysis.total_services,
+                    "total_revenue": analysis.total_revenue,
+                    "analysis_period_days": analysis.analysis_period_days
+                },
+                "service_metrics": [
+                    {
+                        "service_name": m.service_name,
+                        "category": m.category,
+                        "total_revenue": m.total_revenue,
+                        "total_bookings": m.total_bookings,
+                        "average_price": m.average_price,
+                        "completion_rate": m.completion_rate,
+                        "revenue_per_hour": m.revenue_per_hour,
+                        "premium_service": m.premium_service,
+                        "six_figure_score": m.six_figure_score,
+                        "growth_trend": m.growth_trend,
+                        "recommendations": m.recommendations
+                    } for m in analysis.service_metrics
+                ],
+                "category_breakdown": analysis.category_breakdown,
+                "premium_services": analysis.premium_services,
+                "bundling_opportunities": [
+                    {
+                        "bundle_services": b.bundle_services,
+                        "frequency": b.frequency,
+                        "average_bundle_value": b.average_bundle_value,
+                        "recommended_bundle_price": b.recommended_bundle_price,
+                        "bundle_score": b.bundle_score
+                    } for b in analysis.bundling_opportunities
+                ],
+                "pricing_recommendations": analysis.pricing_recommendations,
+                "six_figure_insights": analysis.six_figure_insights,
+                "performance_benchmarks": analysis.performance_benchmarks
+            },
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error calculating service profitability for user {target_user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error calculating service profitability: {str(e)}")
+
+@router.get("/service-optimization")
+async def get_service_optimization_recommendations(
+    user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
+    focus_area: str = Query("all", description="Focus area: pricing, premium, bundling, efficiency"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get targeted service optimization recommendations based on Six Figure methodology
+    """
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    if not checker.has_permission(Permission.VIEW_BASIC_ANALYTICS):
+        raise HTTPException(status_code=403, detail="You don't have permission to view analytics")
+    
+    # If trying to view another user's data, need system admin permission
+    if user_id and user_id != current_user.id:
+        if not checker.has_permission(Permission.SYSTEM_ADMIN):
+            raise HTTPException(status_code=403, detail="You don't have permission to view other users' analytics")
+    
+    # Determine target user
+    target_user_id = user_id if user_id else current_user.id
+    
+    try:
+        from services.service_profitability_service import ServiceProfitabilityService
+        
+        profitability_service = ServiceProfitabilityService(db)
+        analysis = profitability_service.analyze_service_profitability(target_user_id, 90)
+        
+        # Filter recommendations by focus area
+        recommendations = {}
+        
+        if focus_area in ["all", "pricing"]:
+            recommendations["pricing"] = analysis.pricing_recommendations
+        
+        if focus_area in ["all", "premium"]:
+            recommendations["premium"] = {
+                "current_premium_percentage": analysis.six_figure_insights.get("premium_service_percentage", 0),
+                "target_premium_percentage": 60,
+                "upgrade_opportunities": analysis.premium_services.get("upgrade_opportunities", []),
+                "premium_services": analysis.premium_services.get("premium_services", [])
+            }
+        
+        if focus_area in ["all", "bundling"]:
+            recommendations["bundling"] = {
+                "opportunities": analysis.bundling_opportunities[:5],  # Top 5 opportunities
+                "potential_revenue": sum(b.bundle_discount_opportunity for b in analysis.bundling_opportunities)
+            }
+        
+        if focus_area in ["all", "efficiency"]:
+            efficiency_services = [m for m in analysis.service_metrics if m.revenue_per_hour < 60]
+            recommendations["efficiency"] = {
+                "low_efficiency_services": [
+                    {
+                        "service_name": m.service_name,
+                        "current_rph": m.revenue_per_hour,
+                        "target_rph": 80,
+                        "improvement_needed": 80 - m.revenue_per_hour,
+                        "recommendations": m.recommendations
+                    } for m in efficiency_services
+                ],
+                "average_revenue_per_hour": analysis.performance_benchmarks.get("average_revenue_per_hour", 0)
+            }
+        
+        return {
+            "status": "success",
+            "user_id": target_user_id,
+            "focus_area": focus_area,
+            "recommendations": recommendations,
+            "six_figure_action_items": analysis.six_figure_insights.get("six_figure_action_items", []),
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating service optimization recommendations for user {target_user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating optimization recommendations: {str(e)}")
+
 @router.get("/barber-performance")
 async def get_barber_performance_metrics(
     user_id: Optional[int] = Query(None, description="User ID to analyze (defaults to current user)"),
