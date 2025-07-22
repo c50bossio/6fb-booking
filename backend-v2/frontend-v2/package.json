@@ -46,7 +46,14 @@
     "env": "node scripts/show-environment.js",
     "env:check": "node scripts/check-ports.js",
     "ports": "lsof -i :3000 && lsof -i :3001 && lsof -i :8000 && lsof -i :8001 || echo 'Checking ports...'",
-    "kill:staging": "lsof -ti:3001 | xargs kill -9 && lsof -ti:8001 | xargs kill -9 || echo 'No staging processes to kill'"
+    "kill:staging": "lsof -ti:3001 | xargs kill -9 && lsof -ti:8001 | xargs kill -9 || echo 'No staging processes to kill'",
+    "dev:stable": "../../../scripts/dev-server.sh start",
+    "dev:clean": "../../../scripts/dev-server.sh clean", 
+    "dev:restart": "../../../scripts/dev-server.sh restart",
+    "dev:status": "../../../scripts/dev-server.sh status",
+    "dev:stop": "../../../scripts/dev-server.sh stop",
+    "server:monitor": "node scripts/monitor-server.js",
+    "server:stabilize": "../../../scripts/stabilize-dev-server.sh"
   },
   "dependencies": {
     "@builder.io/react": "^8.2.5",
