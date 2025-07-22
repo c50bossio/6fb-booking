@@ -7,7 +7,7 @@ import type { BookingResponse } from '@/lib/api'
 import { SwipeRevealAppointment, createDefaultAppointmentActions } from './SwipeRevealAppointment'
 import { IntegratedSwipeReveal } from './IntegratedSwipeReveal'
 import { useComponentIntegration } from '@/lib/component-integration-manager'
-import { TouchDragManager } from '@/lib/touch-utils'
+import { TouchDragManager } from '@/lib/touch/touch-utils'
 import { CalendarTouchErrorBoundary } from '../touch/TouchErrorBoundary'
 
 interface Appointment extends BookingResponse {
