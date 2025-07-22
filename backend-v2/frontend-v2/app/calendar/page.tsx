@@ -1,51 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import { useRouter } from 'next/navigation'
 import { handleAuthError } from '@/lib/auth-error-handler'
-// Using UnifiedCalendar for all calendar views
-
-// Import unified calendar component
-import { Suspense, lazy } from 'react'
-import UnifiedCalendar from '@/components/UnifiedCalendar'
-const CalendarSync = lazy(() => import('@/components/CalendarSync'))
-const CalendarConflictResolver = lazy(() => import('@/components/CalendarConflictResolver'))
-const AvailabilityHeatmap = lazy(() => import('@/components/calendar/AvailabilityHeatmap'))
-const EnhancedRevenueDisplay = lazy(() => import('@/components/calendar/EnhancedRevenueDisplay'))
-const QuickBookingPanel = lazy(() => import('@/components/calendar/QuickBookingPanel'))
-const QuickBookingFAB = lazy(() => import('@/components/calendar/QuickBookingFAB'))
-const CalendarAnalyticsSidebar = lazy(() => import('@/components/calendar/CalendarAnalyticsSidebar'))
-import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
-import TimePickerModal from '@/components/modals/TimePickerModal'
-import RescheduleModal from '@/components/modals/RescheduleModal'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, getAllUsers, getLocations, type BookingResponse, type Location } from '@/lib/api'
 import { useCalendarOptimisticUpdates } from '@/lib/calendar-optimistic-updates'
 import { useCalendarApiEnhanced } from '@/lib/calendar-api-enhanced'
 import { useRequestDeduplication } from '@/lib/request-deduplication'
 import { toastError, toastSuccess, toastInfo } from '@/hooks/use-toast'
 import { CalendarErrorHandler, withTimeout, CALENDAR_TIMEOUTS } from '@/lib/calendar-error-handler'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { CalendarErrorBoundary } from '@/components/calendar/CalendarErrorBoundary'
 import { CalendarSkeleton, CalendarEmptyState, CalendarErrorState, CalendarSmartLoading } from '@/components/calendar/CalendarLoadingStates'
-import { useCalendarLoading } from '@/hooks/useCalendarLoading'
-import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
+import { useCalendarOptimization } from '@/hooks/useCalendarOptimization'
 import { useCalendarInteractionManager } from '@/lib/calendar-interaction-manager'
-import { CalendarVisualFeedback, useCalendarVisualFeedback } from '@/components/calendar/CalendarVisualFeedback'
-import { CalendarMobileMenu } from '@/components/calendar/CalendarMobileMenu'
-import { CalendarNetworkStatus, CalendarRequestQueue } from '@/components/calendar/CalendarNetworkStatus'
+import { useCalendarVisualFeedback } from '@/components/calendar/CalendarVisualFeedback'
 import { LocationSelector } from '@/components/navigation/LocationSelector'
 import { LocationSelectorLoadingState, LocationSelectorErrorState } from '@/components/navigation/LocationSelectorSkeleton'
-import { CalendarExport } from '@/components/calendar/CalendarExport'
-import { JumpToTodayButtonWithShortcut } from '@/components/calendar/JumpToTodayButton'
-import { useCalendarKeyboardShortcuts } from '@/hooks/useCalendarKeyboardShortcuts'
-import { AppointmentSuggestions } from '@/components/calendar/AppointmentSuggestions'
-import { CalendarVisualEnhancement } from '@/components/calendar/CalendarVisualEnhancement'
-import { MobileCalendarNavigation } from '@/components/calendar/MobileCalendarNavigation'
-import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useCalendarInteraction } from '@/hooks/useCalendarInteraction'
 import { useAppointmentPatterns } from '@/hooks/useAppointmentPatterns'
 import type { Appointment, AppointmentStatus, CalendarView, User, CalendarInteraction } from '@/types/calendar'
 import { 
@@ -68,6 +44,26 @@ import {
   ExclamationTriangleIcon,
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
+
+// Lazy load heavy components for better code splitting
+const UnifiedCalendar = lazy(() => import('@/components/UnifiedCalendar'))
+const CalendarSync = lazy(() => import('@/components/CalendarSync'))
+const CalendarConflictResolver = lazy(() => import('@/components/CalendarConflictResolver'))
+const AvailabilityHeatmap = lazy(() => import('@/components/calendar/AvailabilityHeatmap'))
+const EnhancedRevenueDisplay = lazy(() => import('@/components/calendar/EnhancedRevenueDisplay'))
+const QuickBookingPanel = lazy(() => import('@/components/calendar/QuickBookingPanel'))
+const QuickBookingFAB = lazy(() => import('@/components/calendar/QuickBookingFAB'))
+const CalendarAnalyticsSidebar = lazy(() => import('@/components/calendar/CalendarAnalyticsSidebar'))
+const CreateAppointmentModal = lazy(() => import('@/components/modals/CreateAppointmentModal'))
+const TimePickerModal = lazy(() => import('@/components/modals/TimePickerModal'))
+const RescheduleModal = lazy(() => import('@/components/modals/RescheduleModal'))
+const CalendarExport = lazy(() => import('@/components/calendar/CalendarExport'))
+const JumpToTodayButtonWithShortcut = lazy(() => import('@/components/calendar/JumpToTodayButton'))
+const AppointmentSuggestions = lazy(() => import('@/components/calendar/AppointmentSuggestions'))
+const CalendarVisualEnhancement = lazy(() => import('@/components/calendar/CalendarVisualEnhancement'))
+const MobileCalendarNavigation = lazy(() => import('@/components/calendar/MobileCalendarNavigation'))
+const CalendarMobileMenu = lazy(() => import('@/components/calendar/CalendarMobileMenu'))
+const CalendarRequestQueue = lazy(() => import('@/components/calendar/CalendarNetworkStatus').then(m => ({ default: m.CalendarRequestQueue })))
 
 // Use CalendarUser type from our standardized types
 
@@ -184,11 +180,11 @@ export default function CalendarPage() {
     includeSeasonalPatterns: true
   })
 
-  // Performance optimizations
-  const { measureRender, optimizedAppointmentFilter } = useCalendarPerformance()
+  // Performance optimizations using consolidated hook
+  const { measureRender, optimizedAppointmentFilter } = useCalendarOptimization()
 
-  // Enhanced keyboard shortcuts for calendar navigation
-  const { shortcuts } = useCalendarKeyboardShortcuts({
+  // Enhanced keyboard shortcuts using consolidated interaction hook
+  const { shortcuts } = useCalendarInteraction({
     onNavigateToday: () => {
       setSelectedDate(new Date())
     },

@@ -12,12 +12,12 @@ import { canAccessAdmin, canManageServices, canManageClients } from '@/lib/role-
 import TimezoneSetupModal from '@/components/TimezoneSetupModal'
 import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
-import { PageLoading, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay, SuccessMessage, DashboardStatsSkeleton, BrandedSpinner, PremiumLoadingOverlay } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { QuickActions } from '@/components/QuickActions'
 import CalendarDayMini from '@/components/calendar/CalendarDayMini'
-import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
+// import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton' // Replaced with DashboardStatsSkeleton
 import { TrialStatusBanner } from '@/components/ui/TrialStatusBanner'
 import { TrialWarningSystem } from '@/components/ui/TrialWarningSystem'
 import { StandardErrorBoundary, getErrorBoundaryType } from '@/components/error-boundaries'
@@ -290,9 +290,27 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <DashboardSkeleton />
+      <main className="min-h-screen bg-gradient-to-br from-primary-50 to-white dark:from-primary-950 dark:to-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+          {/* Premium Six Figure Barber branded dashboard loading */}
+          <div className="text-center space-y-4">
+            <BrandedSpinner variant="premium" size="xl" showLabel label="Loading your Six Figure Barber dashboard..." />
+          </div>
+          
+          {/* Dashboard stats with branded skeletons */}
+          <DashboardStatsSkeleton variant="premium" columns={4} />
+          
+          {/* Additional dashboard sections with Six Figure Barber styling */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-primary-700 dark:text-primary-300">Recent Activity</h3>
+              <DashboardStatsSkeleton variant="executive" columns={1} />
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-primary-700 dark:text-primary-300">Six Figure Progress</h3>
+              <DashboardStatsSkeleton variant="luxury" columns={1} />
+            </div>
+          </div>
         </div>
       </main>
     )

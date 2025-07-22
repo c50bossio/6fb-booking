@@ -31,12 +31,12 @@ const pricingBrackets: PricingBracket[] = [
   { start: 16, end: null, price: 6, name: "Chairs 16+" }
 ]
 
-// Feature tiers based on total chairs
+// Six Figure Barber methodology aligned tiers
 const featureTiers = [
-  { minChairs: 1, maxChairs: 1, name: "Solo Barber", color: "blue" },
-  { minChairs: 2, maxChairs: 5, name: "Small Studio", color: "green" },
-  { minChairs: 6, maxChairs: 14, name: "Growing Business", color: "purple" },
-  { minChairs: 15, maxChairs: null, name: "Enterprise", color: "indigo" }
+  { minChairs: 1, maxChairs: 1, name: "Independent Professional", color: "blue", methodology: "Personal brand building" },
+  { minChairs: 2, maxChairs: 5, name: "Studio Owner", color: "green", methodology: "Team leadership & systems" },
+  { minChairs: 6, maxChairs: 14, name: "Business Builder", color: "purple", methodology: "Scale & optimization focus" },
+  { minChairs: 15, maxChairs: null, name: "Enterprise Leader", color: "indigo", methodology: "Multi-location mastery" }
 ]
 
 const competitorPricing = {
@@ -236,13 +236,17 @@ export function PricingCalculator({
         </div>
 
         {/* Current Tier Badge */}
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <Badge 
             variant="outline" 
-            className={`bg-${currentTier.color}-50 text-${currentTier.color}-700 border-${currentTier.color}-200 px-4 py-1`}
+            className={`bg-${currentTier.color}-50 text-${currentTier.color}-700 border-${currentTier.color}-200 px-4 py-2 text-sm`}
           >
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-100 text-yellow-600 text-xs font-bold mr-2">6FB</span>
             {currentTier.name} Tier
           </Badge>
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            Focus: {currentTier.methodology}
+          </p>
         </div>
 
         {/* Pricing Display */}
@@ -406,17 +410,32 @@ export function PricingCalculator({
 
         {/* Removed redundant Call to Action - handled in PricingConfirmation */}
 
-        {/* AI Features Preview */}
+        {/* Six Figure Barber Features Preview */}
         <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-            AI features included (competitors don't have):
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {['AI Customer Service', 'AI Marketing Manager', 'AI Business Coach', 'Payment processing', 'SMS automation', 'Analytics'].map((feature) => (
-              <Badge key={feature} variant="outline" className="text-xs">
-                {feature}
-              </Badge>
-            ))}
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+            <div className="flex items-center justify-center space-x-2 mb-3">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-500 text-white text-sm font-bold">6FB</span>
+              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                Six Figure Barber Methodology Included
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              {[
+                'Value-Based Pricing Tools', 
+                'Client LTV Tracking', 
+                'Revenue Optimization', 
+                'Business Growth Coaching', 
+                'Premium Service Positioning',
+                'Relationship Management'
+              ].map((feature) => (
+                <Badge key={feature} variant="outline" className="text-xs border-yellow-300 text-yellow-700">
+                  {feature}
+                </Badge>
+              ))}
+            </div>
+            <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-2">
+              Competitors focus on scheduling. We focus on building six-figure businesses.
+            </p>
           </div>
         </div>
       </CardContent>

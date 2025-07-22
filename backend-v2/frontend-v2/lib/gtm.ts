@@ -476,8 +476,8 @@ class GTMManager {
   }
   
   private setupScrollTracking(): void {
-    let scrollMilestones = [25, 50, 75, 90, 100];
-    let trackedMilestones = new Set<number>();
+    const scrollMilestones = [25, 50, 75, 90, 100];
+    const trackedMilestones = new Set<number>();
     
     const handleScroll = (): void => {
       const scrollPercent = Math.round(

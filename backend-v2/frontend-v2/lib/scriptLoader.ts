@@ -18,7 +18,7 @@ export interface MetaPixelConfig {
 }
 
 // Global script loader state
-let scriptsLoaded = {
+const scriptsLoaded = {
   googleAnalytics: false,
   metaPixel: false,
   googleConsentMode: false,

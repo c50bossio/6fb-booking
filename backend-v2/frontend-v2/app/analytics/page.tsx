@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, getDashboardAnalytics, getEnterpriseAnalytics, type User } from '@/lib/api'
 import { AnalyticsLayout } from '@/components/analytics/AnalyticsLayout'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
-import { SkeletonStats, SkeletonCard } from '@/components/ui/skeleton-loader'
+// import { SkeletonStats, SkeletonCard } from '@/components/ui/skeleton-loader' // Replaced with branded skeletons
 import { EmptyAnalytics } from '@/components/ui/empty-state'
-import { PageLoading } from '@/components/LoadingStates'
+import { PageLoading, AnalyticsCardSkeleton, BrandedSpinner, DashboardStatsSkeleton } from '@/components/LoadingStates'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AIInsightsPanel from '@/components/ai/AIInsightsPanel'
 import { AnalyticsErrorBoundary } from '@/components/error-boundaries'
@@ -137,15 +137,27 @@ function UnifiedAnalyticsContent() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">Analytics</h1>
-          <p className="text-gray-600">Loading your business insights...</p>
+      <div className="p-6 space-y-8 bg-gradient-to-br from-primary-50 to-white dark:from-primary-950 dark:to-zinc-900 min-h-screen">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-4 text-primary-700 dark:text-primary-300">
+            Six Figure Barber Analytics
+          </h1>
+          <div className="space-y-4">
+            <BrandedSpinner variant="premium" size="xl" showLabel label="Loading your business insights..." />
+            <p className="text-primary-600 dark:text-primary-400 text-lg">
+              Analyzing your path to six figures...
+            </p>
+          </div>
         </div>
-        <SkeletonStats />
-        <div className="grid md:grid-cols-2 gap-6">
-          <SkeletonCard />
-          <SkeletonCard />
+        
+        {/* Premium dashboard stats */}
+        <DashboardStatsSkeleton variant="executive" columns={4} />
+        
+        {/* Analytics cards with Six Figure Barber branding */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <AnalyticsCardSkeleton variant="premium" showChart={true} />
+          <AnalyticsCardSkeleton variant="luxury" showChart={true} />
+          <AnalyticsCardSkeleton variant="executive" showChart={false} />
         </div>
       </div>
     )

@@ -185,8 +185,3 @@ module.exports = {
     }
   }
 }
-
-function getNodeText(node, context) {
-  const sourceCode = context.getSourceCode()
-  return sourceCode.getText(node)
-}

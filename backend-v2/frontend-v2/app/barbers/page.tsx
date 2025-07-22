@@ -173,7 +173,7 @@ export default function BarbersDirectoryPage() {
 
   // Filter and sort barbers
   const filteredAndSortedBarbers = useMemo(() => {
-    let filtered = barbers.filter(barber => {
+    const filtered = barbers.filter(barber => {
       // Text search
       const searchMatch = !searchTerm || 
         `${barber.first_name} ${barber.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||

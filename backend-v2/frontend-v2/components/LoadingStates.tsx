@@ -10,6 +10,11 @@ import { cva, type VariantProps } from 'class-variance-authority'
 // This file consolidates all loading components from both ui/LoadingStates.tsx 
 // and components/LoadingStates.tsx into a single, consistent system.
 // All components use CVA for variants and consistent sizing with layout shift prevention.
+// Enhanced with Six Figure Barber branded components for premium loading experiences.
+
+// Import branded components
+import { BrandedSkeleton, SixFigureAvatarSkeleton, BarberProfileSkeleton, ServiceCardSkeleton, AppointmentCardSkeleton, AnalyticsCardSkeleton, DashboardStatsSkeleton, SixFigureCalendarSkeleton, PremiumLoadingOverlay } from './ui/BrandedSkeletons'
+import { BrandedSpinner, SixFigureSVGSpinner, BarberPoleSpinner, PremiumDotsSpinner, PulseRingSpinner, LoadingButton as BrandedLoadingButton } from './ui/BrandedSpinners'
 
 // ===================
 // CORE LOADING VARIANTS
@@ -348,7 +353,7 @@ export const PageLoading = ({
 // ===================
 
 // Enhanced Button Loading State
-export const LoadingButton = ({
+export const LocalLoadingButton = ({
   loading,
   children,
   loadingText = 'Loading...',
@@ -1092,7 +1097,7 @@ export const LoadingStates = {
   LoadingPulse,
   LoadingBar,
   PageLoading,
-  LoadingButton,
+  LocalLoadingButton,
   ButtonLoading,
   InlineLoading,
   LoadingSkeleton,
@@ -1106,7 +1111,26 @@ export const LoadingStates = {
   ContextualLoading,
   AnalyticsLoading,
   ErrorDisplay,
-  SuccessMessage
+  SuccessMessage,
+  
+  // ===========================
+  // SIX FIGURE BARBER BRANDED COMPONENTS
+  // ===========================
+  // Premium branded loading states for Six Figure Barber methodology
+  BrandedSkeleton,
+  BrandedSpinner,
+  SixFigureAvatarSkeleton,
+  SixFigureSVGSpinner,
+  BarberProfileSkeleton,
+  BarberPoleSpinner,
+  ServiceCardSkeleton,
+  PremiumDotsSpinner,
+  AppointmentCardSkeleton,
+  PulseRingSpinner,
+  AnalyticsCardSkeleton,
+  DashboardStatsSkeleton,
+  SixFigureCalendarSkeleton,
+  PremiumLoadingOverlay
 }
 
 // CSS for indeterminate animation (add to globals.css if not already present)
@@ -1136,5 +1160,6 @@ if (typeof document !== 'undefined') {
   }
 }
 
-// Individual components are exported above with their declarations
-// No need for additional re-export block to avoid TypeScript conflicts
+// Individual exports for direct importing
+export { BrandedSpinner, SixFigureSVGSpinner, BarberPoleSpinner, PremiumDotsSpinner, PulseRingSpinner, LoadingButton } from './ui/BrandedSpinners'
+export { BrandedSkeleton, SixFigureAvatarSkeleton, BarberProfileSkeleton, ServiceCardSkeleton, AppointmentCardSkeleton, AnalyticsCardSkeleton, DashboardStatsSkeleton, SixFigureCalendarSkeleton, PremiumLoadingOverlay } from './ui/BrandedSkeletons'
