@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, validator
 from sqlalchemy.orm import Session
 
 from database import get_db
-from dependencies import get_current_user
+from utils.auth import get_current_user
 from models import User
 from models.hybrid_payment import PaymentMode
 from services.hybrid_payment_router import HybridPaymentRouter, PaymentRoutingDecision, PaymentRoutingError
