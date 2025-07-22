@@ -3,10 +3,22 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile, updateOnboardingStatus, type User } from '@/lib/api'
+import { toast } from '@/hooks/use-toast'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { 
   CheckCircle2, 
   Circle, 
@@ -19,7 +31,9 @@ import {
   ArrowRight,
   Sparkles,
   BookOpen,
-  PlayCircle
+  PlayCircle,
+  RotateCcw,
+  AlertTriangle
 } from 'lucide-react'
 
 interface OnboardingStep {
@@ -39,6 +53,7 @@ export default function WelcomePage() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([])
   const [currentStep, setCurrentStep] = useState(0)
   const [skipping, setSkipping] = useState(false)
+  const [restoring, setRestoring] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -145,6 +160,38 @@ export default function WelcomePage() {
     }
   }
 
+  const handleRestoreOnboarding = async () => {
+    try {
+      setRestoring(true)
+      setError(null)
+      
+      // Reset onboarding progress
+      await updateOnboardingStatus({
+        completed_steps: [],
+        current_step: 0,
+        completed: false,
+        skipped: false
+      })
+      
+      // Update local state
+      setCompletedSteps([])
+      setCurrentStep(0)
+      
+      // Show success toast
+      toast({
+        title: "Onboarding Reset",
+        description: "Your onboarding progress has been successfully reset. You can now start fresh!",
+        duration: 5000,
+      })
+      
+    } catch (error) {
+      console.error('Failed to restore onboarding:', error)
+      setError('Failed to restore onboarding progress. Please try again or contact support if the problem persists.')
+    } finally {
+      setRestoring(false)
+    }
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
@@ -184,14 +231,52 @@ export default function WelcomePage() {
               </div>
             </div>
             
-            <Button
-              onClick={handleSkipOnboarding}
-              variant="outline"
-              size="sm"
-              disabled={skipping}
-            >
-              {skipping ? 'Skipping...' : 'Skip for now'}
-            </Button>
+            <div className="flex items-center space-x-2">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={restoring || skipping}
+                    className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    {restoring ? 'Restoring...' : 'Restore Progress'}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center">
+                      <AlertTriangle className="h-5 w-5 text-orange-500 mr-2" />
+                      Reset Onboarding Progress?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will reset all your onboarding progress. You&apos;ll need to complete the setup steps again from the beginning.
+                      <br /><br />
+                      <strong>Are you sure you want to continue?</strong>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleRestoreOnboarding}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Reset Progress
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <Button
+                onClick={handleSkipOnboarding}
+                variant="outline"
+                size="sm"
+                disabled={skipping || restoring}
+              >
+                {skipping ? 'Skipping...' : 'Skip for now'}
+              </Button>
+            </div>
           </div>
 
           {/* Error Display */}

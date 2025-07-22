@@ -62,6 +62,12 @@ class User(Base):
     stripe_account_status = Column(String, nullable=True)  # active, pending, restricted
     commission_rate = Column(Float, default=0.20)  # Default 20% commission
     
+    # Hybrid Payment System fields
+    payment_mode = Column(String(20), default="centralized", nullable=False)  # centralized, decentralized, hybrid
+    external_payment_processor = Column(String(50), nullable=True)  # stripe, square, paypal, etc.
+    external_account_config = Column(JSON, nullable=True)  # External processor configuration
+    collection_preferences = Column(JSON, nullable=True)  # Platform collection preferences
+    
     # Google Calendar integration
     google_calendar_credentials = Column(Text, nullable=True)  # JSON encoded OAuth credentials
     google_calendar_id = Column(String, nullable=True)  # Selected calendar ID for sync

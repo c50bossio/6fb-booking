@@ -79,8 +79,36 @@ export function isProviderConfigured(provider: SocialProvider): boolean {
   }
 }
 
-// Get OAuth URL for a provider
-export function getOAuthUrl(provider: SocialProvider): string {
+// Get OAuth URL for a provider using our backend OAuth API
+export async function getOAuthUrl(provider: SocialProvider): Promise<string> {
+  try {
+    // Use our backend OAuth API to get the authorization URL
+    const response = await fetch(`${API_URL}/api/v1/oauth/initiate/${provider}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to initiate OAuth for ${provider}`)
+    }
+
+    const data = await response.json()
+    
+    // Store the state for verification
+    localStorage.setItem('oauth_state', data.state)
+    
+    return data.authorization_url
+  } catch (error) {
+    console.error(`Error getting OAuth URL for ${provider}:`, error)
+    throw error
+  }
+}
+
+// Legacy synchronous function for backwards compatibility
+// This is deprecated - use the async version above
+export function getOAuthUrlSync(provider: SocialProvider): string {
   const state = generateState()
   localStorage.setItem('oauth_state', state)
 
@@ -106,17 +134,6 @@ export function getOAuthUrl(provider: SocialProvider): string {
         state
       })
       return `https://www.facebook.com/v12.0/dialog/oauth?${fbParams}`
-
-    case 'apple':
-      const appleParams = new URLSearchParams({
-        client_id: socialAuthConfig.apple!.clientId,
-        redirect_uri: socialAuthConfig.apple!.redirectUri,
-        response_type: 'code',
-        response_mode: 'form_post',
-        scope: socialAuthConfig.apple!.scope || '',
-        state
-      })
-      return `https://appleid.apple.com/auth/authorize?${appleParams}`
 
     default:
       throw new Error(`Unsupported provider: ${provider}`)

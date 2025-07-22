@@ -56,13 +56,13 @@ The notification system for BookedBarber has been successfully re-enabled and en
 ### Environment Variables (Already Configured)
 ```bash
 # SendGrid Configuration
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=SG.***REDACTED***
 SENDGRID_FROM_EMAIL=support@em3014.6fbmentorship.com
 SENDGRID_FROM_NAME=BookedBarber
 
 # Twilio Configuration  
-TWILIO_ACCOUNT_SID=ACe5b803b2dee8cfeffbfc19330838d25f
-TWILIO_AUTH_TOKEN=f4a6b0c96d7394e3037b1c3063cf8369
+TWILIO_ACCOUNT_SID=AC***REDACTED***
+TWILIO_AUTH_TOKEN=***REDACTED***
 TWILIO_PHONE_NUMBER=+18135483884
 
 # Notification Settings

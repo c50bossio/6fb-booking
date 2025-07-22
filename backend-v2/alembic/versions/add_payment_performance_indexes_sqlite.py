@@ -1,6 +1,6 @@
 """add_payment_performance_indexes_sqlite
 
-Revision ID: payment_indexes_sqlite_001
+Revision ID: add_payment_performance_indexes_sqlite
 Revises: add_webhook_tables
 Create Date: 2025-07-21 16:00:00.000000
 
@@ -15,7 +15,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'payment_indexes_sqlite_001'
+revision: str = 'add_payment_performance_indexes_sqlite'
 down_revision: Union[str, Sequence[str], None] = 'add_webhook_tables'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables first
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
@@ -8,6 +11,8 @@ import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
 from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, homepage_builder, client_tiers, six_figure_pricing
+from api.v1 import realtime_availability, walkin_queue, external_payments, simple_ai_integration, unified_payment_analytics, oauth, cache_optimization, hybrid_payments, platform_collections, external_payment_webhooks
+# ai_integration temporarily disabled due to import issues
 # payment_rate_limits temporarily disabled due to FastAPI error
 # service_templates temporarily disabled due to FastAPI error
 from routers.services import public_router as services_public_router
@@ -319,6 +324,15 @@ app.include_router(pricing_validation.router, prefix="/api/v2")
 app.include_router(six_fb_compliance.router, prefix="/api/v2")
 app.include_router(barbers.router, prefix="/api/v2")
 app.include_router(barber_availability.router, prefix="/api/v2")
+app.include_router(realtime_availability.router)  # Real-time availability for mobile-first booking
+app.include_router(walkin_queue.router)  # Walk-in queue management for barbershop workflow
+app.include_router(oauth.router, prefix="/api/v1", tags=["OAuth"])  # OAuth integration for Google and Facebook login
+app.include_router(cache_optimization.router, prefix="/api/v1", tags=["Cache"])  # Enhanced cache optimization system
+app.include_router(external_payments.router, prefix="/api/v2")  # Hybrid payment system for external payment processors
+app.include_router(unified_payment_analytics.router)  # Unified payment analytics across all payment flows
+app.include_router(external_payment_webhooks.router, prefix="/api/v2")  # External payment webhook handling
+app.include_router(hybrid_payments.router, prefix="/api/v2")  # Unified hybrid payment processing
+app.include_router(platform_collections.router, prefix="/api/v2")  # Platform collection system
 app.include_router(recurring_appointments.router, prefix="/api/v2")
 app.include_router(webhooks.router, prefix="/api/v2")
 app.include_router(analytics.router, prefix="/api/v2")
@@ -353,11 +367,13 @@ app.include_router(trial_monitoring.router, prefix="/api/v2")  # Trial expiratio
 app.include_router(privacy.router)  # GDPR compliance and privacy management
 # app.include_router(cache.router)  # Redis cache management and monitoring - disabled due to archived services
 app.include_router(ai_analytics.router, prefix="/api/v2")  # Revolutionary AI-powered cross-user analytics
+# app.include_router(ai_integration.router, prefix="/api/v2")  # AI Integration - temporarily disabled due to model dependencies
 app.include_router(agents.router, prefix="/api/v2")  # AI Agent management - enabled with mock provider
 app.include_router(tracking.router)  # Conversion tracking and attribution
 app.include_router(customer_pixels.router)  # Customer tracking pixel management
 app.include_router(public_booking.router)  # Public booking endpoints for organization-specific pages
 app.include_router(products.router)  # Product management and Shopify integration - re-enabled
+app.include_router(simple_ai_integration.router, prefix="/api/v2")  # Simple AI integration - basic AI features
 # app.include_router(shopify_webhooks.router)  # Shopify webhook handlers for real-time sync - disabled due to bleach dependency
 
 # Include public routes (no authentication required)
@@ -383,6 +399,72 @@ def health_check():
         health_status["sentry"] = {"enabled": False}
     
     return health_status
+
+@app.post("/test/notifications")
+async def test_notifications(email: str = "test@example.com", phone: str = "+1234567890"):
+    """Test endpoint for notification services"""
+    from services.notification_service import notification_service
+    from datetime import datetime
+    
+    results = {}
+    
+    # Test email
+    try:
+        email_result = notification_service.send_email(
+            to_email=email,
+            subject="🧪 BookedBarber V2 Test Email",
+            body=f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
+                    <h1 style="color: white; margin: 0;">BookedBarber V2</h1>
+                    <p style="color: white; margin: 5px 0;">Email Notification Test</p>
+                </div>
+                
+                <div style="padding: 20px; background: #f8f9fa;">
+                    <h2 style="color: #333;">✅ Email Test Successful!</h2>
+                    <p>This email confirms that the BookedBarber V2 notification system is working correctly.</p>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0;">Test Details:</h3>
+                        <ul>
+                            <li><strong>Test Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</li>
+                            <li><strong>Service:</strong> SendGrid Email API</li>
+                            <li><strong>Test Email:</strong> {email}</li>
+                            <li><strong>Environment:</strong> Development</li>
+                        </ul>
+                    </div>
+                    
+                    <p>🎉 Email notifications are ready for production use!</p>
+                </div>
+            </body>
+            </html>
+            """
+        )
+        results["email"] = email_result
+    except Exception as e:
+        results["email"] = {"success": False, "error": str(e)}
+    
+    # Test SMS
+    try:
+        sms_result = notification_service.send_sms(
+            to_phone=phone,
+            body=f"🧪 BookedBarber V2 SMS Test - {datetime.now().strftime('%H:%M')} - Working! 📱 Reply STOP to opt out."
+        )
+        results["sms"] = sms_result
+    except Exception as e:
+        results["sms"] = {"success": False, "error": str(e)}
+    
+    return {
+        "test_timestamp": datetime.now().isoformat(),
+        "test_parameters": {"email": email, "phone": phone},
+        "results": results,
+        "summary": {
+            "email_working": results.get("email", {}).get("success", False),
+            "sms_working": results.get("sms", {}).get("success", False),
+            "notification_system_status": "operational" if any(r.get("success") for r in results.values()) else "needs_attention"
+        }
+    }
 
 @app.get("/security/status")
 def security_status():

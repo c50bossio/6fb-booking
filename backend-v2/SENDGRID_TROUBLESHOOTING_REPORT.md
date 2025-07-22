@@ -143,7 +143,7 @@ SMTP_USE_TLS=true
 ### Working Configuration
 ```bash
 # These settings will work immediately:
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=SG.***REDACTED***
 SENDGRID_FROM_EMAIL=support@em3014.6fbmentorship.com
 SENDGRID_FROM_NAME=BookedBarber
 ```
