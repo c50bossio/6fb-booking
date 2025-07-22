@@ -1,385 +1,298 @@
 """
-Enhanced appointments router with comprehensive validation.
-
-This module demonstrates how to use the booking validation system
-in API endpoints to ensure data integrity and provide clear feedback.
+Enhanced Appointments Router with Comprehensive Validation
+Implements Six Figure Barber methodology with advanced booking validation and error handling
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Path, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import datetime, date, time
-import pytz
-
+from typing import List, Optional, Dict, Any
+from datetime import date, datetime, time, timedelta
+import logging
+import uuid
+import schemas
+import models
 from database import get_db
-from dependencies_v2 import require_user
-from models import User, Appointment, Service, Client
-from schemas_new.booking_validation import (
-    EnhancedAppointmentCreate,
-    AppointmentUpdate,
-    BulkAvailabilityCheck,
-    get_user_friendly_error
+from routers.auth import get_current_user
+from utils.auth import require_admin_role, get_current_user_optional
+from utils.booking_validators import (
+    validate_comprehensive_booking,
+    validate_appointment_reschedule,
+    format_validation_response,
+    get_service_suggestions,
+    ValidationResult,
+    SIX_FIGURE_SERVICES
 )
-from validators.booking_validators import BookingValidator
-from services.booking_service import BookingService
-from utils.logging_config import setup_logger
+from services import booking_service
+from services.appointment_enhancement import enhance_appointments_list
+from services.cache_invalidation import cache_invalidator
+from utils.rate_limit import (
+    booking_create_rate_limit,
+    guest_booking_rate_limit,
+    booking_slots_rate_limit,
+    booking_reschedule_rate_limit,
+    booking_cancel_rate_limit
+)
 
-router = APIRouter(prefix="/api/v1/appointments", tags=["appointments-enhanced"])
-logger = setup_logger(__name__)
+# Configure logger for this module
+logger = logging.getLogger(__name__)
 
+# Create enhanced router
+router = APIRouter(
+    prefix="/appointments/enhanced",
+    tags=["appointments-enhanced"]
+)
 
-@router.post("/", response_model=dict)
-async def create_appointment_with_validation(
-    appointment_data: EnhancedAppointmentCreate,
-    current_user: User = Depends(require_user),
+@router.post("/validate", response_model=Dict[str, Any])
+async def validate_appointment_comprehensive(
+    validation_request: schemas.AppointmentValidationRequest,
+    current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Create a new appointment with comprehensive validation.
+    Comprehensive appointment validation using Six Figure Barber methodology
     
-    This endpoint demonstrates:
-    - Input validation and sanitization
-    - Business rule enforcement
-    - Clear error messaging
-    - Proper logging
+    Validates:
+    - Basic booking constraints (dates, times, service availability)
+    - Business rules and premium service requirements
+    - Client constraints and service history
+    - Six Figure Barber methodology compliance
+    - Revenue optimization opportunities
     """
     try:
-        # Log the request
-        logger.info(f"User {current_user.id} creating appointment for {appointment_data.date}")
+        # Convert validation request to internal format
+        booking_date = validation_request.appointment_date
+        booking_time_str = validation_request.appointment_time.strftime("%H:%M")
         
-        # Get booking configuration
-        booking_settings = db.query(BookingSettings).filter_by(
-            business_id=current_user.business_id
-        ).first()
-        
-        if not booking_settings:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Booking settings not configured for this business"
-            )
-        
-        # Configure validator with business settings
-        validator_config = {
-            'business_start_time': time.fromisoformat(booking_settings.business_start_time),
-            'business_end_time': time.fromisoformat(booking_settings.business_end_time),
-            'min_advance_minutes': booking_settings.min_lead_time_minutes,
-            'max_advance_days': booking_settings.max_advance_days,
-            'same_day_cutoff': time.fromisoformat(booking_settings.same_day_cutoff_time) if booking_settings.same_day_cutoff_time else None,
-            'slot_duration_minutes': booking_settings.slot_duration_minutes,
-            'timezone': current_user.timezone or 'UTC'
-        }
-        
-        # Initialize validator
-        validator = BookingValidator(db, validator_config)
-        
-        # Prepare validation data
-        appointment_time = time.fromisoformat(appointment_data.time)
-        validation_data = {
-            'date': appointment_data.date,
-            'time': appointment_time,
-            'duration_minutes': appointment_data.duration_minutes or 30,
-            'barber_id': appointment_data.barber_id,
-            'client_id': appointment_data.client_id,
-            'timezone': appointment_data.timezone
-        }
-        
-        # Add service data if available
-        if appointment_data.service_id:
-            service = db.query(Service).filter_by(id=appointment_data.service_id).first()
+        # Get service name from service_id if provided
+        service_name = None
+        if validation_request.service_id:
+            service = db.query(models.Service).filter(
+                models.Service.id == validation_request.service_id
+            ).first()
             if service:
-                validation_data['service_data'] = {
-                    'requires_consultation': service.booking_rules.get('requires_consultation', False),
-                    'requires_patch_test': service.booking_rules.get('requires_patch_test', False),
-                    'patch_test_hours': service.booking_rules.get('patch_test_hours', 48)
-                }
+                service_name = service.name
         
-        # Run validation
-        is_valid, errors = validator.validate_booking(validation_data)
+        if not service_name:
+            # Use a default service for validation if service_id not found
+            service_name = "Haircut"
         
-        if not is_valid:
-            # Convert technical errors to user-friendly messages
-            user_errors = [get_user_friendly_error(error) for error in errors]
-            
-            logger.warning(f"Validation failed for user {current_user.id}: {errors}")
-            
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={
-                    "message": "Unable to create appointment",
-                    "errors": user_errors
-                }
-            )
-        
-        # Create appointment using booking service
-        booking_service = BookingService(db)
-        
-        # Prepare appointment data
-        appointment = booking_service.create_appointment(
+        # Run comprehensive validation
+        validation_result = validate_comprehensive_booking(
+            db=db,
             user_id=current_user.id,
-            service_id=appointment_data.service_id,
-            service_name=appointment_data.service_name,
-            barber_id=appointment_data.barber_id,
-            client_id=appointment_data.client_id,
-            appointment_date=appointment_data.date,
-            appointment_time=appointment_time,
-            duration_minutes=appointment_data.duration_minutes,
-            price=appointment_data.price,
-            notes=appointment_data.notes,
-            buffer_time_before=appointment_data.buffer_time_before,
-            buffer_time_after=appointment_data.buffer_time_after
+            booking_date=booking_date,
+            booking_time=booking_time_str,
+            service_name=service_name,
+            barber_id=validation_request.barber_id,
+            client_id=validation_request.client_id,
+            user_timezone=getattr(current_user, 'timezone', None)
         )
         
-        logger.info(f"Successfully created appointment {appointment.id} for user {current_user.id}")
+        # Format response with additional Six Figure Barber insights
+        response = format_validation_response(validation_result)
         
-        return {
-            "message": "Appointment created successfully",
-            "appointment": {
-                "id": appointment.id,
-                "date": appointment.start_time.date().isoformat(),
-                "time": appointment.start_time.time().strftime("%H:%M"),
-                "service": appointment.service_name,
-                "barber_id": appointment.barber_id,
-                "status": appointment.status,
-                "confirmation_code": f"APT{appointment.id:06d}"
-            }
+        # Add service-specific suggestions
+        if service_name in SIX_FIGURE_SERVICES:
+            service_suggestions = get_service_suggestions(service_name)
+            response["service_suggestions"] = service_suggestions
+        
+        # Add business insights
+        response["business_insights"] = {
+            "recommended_prep_time": "10 minutes early for consultation",
+            "experience_duration": f"{SIX_FIGURE_SERVICES.get(service_name, {}).get('duration_minutes', 30)} minutes of premium service",
+            "aftercare_interval": f"{SIX_FIGURE_SERVICES.get(service_name, {}).get('recommended_interval_days', 21)} days for optimal results"
         }
         
-    except HTTPException:
-        raise
+        logger.info(f"Validation completed for user {current_user.id}: {len(validation_result.errors)} errors, {len(validation_result.warnings)} warnings")
+        
+        return response
+        
     except Exception as e:
-        logger.error(f"Error creating appointment: {str(e)}", exc_info=True)
+        logger.error(f"Error during comprehensive validation: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while creating the appointment"
+            status_code=500,
+            detail="Validation system error. Please try again."
         )
 
-
-@router.put("/{appointment_id}", response_model=dict)
-async def update_appointment_with_validation(
-    appointment_id: int,
-    update_data: AppointmentUpdate,
-    current_user: User = Depends(require_user),
+@router.post("/", response_model=schemas.AppointmentResponse)
+@booking_create_rate_limit
+async def create_appointment_with_validation(
+    request: Request,
+    appointment: schemas.AppointmentCreate,
+    current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Update an existing appointment with validation."""
+    """
+    Create appointment with comprehensive Six Figure Barber validation
+    
+    This endpoint implements:
+    - Real-time validation against business rules
+    - Premium service standards enforcement
+    - Revenue optimization suggestions
+    - Client experience enhancement
+    - Automatic upselling opportunities detection
+    """
+    # Get request ID for tracking
+    request_id = getattr(request.state, 'request_id', str(uuid.uuid4())[:8])
+    logger.info(f"ENHANCED_APPOINTMENT_API [{request_id}]: Starting creation with comprehensive validation")
+    
     try:
-        # Get existing appointment
-        appointment = db.query(Appointment).filter_by(
-            id=appointment_id,
-            user_id=current_user.id
-        ).first()
+        # Convert appointment data to validation format
+        if isinstance(appointment.date, str):
+            booking_date = datetime.strptime(appointment.date, "%Y-%m-%d").date()
+        else:
+            booking_date = appointment.date
         
-        if not appointment:
+        # Run comprehensive validation BEFORE attempting to create
+        logger.info(f"ENHANCED_APPOINTMENT_API [{request_id}]: Running comprehensive validation")
+        validation_result = validate_comprehensive_booking(
+            db=db,
+            user_id=current_user.id,
+            booking_date=booking_date,
+            booking_time=appointment.time,
+            service_name=appointment.service,
+            barber_id=getattr(appointment, 'barber_id', None),
+            notes=getattr(appointment, 'notes', None),
+            user_timezone=getattr(current_user, 'timezone', None)
+        )
+        
+        # Check if validation passed
+        if not validation_result.is_valid:
+            logger.warning(f"ENHANCED_APPOINTMENT_API [{request_id}]: Validation failed with {len(validation_result.errors)} errors")
+            
+            # Format error response with user-friendly messages
+            error_details = []
+            for error in validation_result.errors:
+                error_details.append({
+                    "field": error.get("field"),
+                    "message": error.get("message"),
+                    "code": error.get("code")
+                })
+            
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Appointment not found"
-            )
-        
-        # Check if appointment can be modified
-        if appointment.status in ["completed", "cancelled"]:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot modify {appointment.status} appointments"
-            )
-        
-        # Get booking settings
-        booking_settings = db.query(BookingSettings).filter_by(
-            business_id=current_user.business_id
-        ).first()
-        
-        # Prepare updated data for validation
-        updated_date = update_data.date or appointment.start_time.date()
-        updated_time = time.fromisoformat(update_data.time) if update_data.time else appointment.start_time.time()
-        updated_duration = update_data.duration_minutes or appointment.duration_minutes
-        
-        validator_config = {
-            'business_start_time': time.fromisoformat(booking_settings.business_start_time),
-            'business_end_time': time.fromisoformat(booking_settings.business_end_time),
-            'min_advance_minutes': booking_settings.min_lead_time_minutes,
-            'max_advance_days': booking_settings.max_advance_days,
-            'slot_duration_minutes': booking_settings.slot_duration_minutes,
-            'timezone': current_user.timezone or 'UTC'
-        }
-        
-        validator = BookingValidator(db, validator_config)
-        
-        validation_data = {
-            'date': updated_date,
-            'time': updated_time,
-            'duration_minutes': updated_duration,
-            'barber_id': update_data.barber_id or appointment.barber_id,
-            'client_id': appointment.client_id,
-            'timezone': current_user.timezone
-        }
-        
-        # Validate the update
-        is_valid, errors = validator.validate_booking(validation_data)
-        
-        if not is_valid:
-            user_errors = [get_user_friendly_error(error) for error in errors]
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=400,
                 detail={
-                    "message": "Unable to update appointment",
-                    "errors": user_errors
+                    "message": "Appointment validation failed",
+                    "errors": error_details,
+                    "suggestions": validation_result.suggestions,
+                    "validation_type": "comprehensive"
                 }
             )
         
-        # Apply updates
-        if update_data.date or update_data.time:
-            appointment.start_time = datetime.combine(updated_date, updated_time)
+        # Log validation success and any warnings
+        if validation_result.warnings:
+            logger.info(f"ENHANCED_APPOINTMENT_API [{request_id}]: Validation passed with {len(validation_result.warnings)} warnings")
         
-        if update_data.duration_minutes:
-            appointment.duration_minutes = update_data.duration_minutes
+        # Proceed with appointment creation using existing service
+        logger.info(f"ENHANCED_APPOINTMENT_API [{request_id}]: Creating appointment after successful validation")
         
-        if update_data.service_id:
-            appointment.service_id = update_data.service_id
+        db_appointment = booking_service.create_booking(
+            db=db,
+            user_id=current_user.id,
+            booking_date=booking_date,
+            booking_time=appointment.time,
+            service=appointment.service,
+            user_timezone=getattr(current_user, 'timezone', None),
+            notes=getattr(appointment, 'notes', None),
+            barber_id=getattr(appointment, 'barber_id', None)
+        )
         
-        if update_data.service_name:
-            appointment.service_name = update_data.service_name
+        # Log successful creation with validation insights
+        logger.info(f"ENHANCED_APPOINTMENT_API [{request_id}]: Appointment created successfully with validation insights")
         
-        if update_data.barber_id:
-            appointment.barber_id = update_data.barber_id
+        # Add validation insights to the response (not part of the model but logged)
+        if validation_result.suggestions:
+            logger.info(f"ENHANCED_APPOINTMENT_API [{request_id}]: Service suggestions: {validation_result.suggestions}")
         
-        if update_data.notes is not None:
-            appointment.notes = update_data.notes
+        if validation_result.upselling_opportunities:
+            logger.info(f"ENHANCED_APPOINTMENT_API [{request_id}]: Upselling opportunities: {len(validation_result.upselling_opportunities)}")
         
-        if update_data.status:
-            appointment.status = update_data.status
+        # Invalidate related cache after successful creation
+        if db_appointment:
+            cache_invalidator.invalidate_appointment_data(
+                appointment_id=db_appointment.id,
+                user_id=current_user.id,
+                barber_id=db_appointment.barber_id,
+                date=db_appointment.start_time.date()
+            )
         
-        # Increment version for optimistic locking
-        appointment.version += 1
-        
-        db.commit()
-        db.refresh(appointment)
-        
-        logger.info(f"Successfully updated appointment {appointment_id}")
-        
-        return {
-            "message": "Appointment updated successfully",
-            "appointment": {
-                "id": appointment.id,
-                "date": appointment.start_time.date().isoformat(),
-                "time": appointment.start_time.time().strftime("%H:%M"),
-                "service": appointment.service_name,
-                "status": appointment.status
-            }
-        }
+        return db_appointment
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating appointment {appointment_id}: {str(e)}", exc_info=True)
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while updating the appointment"
-        )
+        logger.error(f"ENHANCED_APPOINTMENT_API [{request_id}]: Unexpected error - {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-
-@router.post("/validate", response_model=dict)
-async def validate_appointment_data(
-    appointment_data: EnhancedAppointmentCreate,
-    current_user: User = Depends(require_user),
+@router.get("/business-rules/info", response_model=Dict[str, Any])
+async def get_business_rules_info(
+    current_user: schemas.User = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """
-    Validate appointment data without creating an appointment.
-    
-    Useful for real-time validation in the UI.
+    Get Six Figure Barber business rules and constraints information
     """
     try:
         # Get booking settings
-        booking_settings = db.query(BookingSettings).filter_by(
-            business_id=current_user.business_id
-        ).first()
+        settings = booking_service.get_booking_settings(db)
         
-        if not booking_settings:
-            return {
-                "valid": False,
-                "errors": ["Booking settings not configured"]
+        business_info = {
+            "six_figure_barber_standards": {
+                "premium_positioning": True,
+                "minimum_service_duration": 30,
+                "consultation_included": "All premium services include personalized consultation",
+                "experience_commitment": "Exceptional results through proven Six Figure Barber methodology"
+            },
+            "booking_constraints": {
+                "minimum_advance_hours": 2,
+                "maximum_advance_days": settings.max_advance_days,
+                "business_hours": {
+                    "start": settings.business_start_time.strftime("%H:%M"),
+                    "end": settings.business_end_time.strftime("%H:%M")
+                },
+                "slot_duration_minutes": settings.slot_duration_minutes
+            },
+            "service_standards": {
+                service_name: {
+                    "duration_minutes": info["duration_minutes"],
+                    "category": info["category"],
+                    "premium_positioning": info.get("premium_positioning", False),
+                    "requires_consultation": info.get("requires_consultation", False),
+                    "recommended_interval_days": info.get("recommended_interval_days", 21)
+                }
+                for service_name, info in SIX_FIGURE_SERVICES.items()
+            },
+            "client_experience": {
+                "preparation_recommendation": "Arrive 10 minutes early for consultation",
+                "aftercare_support": "Styling maintenance guidance included",
+                "rebooking_optimization": "Automatic scheduling for optimal results"
             }
-        
-        # Configure and run validator
-        validator_config = {
-            'business_start_time': time.fromisoformat(booking_settings.business_start_time),
-            'business_end_time': time.fromisoformat(booking_settings.business_end_time),
-            'min_advance_minutes': booking_settings.min_lead_time_minutes,
-            'max_advance_days': booking_settings.max_advance_days,
-            'slot_duration_minutes': booking_settings.slot_duration_minutes,
-            'timezone': appointment_data.timezone or current_user.timezone or 'UTC'
         }
         
-        validator = BookingValidator(db, validator_config)
+        # Add user-specific information if authenticated
+        if current_user:
+            try:
+                client = db.query(models.Client).filter(
+                    models.Client.email == current_user.email
+                ).first()
+                
+                if client:
+                    user_tier = getattr(client, 'customer_tier', 'standard')
+                    business_info["user_benefits"] = {
+                        "tier": user_tier,
+                        "priority_booking": user_tier in ["vip", "premium"],
+                        "loyalty_benefits": user_tier != "standard",
+                        "personalized_service": True
+                    }
+            except Exception:
+                # Continue without user benefits if client lookup fails
+                pass
         
-        appointment_time = time.fromisoformat(appointment_data.time)
-        validation_data = {
-            'date': appointment_data.date,
-            'time': appointment_time,
-            'duration_minutes': appointment_data.duration_minutes or 30,
-            'barber_id': appointment_data.barber_id,
-            'client_id': appointment_data.client_id,
-            'timezone': appointment_data.timezone
-        }
-        
-        is_valid, errors = validator.validate_booking(validation_data)
-        
-        return {
-            "valid": is_valid,
-            "errors": [get_user_friendly_error(error) for error in errors] if not is_valid else []
-        }
+        return business_info
         
     except Exception as e:
-        logger.error(f"Error validating appointment: {str(e)}", exc_info=True)
-        return {
-            "valid": False,
-            "errors": ["Unable to validate appointment data"]
-        }
-
-
-@router.post("/check-availability", response_model=dict)
-async def check_bulk_availability(
-    availability_request: BulkAvailabilityCheck,
-    current_user: User = Depends(require_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Check availability for multiple dates.
-    
-    Useful for showing available dates in a calendar view.
-    """
-    try:
-        booking_service = BookingService(db)
-        availability = {}
-        
-        for check_date in availability_request.dates:
-            # Get available slots for each date
-            slots = booking_service.get_available_slots(
-                date=check_date,
-                service_id=availability_request.service_id,
-                barber_id=availability_request.barber_id,
-                timezone=availability_request.timezone
-            )
-            
-            availability[check_date.isoformat()] = {
-                "has_availability": len(slots) > 0,
-                "available_slots": len(slots),
-                "first_available": slots[0]['time'] if slots else None,
-                "last_available": slots[-1]['time'] if slots else None
-            }
-        
-        return {
-            "dates": availability,
-            "timezone": availability_request.timezone
-        }
-        
-    except Exception as e:
-        logger.error(f"Error checking availability: {str(e)}", exc_info=True)
+        logger.error(f"Error getting business rules info: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to check availability"
+            status_code=500,
+            detail="Unable to get business information. Please try again."
         )
-
-
-# Include this router in your main.py:
-# app.include_router(appointments_enhanced.router)

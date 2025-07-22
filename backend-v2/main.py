@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, homepage_builder, client_tiers, six_figure_pricing, staging_webhooks
+from routers import auth, auth_simple, bookings, appointments, appointments_enhanced, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, homepage_builder, client_tiers, six_figure_pricing, staging_webhooks
 from api.v1 import realtime_availability, walkin_queue, external_payments, simple_ai_integration, unified_payment_analytics, oauth, cache_optimization, hybrid_payments, platform_collections, external_payment_webhooks
 # Import V2 API endpoints
 from api.v2.endpoints import notifications as notifications_v2
@@ -321,7 +321,8 @@ app.include_router(auth_simple.router, prefix="/api/v2")  # Simplified auth for 
 # Removed auth bypass - using real authentication only
 app.include_router(mfa.router, prefix="/api/v2")  # Multi-Factor Authentication endpoints
 app.include_router(bookings.router, prefix="/api/v2")
-app.include_router(appointments.router, prefix="/api/v2")  # Standardized appointment endpoints
+app.include_router(appointments.router, prefix="/api/v2")  # Standardized appointment endpoints  
+app.include_router(appointments_enhanced.router, prefix="/api/v2")  # Enhanced appointments with Six Figure Barber validation
 app.include_router(payments.router, prefix="/api/v2")
 # app.include_router(payment_rate_limits.router, prefix="/api/v2")  # Payment rate limiting monitoring and management - temporarily disabled
 app.include_router(clients.router, prefix="/api/v2")
