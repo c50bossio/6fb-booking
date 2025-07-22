@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { UnifiedCalendar } from '@/components/UnifiedCalendar'
+import UnifiedCalendar from '@/components/UnifiedCalendar'
 import type { CalendarView } from '@/components/UnifiedCalendar'
 
 // Mock appointment data for testing

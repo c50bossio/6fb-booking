@@ -10,7 +10,9 @@
  * - Six Figure Methodology Impact
  */
 
-import { apiClient } from './client'
+import { APIClient } from './client'
+
+const apiClient = new APIClient()
 
 export interface RetentionAnalyticsResponse {
   clientsAtRisk: number

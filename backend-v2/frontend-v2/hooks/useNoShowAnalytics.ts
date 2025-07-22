@@ -4,7 +4,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { apiClient } from '@/lib/api/client'
+import { APIClient } from '@/lib/api/client'
+
+const apiClient = new APIClient()
 
 export interface NoShowAnalyticsData {
   live_metrics: {

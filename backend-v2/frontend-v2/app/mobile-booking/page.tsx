@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { DevicePhoneIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline'
+import { PhoneIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline'
 import { MobileBookingExperience } from '@/components/booking/MobileBookingExperience'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -68,7 +68,7 @@ export default function MobileBookingDemo() {
                       : 'text-gray-600'
                   }`}
                 >
-                  <DevicePhoneIcon className="w-4 h-4 mr-1" />
+                  <PhoneIcon className="w-4 h-4 mr-1" />
                   Mobile
                 </button>
                 <button

@@ -21,7 +21,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
-import { apiClient } from '@/lib/api/client'
+import { APIClient } from '@/lib/api/client'
+
+const apiClient = new APIClient()
 
 interface AnalyticsDashboardProps {
   timeRange?: string

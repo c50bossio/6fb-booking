@@ -3,7 +3,9 @@
  * Provides typed client functions for interacting with the hybrid payment system
  */
 
-import { apiClient } from './client';
+import { APIClient } from './client';
+
+const apiClient = new APIClient();
 
 // Types
 export interface PaymentMode {

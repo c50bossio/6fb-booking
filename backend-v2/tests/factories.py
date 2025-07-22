@@ -16,7 +16,7 @@ import random
 import string
 
 from models import (
-    User, Client, Appointment, Service, Payment, 
+    User, Client, Appointment, Service, Payment, GiftCertificate,
     NotificationTemplate, NotificationQueue, NotificationPreference,
     BarberAvailability, ServiceBookingRule, ServicePricingRule
 )
@@ -666,3 +666,46 @@ def create_hybrid_payment_scenario(db):
         'square_transaction': square_tx,
         'commission_collection': commission_collection
     }
+
+
+class GiftCertificateFactory(BaseFactory):
+    """Factory for creating GiftCertificate test instances."""
+    
+    @classmethod
+    def create(cls, **kwargs) -> GiftCertificate:
+        """Create a gift certificate with sensible defaults."""
+        defaults = {
+            'code': f"GC{cls.random_string(8).upper()}",
+            'amount': 100.0,
+            'balance': 100.0,
+            'status': 'active',
+            'purchaser_name': f"Purchaser {cls.get_next_id()}",
+            'purchaser_email': cls.random_email("purchaser"),
+            'recipient_name': f"Recipient {cls.get_next_id()}",
+            'recipient_email': cls.random_email("recipient"),
+            'message': "Happy Birthday!",
+            'valid_from': datetime.now(timezone.utc),
+            'valid_until': datetime.now(timezone.utc) + timedelta(days=365),
+        }
+        defaults.update(kwargs)
+        return GiftCertificate(**defaults)
+    
+    @classmethod
+    def create_used(cls, **kwargs) -> GiftCertificate:
+        """Create a used gift certificate."""
+        defaults = {
+            'balance': 0.0,
+            'status': 'used'
+        }
+        defaults.update(kwargs)
+        return cls.create(**defaults)
+    
+    @classmethod
+    def create_expired(cls, **kwargs) -> GiftCertificate:
+        """Create an expired gift certificate."""
+        defaults = {
+            'status': 'expired',
+            'valid_until': datetime.now(timezone.utc) - timedelta(days=1)
+        }
+        defaults.update(kwargs)
+        return cls.create(**defaults)

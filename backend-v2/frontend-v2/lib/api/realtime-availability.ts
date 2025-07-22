@@ -3,7 +3,9 @@
  * Supports live updates, caching, and optimistic updates
  */
 
-import { apiClient } from './client'
+import { APIClient } from './client'
+
+const apiClient = new APIClient()
 import { useState, useEffect } from 'react'
 
 export interface AvailabilitySlot {
