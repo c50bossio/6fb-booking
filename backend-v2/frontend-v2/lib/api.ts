@@ -1906,23 +1906,6 @@ export interface ClientTierAnalytics {
   analysis_period_days: number
 }
 
-/**
- * Get comprehensive client lifetime value analytics for a barber
- */
-export async function getClientLifetimeValueAnalytics(
-  userId?: number,
-  analysisPeriodDays: number = 365
-): Promise<CLVAnalysis> {
-  const params = new URLSearchParams()
-  params.append('analysis_period_days', analysisPeriodDays.toString())
-  
-  if (userId) {
-    params.append('user_id', userId.toString())
-  }
-  
-  const response = await fetchAPI(`/api/v1/analytics/client-lifetime-value?${params.toString()}`)
-  return response.clv_analysis
-}
 
 /**
  * Get detailed CLV metrics for a specific client
