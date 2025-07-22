@@ -30,6 +30,7 @@ const publicRoutes = [
   '/privacy', 
   '/cookies',
   '/offline',
+  '/calendar-test', // For testing enhanced calendar components
   '/service-worker.js',
   '/manifest.json',
 ]

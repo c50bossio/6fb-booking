@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Enhancement Test - Direct</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Import the premium calendar CSS directly */
+        :root {
+          --premium-primary: #6366f1;
+          --premium-primary-light: #a5b4fc;
+          --premium-primary-dark: #4338ca;
+          --premium-accent: #8b5cf6;
+          --premium-success: #10b981;
+          --premium-warning: #f59e0b;
+          --premium-error: #ef4444;
+          
+          --glass-blur: 12px;
+          --glass-opacity: 0.1;
+          --glass-border: rgba(255, 255, 255, 0.2);
+          --glass-shadow: rgba(0, 0, 0, 0.1);
+          
+          --glow-primary: rgba(99, 102, 241, 0.4);
+          --glow-success: rgba(16, 185, 129, 0.4);
+          --glow-warning: rgba(245, 158, 11, 0.4);
+          --glow-error: rgba(239, 68, 68, 0.4);
+          --glow-accent: rgba(139, 92, 246, 0.4);
+          
+          --anim-fast: 150ms;
+          --anim-normal: 300ms;
+          --anim-slow: 500ms;
+          --anim-bezier: cubic-bezier(0.4, 0, 0.2, 1);
+          --anim-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          
+          --border-radius: 12px;
+          --border-radius-lg: 16px;
+          --border-radius-xl: 20px;
+        }
+
+        .calendar-premium-grid {
+          background: linear-gradient(135deg, 
+            rgba(255, 255, 255, 0.9) 0%, 
+            rgba(247, 250, 252, 0.8) 100%
+          );
+          backdrop-filter: blur(var(--glass-blur));
+          border: 1px solid var(--glass-border);
+          border-radius: var(--border-radius-lg);
+          box-shadow: 
+            0 8px 32px var(--glass-shadow),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .calendar-premium-background {
+          background: 
+            radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.08) 0%, transparent 50%),
+            linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .calendar-smooth-transition {
+          transition: transform var(--anim-normal) var(--anim-bezier),
+                      opacity var(--anim-normal) var(--anim-bezier),
+                      box-shadow var(--anim-normal) var(--anim-bezier);
+          will-change: transform, opacity, box-shadow;
+          transform: translateZ(0);
+        }
+
+        .appointment-card {
+          background: linear-gradient(135deg, 
+            rgba(59, 130, 246, 0.9) 0%, 
+            rgba(37, 99, 235, 0.95) 100%
+          );
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--border-radius);
+          box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+          transition: all var(--anim-normal) var(--anim-bezier);
+        }
+
+        .appointment-card:hover {
+          transform: translateY(-3px) scale(1.02);
+          box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+        }
+
+        .time-slot {
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 8px;
+          transition: all var(--anim-normal) var(--anim-bezier);
+        }
+
+        .time-slot:hover {
+          background: rgba(255, 255, 255, 0.9);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+
+        .today-indicator {
+          animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Enhanced Calendar Test - Direct</h1>
+        <p class="text-gray-600 mb-8">Testing premium calendar enhancements without authentication</p>
+
+        <!-- Calendar Header Test -->
+        <div class="calendar-premium-grid calendar-smooth-transition relative flex items-center justify-between p-6 mb-6 bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border-b border-white/20">
+            <!-- Background Gradient Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-xl pointer-events-none"></div>
+            
+            <!-- Left Navigation Section -->
+            <div class="relative flex items-center gap-3">
+                <button class="calendar-smooth-transition bg-white/60 border border-white/30 hover:bg-white/80 hover:border-blue-300/50 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 ease-out px-3 py-2 rounded-lg">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                
+                <!-- Enhanced Period Title with Calendar Icon -->
+                <div class="flex items-center gap-3 min-w-[240px]">
+                    <div class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg shadow-md">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent select-none">
+                        December 2024
+                    </h2>
+                </div>
+                
+                <button class="calendar-smooth-transition bg-white/60 border border-white/30 hover:bg-white/80 hover:border-blue-300/50 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 ease-out px-3 py-2 rounded-lg">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Right Action Section -->
+            <div class="relative flex items-center gap-3">
+                <button class="calendar-smooth-transition bg-gradient-to-r from-emerald-500 to-blue-600 text-white border-0 hover:from-emerald-600 hover:to-blue-700 hover:shadow-lg hover:shadow-emerald-500/30 font-semibold px-4 py-2 rounded-lg transition-all duration-300 ease-out">
+                    Today
+                </button>
+                
+                <button class="calendar-smooth-transition bg-white/60 border border-white/30 hover:bg-white/80 hover:border-purple-300/50 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 ease-out px-3 py-2 rounded-lg">
+                    <svg class="w-4 h-4 text-gray-600 hover:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Month View Test -->
+        <div class="calendar-premium-background rounded-xl overflow-hidden shadow-2xl">
+            <!-- Month Header -->
+            <div class="bg-white/60 backdrop-blur-sm border-b border-white/30">
+                <div class="grid grid-cols-7 gap-px bg-gradient-to-r from-blue-100/50 to-purple-100/50">
+                    <div class="p-3 text-center font-bold text-sm bg-white/80 text-purple-600 border-r border-white/40">Sun</div>
+                    <div class="p-3 text-center font-bold text-sm bg-white/80 text-gray-700 border-r border-white/40">Mon</div>
+                    <div class="p-3 text-center font-bold text-sm bg-white/80 text-gray-700 border-r border-white/40">Tue</div>
+                    <div class="p-3 text-center font-bold text-sm bg-white/80 text-gray-700 border-r border-white/40">Wed</div>
+                    <div class="p-3 text-center font-bold text-sm bg-white/80 text-gray-700 border-r border-white/40">Thu</div>
+                    <div class="p-3 text-center font-bold text-sm bg-white/80 text-gray-700 border-r border-white/40">Fri</div>
+                    <div class="p-3 text-center font-bold text-sm bg-white/80 text-purple-600">Sat</div>
+                </div>
+            </div>
+
+            <!-- Month Grid -->
+            <div class="grid grid-cols-7 gap-px bg-gradient-to-br from-gray-100/50 to-gray-200/30">
+                <!-- Sample days -->
+                <div class="min-h-[120px] p-3 cursor-pointer calendar-smooth-transition relative bg-white/70 backdrop-blur-sm hover:bg-white/90 hover:shadow-lg hover:shadow-blue-500/10 border border-white/30">
+                    <div class="text-sm font-bold mb-2 text-gray-700">1</div>
+                </div>
+
+                <div class="min-h-[120px] p-3 cursor-pointer calendar-smooth-transition relative bg-white/70 backdrop-blur-sm hover:bg-white/90 hover:shadow-lg hover:shadow-blue-500/10 border border-white/30">
+                    <div class="text-sm font-bold mb-2 text-gray-700">2</div>
+                    <div class="appointment-card p-2 rounded-lg text-xs font-medium text-white">
+                        <div class="truncate font-semibold">John Doe</div>
+                        <div class="truncate text-xs opacity-90">10:00 AM</div>
+                    </div>
+                </div>
+
+                <div class="min-h-[120px] p-3 cursor-pointer calendar-smooth-transition relative bg-white/70 backdrop-blur-sm hover:bg-white/90 hover:shadow-lg hover:shadow-blue-500/10 border border-white/30">
+                    <div class="text-sm font-bold mb-2 text-gray-700">3</div>
+                </div>
+
+                <!-- Today (highlighted) -->
+                <div class="min-h-[120px] p-3 cursor-pointer calendar-smooth-transition relative bg-gradient-to-br from-blue-50/80 to-purple-50/60 ring-2 ring-blue-400/50 shadow-lg border border-white/30">
+                    <div class="text-sm font-bold mb-2 flex items-center justify-between text-blue-700">
+                        <span class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-extrabold shadow-md">15</span>
+                        <div class="w-2 h-2 bg-red-500 rounded-full today-indicator shadow-lg"></div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="appointment-card p-2 rounded-lg text-xs font-medium text-white">
+                            <div class="truncate font-semibold">Jane Smith</div>
+                            <div class="truncate text-xs opacity-90">2:30 PM</div>
+                        </div>
+                        <div class="appointment-card p-2 rounded-lg text-xs font-medium text-white opacity-90">
+                            <div class="truncate font-semibold">Mike Johnson</div>
+                            <div class="truncate text-xs opacity-90">4:00 PM</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="min-h-[120px] p-3 cursor-pointer calendar-smooth-transition relative bg-white/70 backdrop-blur-sm hover:bg-white/90 hover:shadow-lg hover:shadow-blue-500/10 border border-white/30">
+                    <div class="text-sm font-bold mb-2 text-gray-700">16</div>
+                </div>
+
+                <div class="min-h-[120px] p-3 cursor-pointer calendar-smooth-transition relative bg-white/70 backdrop-blur-sm hover:bg-white/90 hover:shadow-lg hover:shadow-blue-500/10 border border-white/30">
+                    <div class="text-sm font-bold mb-2 text-gray-700">17</div>
+                </div>
+
+                <div class="min-h-[120px] p-3 cursor-pointer calendar-smooth-transition relative bg-white/70 backdrop-blur-sm hover:bg-white/90 hover:shadow-lg hover:shadow-blue-500/10 border border-white/30">
+                    <div class="text-sm font-bold mb-2 text-gray-700">18</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testing Info -->
+        <div class="mt-8 p-6 bg-blue-50 rounded-lg">
+            <h3 class="font-semibold text-blue-900 mb-3">✅ Premium Calendar Features Demonstrated:</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                <div>
+                    <h4 class="font-medium mb-2">Visual Enhancements:</h4>
+                    <ul class="space-y-1">
+                        <li>• Glassmorphism header with backdrop blur</li>
+                        <li>• Premium gradient backgrounds</li>
+                        <li>• Enhanced appointment cards with gradients</li>
+                        <li>• Today indicator with pulsing animation</li>
+                        <li>• Smooth hover animations and transitions</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-medium mb-2">Interactive Elements:</h4>
+                    <ul class="space-y-1">
+                        <li>• Modern navigation buttons with glow effects</li>
+                        <li>• Enhanced "Today" button with gradient</li>
+                        <li>• Smooth hover transformations</li>
+                        <li>• Premium calendar icon integration</li>
+                        <li>• Professional shadow and depth effects</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

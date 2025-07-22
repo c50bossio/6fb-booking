@@ -54,21 +54,29 @@ export const MonthView = React.memo(function MonthView({
   }
   
   return (
-    <div className="month-view h-full flex flex-col">
-      {/* Month header */}
-      <div className="month-header border-b border-gray-200 dark:border-gray-700">
-        <div className="grid grid-cols-7 gap-0">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(dayName => (
-            <div key={dayName} className="p-2 text-center font-medium text-sm border-r border-gray-200 dark:border-gray-700">
+    <div className="month-view h-full flex flex-col calendar-premium-background rounded-b-xl overflow-hidden">
+      {/* Enhanced Month header with premium styling */}
+      <div className="month-header bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-b border-white/30 dark:border-gray-600/30">
+        <div className="grid grid-cols-7 gap-px bg-gradient-to-r from-blue-100/50 to-purple-100/50 dark:from-blue-900/20 dark:to-purple-900/20">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((dayName, index) => (
+            <div 
+              key={dayName} 
+              className={`
+                p-3 text-center font-bold text-sm bg-white/80 dark:bg-gray-800/80
+                ${index === 0 || index === 6 ? 'text-purple-600 dark:text-purple-400' : 'text-gray-700 dark:text-gray-300'}
+                border-r border-white/40 dark:border-gray-600/40 last:border-r-0
+                transition-colors duration-200
+              `}
+            >
               {dayName}
             </div>
           ))}
         </div>
       </div>
       
-      {/* Month grid */}
-      <div className="month-grid flex-1">
-        <div className="grid grid-cols-7 gap-0 h-full">
+      {/* Premium Month grid with glassmorphism */}
+      <div className="month-grid flex-1 calendar-scrollbar overflow-auto">
+        <div className="grid grid-cols-7 gap-px h-full bg-gradient-to-br from-gray-100/50 to-gray-200/30 dark:from-gray-900/50 dark:to-gray-800/30">
           {calendarDays.map(day => {
             const dayAppointments = appointments.filter(apt => 
               isSameDay(new Date(apt.start_time), day)
@@ -82,10 +90,19 @@ export const MonthView = React.memo(function MonthView({
               <div 
                 key={day.toISOString()}
                 className={`
-                  border-r border-b border-gray-200 dark:border-gray-700 p-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800
-                  ${!isCurrentMonth ? 'text-gray-400 bg-gray-50 dark:bg-gray-900' : ''}
-                  ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
-                  ${isSelected ? 'ring-2 ring-blue-500' : ''}
+                  min-h-[120px] p-3 cursor-pointer calendar-smooth-transition relative
+                  bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm
+                  hover:bg-white/90 hover:shadow-lg hover:shadow-blue-500/10
+                  dark:hover:bg-gray-700/80 border border-white/30 dark:border-gray-600/30
+                  ${!isCurrentMonth 
+                    ? 'text-gray-400 bg-gray-50/50 dark:bg-gray-900/50 opacity-60' 
+                    : ''}
+                  ${isToday 
+                    ? 'bg-gradient-to-br from-blue-50/80 to-purple-50/60 dark:from-blue-900/40 dark:to-purple-900/30 ring-2 ring-blue-400/50 shadow-lg' 
+                    : ''}
+                  ${isSelected 
+                    ? 'ring-2 ring-purple-500/60 bg-gradient-to-br from-purple-50/80 to-pink-50/60 dark:from-purple-900/40 dark:to-pink-900/30' 
+                    : ''}
                 `}
                 onClick={() => {
                   onSelectDate(day)
@@ -93,36 +110,79 @@ export const MonthView = React.memo(function MonthView({
                 }}
                 onDoubleClick={() => onDayDoubleClick?.(day)}
               >
-                <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600 font-bold' : ''}`}>
-                  {format(day, 'd')}
+                {/* Enhanced Day Number */}
+                <div className={`
+                  text-sm font-bold mb-2 flex items-center justify-between
+                  ${isToday 
+                    ? 'text-blue-700 dark:text-blue-300' 
+                    : 'text-gray-700 dark:text-gray-300'}
+                `}>
+                  <span className={`
+                    ${isToday 
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-extrabold shadow-md' 
+                      : ''}
+                  `}>
+                    {format(day, 'd')}
+                  </span>
+                  
+                  {/* Today indicator */}
+                  {isToday && (
+                    <div className="calendar-today-indicator w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-lg" />
+                  )}
                 </div>
                 
-                {/* Appointment indicators */}
-                <div className="space-y-1">
-                  {dayAppointments.slice(0, 3).map(appointment => {
+                {/* Enhanced Appointment indicators */}
+                <div className="space-y-1.5">
+                  {dayAppointments.slice(0, 3).map((appointment, index) => {
                     const isDraggable = appointment.status !== 'completed' && appointment.status !== 'cancelled'
                     
                     return (
-                      <AppointmentCard
+                      <div
                         key={appointment.id}
-                        appointment={appointment}
-                        isDraggable={isDraggable}
-                        isDragging={dragState.draggedAppointment?.id === appointment.id}
-                        isSelected={false}
-                        viewType="month"
-                        onClick={onAppointmentClick}
-                        onDragStart={onDragStart}
+                        className={`
+                          calendar-appointment calendar-smooth-transition
+                          bg-gradient-to-r from-blue-500/90 to-purple-600/90 text-white
+                          p-2 rounded-lg text-xs font-medium shadow-md
+                          hover:shadow-lg hover:shadow-blue-500/30
+                          border border-white/20
+                          ${isDraggable ? 'cursor-move' : 'cursor-pointer'}
+                        `}
+                        style={{
+                          transform: `translateY(${index * 2}px)`,
+                          zIndex: 10 + index
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onAppointmentClick?.(appointment)
+                        }}
+                        onDragStart={isDraggable ? (e) => onDragStart(e, appointment) : undefined}
                         onDragEnd={onDragEnd}
-                        getStatusColor={getStatusColor}
-                      />
+                        draggable={isDraggable}
+                      >
+                        <div className="truncate font-semibold">
+                          {appointment.client_name || 'Client'}
+                        </div>
+                        <div className="truncate text-xs opacity-90">
+                          {format(new Date(appointment.start_time), 'h:mm a')}
+                        </div>
+                      </div>
                     )
                   })}
+                  
+                  {/* More appointments indicator */}
                   {dayAppointments.length > 3 && (
-                    <div className="text-xs text-gray-500">
+                    <div className="
+                      text-xs text-gray-600 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/80
+                      px-2 py-1 rounded-md backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50
+                      font-medium text-center
+                    ">
                       +{dayAppointments.length - 3} more
                     </div>
                   )}
                 </div>
+                
+                {/* Subtle hover effect overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-lg pointer-events-none" />
               </div>
             )
           })}

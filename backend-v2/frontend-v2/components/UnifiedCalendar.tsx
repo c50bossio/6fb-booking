@@ -14,6 +14,7 @@ import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 import { useCalendarAccessibility } from '@/hooks/useCalendarAccessibility'
 import { useResponsive } from '@/hooks/useResponsive'
 import '@/styles/calendar-animations.css'
+import '@/styles/calendar-premium.css'
 import { CalendarKeyboardNavigation } from './calendar/CalendarKeyboardNavigation'
 import { KeyboardShortcutIndicator, useKeyboardShortcutIndicator } from './ui/keyboard-shortcut-indicator'
 import { useKeyboardShortcutsHelp } from './ui/keyboard-shortcuts-help'
@@ -459,7 +460,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
 
   return (
     <div 
-      className={`unified-calendar h-full flex flex-col ${className}`}
+      className={`unified-calendar calendar-premium-background h-full flex flex-col shadow-2xl rounded-xl overflow-hidden ${className}`}
       onClick={() => {
         // Deselect appointment when clicking on background
         setSelectedAppointmentId(null)

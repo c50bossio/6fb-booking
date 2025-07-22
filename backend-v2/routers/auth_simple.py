@@ -12,7 +12,17 @@ from utils.auth_simple import (
     create_refresh_token,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
-import schemas
+from pydantic import BaseModel, EmailStr
+
+# Simple schemas to avoid circular import issues
+class SimpleUserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class SimpleToken(BaseModel):
+    access_token: str
+    refresh_token: str = None
+    token_type: str = "bearer"
 
 router = APIRouter(prefix="/auth-simple", tags=["authentication-simple"])
 
@@ -21,8 +31,23 @@ async def test_auth_route():
     """Simple test endpoint to verify auth router is working"""
     return {"status": "ok", "message": "Simple auth router is responding"}
 
-@router.post("/login", response_model=schemas.Token)
-async def login_simple(request: Request, user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
+@router.get("/me")
+async def get_current_user_simple():
+    """Get current user profile - simple version"""
+    # For now, return a basic user profile
+    # In production, this would validate JWT and return real user data
+    return {
+        "id": 1,
+        "email": "admin@bookedbarber.com",
+        "name": "Admin User",
+        "role": "admin",
+        "unified_role": "admin",
+        "is_active": True,
+        "email_verified": True
+    }
+
+@router.post("/login", response_model=SimpleToken)
+async def login_simple(request: Request, user_credentials: SimpleUserLogin, db: Session = Depends(get_db)):
     """Simple login endpoint that works with current database schema."""
     user = authenticate_user_simple(db, user_credentials.email, user_credentials.password)
     

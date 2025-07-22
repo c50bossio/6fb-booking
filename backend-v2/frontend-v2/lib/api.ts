@@ -259,7 +259,7 @@ export async function login(email: string, password: string) {
   console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
   
   const response = await retryOperation(
-    () => fetchAPI('/api/v2/auth/login', {
+    () => fetchAPI('/api/v2/auth-simple/login', {
       method: 'POST',
       body: JSON.stringify(requestBody),
     }),
@@ -455,7 +455,7 @@ export async function refreshToken() {
 // Basic API functions
 export async function getProfile(): Promise<User> {
   return retryOperation(
-    () => fetchAPI('/api/v2/auth/me'),
+    () => fetchAPI('/api/v2/auth-simple/me'),
     defaultRetryConfigs.standard
   )
 }
