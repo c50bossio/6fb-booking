@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Worker Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        #logs {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Service Worker Test</h1>
+    <p>This page tests for service worker registration and related issues.</p>
+    
+    <div id="status"></div>
+    <div id="logs"></div>
+    
+    <button onclick="testServiceWorker()">Test Service Worker</button>
+    <button onclick="unregisterAll()">Unregister All Service Workers</button>
+    <button onclick="clearCaches()">Clear All Caches</button>
+    <button onclick="clearLogs()">Clear Logs</button>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+            console.log(message);
+        }
+        
+        function setStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+        
+        async function testServiceWorker() {
+            log('Testing service worker status...', 'info');
+            
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    if (registrations.length === 0) {
+                        log('✅ No service workers found - this is good!', 'success');
+                        setStatus('Service Worker Issue Resolved! No service workers are registered.', 'success');
+                    } else {
+                        log(`❌ Found ${registrations.length} service worker(s)`, 'error');
+                        registrations.forEach((reg, i) => {
+                            log(`  Service Worker ${i + 1}: ${reg.scope}`, 'error');
+                        });
+                        setStatus(`Warning: ${registrations.length} service worker(s) still registered`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Error checking service workers: ${error.message}`, 'error');
+                    setStatus('Error checking service worker status', 'error');
+                }
+            } else {
+                log('❌ Service Worker not supported in this browser', 'error');
+                setStatus('Service Worker not supported', 'error');
+            }
+        }
+        
+        async function unregisterAll() {
+            log('Unregistering all service workers...', 'info');
+            
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    if (registrations.length === 0) {
+                        log('✅ No service workers to unregister', 'success');
+                        setStatus('No service workers found to unregister', 'info');
+                        return;
+                    }
+                    
+                    for (let registration of registrations) {
+                        log(`Unregistering: ${registration.scope}`, 'info');
+                        await registration.unregister();
+                    }
+                    
+                    log(`✅ Unregistered ${registrations.length} service worker(s)`, 'success');
+                    setStatus('All service workers unregistered successfully', 'success');
+                } catch (error) {
+                    log(`❌ Error unregistering: ${error.message}`, 'error');
+                    setStatus('Error unregistering service workers', 'error');
+                }
+            }
+        }
+        
+        async function clearCaches() {
+            log('Clearing all caches...', 'info');
+            
+            if ('caches' in window) {
+                try {
+                    const cacheNames = await caches.keys();
+                    if (cacheNames.length === 0) {
+                        log('✅ No caches to clear', 'success');
+                        setStatus('No caches found to clear', 'info');
+                        return;
+                    }
+                    
+                    for (let cacheName of cacheNames) {
+                        log(`Deleting cache: ${cacheName}`, 'info');
+                        await caches.delete(cacheName);
+                    }
+                    
+                    log(`✅ Cleared ${cacheNames.length} cache(s)`, 'success');
+                    setStatus('All caches cleared successfully', 'success');
+                } catch (error) {
+                    log(`❌ Error clearing caches: ${error.message}`, 'error');
+                    setStatus('Error clearing caches', 'error');
+                }
+            } else {
+                log('❌ Cache API not supported', 'error');
+                setStatus('Cache API not supported', 'error');
+            }
+        }
+        
+        // Auto-run test on page load
+        window.addEventListener('load', () => {
+            log('Page loaded, running initial test...', 'info');
+            testServiceWorker();
+        });
+        
+        // Listen for service worker errors
+        window.addEventListener('error', (event) => {
+            if (event.message.includes('service') || event.message.includes('fetch')) {
+                log(`❌ Service Worker Error: ${event.message}`, 'error');
+            }
+        });
+        
+        // Listen for unhandled promise rejections (common with service workers)
+        window.addEventListener('unhandledrejection', (event) => {
+            if (event.reason && event.reason.toString().includes('service')) {
+                log(`❌ Service Worker Promise Rejection: ${event.reason}`, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

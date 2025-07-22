@@ -125,9 +125,20 @@ export function useServiceWorker() {
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false)
 
   useEffect(() => {
-    // Service worker disabled for development - skip registration
-    console.log('Service Worker registration disabled for development')
-    return
+    // Service worker completely disabled - always skip registration
+    console.log('Service Worker registration completely disabled')
+    
+    // Unregister any existing service workers
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+          console.log('Unregistering existing service worker:', registration);
+          registration.unregister();
+        }
+      });
+    }
+    
+    return // Never proceed to registration
     
     if ('serviceWorker' in navigator) {
       // Register service worker
