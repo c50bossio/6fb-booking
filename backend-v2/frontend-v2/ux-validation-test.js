@@ -114,7 +114,7 @@
         
         // Check headings hierarchy
         const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        let headingOrder = [];
+        const headingOrder = [];
         headings.forEach(heading => {
             headingOrder.push(parseInt(heading.tagName.substring(1)));
         });

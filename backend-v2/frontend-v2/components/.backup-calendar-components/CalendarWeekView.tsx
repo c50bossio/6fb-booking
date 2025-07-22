@@ -390,7 +390,7 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     if (!pendingUpdate) return
 
     let finalStartTime = pendingUpdate.newStartTime
-    let finalAppointmentId = pendingUpdate.appointmentId
+    const finalAppointmentId = pendingUpdate.appointmentId
 
     // Apply resolution changes
     if (resolution.suggestedStartTime) {

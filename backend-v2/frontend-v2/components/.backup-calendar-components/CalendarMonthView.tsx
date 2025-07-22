@@ -359,7 +359,7 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
 
     try {
       let finalStartTime = pendingUpdate.newStartTime
-      let finalAppointmentId = pendingUpdate.appointmentId
+      const finalAppointmentId = pendingUpdate.appointmentId
 
       // Apply resolution changes
       if (resolution.suggestedStartTime) {

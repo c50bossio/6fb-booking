@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useCalendarVisuals } from '@/hooks/useCalendarVisuals'
 
 interface ResponsiveCalendarLayoutProps {
   children: React.ReactNode
@@ -20,21 +21,30 @@ interface ResponsiveBreakpoints {
 
 /**
  * Hook for responsive calendar behavior based on device characteristics
+ * Now uses the consolidated useCalendarVisuals hook
  */
 function useResponsiveCalendar(
   mobileBreakpoint = 768,
   tabletBreakpoint = 1024
 ): ResponsiveBreakpoints {
-  const isMobile = useMediaQuery(`(max-width: ${mobileBreakpoint - 1}px)`)
-  const isTablet = useMediaQuery(`(min-width: ${mobileBreakpoint}px) and (max-width: ${tabletBreakpoint - 1}px)`)
-  const isDesktop = useMediaQuery(`(min-width: ${tabletBreakpoint}px)`)
-  const isTouchDevice = useMediaQuery('(hover: none) and (pointer: coarse)')
+  const { 
+    isMobile, 
+    isTablet, 
+    isDesktop, 
+    isTouch: isTouchDevice,
+    viewportWidth 
+  } = useCalendarVisuals({
+    breakpoints: {
+      mobile: mobileBreakpoint,
+      tablet: tabletBreakpoint
+    }
+  })
   
   const [screenSize, setScreenSize] = useState<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('md')
 
   useEffect(() => {
     const updateScreenSize = () => {
-      const width = window.innerWidth
+      const width = viewportWidth || window.innerWidth
       if (width < 480) setScreenSize('xs')
       else if (width < 640) setScreenSize('sm')
       else if (width < mobileBreakpoint) setScreenSize('md')
@@ -45,7 +55,7 @@ function useResponsiveCalendar(
     updateScreenSize()
     window.addEventListener('resize', updateScreenSize)
     return () => window.removeEventListener('resize', updateScreenSize)
-  }, [mobileBreakpoint, tabletBreakpoint])
+  }, [mobileBreakpoint, tabletBreakpoint, viewportWidth])
 
   return {
     isMobile,

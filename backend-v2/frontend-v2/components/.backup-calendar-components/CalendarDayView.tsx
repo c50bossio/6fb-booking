@@ -548,7 +548,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
     if (!pendingUpdate) return
 
     let finalStartTime = pendingUpdate.newStartTime
-    let finalAppointmentId = pendingUpdate.appointmentId
+    const finalAppointmentId = pendingUpdate.appointmentId
 
     // Apply resolution changes
     if (resolution.suggestedStartTime) {

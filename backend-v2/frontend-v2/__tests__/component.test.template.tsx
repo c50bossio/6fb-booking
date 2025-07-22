@@ -15,6 +15,7 @@ import { setupServer } from 'msw/node';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Router } from 'next/router';
 import mockRouter from 'next-router-mock';
+import Link from 'next/link';
 import '@testing-library/jest-dom';
 
 // Import the component to test
@@ -347,8 +348,8 @@ describe('YourComponent', () => {
       renderWithProviders(
         <nav aria-label="Main navigation">
           <ul>
-            <li><a href="/home" aria-label="Go to home page">Home</a></li>
-            <li><a href="/about" aria-label="Go to about page">About</a></li>
+            <li><Link href="/home" aria-label="Go to home page">Home</Link></li>
+            <li><Link href="/about" aria-label="Go to about page">About</Link></li>
           </ul>
         </nav>
       );

@@ -1,21 +1,42 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { getProfile, type User } from '@/lib/api'
 import { handleAuthError, isProtectedRoute } from '@/lib/auth-error-handler'
 import { ThemeProvider } from '@/lib/theme-provider'
-import { Sidebar } from './Sidebar'
-import { MobileNavigation, useMobileNavigation } from './MobileNavigation'
-import { Header } from './Header'
-import Footer from './Footer'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { TestDataIndicator } from '@/components/TestDataIndicator'
 import { navigationItems } from '@/lib/navigation'
-import { SessionTimeoutWarning } from '@/components/auth/SessionTimeoutWarning'
-import { CommandPalette } from '@/components/navigation/CommandPalette'
 import { useKeyboardShortcuts, createNavigationShortcuts } from '@/hooks/useKeyboardShortcuts'
-import { useGlobalDesktopShortcuts } from '@/hooks/useDesktopInteractions'
+
+// Lazy load heavy components to reduce initial bundle size
+const Sidebar = lazy(() => import('./Sidebar').then(m => ({ default: m.Sidebar })))
+const MobileNavigation = lazy(() => import('./MobileNavigation').then(m => ({ default: m.MobileNavigation })))
+const Header = lazy(() => import('./Header').then(m => ({ default: m.Header })))
+const Footer = lazy(() => import('./Footer'))
+const TestDataIndicator = lazy(() => import('@/components/TestDataIndicator'))
+const SessionTimeoutWarning = lazy(() => import('@/components/auth/SessionTimeoutWarning'))
+const CommandPalette = lazy(() => import('@/components/navigation/CommandPalette'))
+
+// Conditionally load desktop interactions only on desktop
+const useGlobalDesktopShortcuts = lazy(() => import('@/hooks/useDesktopInteractions').then(m => ({ default: m.useGlobalDesktopShortcuts })))
+
+// Minimal loading skeleton for layout components
+const LayoutSkeleton = () => (
+  <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100 animate-pulse">
+    <div className="h-16 bg-gray-200 dark:bg-gray-700"></div>
+    <div className="flex">
+      <div className="w-64 h-screen bg-gray-200 dark:bg-gray-700 hidden lg:block"></div>
+      <div className="flex-1 p-6">
+        <div className="space-y-4">
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -151,8 +172,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   )
   const keyboardShortcuts = useKeyboardShortcuts(shortcuts, isClient && !isPublicRoute)
   
-  // Global desktop shortcuts
-  useGlobalDesktopShortcuts()
+  // Conditionally load desktop shortcuts only on desktop
+  useEffect(() => {
+    if (isClient && !isMobile) {
+      import('@/hooks/useDesktopInteractions').then(({ useGlobalDesktopShortcuts }) => {
+        useGlobalDesktopShortcuts()
+      })
+    }
+  }, [isClient, isMobile])
 
   // Generate breadcrumbs based on current path
   const getBreadcrumbs = () => {
@@ -182,7 +209,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       currentPath += `/${path}`
       const navItem = findNavItem(currentPath)
       
-      let label = navItem?.name || path
+      const label = navItem?.name || path
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ')
@@ -265,7 +292,9 @@ export function AppLayout({ children }: AppLayoutProps) {
             </div>
             {/* Show footer on legal pages */}
             {(pathname === '/terms' || pathname === '/privacy' || pathname === '/cookies') && (
-              <Footer variant="minimal" />
+              <Suspense fallback={<div className="h-16 bg-gray-200 dark:bg-gray-700 animate-pulse"></div>}>
+                <Footer variant="minimal" />
+              </Suspense>
             )}
           </div>
         ) : (
@@ -273,40 +302,52 @@ export function AppLayout({ children }: AppLayoutProps) {
           <>
             {/* Mobile Layout */}
             {isClient && isMobile ? (
-              <div className="flex flex-col min-h-screen">
-                <Header
-                  user={user}
-                  breadcrumbs={getBreadcrumbs()}
-                  onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  showMenuToggle={true}
-                  onOpenCommandPalette={() => setCommandPaletteOpen(true)}
-                />
-                <MainContent error={error} className="pb-20">
-                  {children}
-                </MainContent>
-                <MobileNavigation user={user} />
-              </div>
-            ) : (
-              /* Desktop Layout (including SSR) - Enhanced Sticky Navigation */
-              <div className="flex min-h-screen relative">
-                <Sidebar
-                  user={user}
-                  collapsed={sidebarCollapsed}
-                  onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-                />
-                <div className="flex-1 flex flex-col min-w-0">
-                  <Header
-                    user={user}
-                    breadcrumbs={getBreadcrumbs()}
-                    onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-                    showMenuToggle={false}
-                    onOpenCommandPalette={() => setCommandPaletteOpen(true)}
-                  />
-                  <MainContent error={error} className="flex-1 overflow-auto">
+              <Suspense fallback={<LayoutSkeleton />}>
+                <div className="flex flex-col min-h-screen">
+                  <Suspense fallback={<div className="h-16 bg-gray-200 dark:bg-gray-700 animate-pulse"></div>}>
+                    <Header
+                      user={user}
+                      breadcrumbs={getBreadcrumbs()}
+                      onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+                      showMenuToggle={true}
+                      onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+                    />
+                  </Suspense>
+                  <MainContent error={error} className="pb-20">
                     {children}
                   </MainContent>
+                  <Suspense fallback={<div className="h-16 bg-gray-200 dark:bg-gray-700 animate-pulse fixed bottom-0 left-0 right-0"></div>}>
+                    <MobileNavigation user={user} />
+                  </Suspense>
                 </div>
-              </div>
+              </Suspense>
+            ) : (
+              /* Desktop Layout (including SSR) - Enhanced Sticky Navigation */
+              <Suspense fallback={<LayoutSkeleton />}>
+                <div className="flex min-h-screen relative">
+                  <Suspense fallback={<div className="w-64 bg-gray-200 dark:bg-gray-700 animate-pulse"></div>}>
+                    <Sidebar
+                      user={user}
+                      collapsed={sidebarCollapsed}
+                      onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    />
+                  </Suspense>
+                  <div className="flex-1 flex flex-col min-w-0">
+                    <Suspense fallback={<div className="h-16 bg-gray-200 dark:bg-gray-700 animate-pulse"></div>}>
+                      <Header
+                        user={user}
+                        breadcrumbs={getBreadcrumbs()}
+                        onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+                        showMenuToggle={false}
+                        onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+                      />
+                    </Suspense>
+                    <MainContent error={error} className="flex-1 overflow-auto">
+                      {children}
+                    </MainContent>
+                  </div>
+                </div>
+              </Suspense>
             )}
           </>
         )}
@@ -314,17 +355,23 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Global Components - Only show for authenticated users on protected routes */}
         {!isPublicRoute && user && (
           <>
-            <TestDataIndicator />
-            <SessionTimeoutWarning 
-              sessionDurationMinutes={30}
-              warningMinutesBeforeTimeout={5}
-              enabled={true}
-            />
-            <CommandPalette 
-              isOpen={commandPaletteOpen}
-              onClose={() => setCommandPaletteOpen(false)}
-              user={user}
-            />
+            <Suspense fallback={null}>
+              <TestDataIndicator />
+            </Suspense>
+            <Suspense fallback={null}>
+              <SessionTimeoutWarning 
+                sessionDurationMinutes={30}
+                warningMinutesBeforeTimeout={5}
+                enabled={true}
+              />
+            </Suspense>
+            <Suspense fallback={null}>
+              <CommandPalette 
+                isOpen={commandPaletteOpen}
+                onClose={() => setCommandPaletteOpen(false)}
+                user={user}
+              />
+            </Suspense>
           </>
         )}
       </div>

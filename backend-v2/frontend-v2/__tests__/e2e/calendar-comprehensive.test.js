@@ -29,7 +29,7 @@ const MOBILE_VIEWPORTS = [
 ]
 
 // Test results storage
-let testResults = {
+const testResults = {
   timestamp: new Date().toISOString(),
   overall: 'PASS',
   tests: [],
@@ -400,7 +400,7 @@ async function testMobileResponsiveness(page) {
   console.log('📱 Testing mobile responsiveness...')
   
   try {
-    let mobileResults = []
+    const mobileResults = []
     
     for (const viewport of MOBILE_VIEWPORTS) {
       console.log(`📱 Testing ${viewport.name} (${viewport.width}x${viewport.height})...`)
@@ -730,7 +730,7 @@ async function runAllTests() {
     ]
     
     let passedTests = 0
-    let totalTests = tests.length
+    const totalTests = tests.length
     
     for (const test of tests) {
       try {

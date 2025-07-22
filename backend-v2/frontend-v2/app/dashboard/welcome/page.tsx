@@ -83,24 +83,15 @@ export default function WelcomePage() {
       title: 'Complete Your Profile',
       description: 'Add your business hours, services, and contact info',
       icon: Building2,
-      href: '/settings/business',
+      href: '/settings/profile',  // ✅ FIXED: Points to existing page
       completed: completedSteps.includes('profile')
-    },
-    {
-      id: 'staff',
-      title: 'Add Your Team',
-      description: 'Invite barbers and staff members to your organization',
-      icon: Users,
-      href: '/settings/team',
-      completed: completedSteps.includes('staff'),
-      optional: (user?.unified_role as string) === 'INDIVIDUAL_BARBER'
     },
     {
       id: 'services',
       title: 'Set Up Services',
       description: 'Create your service menu with pricing and duration',
       icon: Settings,
-      href: '/settings/services',
+      href: '/services/service-center',  // ✅ FIXED: Points to existing service center
       completed: completedSteps.includes('services')
     },
     {
@@ -108,18 +99,12 @@ export default function WelcomePage() {
       title: 'Connect Your Calendar',
       description: 'Sync with Google Calendar for seamless scheduling',
       icon: Calendar,
-      href: '/settings/integrations',
+      href: '/settings/integrations',  // ✅ ALREADY CORRECT: Points to existing page
       completed: completedSteps.includes('calendar'),
       optional: true
-    },
-    {
-      id: 'payment',
-      title: 'Set Up Payments',
-      description: 'Connect Stripe to accept online payments',
-      icon: CreditCard,
-      href: '/settings/payments',
-      completed: completedSteps.includes('payment')
     }
+    // Note: Temporarily removed 'staff' and 'payment' steps as those pages don't exist yet
+    // They can be re-added once those pages are created
   ]
 
   const requiredSteps = onboardingSteps.filter(step => !step.optional)

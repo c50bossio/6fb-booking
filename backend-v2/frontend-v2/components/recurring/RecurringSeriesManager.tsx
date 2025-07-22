@@ -190,7 +190,7 @@ export default function RecurringSeriesManager({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       let endpoint = '';
-      let method = 'PUT';
+      const method = 'PUT';
       let body: any = {};
 
       switch (action) {

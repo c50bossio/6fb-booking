@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { format, isToday, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isWithinInterval } from 'date-fns'
-import { useCalendarAnimations } from '@/hooks/useCalendarAnimations'
+import { useCalendarVisuals } from '@/hooks/useCalendarVisuals'
+import { useCalendarInteraction } from '@/hooks/useCalendarInteraction'
 
 interface VisualEnhancementProps {
   currentDate: Date
@@ -30,13 +31,30 @@ export function CalendarVisualEnhancement({
   const [showCapacityIndicators, setShowCapacityIndicators] = useState(false)
   const animationRef = useRef<HTMLDivElement>(null)
 
-  const {
-    animateSuccess,
-    animateError,
-    getAnimationClasses,
-    getTransitionClasses,
-    prefersReducedMotion
-  } = useCalendarAnimations()
+  const { prefersReducedMotion } = useCalendarInteraction()
+  const { isMobile } = useCalendarVisuals()
+  
+  // Simple animation functions to replace complex animation hooks
+  const animateSuccess = () => {
+    if (animationRef.current && !prefersReducedMotion) {
+      animationRef.current.style.transform = 'scale(1.05)'
+      setTimeout(() => {
+        if (animationRef.current) {
+          animationRef.current.style.transform = 'scale(1)'
+        }
+      }, 150)
+    }
+  }
+  
+  const getTransitionClasses = (type: string) => {
+    if (prefersReducedMotion) return ''
+    return 'transition-all duration-200'
+  }
+  
+  const getAnimationClasses = (classes: string) => {
+    if (prefersReducedMotion) return ''
+    return classes
+  }
 
   // Calculate appointment capacity for each day
   useEffect(() => {
@@ -218,7 +236,24 @@ export function EnhancedDateCell({
   children
 }: EnhancedDateCellProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const { getTransitionClasses, animateTouchStart, animateTouchEnd } = useCalendarAnimations()
+  const { prefersReducedMotion: cellPrefersReducedMotion } = useCalendarInteraction()
+  
+  const getTransitionClasses = (type: string) => {
+    if (cellPrefersReducedMotion) return ''
+    return 'transition-all duration-200'
+  }
+  
+  const animateTouchStart = (element: HTMLElement) => {
+    if (!cellPrefersReducedMotion) {
+      element.style.transform = 'scale(0.95)'
+    }
+  }
+  
+  const animateTouchEnd = (element: HTMLElement) => {
+    if (!cellPrefersReducedMotion) {
+      element.style.transform = 'scale(1)'
+    }
+  }
   const cellRef = useRef<HTMLButtonElement>(null)
 
   const handleClick = useCallback(() => {
@@ -345,7 +380,12 @@ export function StatusIndicator({
   duration = 3000 
 }: StatusIndicatorProps) {
   const [isVisible, setIsVisible] = useState(true)
-  const { getTransitionClasses } = useCalendarAnimations()
+  const { prefersReducedMotion: statusPrefersReducedMotion } = useCalendarInteraction()
+  
+  const getTransitionClasses = (type: string) => {
+    if (statusPrefersReducedMotion) return ''
+    return 'transition-all duration-200'
+  }
 
   useEffect(() => {
     if (autoHide && (status === 'success' || status === 'error')) {

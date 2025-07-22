@@ -400,6 +400,267 @@
   }
 }
 
+/* Touch feedback animations */
+@keyframes ripple-effect {
+  0% {
+    width: 20px;
+    height: 20px;
+    opacity: 0.8;
+  }
+  100% {
+    width: 100px;
+    height: 100px;
+    opacity: 0;
+  }
+}
+
+@keyframes scale-effect {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes glow-effect {
+  0% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.5);
+    box-shadow: 0 0 10px currentColor;
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 25px currentColor;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 0 40px currentColor;
+  }
+}
+
+@keyframes bounce-effect {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Pinch-to-zoom feedback */
+.calendar-zoom-indicator {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--calendar-animation-fast) var(--calendar-animation-easing);
+}
+
+.calendar-zoom-indicator.active {
+  opacity: 1;
+}
+
+/* Multi-touch visual indicators */
+.multi-touch-indicator {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all var(--calendar-animation-fast) var(--calendar-animation-easing);
+}
+
+.multi-touch-indicator.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.multi-touch-indicator.pinching {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+  animation: pinch-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pinch-pulse {
+  from {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* Enhanced drag feedback for appointments */
+.appointment-magnetic-snap {
+  position: relative;
+}
+
+.appointment-magnetic-snap::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px dashed #3b82f6;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.05);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all var(--calendar-animation-fast) var(--calendar-animation-easing);
+}
+
+.appointment-magnetic-snap.snap-active::before {
+  opacity: 1;
+  transform: scale(1);
+  animation: magnetic-snap-pulse 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes magnetic-snap-pulse {
+  from {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+  }
+  to {
+    border-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+  }
+}
+
+/* Touch-optimized time slots */
+.time-slot-touch-optimized {
+  position: relative;
+  min-height: 48px; /* Ensure minimum touch target */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-slot-touch-optimized::after {
+  content: '';
+  position: absolute;
+  inset: -8px; /* Expand touch area beyond visual bounds */
+  background: transparent;
+  border-radius: 4px;
+}
+
+.time-slot-touch-optimized:active::after {
+  background: rgba(59, 130, 246, 0.1);
+  animation: touch-slot-feedback 0.15s ease-out;
+}
+
+@keyframes touch-slot-feedback {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.02);
+    opacity: 0.3;
+  }
+}
+
+/* Long press context indicator */
+.long-press-indicator {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 3px solid #3b82f6;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.long-press-indicator.active {
+  opacity: 1;
+  animation: long-press-countdown 0.5s linear forwards;
+}
+
+@keyframes long-press-countdown {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    border-width: 3px;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    border-width: 2px;
+  }
+}
+
+/* Swipe direction indicators */
+.swipe-hint {
+  position: absolute;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+  animation: swipe-hint-pulse 2s infinite;
+}
+
+.swipe-hint.left {
+  left: 20px;
+  transform: translateY(-50%);
+}
+
+.swipe-hint.right {
+  right: 20px;
+  transform: translateY(-50%);
+}
+
+@keyframes swipe-hint-pulse {
+  0%, 100% {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.8);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
 /* Dark mode animations */
 @media (prefers-color-scheme: dark) {
   .calendar-skeleton {
@@ -409,5 +670,20 @@
   
   .unified-calendar-appointment:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .calendar-zoom-indicator {
+    background: rgba(255, 255, 255, 0.9);
+    color: black;
+  }
+  
+  .multi-touch-indicator {
+    border-color: #60a5fa;
+    background: rgba(96, 165, 250, 0.1);
+  }
+  
+  .multi-touch-indicator.pinching {
+    border-color: #a78bfa;
+    background: rgba(167, 139, 250, 0.1);
   }
 }

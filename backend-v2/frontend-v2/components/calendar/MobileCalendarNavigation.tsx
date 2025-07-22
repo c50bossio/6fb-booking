@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon, SwatchIcon } from '@heroicons/react/24/outline'
-import { useCalendarTouchGestures } from '@/hooks/useTouchGestures'
-import { useCalendarAnimations } from '@/hooks/useCalendarAnimations'
+import { useCalendarInteraction } from '@/hooks/useCalendarInteraction'
+import { useCalendarVisuals } from '@/hooks/useCalendarVisuals'
 import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns'
 
 interface MobileCalendarNavigationProps {
@@ -26,7 +26,14 @@ export function MobileCalendarNavigation({
   className = ''
 }: MobileCalendarNavigationProps) {
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const { animateViewTransition, getTransitionClasses } = useCalendarAnimations()
+  const [showSwipeHint, setShowSwipeHint] = useState(false)
+  const [swipeHint, setSwipeHint] = useState<'left' | 'right' | null>(null)
+  
+  // Use consolidated hooks
+  const { prefersReducedMotion } = useCalendarInteraction()
+  const { isMobile } = useCalendarVisuals()
+  
+  const elementRef = useRef<HTMLDivElement>(null)
 
   const handleNavigate = (direction: 'prev' | 'next' | 'up' | 'down') => {
     if (isTransitioning) return
@@ -75,19 +82,23 @@ export function MobileCalendarNavigation({
         return
     }
 
-    animateViewTransition(animationDirection).then(() => {
+    // Simple transition without complex animations
+    setTimeout(() => {
       setIsTransitioning(false)
-    })
+    }, prefersReducedMotion ? 0 : 200)
 
     onDateChange(newDate)
   }
 
-  const {
-    elementRef,
-    swipeHint,
-    showSwipeHint,
-    dismissSwipeHint
-  } = useCalendarTouchGestures(handleNavigate)
+  const dismissSwipeHint = () => setShowSwipeHint(false)
+  
+  // Touch gesture handling
+  const { getTouchHandlers } = useCalendarInteraction({
+    onSwipeLeft: () => handleNavigate('next'),
+    onSwipeRight: () => handleNavigate('prev'),
+    onSwipeUp: () => handleNavigate('up'),
+    onSwipeDown: () => handleNavigate('down')
+  })
 
   const getDateLabel = () => {
     switch (viewMode) {
@@ -184,9 +195,10 @@ export function MobileCalendarNavigation({
         ref={elementRef}
         className={`
           flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700
-          ${getTransitionClasses('view')}
-          ${isTransitioning ? 'pointer-events-none' : ''}
+          ${isTransitioning ? 'pointer-events-none opacity-75' : ''}
+          transition-opacity duration-200
         `}
+        {...getTouchHandlers()}
       >
         {/* Previous Button */}
         <button

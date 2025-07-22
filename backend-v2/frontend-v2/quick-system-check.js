@@ -21,7 +21,7 @@ async function quickHealthCheck() {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     
-    let results = [];
+    const results = [];
     let consoleErrors = 0;
     
     // Count console errors
