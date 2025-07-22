@@ -148,9 +148,9 @@ export function filterNavigationByRole(
   return [...basicItems, ...additionalItems]
 }
 
-// Main navigation items (for sidebar)
+// Main navigation items (for sidebar) - STREAMLINED STRUCTURE
 export const navigationItems: NavigationItem[] = [
-  // Primary focal point - Business snapshot
+  // 1. Dashboard - Business overview
   {
     name: 'Dashboard',
     href: '/dashboard',
@@ -158,9 +158,9 @@ export const navigationItems: NavigationItem[] = [
     description: 'Business overview and quick stats'
   },
   
-  // Secondary focal point - Calendar & Scheduling section
+  // 2. Appointments - All scheduling functionality (unified terminology)
   {
-    name: 'Calendar & Scheduling',
+    name: 'Appointments',
     href: '/calendar',
     icon: CalendarIcon,
     description: 'Manage appointments and schedule',
@@ -172,7 +172,7 @@ export const navigationItems: NavigationItem[] = [
         description: 'Main booking calendar'
       },
       {
-        name: 'My Bookings',
+        name: 'My Appointments',
         href: '/bookings',
         icon: ClockIcon,
         description: 'View and manage your appointments'
@@ -194,102 +194,45 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
-  // Business Management
+  // 3. Clients - All client management (consolidated)
   {
     name: 'Clients',
     href: '/clients',
     icon: UserGroupIcon,
     roles: ['barber', 'admin', 'super_admin'],
-    description: 'Manage client information'
-  },
-  
-  // Customer Management Hub
-  {
-    name: 'Customer Management',
-    href: '/customers',
-    icon: UsersIcon,
-    roles: ['admin', 'super_admin'],
-    description: 'Comprehensive customer management and segmentation'
-  },
-  
-  // Communication
-  {
-    name: 'Communication',
-    href: '/notifications',
-    icon: PhoneIcon,
-    roles: ['admin', 'barber', 'super_admin'],
-    description: 'Send notifications and messages'
-  },
-  
-  // Marketing Suite
-  {
-    name: 'Marketing Suite',
-    href: '/marketing',
-    icon: EnvelopeIcon,
-    roles: ['admin', 'super_admin'],
-    description: 'Email and SMS marketing campaigns',
-    isNew: true,
+    description: 'Complete client management and segmentation',
     children: [
       {
-        name: 'Campaigns',
-        href: '/marketing/campaigns',
-        icon: ChatBubbleLeftRightIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Create and manage campaigns'
+        name: 'All Clients',
+        href: '/clients',
+        icon: UserGroupIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'View and manage all clients'
       },
       {
-        name: 'Templates',
-        href: '/marketing/templates',
-        icon: DocumentArrowDownIcon,
+        name: 'Customer Management',
+        href: '/customers',
+        icon: UsersIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Email and SMS templates'
+        description: 'Advanced customer segmentation'
       },
       {
-        name: 'Contacts',
-        href: '/marketing/contacts',
-        icon: UserCircleIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Manage contact lists'
-      },
-      {
-        name: 'Analytics',
-        href: '/marketing/analytics',
-        icon: ChartPieIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Campaign performance'
-      },
-      {
-        name: 'Usage & Billing',
-        href: '/marketing/billing',
-        icon: CurrencyDollarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Credits and usage tracking'
-      },
-      {
-        name: 'Booking Links',
-        href: '/marketing/booking-links',
-        icon: LinkIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Trackable booking URLs and QR codes'
-      },
-      {
-        name: 'Smart CTAs',
-        href: '/automation/smart-cta',
-        icon: SparklesIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'AI-powered call-to-action generation',
-        isNew: true
+        name: 'Client Tiers',
+        href: '/analytics/client-tiers',
+        icon: UsersIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Six Figure Barber client tier analytics'
       }
     ]
   },
   
-  // Finance Hub - Comprehensive financial management
+  // 4. Payments - All financial functionality (consolidated Finance Hub)
   {
-    name: 'Finance Hub',
+    name: 'Payments',
     href: '/payments/financial-center',
     icon: BanknotesIcon,
     roles: ['admin', 'barber', 'super_admin'],
-    description: 'Comprehensive financial management',
+    description: 'Complete financial management',
     children: [
       {
         name: 'Financial Center',
@@ -302,7 +245,8 @@ export const navigationItems: NavigationItem[] = [
         name: 'Payment Overview',
         href: '/payments',
         icon: CreditCardIcon,
-        roles: ['admin', 'barber', 'super_admin']
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'View payment history and status'
       },
       {
         name: 'Earnings',
@@ -315,7 +259,8 @@ export const navigationItems: NavigationItem[] = [
         name: 'Gift Certificates',
         href: '/payments/gift-certificates',
         icon: GiftIcon,
-        roles: ['admin', 'super_admin']
+        roles: ['admin', 'super_admin'],
+        description: 'Manage gift certificates'
       },
       {
         name: 'Commissions',
@@ -332,58 +277,57 @@ export const navigationItems: NavigationItem[] = [
         description: 'Manage barber payouts'
       },
       {
-        name: 'Financial Analytics',
-        href: '/finance/analytics',
-        icon: ChartBarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Revenue and financial insights'
-      },
-      {
         name: 'Transactions',
         href: '/finance/transactions',
         icon: RectangleStackIcon,
         roles: ['admin', 'super_admin'],
         description: 'Transaction history and details'
-      },
-      {
-        name: 'Unified View',
-        href: '/finance/unified',
-        icon: ChartPieIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Unified financial dashboard'
       }
     ]
   },
   
-  // Service Management Hub
+  // 5. Services - Service management, products, and 6FB compliance (consolidated)
   {
-    name: 'Service Center',
+    name: 'Services',
     href: '/services/service-center',
     icon: ScissorsIcon,
     roles: ['barber', 'admin', 'super_admin'],
     description: 'Complete service management and optimization',
-    isNew: true,
     children: [
       {
-        name: 'Service Center',
+        name: 'Service Management',
         href: '/services/service-center',
         icon: ScissorsIcon,
         roles: ['barber', 'admin', 'super_admin'],
-        description: 'Main service management hub'
+        description: 'Manage services and pricing'
       },
       {
-        name: 'Service Analytics',
-        href: '/services/service-center?tab=analytics',
-        icon: ChartBarIcon,
+        name: 'Admin Services',
+        href: '/admin/services',
+        icon: ScissorsIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Administrative service configuration'
+      },
+      {
+        name: 'Products',
+        href: '/products',
+        icon: ShoppingBagIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage products and inventory'
+      },
+      {
+        name: '6FB Compliance',
+        href: '/compliance',
+        icon: AcademicCapIcon,
         roles: ['barber', 'admin', 'super_admin'],
-        description: 'Service performance and profitability'
+        description: 'Six Figure Barber methodology alignment'
       },
       {
         name: 'Service Templates',
-        href: '/services/service-center?tab=templates',
+        href: '/automation/service-templates',
         icon: BeakerIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Automated service templates'
+        description: 'Six Figure Barber methodology templates'
       },
       {
         name: 'Pricing Optimization',
@@ -391,18 +335,11 @@ export const navigationItems: NavigationItem[] = [
         icon: RocketLaunchIcon,
         roles: ['admin', 'super_admin'],
         description: 'Revenue and pricing optimization'
-      },
-      {
-        name: '6FB Compliance',
-        href: '/services/service-center?tab=compliance',
-        icon: StarIcon,
-        roles: ['barber', 'admin', 'super_admin'],
-        description: 'Six Figure Barber alignment'
       }
     ]
   },
-
-  // Analytics & Insights
+  
+  // 6. Analytics - All analytics consolidated
   {
     name: 'Analytics',
     href: '/analytics',
@@ -410,14 +347,6 @@ export const navigationItems: NavigationItem[] = [
     roles: ['barber', 'admin', 'super_admin'],
     description: 'Business performance insights',
     children: [
-      {
-        name: 'Analytics Hub',
-        href: '/analytics/hub',
-        icon: ChartPieIcon,
-        roles: ['barber', 'admin', 'super_admin'],
-        description: 'Comprehensive analytics suite with all available dashboards',
-        isNew: true
-      },
       {
         name: 'Overview',
         href: '/analytics/overview',
@@ -430,24 +359,14 @@ export const navigationItems: NavigationItem[] = [
         href: '/analytics/enhanced',
         icon: RocketLaunchIcon,
         roles: ['barber', 'admin', 'super_admin'],
-        description: 'Advanced analytics with AI insights and performance metrics',
-        isNew: true
+        description: 'Advanced analytics with AI insights'
       },
       {
         name: 'Six Figure Analytics',
         href: '/analytics/sixfigure',
         icon: AcademicCapIcon,
         roles: ['barber', 'admin', 'super_admin'],
-        description: 'Track progress toward six-figure income with 6FB methodology',
-        isNew: true
-      },
-      {
-        name: 'Client Tiers',
-        href: '/analytics/client-tiers',
-        icon: UsersIcon,
-        roles: ['barber', 'admin', 'super_admin'],
-        description: 'Six Figure Barber client tier analytics and revenue optimization',
-        isNew: true
+        description: 'Track progress toward six-figure income'
       },
       {
         name: 'Revenue Analytics',
@@ -457,172 +376,139 @@ export const navigationItems: NavigationItem[] = [
         description: 'Revenue performance and trends'
       },
       {
-        name: 'Marketing Analytics',
-        href: '/analytics/marketing',
-        icon: ChartPieIcon,
+        name: 'Financial Analytics',
+        href: '/finance/analytics',
+        icon: ChartBarIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Marketing campaign performance'
+        description: 'Financial insights and reporting'
       },
       {
-        name: 'Review Analytics',
-        href: '/analytics/reviews',
-        icon: StarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Customer review insights'
+        name: 'Service Analytics',
+        href: '/services/service-center?tab=analytics',
+        icon: ChartBarIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Service performance and profitability'
       }
     ]
   },
   
-  // Review Management
+  // 7. Marketing - Marketing, communication, and reviews consolidated
   {
-    name: 'Reviews',
-    href: '/reviews',
-    icon: StarIcon,
+    name: 'Marketing',
+    href: '/marketing',
+    icon: EnvelopeIcon,
     roles: ['admin', 'super_admin'],
-    description: 'Manage customer reviews and responses',
+    description: 'Marketing campaigns and customer communication',
     children: [
       {
-        name: 'All Reviews',
+        name: 'Campaigns',
+        href: '/marketing/campaigns',
+        icon: ChatBubbleLeftRightIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Create and manage campaigns'
+      },
+      {
+        name: 'Communication',
+        href: '/notifications',
+        icon: PhoneIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Send notifications and messages'
+      },
+      {
+        name: 'Templates',
+        href: '/marketing/templates',
+        icon: DocumentArrowDownIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Email and SMS templates'
+      },
+      {
+        name: 'Contacts',
+        href: '/marketing/contacts',
+        icon: UserCircleIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage contact lists'
+      },
+      {
+        name: 'Reviews',
         href: '/reviews',
         icon: StarIcon,
         roles: ['admin', 'super_admin'],
-        description: 'View and manage all reviews'
+        description: 'Manage customer reviews and responses'
       },
       {
-        name: 'Review Analytics',
-        href: '/reviews/analytics',
-        icon: ChartBarIcon,
+        name: 'Marketing Analytics',
+        href: '/marketing/analytics',
+        icon: ChartPieIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Review performance insights'
+        description: 'Campaign performance tracking'
       },
       {
-        name: 'Response Templates',
-        href: '/reviews/templates',
-        icon: DocumentArrowDownIcon,
+        name: 'Booking Links',
+        href: '/marketing/booking-links',
+        icon: LinkIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Manage review response templates'
-      }
-    ]
-  },
-  
-  // Product Management
-  {
-    name: 'Products',
-    href: '/products',
-    icon: ShoppingBagIcon,
-    roles: ['admin', 'super_admin'],
-    description: 'Manage products and inventory',
-    children: [
-      {
-        name: 'All Products',
-        href: '/products',
-        icon: ShoppingBagIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'View all products'
+        description: 'Trackable booking URLs and QR codes'
       },
       {
-        name: 'Add Product',
-        href: '/products/new',
-        icon: UserPlusIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Create new product'
-      }
-    ]
-  },
-  
-  // Six Figure Barber Compliance
-  {
-    name: '6FB Compliance',
-    href: '/compliance',
-    icon: AcademicCapIcon,
-    roles: ['barber', 'admin', 'super_admin'],
-    description: 'Track Six Figure Barber methodology alignment',
-    isNew: true
-  },
-  
-  // Automation Hub - Comprehensive business automation suite
-  {
-    name: 'Automation Hub',
-    href: '/automation',
-    icon: RocketLaunchIcon,
-    roles: ['admin', 'super_admin'],
-    description: 'Comprehensive business automation and AI-powered features',
-    isNew: true,
-    children: [
-      {
-        name: 'Automation Overview',
-        href: '/automation',
-        icon: RocketLaunchIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Main automation dashboard and overview'
-      },
-      {
-        name: 'Service Templates',
-        href: '/automation/service-templates',
-        icon: BeakerIcon,
-        roles: ['admin', 'super_admin'],
-        description: '30+ Six Figure Barber methodology templates'
-      },
-      {
-        name: 'Smart CTA Generator',
+        name: 'Smart CTAs',
         href: '/automation/smart-cta',
-        icon: ChatBubbleLeftRightIcon,
+        icon: SparklesIcon,
         roles: ['admin', 'super_admin'],
-        description: 'AI-powered call-to-action generation and optimization'
-      },
-      {
-        name: 'Homepage Builder',
-        href: '/settings/homepage-builder',
-        icon: RectangleStackIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Professional homepage builder with live preview'
-      },
-      {
-        name: 'Progressive Forms',
-        href: '/automation/progressive-validation',
-        icon: ClipboardDocumentListIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Smart form validation and user experience optimization'
-      },
-      {
-        name: 'AI Agents',
-        href: '/ai-agents',
-        icon: BeakerIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Intelligent business automation and assistance'
+        description: 'AI-powered call-to-action generation'
       }
     ]
   },
   
-  // Enterprise section (super_admin only)
+  // 8. Settings - Administration, tools, enterprise, and automation consolidated
   {
-    name: 'Enterprise',
-    href: '/enterprise/dashboard',
-    icon: BuildingStorefrontIcon,
-    roles: ['super_admin'],
-    description: 'Multi-location management',
-    isNew: true
-  },
-  
-  // Admin section
-  {
-    name: 'Administration',
-    href: '/admin',
-    icon: ShieldCheckIcon,
-    roles: ['admin', 'super_admin'],
-    description: 'System administration',
+    name: 'Settings',
+    href: '/settings',
+    icon: CogIcon,
+    description: 'System configuration and administration',
     children: [
       {
-        name: 'Overview',
-        href: '/admin',
-        icon: PresentationChartLineIcon,
-        roles: ['admin', 'super_admin']
+        name: 'Profile',
+        href: '/settings/profile',
+        icon: UserIcon,
+        description: 'Personal profile settings'
       },
       {
-        name: 'Services',
-        href: '/admin/services',
-        icon: ScissorsIcon,
-        roles: ['admin', 'super_admin']
+        name: 'Calendar Sync',
+        href: '/settings/calendar',
+        icon: CalendarIcon,
+        description: 'Google Calendar integration'
+      },
+      {
+        name: 'Notifications',
+        href: '/settings/notifications',
+        icon: BellIcon,
+        description: 'Notification preferences'
+      },
+      {
+        name: 'Security',
+        href: '/settings/security',
+        icon: ShieldCheckIcon,
+        description: 'Security settings and trusted devices'
+      },
+      {
+        name: 'Integrations',
+        href: '/settings/integrations',
+        icon: CloudIcon,
+        description: 'Connect third-party services'
+      },
+      {
+        name: 'Administration',
+        href: '/admin',
+        icon: ShieldCheckIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'System administration'
+      },
+      {
+        name: 'Enterprise',
+        href: '/enterprise/dashboard',
+        icon: BuildingStorefrontIcon,
+        roles: ['super_admin'],
+        description: 'Multi-location management'
       },
       {
         name: 'User Management',
@@ -632,101 +518,18 @@ export const navigationItems: NavigationItem[] = [
         description: 'Manage platform users and permissions'
       },
       {
-        name: 'Service Dashboard',
-        href: '/services/dashboard',
-        icon: ChartBarIcon,
-        roles: ['admin', 'super_admin', 'barber'],
-        description: 'Service management and analytics',
-        isNew: true
-      },
-      {
-        name: 'Staff Invitations',
-        href: '/dashboard/staff/invitations',
-        icon: UserPlusIcon,
+        name: 'Automation',
+        href: '/automation',
+        icon: RocketLaunchIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Invite team members'
+        description: 'Business automation and AI features'
       },
       {
-        name: 'Booking Rules',
-        href: '/admin/booking-rules',
-        icon: ClipboardDocumentListIcon,
-        roles: ['admin', 'super_admin']
-      }
-    ]
-  },
-  
-  // Business Tools
-  {
-    name: 'Business Tools',
-    href: '/tools',
-    icon: CubeIcon,
-    roles: ['admin', 'super_admin'],
-    description: 'Advanced business management tools',
-    children: [
-      {
-        name: 'Data Import',
+        name: 'Data Import/Export',
         href: '/import',
         icon: DocumentArrowUpIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Import client and service data'
-      },
-      {
-        name: 'Data Export',
-        href: '/export',
-        icon: DocumentArrowDownIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Export business data'
-      },
-      {
-        name: 'Webhooks',
-        href: '/admin/webhooks',
-        icon: CloudIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Configure API webhooks'
-      },
-      {
-        name: 'Product Catalog',
-        href: '/products',
-        icon: TagIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Manage retail products'
-      }
-    ]
-  },
-  
-  // Settings (available to all) - moved to bottom
-  {
-    name: 'Settings',
-    href: '/settings',
-    icon: CogIcon,
-    description: 'Personal preferences',
-    children: [
-      {
-        name: 'Profile',
-        href: '/settings/profile',
-        icon: UserIcon
-      },
-      {
-        name: 'Calendar Sync',
-        href: '/settings/calendar',
-        icon: CalendarIcon
-      },
-      {
-        name: 'Notifications',
-        href: '/settings/notifications',
-        icon: BellIcon
-      },
-      {
-        name: 'Security',
-        href: '/settings/security',
-        icon: ShieldCheckIcon,
-        description: 'Manage security settings and trusted devices'
-      },
-      {
-        name: 'Integrations',
-        href: '/settings/integrations',
-        icon: CloudIcon,
-        description: 'Connect third-party services'
+        description: 'Import and export business data'
       },
       {
         name: 'Tracking Pixels',
@@ -736,32 +539,11 @@ export const navigationItems: NavigationItem[] = [
         description: 'Manage conversion tracking pixels'
       },
       {
-        name: 'Test Data',
-        href: '/settings/test-data',
-        icon: BeakerIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Manage test data for exploring platform features'
-      },
-      {
-        name: 'Landing Page',
-        href: '/settings/landing-page',
-        icon: RectangleStackIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Configure landing page settings'
-      },
-      {
         name: 'Privacy Settings',
         href: '/settings/privacy',
         icon: ShieldCheckIcon,
         roles: ['admin', 'super_admin'],
         description: 'Privacy and data protection settings'
-      },
-      {
-        name: 'PWA Settings',
-        href: '/settings/pwa',
-        icon: DevicePhoneMobileIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Progressive Web App configuration'
       }
     ]
   }

@@ -4,6 +4,7 @@ import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { QuickActions } from '@/components/QuickActions'
 import SnapshotDashboard from '@/components/dashboards/SnapshotDashboard'
+import RetentionOverviewWidget from '@/components/retention/RetentionOverviewWidget'
 import { ClockIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 
@@ -36,6 +37,9 @@ export function BarberDashboardLayout({ user, todayStats, upcomingAppointments }
 
       {/* Quick Actions - Already exists, just pass the role */}
       <QuickActions userRole={user.role} />
+
+      {/* Retention Overview Widget */}
+      <RetentionOverviewWidget showDetails={true} className="lg:col-span-1" />
 
       {/* Next Appointment Card */}
       {upcomingAppointments.length > 0 && (
