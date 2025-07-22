@@ -241,7 +241,7 @@ class BookingAnalyticsTracker {
         return
       }
 
-      const response = await fetch('/api/v1/analytics/booking', {
+      const response = await fetch('/api/v2/analytics/booking', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -28,18 +28,27 @@ export function BarberDashboardLayout({ user, todayStats, upcomingAppointments }
 
   return (
     <div className="space-y-6">
-      {/* Snapshot Dashboard - KPI cards and Six Figure Analytics */}
-      <SnapshotDashboard
+      {/* Temporarily simplified to isolate the problematic component */}
+      <Card variant="default" padding="lg">
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-4">Dashboard Loading...</h2>
+          <p>User: {user.first_name || 'Loading...'}</p>
+          <p>Appointments: {todayStats.appointments}</p>
+          <p>Revenue: ${todayStats.revenue}</p>
+          <p>Role: {user.role}</p>
+        </CardContent>
+      </Card>
+
+      {/* Gradually uncomment these one by one to find the problematic component */}
+      {/* <SnapshotDashboard
         user={user}
         todayStats={todayStats}
         timeRange="30d"
-      />
+      /> */}
 
-      {/* Quick Actions - Already exists, just pass the role */}
-      <QuickActions userRole={user.role} />
+      {/* <QuickActions userRole={user.role} /> */}
 
-      {/* Retention Overview Widget */}
-      <RetentionOverviewWidget showDetails={true} className="lg:col-span-1" />
+      {/* <RetentionOverviewWidget showDetails={true} className="lg:col-span-1" /> */}
 
       {/* Next Appointment Card */}
       {upcomingAppointments.length > 0 && (

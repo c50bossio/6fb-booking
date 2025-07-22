@@ -188,9 +188,9 @@ else:
     
     # Add webhook security middleware for signature validation
     webhook_secrets = {
-        "/api/v1/webhooks/stripe": os.getenv("STRIPE_WEBHOOK_SECRET", ""),
-        "/api/v1/webhooks/sendgrid": os.getenv("SENDGRID_WEBHOOK_SECRET", ""),
-        "/api/v1/webhooks/twilio": os.getenv("TWILIO_WEBHOOK_SECRET", "")
+        "/api/v2/webhooks/stripe": os.getenv("STRIPE_WEBHOOK_SECRET", ""),
+        "/api/v2/webhooks/sendgrid": os.getenv("SENDGRID_WEBHOOK_SECRET", ""),
+        "/api/v2/webhooks/twilio": os.getenv("TWILIO_WEBHOOK_SECRET", "")
     }
     app.add_middleware(WebhookSecurityMiddleware, webhook_secrets=webhook_secrets)
 
@@ -342,8 +342,8 @@ app.include_router(barbers.router, prefix="/api/v2")
 app.include_router(barber_availability.router, prefix="/api/v2")
 app.include_router(realtime_availability.router)  # Real-time availability for mobile-first booking
 app.include_router(walkin_queue.router)  # Walk-in queue management for barbershop workflow
-app.include_router(oauth.router, prefix="/api/v1", tags=["OAuth"])  # OAuth integration for Google and Facebook login
-app.include_router(cache_optimization.router, prefix="/api/v1", tags=["Cache"])  # Enhanced cache optimization system
+app.include_router(oauth.router, prefix="/api/v2", tags=["OAuth"])  # OAuth integration for Google and Facebook login
+app.include_router(cache_optimization.router, prefix="/api/v2", tags=["Cache"])  # Enhanced cache optimization system
 app.include_router(external_payments.router, prefix="/api/v2")  # Hybrid payment system for external payment processors
 app.include_router(unified_payment_analytics.router)  # Unified payment analytics across all payment flows
 app.include_router(external_payment_webhooks.router, prefix="/api/v2")  # External payment webhook handling

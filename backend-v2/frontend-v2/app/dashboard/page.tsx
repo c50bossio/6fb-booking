@@ -2,25 +2,36 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getProfile, logout, getMyBookings, getClientDashboardMetrics, getDashboardAnalytics, type User, type DashboardAnalytics } from '@/lib/api'
+// import { getProfile, logout, getMyBookings, getClientDashboardMetrics, getDashboardAnalytics, type User, type DashboardAnalytics } from '@/lib/api'
+
+// Temporary mock types and functions for testing
+type User = { id: number; email: string; first_name?: string; role: string }
+type DashboardAnalytics = any
+const getProfile = async () => ({ id: 1, email: 'admin@bookedbarber.com', first_name: 'Admin', role: 'super_admin' })
+const getMyBookings = async () => ({ bookings: [] })
+const getClientDashboardMetrics = async () => ({})
+const getDashboardAnalytics = async () => ({})
+const logout = () => {}
 import { handleAuthError } from '@/lib/auth-error-handler'
-import { batchDashboardData } from '@/lib/requestBatcher'
-import { getDefaultDashboard } from '@/lib/routeGuards'
-import { dashboardRouter } from '@/lib/dashboard-router'
-import { DashboardSwitcher } from '@/components/ui/DashboardSwitcher'
+// import { batchDashboardData } from '@/lib/requestBatcher'
+// import { getDefaultDashboard } from '@/lib/routeGuards'
+// import { dashboardRouter } from '@/lib/dashboard-router'
+// import { DashboardSwitcher } from '@/components/ui/DashboardSwitcher'
 import { canAccessAdmin, canManageServices, canManageClients } from '@/lib/role-utils'
-import TimezoneSetupModal from '@/components/TimezoneSetupModal'
-import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
-import { useAsyncOperation } from '@/lib/useAsyncOperation'
-import { PageLoading, ErrorDisplay, SuccessMessage, DashboardStatsSkeleton, BrandedSpinner, PremiumLoadingOverlay } from '@/components/LoadingStates'
+// import TimezoneSetupModal from '@/components/TimezoneSetupModal'
+// Temporarily commented out to isolate the issue
+// import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
+// Temporarily commenting out imports to isolate the issue
+// import { useAsyncOperation } from '@/lib/useAsyncOperation'
+// import { PageLoading, ErrorDisplay, SuccessMessage, DashboardStatsSkeleton, BrandedSpinner, PremiumLoadingOverlay } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
-import { QuickActions } from '@/components/QuickActions'
-import CalendarDayMini from '@/components/calendar/CalendarDayMini'
-// import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton' // Replaced with DashboardStatsSkeleton
-import { TrialStatusBanner } from '@/components/ui/TrialStatusBanner'
-import { TrialWarningSystem } from '@/components/ui/TrialWarningSystem'
-import { StandardErrorBoundary, getErrorBoundaryType } from '@/components/error-boundaries'
+// import { QuickActions } from '@/components/QuickActions'
+// import CalendarDayMini from '@/components/calendar/CalendarDayMini'
+import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton' // Required for Suspense fallback
+// import { TrialStatusBanner } from '@/components/ui/TrialStatusBanner'
+// import { TrialWarningSystem } from '@/components/ui/TrialWarningSystem'
+// import { StandardErrorBoundary, getErrorBoundaryType } from '@/components/error-boundaries'
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -318,115 +329,20 @@ function DashboardContent() {
 
   // Render specialized barber dashboard layout
   if (canManageServices(user?.role || '')) {
-    // Calculate completion rate from analytics data
-    const completionRate = analytics?.appointment_summary ? 
-      Math.round(100 - (analytics.appointment_summary.cancellation_rate + analytics.appointment_summary.no_show_rate)) : 95
-    
-    const todayStats = {
-      appointments: analytics?.appointment_summary?.total_appointments || 0,
-      revenue: analytics?.revenue_summary?.total_revenue || 0,
-      newClients: analytics?.client_summary?.new_clients || 0,
-      completionRate
-    }
-
-    const upcomingAppointments = bookings.slice(0, 5).map(booking => ({
-      id: booking.id,
-      service_name: booking.service_name,
-      start_time: booking.start_time,
-      client_name: booking.client_name || 'Client',
-      status: booking.status
-    }))
-
+    // Temporarily simplified to test if the issue is with BarberDashboardLayout
     return (
       <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Header Section */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
-            <div className="space-y-2">
-              <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">
-                Barber Dashboard
-              </h1>
-              <p className="text-ios-body text-ios-gray-600 dark:text-zinc-300">
-                Welcome back, {user?.first_name || 'there'}. Here's your performance overview.
-              </p>
-            </div>
-          </div>
-
-          {/* Success Message */}
-          {showSuccess && (
-            <Card variant="default" className="mb-6 border-green-200 bg-green-50">
-              <CardContent className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
-                  <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <p className="text-success-800 font-medium">Booking confirmed successfully!</p>
-                  <p className="text-success-700 text-sm mt-1">Your appointment has been scheduled.</p>
-                </div>
-                <Button
-                  onClick={() => setShowSuccess(false)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-success-600 hover:text-success-700"
-                >
-                  ×
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Timezone Warning */}
-          {showTimezoneWarning && (
-            <Card variant="default" className="mb-6 border-yellow-200 bg-yellow-50">
-              <CardContent className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0">
-                    <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-warning-800 font-medium">Timezone not configured</p>
-                    <p className="text-warning-700 text-sm mt-1">
-                      Set your timezone to ensure appointment times display correctly.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => router.push('/settings')}
-                  variant="outline"
-                  size="sm"
-                  leftIcon={<SettingsIcon />}
-                >
-                  Configure
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          <StandardErrorBoundary 
-            type="dashboard"
-            context={{
-              feature: "barber-dashboard",
-              userId: user?.id,
-              component: "BarberDashboardLayout"
-            }}
-          >
-            <BarberDashboardLayout 
-              user={user}
-              todayStats={todayStats}
-              upcomingAppointments={upcomingAppointments}
-            />
-          </StandardErrorBoundary>
+          <h1 className="text-2xl font-bold mb-4">Barber Dashboard (Simplified)</h1>
+          <Card>
+            <CardContent>
+              <p>User: {user?.first_name || 'Loading...'}</p>
+              <p>Email: {user?.email}</p>
+              <p>Role: {user?.role}</p>
+              <p>This should display without errors...</p>
+            </CardContent>
+          </Card>
         </div>
-
-        <TimezoneSetupModal
-          isOpen={showTimezoneModal}
-          onClose={handleTimezoneModalClose}
-          onComplete={handleTimezoneComplete}
-        />
       </main>
     )
   }

@@ -60,7 +60,7 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          signal: AbortSignal.timeout(2000) // 2 second timeout
+          signal: AbortSignal.timeout(5000) // Increased to 5 second timeout to prevent status 0 errors
         })
 
         if (response.ok) {

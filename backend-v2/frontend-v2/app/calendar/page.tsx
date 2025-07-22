@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense, lazy } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { handleAuthError } from '@/lib/auth-error-handler'
 import { format } from 'date-fns'
@@ -45,25 +45,24 @@ import {
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
 
-// Lazy load heavy components for better code splitting
-const UnifiedCalendar = lazy(() => import('@/components/UnifiedCalendar'))
-const CalendarSync = lazy(() => import('@/components/CalendarSync'))
-const CalendarConflictResolver = lazy(() => import('@/components/CalendarConflictResolver'))
-const AvailabilityHeatmap = lazy(() => import('@/components/calendar/AvailabilityHeatmap'))
-const EnhancedRevenueDisplay = lazy(() => import('@/components/calendar/EnhancedRevenueDisplay'))
-const QuickBookingPanel = lazy(() => import('@/components/calendar/QuickBookingPanel'))
-const QuickBookingFAB = lazy(() => import('@/components/calendar/QuickBookingFAB'))
-const CalendarAnalyticsSidebar = lazy(() => import('@/components/calendar/CalendarAnalyticsSidebar'))
-const CreateAppointmentModal = lazy(() => import('@/components/modals/CreateAppointmentModal'))
-const TimePickerModal = lazy(() => import('@/components/modals/TimePickerModal'))
-const RescheduleModal = lazy(() => import('@/components/modals/RescheduleModal'))
-const CalendarExport = lazy(() => import('@/components/calendar/CalendarExport'))
-const JumpToTodayButtonWithShortcut = lazy(() => import('@/components/calendar/JumpToTodayButton'))
-const AppointmentSuggestions = lazy(() => import('@/components/calendar/AppointmentSuggestions'))
-const CalendarVisualEnhancement = lazy(() => import('@/components/calendar/CalendarVisualEnhancement'))
-const MobileCalendarNavigation = lazy(() => import('@/components/calendar/MobileCalendarNavigation'))
-const CalendarMobileMenu = lazy(() => import('@/components/calendar/CalendarMobileMenu'))
-const CalendarRequestQueue = lazy(() => import('@/components/calendar/CalendarNetworkStatus').then(m => ({ default: m.CalendarRequestQueue })))
+// Direct imports (removed lazy loading to fix React "Element type is invalid" error)
+import UnifiedCalendar from '@/components/UnifiedCalendar'
+import CalendarSync from '@/components/CalendarSync'
+import CalendarConflictResolver from '@/components/CalendarConflictResolver'
+import AvailabilityHeatmap from '@/components/calendar/AvailabilityHeatmap'
+import EnhancedRevenueDisplay from '@/components/calendar/EnhancedRevenueDisplay'
+import QuickBookingPanel from '@/components/calendar/QuickBookingPanel'
+import QuickBookingFAB from '@/components/calendar/QuickBookingFAB'
+import CalendarAnalyticsSidebar from '@/components/calendar/CalendarAnalyticsSidebar'
+import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
+import TimePickerModal from '@/components/modals/TimePickerModal'
+import RescheduleModal from '@/components/modals/RescheduleModal'
+import CalendarExport from '@/components/calendar/CalendarExport'
+import JumpToTodayButtonWithShortcut from '@/components/calendar/JumpToTodayButton'
+import AppointmentSuggestions from '@/components/calendar/AppointmentSuggestions'
+import CalendarVisualEnhancement from '@/components/calendar/CalendarVisualEnhancement'
+import MobileCalendarNavigation from '@/components/calendar/MobileCalendarNavigation'
+import CalendarMobileMenu from '@/components/calendar/CalendarMobileMenu'
 
 // Use CalendarUser type from our standardized types
 
@@ -748,19 +747,13 @@ export default function CalendarPage() {
         
         {/* Enhanced Revenue Display - Desktop */}
         <div className="calendar-stats order-3 lg:order-2 hidden lg:block">
-          <Suspense fallback={
-            <div className="animate-pulse">
-              <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-            </div>
-          }>
-            <EnhancedRevenueDisplay
-              appointments={bookings}
-              todayRevenue={todayRevenue}
-              todayCount={todayAppointmentCount}
-              selectedDate={selectedDate || new Date()}
-              collapsed={false}
-            />
-          </Suspense>
+          <EnhancedRevenueDisplay
+            appointments={bookings}
+            todayRevenue={todayRevenue}
+            todayCount={todayAppointmentCount}
+            selectedDate={selectedDate || new Date()}
+            collapsed={false}
+          />
         </div>
         
         <div className="order-2 lg:order-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
@@ -924,43 +917,33 @@ export default function CalendarPage() {
       {/* Mobile-optimized navigation with touch gestures */}
       {isMobile && (
         <div className="mb-4">
-          <Suspense fallback={
-            <div className="animate-pulse h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-          }>
-            <MobileCalendarNavigation
-              currentDate={selectedDate || new Date()}
-              onDateChange={(date) => {
-                setSelectedDate(date)
-                // Smooth animation for date changes
-                const calendar = document.querySelector('.unified-calendar')
-                if (calendar) {
-                  calendar.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-                }
-              }}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              enableTouchGestures={isTouchDevice}
-            />
-          </Suspense>
+          <MobileCalendarNavigation
+            currentDate={selectedDate || new Date()}
+            onDateChange={(date) => {
+              setSelectedDate(date)
+              // Smooth animation for date changes
+              const calendar = document.querySelector('.unified-calendar')
+              if (calendar) {
+                calendar.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+              }
+            }}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            enableTouchGestures={isTouchDevice}
+          />
         </div>
       )}
 
       {/* Enhanced Revenue Display - Mobile (Collapsible) */}
       <div className="lg:hidden mb-4">
-        <Suspense fallback={
-          <div className="animate-pulse">
-            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-          </div>
-        }>
-          <EnhancedRevenueDisplay
-            appointments={bookings}
-            todayRevenue={todayRevenue}
-            todayCount={todayAppointmentCount}
-            selectedDate={selectedDate || new Date()}
-            collapsed={revenueCollapsed}
-            onToggleCollapse={() => setRevenueCollapsed(!revenueCollapsed)}
-          />
-        </Suspense>
+        <EnhancedRevenueDisplay
+          appointments={bookings}
+          todayRevenue={todayRevenue}
+          todayCount={todayAppointmentCount}
+          selectedDate={selectedDate || new Date()}
+          collapsed={revenueCollapsed}
+          onToggleCollapse={() => setRevenueCollapsed(!revenueCollapsed)}
+        />
       </div>
 
       {/* AI-powered appointment suggestions */}
@@ -979,31 +962,23 @@ export default function CalendarPage() {
           </div>
           
           {showSuggestions && (
-            <Suspense fallback={
-              <div className="animate-pulse space-y-2">
-                {Array.from({ length: 2 }, (_, i) => (
-                  <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-                ))}
-              </div>
-            }>
-              <AppointmentSuggestions
-                appointments={bookings}
-                maxSuggestions={isMobile ? 2 : 3}
-                showPatternDetails={!isMobile}
-                onSuggestionAccept={(suggestion) => {
-                  // Pre-fill appointment modal with suggestion data
-                  setSelectedDate(suggestion.recommendedDate)
-                  setPreselectedTime(suggestion.recommendedTime)
-                  setShowCreateModal(true)
-                  
-                  // Show success toast
-                  toastSuccess('Suggestion Applied', 'Appointment form pre-filled with suggested details')
-                }}
-                onSuggestionDismiss={(suggestionId) => {
-                  console.log('Dismissed suggestion:', suggestionId)
-                }}
-              />
-            </Suspense>
+            <AppointmentSuggestions
+              appointments={bookings}
+              maxSuggestions={isMobile ? 2 : 3}
+              showPatternDetails={!isMobile}
+              onSuggestionAccept={(suggestion) => {
+                // Pre-fill appointment modal with suggestion data
+                setSelectedDate(suggestion.recommendedDate)
+                setPreselectedTime(suggestion.recommendedTime)
+                setShowCreateModal(true)
+                
+                // Show success toast
+                toastSuccess('Suggestion Applied', 'Appointment form pre-filled with suggested details')
+              }}
+              onSuggestionDismiss={(suggestionId) => {
+                console.log('Dismissed suggestion:', suggestionId)
+              }}
+            />
           )}
         </div>
       )}
@@ -1011,7 +986,6 @@ export default function CalendarPage() {
       <CalendarErrorBoundary context={`calendar-${viewMode}-view`}>
         <div className="relative">
           <Card variant="default" className="col-span-full p-0">
-            <Suspense fallback={<CalendarSkeleton view={viewMode} showStats={false} />}>
               <CalendarVisualEnhancement
                 currentDate={selectedDate || new Date()}
                 selectedDate={selectedDate}
@@ -1083,7 +1057,6 @@ export default function CalendarPage() {
                 className="h-[800px]"
               />
               </CalendarVisualEnhancement>
-            </Suspense>
           </Card>
 
           {/* Availability Heatmap Overlay */}
@@ -1105,18 +1078,16 @@ export default function CalendarPage() {
                     </svg>
                   </Button>
                 </div>
-                <Suspense fallback={<div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>}>
-                  <AvailabilityHeatmap
-                    appointments={bookings}
-                    startDate={selectedDate || new Date()}
-                    onTimeSlotClick={(date, time) => {
-                      setShowHeatmap(false)
-                      setSelectedDate(date)
-                      setPreselectedTime(time)
-                      setShowCreateModal(true)
-                    }}
-                  />
-                </Suspense>
+                <AvailabilityHeatmap
+                  appointments={bookings}
+                  startDate={selectedDate || new Date()}
+                  onTimeSlotClick={(date, time) => {
+                    setShowHeatmap(false)
+                    setSelectedDate(date)
+                    setPreselectedTime(time)
+                    setShowCreateModal(true)
+                  }}
+                />
               </div>
             </div>
           )}
@@ -1126,36 +1097,30 @@ export default function CalendarPage() {
       {/* Google Calendar Sync Panel */}
       {user?.role === 'barber' && showSyncPanel && (
         <div className="mt-6">
-          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-40 rounded-lg"></div>}>
-            <CalendarSync />
-          </Suspense>
+          <CalendarSync />
         </div>
       )}
 
       {/* Conflict Resolver Panel */}
       {user?.role === 'barber' && showConflictResolver && (
         <div className="mt-6">
-          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-40 rounded-lg"></div>}>
-            <CalendarConflictResolver />
-          </Suspense>
+          <CalendarConflictResolver />
         </div>
       )}
 
       {/* Quick Booking Panel - Desktop Only */}
       <div className="hidden lg:block">
-        <Suspense fallback={<div className="animate-pulse bg-gray-200 h-40 rounded-lg"></div>}>
-          <QuickBookingPanel
-            onBookingComplete={async () => {
-              // Refresh appointments after quick booking
-              try {
-                await refreshOptimistic(() => getMyBookings())
-                toastSuccess('Calendar Updated', 'Your new appointment has been added.')
-              } catch (error) {
-                console.error('Failed to refresh calendar:', error)
-              }
-            }}
-          />
-        </Suspense>
+        <QuickBookingPanel
+          onBookingComplete={async () => {
+            // Refresh appointments after quick booking
+            try {
+              await refreshOptimistic(() => getMyBookings())
+              toastSuccess('Calendar Updated', 'Your new appointment has been added.')
+            } catch (error) {
+              console.error('Failed to refresh calendar:', error)
+            }
+          }}
+        />
       </div>
 
       {/* Calendar Integration Status */}
@@ -1279,34 +1244,31 @@ export default function CalendarPage() {
       /> */}
       
       {/* Debug request queue (development only) */}
-      <CalendarRequestQueue />
+      {/* Temporarily disabled to resolve lazy loading error */}
+      {/* <CalendarRequestQueue /> */}
       
       {/* Quick Booking FAB - Mobile Only */}
-      <Suspense fallback={null}>
-        <QuickBookingFAB
-          onBookingComplete={async () => {
-            // Refresh appointments after quick booking
-            try {
-              await refreshOptimistic(() => getMyBookings())
-              toastSuccess('Calendar Updated', 'Your new appointment has been added.')
-            } catch (error) {
-              console.error('Failed to refresh calendar:', error)
-            }
-          }}
-        />
-      </Suspense>
+      <QuickBookingFAB
+        onBookingComplete={async () => {
+          // Refresh appointments after quick booking
+          try {
+            await refreshOptimistic(() => getMyBookings())
+            toastSuccess('Calendar Updated', 'Your new appointment has been added.')
+          } catch (error) {
+            console.error('Failed to refresh calendar:', error)
+          }
+        }}
+      />
       
       {/* Calendar Analytics Sidebar */}
-      <Suspense fallback={null}>
-        <CalendarAnalyticsSidebar
-          appointments={bookings}
-          selectedDate={selectedDate || new Date()}
-          userId={user?.id}
-          isOpen={showAnalytics}
-          onToggle={() => setShowAnalytics(!showAnalytics)}
-          position="right"
-        />
-      </Suspense>
+      <CalendarAnalyticsSidebar
+        appointments={bookings}
+        selectedDate={selectedDate || new Date()}
+        userId={user?.id}
+        isOpen={showAnalytics}
+        onToggle={() => setShowAnalytics(!showAnalytics)}
+        position="right"
+      />
       
       {/* Jump to Today Button (appears when navigated away from today) */}
       <JumpToTodayButtonWithShortcut

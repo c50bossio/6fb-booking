@@ -37,7 +37,15 @@ import models
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from schemas import Token, UserLogin, User, PasswordResetResponse, PasswordResetConfirm, RegistrationResponse, CompleteRegistrationResponse, ChangePasswordResponse, ClientRegistrationResponse, TimezoneUpdateRequest, EmailVerificationResponse, VerificationStatusResponse, UserType, RefreshTokenRequest, PasswordResetRequest, UserCreate, CompleteRegistrationData, ChangePasswordRequest, ClientRegistrationData, EmailVerificationRequest
+from schemas import UserLogin, User, PasswordResetResponse, PasswordResetConfirm, RegistrationResponse, CompleteRegistrationResponse, ChangePasswordResponse, ClientRegistrationResponse, TimezoneUpdateRequest, EmailVerificationResponse, VerificationStatusResponse, UserType, RefreshTokenRequest, PasswordResetRequest, UserCreate, CompleteRegistrationData, ChangePasswordRequest, ClientRegistrationData, EmailVerificationRequest
+# Define Token schema directly to avoid parent_schemas import issues with Pydantic v2
+from pydantic import BaseModel
+from typing import Optional
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: Optional[str] = None
+    token_type: str = "bearer"
 from utils.input_validation import validate_string, validate_email_address, validate_phone_number, validate_slug, ValidationError as InputValidationError
 from schemas_new.validation import BusinessRegistrationRequest
 
@@ -51,7 +59,7 @@ async def test_auth_route():
     """Simple test endpoint to verify auth router is working"""
     return {"status": "ok", "message": "Auth router is responding"}
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=TokenResponse)
 # @login_rate_limit  # Temporarily disabled for debugging
 async def login(request: Request, user_credentials: UserLogin, db: Session = Depends(get_db)):
     """Enhanced login endpoint with MFA support."""
@@ -219,7 +227,7 @@ async def login(request: Request, user_credentials: UserLogin, db: Session = Dep
     
     return response_data
 
-@router.post("/refresh", response_model=Token)
+@router.post("/refresh", response_model=TokenResponse)
 @refresh_rate_limit
 async def refresh_token(
     request: Request,

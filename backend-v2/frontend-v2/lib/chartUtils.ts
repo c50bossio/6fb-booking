@@ -1,13 +1,13 @@
 // Lightweight Chart utilities without external dependencies
 // Provides simple chart components for performance
 
-import { lazy } from 'react'
-
-// Dynamic imports for our lightweight chart components
-export const Line = lazy(() => import('@/components/analytics/ChartComponents').then(module => ({ default: module.LineChart })))
-export const Bar = lazy(() => import('@/components/analytics/ChartComponents').then(module => ({ default: module.BarChart })))
-export const Pie = lazy(() => import('@/components/analytics/ChartComponents').then(module => ({ default: module.PieChart })))
-export const Doughnut = lazy(() => import('@/components/analytics/ChartComponents').then(module => ({ default: module.DoughnutChart })))
+// Direct imports for our lightweight chart components (no lazy loading)
+export { 
+  LineChart as Line,
+  BarChart as Bar, 
+  PieChart as Pie,
+  DoughnutChart as Doughnut
+} from '@/components/analytics/ChartComponents'
 
 // Re-export chart components directly (no registration needed)
 export { 

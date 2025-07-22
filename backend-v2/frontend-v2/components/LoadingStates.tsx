@@ -13,7 +13,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 // Enhanced with Six Figure Barber branded components for premium loading experiences.
 
 // Import branded components
-import { BrandedSkeleton, SixFigureAvatarSkeleton, BarberProfileSkeleton, ServiceCardSkeleton, AppointmentCardSkeleton, AnalyticsCardSkeleton, DashboardStatsSkeleton, SixFigureCalendarSkeleton, PremiumLoadingOverlay } from './ui/BrandedSkeletons'
+import { BrandedSkeleton } from './ui/BrandedSkeletons'
 import { BrandedSpinner, SixFigureSVGSpinner, BarberPoleSpinner, PremiumDotsSpinner, PulseRingSpinner, LoadingButton as BrandedLoadingButton } from './ui/BrandedSpinners'
 
 // ===================
@@ -1119,18 +1119,10 @@ export const LoadingStates = {
   // Premium branded loading states for Six Figure Barber methodology
   BrandedSkeleton,
   BrandedSpinner,
-  SixFigureAvatarSkeleton,
   SixFigureSVGSpinner,
-  BarberProfileSkeleton,
   BarberPoleSpinner,
-  ServiceCardSkeleton,
   PremiumDotsSpinner,
-  AppointmentCardSkeleton,
-  PulseRingSpinner,
-  AnalyticsCardSkeleton,
-  DashboardStatsSkeleton,
-  SixFigureCalendarSkeleton,
-  PremiumLoadingOverlay
+  PulseRingSpinner
 }
 
 // CSS for indeterminate animation (add to globals.css if not already present)
@@ -1162,4 +1154,17 @@ if (typeof document !== 'undefined') {
 
 // Individual exports for direct importing
 export { BrandedSpinner, SixFigureSVGSpinner, BarberPoleSpinner, PremiumDotsSpinner, PulseRingSpinner, LoadingButton } from './ui/BrandedSpinners'
-export { BrandedSkeleton, SixFigureAvatarSkeleton, BarberProfileSkeleton, ServiceCardSkeleton, AppointmentCardSkeleton, AnalyticsCardSkeleton, DashboardStatsSkeleton, SixFigureCalendarSkeleton, PremiumLoadingOverlay } from './ui/BrandedSkeletons'
+// Temporarily simplified skeleton exports to fix loading issues
+export { BrandedSkeleton } from './ui/BrandedSkeletons'
+// TODO: Fix skeleton component exports - some functions exist, some don't
+// export { BrandedSkeleton, SixFigureAvatarSkeleton, BarberProfileSkeleton, ServiceCardSkeleton, AppointmentCardSkeleton, AnalyticsCardSkeleton, DashboardStatsSkeleton, SixFigureCalendarSkeleton, PremiumLoadingOverlay } from './ui/BrandedSkeletons'
+
+// Create simple fallbacks for missing skeleton components
+export const SixFigureAvatarSkeleton = BrandedSkeleton
+export const BarberProfileSkeleton = BrandedSkeleton
+export const ServiceCardSkeleton = BrandedSkeleton
+export const AppointmentCardSkeleton = BrandedSkeleton
+export const AnalyticsCardSkeleton = BrandedSkeleton
+export const DashboardStatsSkeleton = BrandedSkeleton
+export const SixFigureCalendarSkeleton = BrandedSkeleton
+export const PremiumLoadingOverlay = BrandedSkeleton

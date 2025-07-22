@@ -83,7 +83,7 @@ export function isProviderConfigured(provider: SocialProvider): boolean {
 export async function getOAuthUrl(provider: SocialProvider): Promise<string> {
   try {
     // Use our backend OAuth API to get the authorization URL
-    const response = await fetch(`${API_URL}/api/v1/oauth/initiate/${provider}`, {
+    const response = await fetch(`${API_URL}/api/v2/oauth/initiate/${provider}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -154,7 +154,7 @@ export async function handleOAuthCallback(
   localStorage.removeItem('oauth_state')
 
   // Exchange code for tokens via backend
-  const response = await fetch(`${API_URL}/api/v1/auth/social/${provider}/callback`, {
+  const response = await fetch(`${API_URL}/api/v2/auth/social/${provider}/callback`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -181,7 +181,7 @@ export async function linkSocialAccount(
   provider: SocialProvider,
   code: string
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/api/v1/auth/social/${provider}/link`, {
+  const response = await fetch(`${API_URL}/api/v2/auth/social/${provider}/link`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ export async function linkSocialAccount(
 
 // Unlink social account
 export async function unlinkSocialAccount(provider: SocialProvider): Promise<void> {
-  const response = await fetch(`${API_URL}/api/v1/auth/social/${provider}/unlink`, {
+  const response = await fetch(`${API_URL}/api/v2/auth/social/${provider}/unlink`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -213,7 +213,7 @@ export async function unlinkSocialAccount(provider: SocialProvider): Promise<voi
 
 // Get linked social accounts
 export async function getLinkedAccounts(): Promise<SocialProvider[]> {
-  const response = await fetch(`${API_URL}/api/v1/auth/social/linked`, {
+  const response = await fetch(`${API_URL}/api/v2/auth/social/linked`, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     }

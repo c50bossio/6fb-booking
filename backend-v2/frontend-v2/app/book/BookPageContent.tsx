@@ -44,6 +44,16 @@ const SERVICE_NAMES_FOR_PRICING = {
 
 export default function BookPage() {
   const router = useRouter()
+  
+  // Get URL parameters first - needed for useTimeSlotsCache hook
+  const searchParams = useSearchParams()
+  const organizationSlug = searchParams.get('org') || searchParams.get('shop') || undefined
+  const selectedBarberId = searchParams.get('barber')
+  const selectedBarberName = searchParams.get('barberName')
+  const barberExperience = searchParams.get('experience')
+  const barberSpecialties = searchParams.get('specialties')?.split(',') || []
+  const barberHourlyRate = searchParams.get('hourlyRate')
+  
   const [step, setStep] = useState(1)
   const [selectedService, setSelectedService] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -95,18 +105,8 @@ export default function BookPage() {
   // State for timezone display
   const [userTimezone, setUserTimezone] = useState<string>('')
   
-  // Get user timezone on mount and parse URL parameters
-  const searchParams = useSearchParams()
-  
-  // Get organization slug from URL parameter
-  const organizationSlug = searchParams.get('org') || searchParams.get('shop') || undefined
-  
-  // Get barber context from URL parameters
-  const selectedBarberId = searchParams.get('barber')
-  const selectedBarberName = searchParams.get('barberName')
-  const barberExperience = searchParams.get('experience')
-  const barberSpecialties = searchParams.get('specialties')?.split(',') || []
-  const barberHourlyRate = searchParams.get('hourlyRate')
+  // Get user timezone on mount
+  // URL parameters now declared at top of component
   const isPremiumTier = searchParams.get('tier') === 'premium'
   const suggestedPrice = searchParams.get('suggestedPrice')
   

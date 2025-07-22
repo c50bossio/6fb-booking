@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, Suspense, lazy } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { getProfile, type User } from '@/lib/api'
 import { handleAuthError, isProtectedRoute } from '@/lib/auth-error-handler'
@@ -9,17 +9,16 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { navigationItems } from '@/lib/navigation'
 import { useKeyboardShortcuts, createNavigationShortcuts } from '@/hooks/useKeyboardShortcuts'
 
-// Lazy load heavy components to reduce initial bundle size
-const Sidebar = lazy(() => import('./Sidebar').then(m => ({ default: m.Sidebar })))
-const MobileNavigation = lazy(() => import('./MobileNavigation').then(m => ({ default: m.MobileNavigation })))
-const Header = lazy(() => import('./Header').then(m => ({ default: m.Header })))
-const Footer = lazy(() => import('./Footer'))
-const TestDataIndicator = lazy(() => import('@/components/TestDataIndicator'))
-const SessionTimeoutWarning = lazy(() => import('@/components/auth/SessionTimeoutWarning'))
-const CommandPalette = lazy(() => import('@/components/navigation/CommandPalette'))
+// Direct imports for better stability and error prevention
 
-// Conditionally load desktop interactions only on desktop
-const useGlobalDesktopShortcuts = lazy(() => import('@/hooks/useDesktopInteractions').then(m => ({ default: m.useGlobalDesktopShortcuts })))
+import { Sidebar } from './Sidebar'
+import { MobileNavigation } from './MobileNavigation'
+import { Header } from './Header'
+import Footer from './Footer'
+import { TestDataIndicator } from '@/components/TestDataIndicator'
+import { SessionTimeoutWarning } from '@/components/auth/SessionTimeoutWarning'
+import { CommandPalette } from '@/components/navigation/CommandPalette'
+
 
 // Minimal loading skeleton for layout components
 const LayoutSkeleton = () => (
@@ -175,8 +174,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   // Conditionally load desktop shortcuts only on desktop
   useEffect(() => {
     if (isClient && !isMobile) {
-      import('@/hooks/useDesktopInteractions').then(({ useGlobalDesktopShortcuts }) => {
-        useGlobalDesktopShortcuts()
+      import('@/hooks/useDesktopInteractions').then((module) => {
+        // Use default export which is useDesktopInteractions
+        const useDesktopInteractions = module.default
+        if (useDesktopInteractions) {
+          useDesktopInteractions()
+        }
+      }).catch(() => {
+        // Silently ignore if desktop interactions hook fails to load
       })
     }
   }, [isClient, isMobile])
@@ -355,23 +360,17 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Global Components - Only show for authenticated users on protected routes */}
         {!isPublicRoute && user && (
           <>
-            <Suspense fallback={null}>
-              <TestDataIndicator />
-            </Suspense>
-            <Suspense fallback={null}>
-              <SessionTimeoutWarning 
-                sessionDurationMinutes={30}
-                warningMinutesBeforeTimeout={5}
-                enabled={true}
-              />
-            </Suspense>
-            <Suspense fallback={null}>
-              <CommandPalette 
-                isOpen={commandPaletteOpen}
-                onClose={() => setCommandPaletteOpen(false)}
-                user={user}
-              />
-            </Suspense>
+            <TestDataIndicator />
+            <SessionTimeoutWarning 
+              sessionDurationMinutes={30}
+              warningMinutesBeforeTimeout={5}
+              enabled={true}
+            />
+            <CommandPalette 
+              isOpen={commandPaletteOpen}
+              onClose={() => setCommandPaletteOpen(false)}
+              user={user}
+            />
           </>
         )}
       </div>

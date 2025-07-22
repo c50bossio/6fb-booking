@@ -726,6 +726,115 @@ async def bulk_generate_responses(
         )
 
 
+# Six Figure Barber Enhanced Endpoints
+@router.post("/auto-response/six-figure-barber", response_model=dict)
+@limiter.limit("10/minute")
+async def generate_six_figure_barber_response(
+    request: Request,
+    review_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Generate Six Figure Barber methodology-aligned automated response"""
+    try:
+        # Get the review
+        review = db.query(Review).filter(
+            Review.id == review_id,
+            Review.user_id == current_user.id
+        ).first()
+        
+        if not review:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Review not found"
+            )
+        
+        if not review.can_respond:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot respond to this review"
+            )
+        
+        # Generate Six Figure Barber aligned response
+        response_text = review_service.generate_contextual_response(review, db)
+        
+        # Create the response record
+        review_response = review_service.create_review_response(
+            db=db,
+            review_id=review_id,
+            user_id=current_user.id,
+            response_text=response_text,
+            template_id=None,
+            auto_generated=True
+        )
+        
+        # Import Six Figure Barber templates for validation
+        from services.six_figure_barber_templates import SixFigureBarberTemplates
+        six_fb_templates = SixFigureBarberTemplates()
+        validation_results = six_fb_templates.validate_six_figure_barber_template(response_text)
+        
+        return {
+            "success": True,
+            "message": "Six Figure Barber aligned response generated successfully",
+            "response_id": review_response.id,
+            "response_text": response_text,
+            "character_count": len(response_text),
+            "six_figure_barber_compliance": {
+                "compliant": validation_results["compliant"],
+                "score": validation_results["score"],
+                "methodology_alignment": validation_results.get("issues", [])
+            },
+            "auto_generated": True,
+            "methodology": "Six Figure Barber Program"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate Six Figure Barber response: {str(e)}"
+        )
+
+
+@router.get("/templates/six-figure-barber", response_model=dict)
+@limiter.limit("20/minute")
+async def get_six_figure_barber_templates(
+    request: Request,
+    service_type: str = Query("general", description="Service type for templates"),
+    current_user: User = Depends(get_current_user)
+):
+    """Get Six Figure Barber methodology-aligned response templates"""
+    try:
+        from services.six_figure_barber_templates import SixFigureBarberTemplates
+        six_fb_templates = SixFigureBarberTemplates()
+        
+        # Get templates for all sentiment types
+        templates = {
+            "positive": six_fb_templates.get_six_figure_barber_template(service_type, "positive"),
+            "negative": six_fb_templates.get_six_figure_barber_template(service_type, "negative"), 
+            "neutral": six_fb_templates.get_six_figure_barber_template(service_type, "neutral")
+        }
+        
+        # Get SEO keywords
+        seo_keywords = six_fb_templates.get_six_figure_barber_seo_keywords(service_type)
+        
+        return {
+            "success": True,
+            "service_type": service_type,
+            "templates": templates,
+            "seo_keywords": seo_keywords,
+            "methodology": "Six Figure Barber Program",
+            "positioning": "Premium positioning, value-based messaging, client relationship focus"
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get Six Figure Barber templates: {str(e)}"
+        )
+
+
 # GMB Integration endpoints
 @router.post("/gmb/auth", response_model=GMBAuthResponse)
 @limiter.limit("5/minute")

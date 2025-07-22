@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
+// Use direct imports instead of mixing with lazy imports to avoid conflicts
 import SixFigureAnalyticsDashboard from '@/components/analytics/SixFigureAnalyticsDashboard'
 import SixFigureProgressTracker from '@/components/analytics/SixFigureProgressTracker'
 import { CalendarIcon, BanknotesIcon, UserGroupIcon } from '@heroicons/react/24/outline'

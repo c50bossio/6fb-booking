@@ -134,8 +134,8 @@ export default function RootLayout({
           }}
         />
 
-        {/* Load Google Tag Manager if analytics consent given */}
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+        {/* Load Google Tag Manager if analytics consent given - TEMPORARILY DISABLED */}
+        {false && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <script
             async
             src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}

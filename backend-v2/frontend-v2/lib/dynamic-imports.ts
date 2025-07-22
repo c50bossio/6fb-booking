@@ -3,7 +3,7 @@
  * Reduces initial bundle size by dynamically importing heavy dependencies
  */
 
-import { lazy } from 'react'
+import React, { lazy } from 'react'
 
 /**
  * Heavy calendar components - lazy loaded
