@@ -13,6 +13,10 @@ import models
 import models.tracking
 from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, homepage_builder, client_tiers, six_figure_pricing
 from api.v1 import realtime_availability, walkin_queue, external_payments, simple_ai_integration, unified_payment_analytics, oauth, cache_optimization, hybrid_payments, platform_collections, external_payment_webhooks
+# Import V2 API endpoints
+from api.v2.endpoints import notifications as notifications_v2
+from api.v2.endpoints import retention as retention_v2
+from api.v2.endpoints import campaigns as campaigns_v2
 # ai_integration temporarily disabled due to import issues
 # payment_rate_limits temporarily disabled due to FastAPI error
 # service_templates temporarily disabled due to FastAPI error
@@ -342,6 +346,9 @@ app.include_router(six_figure_pricing.router)  # Six Figure Barber premium prici
 app.include_router(dashboard.router, prefix="/api/v2")
 app.include_router(booking_rules.router, prefix="/api/v2")
 app.include_router(notifications.router, prefix="/api/v2")
+app.include_router(notifications_v2.router)  # V2 Smart Notifications (already includes /api/v2 prefix)
+app.include_router(retention_v2.router)  # V2 AI-Powered Client Retention (already includes /api/v2 prefix)
+app.include_router(campaigns_v2.router)  # V2 Automated Campaign Engine (already includes /api/v2 prefix)
 app.include_router(imports.router, prefix="/api/v2")
 app.include_router(exports.router, prefix="/api/v2")  # Data export functionality
 app.include_router(sms_conversations.router, prefix="/api/v2")
