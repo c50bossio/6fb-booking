@@ -40,7 +40,22 @@ export const browserCompatibility = {
   isMobile: typeof window !== 'undefined' && (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)),
   
   // Performance API support
-  hasPerformanceAPI: typeof window !== 'undefined' && 'performance' in window && 'now' in window.performance
+  hasPerformanceAPI: typeof window !== 'undefined' && 'performance' in window && 'now' in window.performance,
+  
+  // Get browser-specific optimizations (method on object)
+  getBrowserOptimizations() {
+    return {
+      touch: this.hasTouch,
+      pointer: this.hasPointerEvents,
+      passive: this.supportsPassive,
+      raf: this.hasRAF,
+      performance: this.hasPerformanceAPI,
+      mobile: this.isMobile,
+      isIOS: this.isIOS,
+      isAndroid: this.isAndroid,
+      preferredTouchDelay: this.isIOS ? 10 : this.isMobile ? 20 : 30
+    }
+  }
 }
 
 // Safe requestAnimationFrame with fallback
