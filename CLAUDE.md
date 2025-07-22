@@ -169,13 +169,17 @@ The project uses Claude Hooks (`.claude/hooks.json`) that automatically verify f
 # 1. Ensure clean working directory
 git status
 
-# 2. Create feature branch
+# 2. Start from staging branch
+git checkout staging
+git pull origin staging
+
+# 3. Create feature branch
 git checkout -b feature/description-YYYYMMDD
 
-# 3. Run pre-work checklist
+# 4. Run pre-work checklist
 ./scripts/pre-work-checklist.sh
 
-# 4. Create safety snapshot
+# 5. Create safety snapshot
 ./scripts/create-snapshot.sh
 ```
 
@@ -191,12 +195,78 @@ git checkout -b feature/description-YYYYMMDD
 # Quick revert uncommitted changes
 ./scripts/quick-revert.sh
 
-# Return to main branch
-./scripts/recover-branch.sh
+# Return to staging branch
+git checkout staging
 
 # Full restore from snapshot
 ./scripts/restore-snapshot.sh [snapshot-name]
 ```
+
+## 🚀 GitHub Pull Request Workflow
+
+### Branch Strategy
+```
+production branch    ←-- bookedbarber.com (Live site)
+       ↑
+staging branch       ←-- staging.bookedbarber.com (Testing)
+       ↑
+feature branches     ←-- Development work
+```
+
+### Development Workflow
+
+#### 1. Feature Development
+```bash
+# Start from staging
+git checkout staging && git pull origin staging
+
+# Create feature branch
+git checkout -b feature/payment-improvements-20250722
+
+# Develop and commit
+git add . && git commit -m "feat: improve payment error handling"
+git push origin feature/payment-improvements-20250722
+```
+
+#### 2. Deploy to Staging
+**Command to Claude**: `"Create pull request to merge this feature into staging"`
+
+**Claude will execute:**
+```bash
+gh pr create --base staging --title "Payment Improvements" \
+  --body "## Summary
+- Improved payment error handling
+- Enhanced user feedback
+
+## Test Plan
+- [ ] Test payment failures
+- [ ] Verify error messages
+
+🤖 Generated with Claude Code"
+```
+
+#### 3. Deploy to Production
+**Command to Claude**: `"Staging tests passed - deploy to production"`
+
+**Claude will execute:**
+```bash
+git checkout staging && git pull origin staging
+gh pr create --base production --title "Release: Payment Improvements" \
+  --body "✅ Staging tests completed
+✅ Ready for production deployment
+
+🤖 Generated with Claude Code"
+```
+
+### Auto-Deployment
+- **staging** branch → Auto-deploys to staging.bookedbarber.com (Render)
+- **production** branch → Auto-deploys to bookedbarber.com (Render)
+
+### Commands for Claude
+- **Start Feature**: "Create feature branch from staging for [feature-name]"
+- **Deploy to Staging**: "Create pull request to merge this feature into staging"
+- **Deploy to Production**: "Staging tests passed - deploy to production"
+- **Emergency Fix**: "Create hotfix branch and deploy to production"
 
 ## 🚀 Marketing Enhancement Features (2025-07-02)
 
