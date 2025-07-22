@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { CalendarIcon, TodayIcon } from '@heroicons/react/24/outline'
+import { CalendarIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
 import { format, isToday, isSameDay } from 'date-fns'
 
@@ -153,7 +153,7 @@ export function MobileJumpToTodayButton({
         size="sm"
         aria-label="Jump to today"
       >
-        <TodayIcon className="h-5 w-5" />
+        <ArrowUturnLeftIcon className="h-5 w-5" />
       </Button>
     </div>
   )

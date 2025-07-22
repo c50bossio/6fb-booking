@@ -15,7 +15,7 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { type User, type UnifiedUserRole } from '@/lib/api'
 import { useThemeStyles } from '@/hooks/useTheme'
-import { filterNavigationByRole, navigationItems, type NavigationItem } from '@/lib/navigation'
+import { filterNavigationByRole, navigationItems, navigation, type NavigationItem } from '@/lib/navigation'
 import { Logo } from '@/components/ui/Logo'
 import { UserPermissions, RoleMigrationHelper } from '@/lib/permissions'
 import { useNavigationFavorites } from '@/hooks/useNavigationFavorites'
@@ -66,27 +66,22 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   )
   
   // Separate main navigation from settings and organize by usage
-  const { mainNavItems, settingsNavItems, favoriteItems, recentItems } = useMemo(() => {
+  const { mainNavItems, settingsNavItems, favoriteItems } = useMemo(() => {
     const main = filteredNavigationItems.filter(item => item.name !== 'Settings')
     const settings = filteredNavigationItems.filter(item => item.name === 'Settings')
     
-    // Get favorites and recent items if loaded
+    // Get favorites if loaded
     const favoriteHrefs = new Set(favorites.favorites.map(f => f.href))
-    const recentUsage = tracking.getRecentlyUsed()
     
+    // Create favorites from main navigation items
     const favoriteItems = main.filter(item => favoriteHrefs.has(item.href))
-    const recentItems = main.filter(item => 
-      recentUsage.some(recent => recent.href === item.href) && 
-      !favoriteHrefs.has(item.href)
-    ).slice(0, 3)
     
     return { 
       mainNavItems: main, 
       settingsNavItems: settings,
-      favoriteItems,
-      recentItems
+      favoriteItems
     }
-  }, [filteredNavigationItems, favorites.favorites, tracking])
+  }, [filteredNavigationItems, favorites.favorites])
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -102,19 +97,43 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
     }
   }
   
-  // Enhanced tooltip component
+  // Handle right-click context menu
+  const handleContextMenu = (e: React.MouseEvent, item: NavigationItem) => {
+    e.preventDefault()
+    
+    // For now, just add to favorites on right-click
+    if (!favorites.isFavorite(item.href)) {
+      favorites.toggleFavorite(item.href, item.name)
+    }
+  }
+  
+  // Enhanced keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent, item: NavigationItem) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleNavigationClick(item)
+      // Navigate to the item
+      window.location.href = item.href
+    } else if (e.key === 'f' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault()
+      favorites.toggleFavorite(item.href, item.name)
+    }
+  }
+  
+  // Enhanced tooltip component with keyboard shortcuts
   const renderTooltip = (item: NavigationItem) => {
     if (!collapsed || showTooltip !== item.href) return null
     
     const usageCount = tracking.getUsageCount(item.href)
     const isFrequent = tracking.isFrequentlyUsed(item.href)
+    const isFavorited = favorites.isFavorite(item.href)
     
     return (
       <div className="
         fixed z-50 ml-16 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900
         text-sm rounded-lg shadow-xl border border-gray-700 dark:border-gray-300
         whitespace-nowrap pointer-events-none
-        animate-fade-in-up
+        animate-fade-in-up max-w-xs
       ">
         <div className="font-medium">{item.name}</div>
         {item.description && (
@@ -122,13 +141,20 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
             {item.description}
           </div>
         )}
-        {usageCount > 0 && (
-          <div className="flex items-center gap-1 mt-1 text-xs text-gray-400 dark:text-gray-500">
-            <ClockIcon className="w-3 h-3" />
-            Used {usageCount} times
-            {isFrequent && <SparklesIcon className="w-3 h-3 text-yellow-500" />}
+        <div className="mt-2 space-y-1 text-xs text-gray-400 dark:text-gray-500">
+          {usageCount > 0 && (
+            <div className="flex items-center gap-1">
+              <ClockIcon className="w-3 h-3" />
+              Used {usageCount} times
+              {isFrequent && <SparklesIcon className="w-3 h-3 text-yellow-500" />}
+            </div>
+          )}
+          <div className="border-t border-gray-700 dark:border-gray-400 pt-1">
+            <div>Right-click to {isFavorited ? 'unfavorite' : 'add to favorites'}</div>
+            <div>⌘+F to toggle favorite</div>
+            <div>Enter or Space to navigate</div>
           </div>
-        )}
+        </div>
       </div>
     )
   }
@@ -185,28 +211,6 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
         
         {!collapsed && (
           <div className="flex items-center gap-1">
-            {/* Favorite button */}
-            {showFavoriteButton && level === 0 && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  favorites.toggleFavorite(item.href, item.name)
-                }}
-                className={`
-                  p-1 rounded-md transition-all duration-200 opacity-0 group-hover:opacity-100
-                  ${isFavorited ? 'opacity-100 text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-gray-600'}
-                `}
-                title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
-              >
-                {isFavorited ? (
-                  <StarIconSolid className="w-4 h-4" />
-                ) : (
-                  <StarIcon className="w-4 h-4" />
-                )}
-              </button>
-            )}
-            
             {hasChildren && (
               <ChevronRightIcon 
                 className={`
@@ -236,40 +240,83 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
     const uniqueKey = item.href || `${item.name}-level-${level}-${index}`
     
     return (
-      <div key={uniqueKey}>
-        {hasChildren ? (
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              toggleSection(item.name.toLowerCase())
-            }}
-            onMouseEnter={() => collapsed && setShowTooltip(item.href)}
-            onMouseLeave={() => collapsed && setShowTooltip(null)}
-            className={itemClasses}
-            title={collapsed ? item.name : undefined}
-            type="button"
-            aria-expanded={isExpanded}
-            aria-label={`Toggle ${item.name} section`}
-          >
-            {content}
-            {renderTooltip(item)}
-          </button>
-        ) : (
-          <Link
-            href={item.href}
-            onClick={() => handleNavigationClick(item)}
-            onMouseEnter={() => collapsed && setShowTooltip(item.href)}
-            onMouseLeave={() => collapsed && setShowTooltip(null)}
-            className={itemClasses}
-            title={collapsed ? item.name : undefined}
-            aria-label={item.name}
-            role="menuitem"
-          >
-            {content}
-            {renderTooltip(item)}
-          </Link>
-        )}
+      <div key={uniqueKey} className="relative">
+        <div className="flex items-center group">
+          {hasChildren ? (
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                toggleSection(item.name.toLowerCase())
+              }}
+              onMouseEnter={() => collapsed && setShowTooltip(item.href)}
+              onMouseLeave={() => collapsed && setShowTooltip(null)}
+              onContextMenu={(e) => handleContextMenu(e, item)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  toggleSection(item.name.toLowerCase())
+                } else if (e.key === 'ArrowRight' && !isExpanded) {
+                  e.preventDefault()
+                  toggleSection(item.name.toLowerCase())
+                } else if (e.key === 'ArrowLeft' && isExpanded) {
+                  e.preventDefault()
+                  toggleSection(item.name.toLowerCase())
+                } else {
+                  handleKeyDown(e, item)
+                }
+              }}
+              className={`${itemClasses} flex-1 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 focus:outline-none transition-all duration-200`}
+              title={collapsed ? `${item.name} - Right-click for options, Arrow keys to expand/collapse` : undefined}
+              type="button"
+              aria-expanded={isExpanded}
+              aria-label={`Toggle ${item.name} section${favorites.isFavorite(item.href) ? ' (Favorited)' : ''}`}
+              tabIndex={0}
+            >
+              {content}
+              {renderTooltip(item)}
+            </button>
+          ) : (
+            <Link
+              href={item.href}
+              onClick={() => handleNavigationClick(item)}
+              onMouseEnter={() => collapsed && setShowTooltip(item.href)}
+              onMouseLeave={() => collapsed && setShowTooltip(null)}
+              onContextMenu={(e) => handleContextMenu(e, item)}
+              onKeyDown={(e) => handleKeyDown(e, item)}
+              className={`${itemClasses} flex-1 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 focus:outline-none transition-all duration-200`}
+              title={collapsed ? `${item.name} - Right-click for options` : undefined}
+              aria-label={`${item.name}${favorites.isFavorite(item.href) ? ' (Favorited)' : ''}`}
+              role="menuitem"
+              tabIndex={0}
+            >
+              {content}
+              {renderTooltip(item)}
+            </Link>
+          )}
+          
+          {/* Favorite button - outside main navigation element to avoid nesting */}
+          {!collapsed && showFavoriteButton && level === 0 && !hasChildren && (
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                favorites.toggleFavorite(item.href, item.name)
+              }}
+              className={`
+                p-1 rounded-md transition-all duration-200 opacity-0 group-hover:opacity-100 ml-1
+                ${isFavorited ? 'opacity-100 text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-gray-600'}
+              `}
+              title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+            >
+              {isFavorited ? (
+                <StarIconSolid className="w-4 h-4" />
+              ) : (
+                <StarIcon className="w-4 h-4" />
+              )}
+            </button>
+          )}
+        </div>
         
         {!collapsed && hasChildren && isExpanded && item.children && (
           <div className="mt-1 space-y-1">
@@ -356,21 +403,8 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
           </div>
         )}
         
-        {/* Recent Section */}
-        {!collapsed && recentItems.length > 0 && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 px-2 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              <ClockIcon className="w-3 h-3 text-gray-500" />
-              Recent
-            </div>
-            <div className="space-y-1 mt-2">
-              {recentItems.map((item, index) => renderNavigationItem(item, 0, `recent-${index}`))}
-            </div>
-          </div>
-        )}
-        
-        {/* Add separator if we have favorites or recent items */}
-        {!collapsed && (favoriteItems.length > 0 || recentItems.length > 0) && (
+        {/* Add separator if we have favorites */}
+        {!collapsed && favoriteItems.length > 0 && (
           <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
         )}
         

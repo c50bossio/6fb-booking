@@ -1863,4 +1863,158 @@
     @apply border-2 border-primary-400;
     animation: pulse-ring 1.5s ease-out infinite;
   }
+
+  /* Desktop-Specific Navigation Enhancements */
+  
+  /* Enhanced right-click context menu indication */
+  .nav-context-enabled {
+    @apply cursor-context-menu;
+  }
+  
+  /* Smooth hover animations for desktop navigation */
+  .nav-hover-enhanced {
+    @apply transition-all duration-200 ease-out;
+    will-change: transform, box-shadow;
+  }
+  
+  .nav-hover-enhanced:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .nav-hover-enhanced:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Keyboard focus enhancements */
+  .keyboard-focus-enhanced {
+    @apply focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 focus:outline-none;
+    @apply transition-all duration-200;
+  }
+  
+  .keyboard-focus-enhanced:focus {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  }
+  
+  /* Context menu feedback animations */
+  .context-menu-feedback {
+    @apply transition-transform duration-150;
+  }
+  
+  .context-menu-feedback:active {
+    transform: scale(0.98);
+  }
+  
+  /* Enhanced tooltip positioning */
+  .tooltip-enhanced {
+    @apply fixed z-50 px-3 py-2 text-sm bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900;
+    @apply rounded-lg shadow-xl border border-gray-700 dark:border-gray-300;
+    @apply animate-fade-in-up pointer-events-none;
+  }
+  
+  /* Keyboard navigation indicators */
+  .keyboard-nav-indicator {
+    @apply relative;
+  }
+  
+  .keyboard-nav-indicator::after {
+    content: '';
+    @apply absolute -inset-1 rounded-lg border-2 border-primary-500 opacity-0;
+    @apply transition-opacity duration-200;
+  }
+  
+  .keyboard-nav-indicator:focus-visible::after {
+    @apply opacity-100;
+  }
+  
+  /* Enhanced button hover states */
+  .button-hover-enhanced {
+    @apply transition-all duration-200 ease-out;
+    transform-origin: center;
+    will-change: transform;
+  }
+  
+  .button-hover-enhanced:hover {
+    @apply scale-110 shadow-lg;
+  }
+  
+  .button-hover-enhanced:active {
+    @apply scale-95;
+  }
+  
+  /* Desktop-specific dropdown animations */
+  .dropdown-desktop-enhanced {
+    @apply animate-fade-in-up;
+    animation-duration: 150ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(12px);
+  }
+  
+  /* Accessibility enhancements for screen readers */
+  .sr-context-help {
+    @apply sr-only;
+  }
+  
+  /* Focus visible for keyboard navigation */
+  .focus-visible-enhanced {
+    @apply focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-opacity-50;
+    @apply focus-visible:outline-none;
+  }
+  
+  /* Desktop context menu styling */
+  .desktop-context-menu {
+    @apply fixed bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700;
+    @apply py-2 min-w-48 max-w-64;
+    backdrop-filter: blur(16px);
+    z-index: 2147483647;
+  }
+  
+  .context-menu-item {
+    @apply flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200;
+    @apply hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150;
+    @apply focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none;
+  }
+  
+  .context-menu-separator {
+    @apply my-1 border-t border-gray-200 dark:border-gray-700;
+  }
+
+  /* Enhanced keyboard shortcuts display */
+  .kbd-enhanced {
+    @apply inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono;
+    @apply bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300;
+    @apply border border-gray-300 dark:border-gray-600;
+    @apply transition-all duration-150;
+  }
+  
+  .kbd-enhanced:hover {
+    @apply bg-gray-300 dark:bg-gray-600;
+  }
+  
+  /* Right-click visual feedback */
+  .right-click-feedback {
+    @apply transition-all duration-200;
+  }
+  
+  .right-click-feedback:active {
+    transform: scale(0.95);
+    @apply bg-primary-100 dark:bg-primary-900/30;
+  }
+  
+  /* Desktop hover state improvements */
+  .desktop-hover-card {
+    @apply transition-all duration-300 ease-out;
+    transform-style: preserve-3d;
+  }
+  
+  .desktop-hover-card:hover {
+    transform: translateY(-2px) scale(1.02);
+    @apply shadow-xl;
+  }
+  
+  /* Keyboard navigation focus ring enhancements */
+  .focus-ring-enhanced {
+    @apply focus:ring-4 focus:ring-primary-500/20 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900;
+    @apply transition-all duration-200;
+  }
 }

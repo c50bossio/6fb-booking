@@ -2306,6 +2306,22 @@ class NotificationChannel(Base):
 
 
 # ================================================================================
+# SERVICE SUBSCRIPTION MODELS
+# ================================================================================
+
+# Import service subscription models
+from models.service_subscription import (
+    ServiceSubscriptionTemplate,
+    SubscriptionTemplateService,
+    ServiceSubscription,
+    SubscriptionUsageRecord,
+    SubscriptionBillingEvent,
+    SubscriptionType,
+    SubscriptionStatus,
+    BillingInterval
+)
+
+# ================================================================================
 # EMAIL ANALYTICS MODELS
 # ================================================================================
 

@@ -27,8 +27,9 @@ class GMBService:
     """Google My Business API service with OAuth and review management"""
     
     def __init__(self):
-        self.client_id = os.getenv("GOOGLE_CLIENT_ID")
-        self.client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+        self.client_id = os.getenv("GMB_CLIENT_ID") or os.getenv("GOOGLE_CLIENT_ID")
+        self.client_secret = os.getenv("GMB_CLIENT_SECRET") or os.getenv("GOOGLE_CLIENT_SECRET")
+        self.redirect_uri = os.getenv("GMB_REDIRECT_URI", "http://localhost:8000/api/v1/integrations/gmb/callback")
         self.oauth_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
         self.token_url = "https://oauth2.googleapis.com/token"
         self.gmb_base_url = "https://mybusinessbusinessinformation.googleapis.com/v1"

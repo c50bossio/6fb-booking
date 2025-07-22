@@ -15,6 +15,7 @@ import { navigationItems } from '@/lib/navigation'
 import { SessionTimeoutWarning } from '@/components/auth/SessionTimeoutWarning'
 import { CommandPalette } from '@/components/navigation/CommandPalette'
 import { useKeyboardShortcuts, createNavigationShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { useGlobalDesktopShortcuts } from '@/hooks/useDesktopInteractions'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -126,12 +127,32 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [isClient, isMobile])
 
-  // Keyboard shortcuts
+  // Enhanced keyboard shortcuts with desktop interactions
   const shortcuts = createNavigationShortcuts(
     () => setCommandPaletteOpen(true),
-    (path: string) => router.push(path)
+    (path: string) => router.push(path),
+    {
+      toggleSidebar: () => setSidebarCollapsed(!sidebarCollapsed),
+      openQuickCreate: () => {
+        // This would open a quick create modal or navigate to new booking
+        router.push('/book')
+      },
+      openNotifications: () => {
+        // This would open notifications panel
+        console.log('Open notifications')
+      },
+      openBookingLinks: () => {
+        // This would open booking links modal for barbers/admins
+        if (user && (user.role === 'barber' || user.role === 'admin')) {
+          console.log('Open booking links')
+        }
+      }
+    }
   )
-  useKeyboardShortcuts(shortcuts, isClient && !isPublicRoute)
+  const keyboardShortcuts = useKeyboardShortcuts(shortcuts, isClient && !isPublicRoute)
+  
+  // Global desktop shortcuts
+  useGlobalDesktopShortcuts()
 
   // Generate breadcrumbs based on current path
   const getBreadcrumbs = () => {

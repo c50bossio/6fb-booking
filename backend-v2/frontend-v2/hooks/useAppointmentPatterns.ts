@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { 
   format, 
   parseISO, 
-  isSameWeekday, 
   getDay, 
   getHours, 
   getMinutes,
@@ -16,6 +15,11 @@ import {
   startOfDay,
   endOfDay
 } from 'date-fns'
+
+// Helper function to check if two dates are on the same weekday
+const isSameWeekday = (date1: Date, date2: Date): boolean => {
+  return getDay(date1) === getDay(date2)
+}
 
 interface Appointment {
   id: number
@@ -315,16 +319,13 @@ export function useAppointmentPatterns(
     }
   }, [
     recentAppointments,
-    config,
-    analyzeRecurringPatterns,
-    analyzeTimeSlotPatterns,
-    analyzeServicePatterns
+    config
   ])
 
-  // Run analysis when appointments change
+  // Run analysis when appointments change (not depending on analyzePatterns to avoid infinite loop)
   useEffect(() => {
     analyzePatterns()
-  }, [analyzePatterns])
+  }, [recentAppointments, config])
 
   // Get suggestions for a specific date
   const getSuggestionsForDate = useCallback((targetDate: Date) => {

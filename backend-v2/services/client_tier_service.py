@@ -18,7 +18,15 @@ from sqlalchemy import func, and_, or_, desc
 import logging
 
 from models import Client, Appointment, Payment, Service
-from schemas import DateRange
+import importlib.util
+import sys
+import os
+
+# Import DateRange from main schemas file
+spec = importlib.util.spec_from_file_location("main_schemas", os.path.join(os.path.dirname(__file__), "..", "schemas.py"))
+main_schemas = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(main_schemas)
+DateRange = main_schemas.DateRange
 
 logger = logging.getLogger(__name__)
 

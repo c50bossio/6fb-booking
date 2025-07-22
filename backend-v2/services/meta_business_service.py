@@ -32,8 +32,9 @@ class MetaBusinessService:
     """Meta Business API service with OAuth, ads management, and conversion tracking"""
     
     def __init__(self):
-        self.app_id = os.getenv("META_APP_ID")
-        self.app_secret = os.getenv("META_APP_SECRET")
+        self.app_id = os.getenv("META_CLIENT_ID") or os.getenv("META_APP_ID")
+        self.app_secret = os.getenv("META_CLIENT_SECRET") or os.getenv("META_APP_SECRET")
+        self.redirect_uri = os.getenv("META_REDIRECT_URI", "http://localhost:8000/api/v1/integrations/meta/callback")
         self.oauth_base_url = "https://www.facebook.com/v18.0/dialog/oauth"
         self.token_url = "https://graph.facebook.com/v18.0/oauth/access_token"
         self.graph_base_url = "https://graph.facebook.com/v18.0"

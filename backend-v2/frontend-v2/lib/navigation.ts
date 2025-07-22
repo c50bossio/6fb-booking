@@ -786,6 +786,39 @@ export function generateBreadcrumbs(pathname: string): BreadcrumbItem[] {
   return breadcrumbs
 }
 
+// Helper function to flatten navigation items (includes parent and child items)
+export function flattenNavigationItems(items: NavigationItem[]): NavigationItem[] {
+  const flattened: NavigationItem[] = []
+  
+  for (const item of items) {
+    // Add the parent item
+    flattened.push(item)
+    
+    // Add all child items recursively
+    if (item.children && item.children.length > 0) {
+      flattened.push(...flattenNavigationItems(item.children))
+    }
+  }
+  
+  return flattened
+}
+
+// Helper function to find a specific navigation item by href
+export function findNavigationItemByHref(href: string, items?: NavigationItem[]): NavigationItem | null {
+  const searchItems = items || navigationItems
+  const flattenedItems = flattenNavigationItems(searchItems)
+  
+  // First try exact match
+  let found = flattenedItems.find(item => item.href === href)
+  if (found) return found
+  
+  // Then try partial match for query params (like ?tab=analytics)
+  found = flattenedItems.find(item => href.startsWith(item.href))
+  if (found) return found
+  
+  return null
+}
+
 // Helper function to get user menu items based on role
 export function getUserMenuItems(userRole?: string | null): NavigationItem[] {
   const baseItems = userMenuItems.filter(item => item.name !== 'Sign Out')
@@ -849,7 +882,9 @@ export const navigation = {
   getMobileTabs: getMobileNavigationTabs,
   getQuickActions: getQuickActionsForRole,
   generateBreadcrumbs,
-  getUserMenuItems
+  getUserMenuItems,
+  flattenItems: flattenNavigationItems,
+  findByHref: findNavigationItemByHref
 }
 
 export default navigation
