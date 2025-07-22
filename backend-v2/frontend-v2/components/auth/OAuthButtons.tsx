@@ -36,7 +36,8 @@ export function OAuthButtons({
 
   const loadOAuthProviders = async () => {
     try {
-      const response = await fetch('/api/v1/oauth/providers')
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${apiUrl}/api/v1/oauth/providers`)
       
       if (response.ok) {
         const data = await response.json()
@@ -58,7 +59,8 @@ export function OAuthButtons({
     
     try {
       // Initiate OAuth flow
-      const response = await fetch(`/api/v1/oauth/initiate/${provider}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${apiUrl}/api/v1/oauth/initiate/${provider}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
