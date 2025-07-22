@@ -3,6 +3,7 @@
 import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import SixFigureAnalyticsDashboard from '@/components/analytics/SixFigureAnalyticsDashboard'
+import SixFigureProgressTracker from '@/components/analytics/SixFigureProgressTracker'
 import { CalendarIcon, BanknotesIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 
@@ -164,13 +165,26 @@ export function SnapshotDashboard({
         </Card>
       </div>
 
-      {/* Six Figure Barber Analytics Dashboard */}
-      <SixFigureAnalyticsDashboard
-        userId={user.id}
-        timeRange={timeRange}
-        userName={user.first_name}
-        todayStats={todayStats}
-      />
+      {/* Six Figure Progress Tracker */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <SixFigureProgressTracker
+            userId={user.id}
+            targetAnnualIncome={100000}
+            className="h-fit"
+          />
+        </div>
+        
+        {/* Six Figure Barber Analytics Dashboard */}
+        <div className="lg:col-span-2">
+          <SixFigureAnalyticsDashboard
+            userId={user.id}
+            timeRange={timeRange}
+            userName={user.first_name}
+            todayStats={todayStats}
+          />
+        </div>
+      </div>
     </div>
   )
 }

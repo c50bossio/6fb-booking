@@ -1820,6 +1820,135 @@ export async function getSixFigureBarberMetrics(
   return fetchAPI(`/api/v2/analytics/six-figure-barber?${params.toString()}`)
 }
 
+// Client Lifetime Value Analytics Types
+export interface CLVMetrics {
+  client_id: number
+  historical_clv: number
+  predicted_clv: number
+  remaining_clv: number
+  average_ticket: number
+  visit_frequency: number
+  last_visit_days_ago: number
+  total_visits: number
+  client_tier: 'platinum' | 'gold' | 'silver' | 'bronze' | 'new'
+  retention_probability: number
+  churn_risk: 'Low' | 'Medium' | 'High'
+  value_growth_trend: 'Increasing' | 'Stable' | 'Declining'
+  recommended_actions: string[]
+  months_active: number
+  lifetime_value_score: number
+}
+
+export interface CLVAnalysis {
+  summary: {
+    total_clients: number
+    total_historical_clv: number
+    total_predicted_clv: number
+    average_clv: number
+    median_clv: number
+    high_value_client_count: number
+    at_risk_client_count: number
+    growth_opportunity_clv: number
+  }
+  tier_breakdown: {
+    [tier: string]: {
+      count: number
+      total_clv: number
+      average_clv: number
+      median_clv: number
+      average_ticket: number
+      retention_rate: number
+    }
+  }
+  percentile_analysis: {
+    top_20_percent_clv: number
+    bottom_20_percent_clv: number
+  }
+  recommendations: {
+    acquisition: {
+      target_acquisition_profile: {
+        min_average_ticket: number
+        target_frequency: number
+        ideal_client_value?: number
+      }
+      acquisition_strategies: string[]
+      max_acquisition_cost: number
+    }
+    retention: {
+      immediate_actions: {
+        high_value_at_risk_count: number
+        total_at_risk_clv: number
+        priority_outreach_list: number[]
+      }
+      retention_strategies: string[]
+      retention_investment_recommendation: {
+        monthly_budget: number
+        focus_areas: string[]
+      }
+    }
+  }
+}
+
+export interface ClientTierAnalytics {
+  tier_distribution: {
+    counts: { [tier: string]: number }
+    percentages: { [tier: string]: number }
+    metrics: {
+      [tier: string]: {
+        total_revenue_potential: number
+        avg_confidence_score: number
+        avg_revenue_potential: number
+        client_ids: number[]
+      }
+    }
+  }
+  total_clients: number
+  analysis_period_days: number
+}
+
+/**
+ * Get comprehensive client lifetime value analytics for a barber
+ */
+export async function getClientLifetimeValueAnalytics(
+  userId?: number,
+  analysisPeriodDays: number = 365
+): Promise<CLVAnalysis> {
+  const params = new URLSearchParams()
+  params.append('analysis_period_days', analysisPeriodDays.toString())
+  
+  if (userId) {
+    params.append('user_id', userId.toString())
+  }
+  
+  const response = await fetchAPI(`/api/v1/analytics/client-lifetime-value?${params.toString()}`)
+  return response.clv_analysis
+}
+
+/**
+ * Get detailed CLV metrics for a specific client
+ */
+export async function getIndividualClientCLV(clientId: number): Promise<CLVMetrics> {
+  const response = await fetchAPI(`/api/v1/analytics/client-lifetime-value/${clientId}`)
+  return response.clv_metrics
+}
+
+/**
+ * Get client tier distribution and analytics
+ */
+export async function getClientTierAnalytics(
+  userId?: number,
+  analysisPeriodDays: number = 180
+): Promise<ClientTierAnalytics> {
+  const params = new URLSearchParams()
+  params.append('analysis_period_days', analysisPeriodDays.toString())
+  
+  if (userId) {
+    params.append('user_id', userId.toString())
+  }
+  
+  return fetchAPI(`/api/v1/analytics/client-tiers?${params.toString()}`)
+}
+
 export async function getDashboardAnalytics(
   userId?: number,
   startDate?: string,
