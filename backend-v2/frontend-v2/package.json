@@ -53,7 +53,16 @@
     "dev:status": "../../../scripts/dev-server.sh status",
     "dev:stop": "../../../scripts/dev-server.sh stop",
     "server:monitor": "node scripts/monitor-server.js",
-    "server:stabilize": "../../../scripts/stabilize-dev-server.sh"
+    "server:stabilize": "../../../scripts/stabilize-dev-server.sh",
+    "dev:smart": "./scripts/dev-start.sh",
+    "dev:recover": "./scripts/dev-recover.sh",
+    "dev:recover:nuclear": "./scripts/dev-recover.sh --nuclear",
+    "dev:validate": "./scripts/validate-dependencies.sh",
+    "dev:pre-build": "./scripts/pre-build-validation.sh",
+    "dev:dashboard": "./scripts/dev-status-dashboard.sh",
+    "dev:dashboard:watch": "./scripts/dev-status-dashboard.sh --watch",
+    "health:monitor": "./scripts/dev-health-monitor.sh",
+    "health:status": "./scripts/dev-recover.sh --status"
   },
   "dependencies": {
     "@builder.io/react": "^8.2.5",

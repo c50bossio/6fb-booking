@@ -15,7 +15,7 @@ export interface KeyboardShortcut {
 
 export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = true) {
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (!enabled) return
+    if (!enabled || !event || !event.key) return
     
     // Don't trigger shortcuts when user is typing in inputs
     const target = event.target as HTMLElement
@@ -30,7 +30,8 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = tr
     
     // Special case: navigation shortcuts should work in most contexts
     const navigationKeys = ['d', 'c', 'p', 'n', 'a', 's', 'b', 'l']
-    const isNavigationShortcut = navigationKeys.includes(event.key.toLowerCase()) && 
+    const keyLower = event.key.toLowerCase()
+    const isNavigationShortcut = navigationKeys.includes(keyLower) && 
                                (event.metaKey || event.ctrlKey) && 
                                event.shiftKey
     
@@ -41,7 +42,7 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = tr
     // Find matching shortcut
     const matchingShortcut = shortcuts.find(shortcut => {
       return (
-        shortcut.key.toLowerCase() === event.key.toLowerCase() &&
+        shortcut.key.toLowerCase() === keyLower &&
         !!shortcut.metaKey === event.metaKey &&
         !!shortcut.ctrlKey === event.ctrlKey &&
         !!shortcut.shiftKey === event.shiftKey &&
