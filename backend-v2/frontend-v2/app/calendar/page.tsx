@@ -40,6 +40,13 @@ import { CalendarNetworkStatus, CalendarRequestQueue } from '@/components/calend
 import { LocationSelector } from '@/components/navigation/LocationSelector'
 import { LocationSelectorLoadingState, LocationSelectorErrorState } from '@/components/navigation/LocationSelectorSkeleton'
 import { CalendarExport } from '@/components/calendar/CalendarExport'
+import { JumpToTodayButtonWithShortcut } from '@/components/calendar/JumpToTodayButton'
+import { useCalendarKeyboardShortcuts } from '@/hooks/useCalendarKeyboardShortcuts'
+import { AppointmentSuggestions } from '@/components/calendar/AppointmentSuggestions'
+import { CalendarVisualEnhancement } from '@/components/calendar/CalendarVisualEnhancement'
+import { MobileCalendarNavigation } from '@/components/calendar/MobileCalendarNavigation'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useAppointmentPatterns } from '@/hooks/useAppointmentPatterns'
 import type { Appointment, AppointmentStatus, CalendarView, User, CalendarInteraction } from '@/types/calendar'
 import { 
   formatDateForAPI, 
@@ -91,6 +98,11 @@ export default function CalendarPage() {
   const [showHeatmap, setShowHeatmap] = useState(false)
   const [revenueCollapsed, setRevenueCollapsed] = useState(false)
   const [showAnalytics, setShowAnalytics] = useState(false)
+  
+  // Device detection for enhanced mobile experience
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const isTouchDevice = useMediaQuery('(hover: none) and (pointer: coarse)')
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
   // Enhanced API integration with optimistic updates
   const {
@@ -158,8 +170,47 @@ export default function CalendarPage() {
   
   const { executeRequest, abortRequests, clearCache } = useRequestDeduplication()
 
+  // AI-powered appointment patterns and suggestions
+  const {
+    patterns,
+    suggestions,
+    isAnalyzing,
+    getSuggestionsForDate,
+    getTopSuggestion
+  } = useAppointmentPatterns(bookings, {
+    minimumOccurrences: 2, // Lower threshold for better suggestions
+    confidenceThreshold: 0.6,
+    lookbackDays: 60,
+    includeSeasonalPatterns: true
+  })
+
   // Performance optimizations
   const { measureRender, optimizedAppointmentFilter } = useCalendarPerformance()
+
+  // Enhanced keyboard shortcuts for calendar navigation
+  const { shortcuts } = useCalendarKeyboardShortcuts({
+    onNavigateToday: () => {
+      setSelectedDate(new Date())
+    },
+    onChangeViewDay: () => setViewMode('day'),
+    onChangeViewWeek: () => setViewMode('week'),
+    onChangeViewMonth: () => setViewMode('month'),
+    onCreateAppointment: () => setShowCreateModal(true),
+    onQuickBooking: () => {
+      const quickBookButton = document.querySelector('[data-quick-book-trigger]')
+      if (quickBookButton instanceof HTMLElement) {
+        quickBookButton.click()
+      }
+    },
+    onToggleAnalytics: () => setShowAnalytics(!showAnalytics),
+    onToggleHeatmap: () => setShowHeatmap(!showHeatmap),
+    onRefresh: () => {
+      refreshOptimistic(() => getMyBookings())
+    },
+    currentDate: selectedDate || new Date(),
+    setCurrentDate: setSelectedDate,
+    currentView: viewMode
+  })
 
   // Keyboard shortcuts for quick booking
   useEffect(() => {
@@ -874,6 +925,30 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      {/* Mobile-optimized navigation with touch gestures */}
+      {isMobile && (
+        <div className="mb-4">
+          <Suspense fallback={
+            <div className="animate-pulse h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+          }>
+            <MobileCalendarNavigation
+              currentDate={selectedDate || new Date()}
+              onDateChange={(date) => {
+                setSelectedDate(date)
+                // Smooth animation for date changes
+                const calendar = document.querySelector('.unified-calendar')
+                if (calendar) {
+                  calendar.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                }
+              }}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              enableTouchGestures={isTouchDevice}
+            />
+          </Suspense>
+        </div>
+      )}
+
       {/* Enhanced Revenue Display - Mobile (Collapsible) */}
       <div className="lg:hidden mb-4">
         <Suspense fallback={
@@ -892,11 +967,85 @@ export default function CalendarPage() {
         </Suspense>
       </div>
 
+      {/* AI-powered appointment suggestions */}
+      {bookings.length >= 5 && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Smart Suggestions
+            </h3>
+            <button
+              onClick={() => setShowSuggestions(!showSuggestions)}
+              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              {showSuggestions ? 'Hide' : 'Show'} ({suggestions.length})
+            </button>
+          </div>
+          
+          {showSuggestions && (
+            <Suspense fallback={
+              <div className="animate-pulse space-y-2">
+                {Array.from({ length: 2 }, (_, i) => (
+                  <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                ))}
+              </div>
+            }>
+              <AppointmentSuggestions
+                appointments={bookings}
+                maxSuggestions={isMobile ? 2 : 3}
+                showPatternDetails={!isMobile}
+                onSuggestionAccept={(suggestion) => {
+                  // Pre-fill appointment modal with suggestion data
+                  setSelectedDate(suggestion.recommendedDate)
+                  setPreselectedTime(suggestion.recommendedTime)
+                  setShowCreateModal(true)
+                  
+                  // Show success toast
+                  toastSuccess('Suggestion Applied', 'Appointment form pre-filled with suggested details')
+                }}
+                onSuggestionDismiss={(suggestionId) => {
+                  console.log('Dismissed suggestion:', suggestionId)
+                }}
+              />
+            </Suspense>
+          )}
+        </div>
+      )}
+
       <CalendarErrorBoundary context={`calendar-${viewMode}-view`}>
         <div className="relative">
           <Card variant="default" className="col-span-full p-0">
             <Suspense fallback={<CalendarSkeleton view={viewMode} showStats={false} />}>
-              <UnifiedCalendar
+              <CalendarVisualEnhancement
+                currentDate={selectedDate || new Date()}
+                selectedDate={selectedDate}
+                appointments={bookings}
+                onDateHover={(date) => {
+                  // Optional: Show date-specific info on hover
+                  if (date) {
+                    const dayAppointments = bookings.filter(apt => {
+                      try {
+                        const aptDate = new Date(apt.start_time)
+                        return aptDate.toDateString() === date.toDateString()
+                      } catch {
+                        return false
+                      }
+                    })
+                    // Could show tooltip or update state here
+                  }
+                }}
+                onDateSelect={(date) => {
+                  setSelectedDate(date)
+                  if (isMobile) {
+                    // Auto-focus selected date on mobile
+                    const calendar = document.querySelector('.unified-calendar')
+                    calendar?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                  }
+                }}
+                showCapacityIndicators={!isMobile} // Show only on desktop
+                showAnimations={!isTouchDevice} // Reduce animations on touch devices
+              >
+                <UnifiedCalendar
                 view={viewMode}
                 onViewChange={setViewMode}
                 currentDate={selectedDate || new Date()}
@@ -1161,6 +1310,20 @@ export default function CalendarPage() {
           position="right"
         />
       </Suspense>
+      
+      {/* Jump to Today Button (appears when navigated away from today) */}
+      <JumpToTodayButtonWithShortcut
+        currentDate={selectedDate || new Date()}
+        onJumpToToday={() => {
+          const today = new Date()
+          setSelectedDate(today)
+          // Smooth scroll to today in calendar (if implemented)
+          const todayElement = document.querySelector('[data-calendar-today]')
+          if (todayElement) {
+            todayElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }}
+      />
       
       </div>
     </ErrorBoundary>

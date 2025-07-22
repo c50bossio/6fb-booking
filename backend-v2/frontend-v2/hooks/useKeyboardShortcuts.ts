@@ -1,145 +1,109 @@
-import { useEffect, useCallback, useRef } from 'react';
+'use client'
+
+import { useEffect, useCallback } from 'react'
 
 export interface KeyboardShortcut {
-  key: string;
-  ctrl?: boolean;
-  shift?: boolean;
-  alt?: boolean;
-  meta?: boolean;
-  description: string;
-  category?: string;
-  action: () => void;
-  enabled?: boolean;
-  preventDefault?: boolean;
+  key: string
+  metaKey?: boolean
+  ctrlKey?: boolean
+  shiftKey?: boolean
+  altKey?: boolean
+  action: () => void
+  description: string
+  section?: string
 }
 
-interface UseKeyboardShortcutsOptions {
-  enabled?: boolean;
-  preventDefault?: boolean;
-  stopPropagation?: boolean;
-  ignoreInputElements?: boolean;
-}
-
-export function useKeyboardShortcuts(
-  shortcuts: KeyboardShortcut[],
-  options: UseKeyboardShortcutsOptions = {}
-) {
-  const {
-    enabled = true,
-    preventDefault = true,
-    stopPropagation = false,
-    ignoreInputElements = true,
-  } = options;
-
-  const shortcutsRef = useRef(shortcuts);
-  shortcutsRef.current = shortcuts;
-
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (!enabled) return;
-
-      // Ignore if focus is on input elements (unless explicitly allowed)
-      if (ignoreInputElements) {
-        const target = event.target as HTMLElement;
-        const tagName = target.tagName.toLowerCase();
-        if (
-          tagName === 'input' ||
-          tagName === 'textarea' ||
-          tagName === 'select' ||
-          target.contentEditable === 'true'
-        ) {
-          return;
-        }
-      }
-
-      const matchingShortcut = shortcutsRef.current.find((shortcut) => {
-        if (shortcut.enabled === false) return false;
-
-        const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase();
-        const ctrlMatch = !shortcut.ctrl || event.ctrlKey === shortcut.ctrl;
-        const shiftMatch = !shortcut.shift || event.shiftKey === shortcut.shift;
-        const altMatch = !shortcut.alt || event.altKey === shortcut.alt;
-        const metaMatch = !shortcut.meta || event.metaKey === shortcut.meta;
-
-        return keyMatch && ctrlMatch && shiftMatch && altMatch && metaMatch;
-      });
-
-      if (matchingShortcut) {
-        if (preventDefault || matchingShortcut.preventDefault) {
-          event.preventDefault();
-        }
-        if (stopPropagation) {
-          event.stopPropagation();
-        }
-        matchingShortcut.action();
-      }
-    },
-    [enabled, preventDefault, stopPropagation, ignoreInputElements]
-  );
-
+export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = true) {
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (!enabled) return
+    
+    // Don't trigger shortcuts when user is typing in inputs
+    const target = event.target as HTMLElement
+    const isInput = target.tagName === 'INPUT' || 
+                   target.tagName === 'TEXTAREA' || 
+                   target.contentEditable === 'true' ||
+                   target.getAttribute('role') === 'textbox'
+    
+    // Allow certain shortcuts even in inputs (like Cmd+K)
+    const allowedInInputs = ['k', 'Escape']
+    
+    if (isInput && !allowedInInputs.includes(event.key)) {
+      return
+    }
+    
+    // Find matching shortcut
+    const matchingShortcut = shortcuts.find(shortcut => {
+      return (
+        shortcut.key.toLowerCase() === event.key.toLowerCase() &&
+        !!shortcut.metaKey === event.metaKey &&
+        !!shortcut.ctrlKey === event.ctrlKey &&
+        !!shortcut.shiftKey === event.shiftKey &&
+        !!shortcut.altKey === event.altKey
+      )
+    })
+    
+    if (matchingShortcut) {
+      event.preventDefault()
+      event.stopPropagation()
+      matchingShortcut.action()
+    }
+  }, [shortcuts, enabled])
+  
   useEffect(() => {
-    if (!enabled) return;
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [enabled, handleKeyDown]);
-
-  return {
-    shortcuts: shortcutsRef.current,
-  };
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
 }
 
-// Helper function to format shortcut display
-export function formatShortcut(shortcut: KeyboardShortcut): string {
-  const parts: string[] = [];
-  
-  if (shortcut.meta) parts.push('⌘');
-  if (shortcut.ctrl) parts.push('Ctrl');
-  if (shortcut.alt) parts.push('Alt');
-  if (shortcut.shift) parts.push('Shift');
-  
-  // Format the key
-  const key = shortcut.key.length === 1 
-    ? shortcut.key.toUpperCase() 
-    : shortcut.key.charAt(0).toUpperCase() + shortcut.key.slice(1);
-  
-  parts.push(key);
-  
-  return parts.join('+');
-}
-
-// Common shortcut patterns
-export const SHORTCUT_PATTERNS = {
-  navigation: {
-    next: { key: 'ArrowRight', description: 'Next' },
-    previous: { key: 'ArrowLeft', description: 'Previous' },
-    up: { key: 'ArrowUp', description: 'Up' },
-    down: { key: 'ArrowDown', description: 'Down' },
-    pageUp: { key: 'PageUp', description: 'Page up' },
-    pageDown: { key: 'PageDown', description: 'Page down' },
-    home: { key: 'Home', description: 'Beginning' },
-    end: { key: 'End', description: 'End' },
+// Common shortcuts
+export const createNavigationShortcuts = (
+  openCommandPalette: () => void,
+  navigateTo?: (path: string) => void
+): KeyboardShortcut[] => [
+  {
+    key: 'k',
+    metaKey: true,
+    action: openCommandPalette,
+    description: 'Open command palette',
+    section: 'Navigation'
   },
-  actions: {
-    create: { key: 'n', description: 'New' },
-    edit: { key: 'e', description: 'Edit' },
-    delete: { key: 'Delete', description: 'Delete' },
-    save: { key: 's', ctrl: true, description: 'Save' },
-    cancel: { key: 'Escape', description: 'Cancel/Close' },
-    search: { key: '/', description: 'Search' },
-    help: { key: '?', description: 'Help' },
-    select: { key: ' ', description: 'Select' },
-    open: { key: 'Enter', description: 'Open' },
+  {
+    key: 'k',
+    ctrlKey: true,
+    action: openCommandPalette,
+    description: 'Open command palette (Windows/Linux)',
+    section: 'Navigation'
   },
-  calendar: {
-    today: { key: 't', description: 'Go to today' },
-    dayView: { key: 'd', description: 'Day view' },
-    weekView: { key: 'w', description: 'Week view' },
-    monthView: { key: 'm', description: 'Month view' },
-    refresh: { key: 'r', description: 'Refresh' },
-    nextPeriod: { key: 'j', description: 'Next period' },
-    prevPeriod: { key: 'k', description: 'Previous period' },
-  },
-};
+  ...(navigateTo ? [
+    {
+      key: 'd',
+      metaKey: true,
+      action: () => navigateTo('/dashboard'),
+      description: 'Go to Dashboard',
+      section: 'Navigation'
+    },
+    {
+      key: 'c',
+      metaKey: true,
+      shiftKey: true,
+      action: () => navigateTo('/calendar'),
+      description: 'Go to Calendar',
+      section: 'Navigation'
+    },
+    {
+      key: 'p',
+      metaKey: true,
+      shiftKey: true,
+      action: () => navigateTo('/clients'),
+      description: 'Go to Clients',
+      section: 'Navigation'
+    },
+    {
+      key: 'n',
+      metaKey: true,
+      action: () => navigateTo('/book'),
+      description: 'New Booking',
+      section: 'Actions'
+    }
+  ] : [])
+]
