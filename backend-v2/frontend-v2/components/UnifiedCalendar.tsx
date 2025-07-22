@@ -27,6 +27,7 @@ import { CalendarHeader } from './calendar/CalendarHeader'
 import { DayView } from './calendar/DayView'
 import { WeekView } from './calendar/WeekView'
 import { MonthView } from './calendar/MonthView'
+import { CalendarErrorBoundary } from './calendar/CalendarErrorBoundary'
 import { useCalendarState } from '@/hooks/useCalendarState'
 import { useCalendarDragAndDrop } from '@/hooks/useCalendarDragAndDrop'
 
@@ -152,6 +153,26 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
   const isTouchDevice = TouchDragManager.isTouchDevice()
   const { showIndicator } = useKeyboardShortcutIndicator()
   const helpDialog = useKeyboardShortcutsHelp()
+  
+  // Date navigation - Define early to avoid initialization errors
+  const navigateDate = useCallback((direction: 'prev' | 'next') => {
+    const newDate = new Date(state.currentDate)
+    
+    switch (view) {
+      case 'day':
+        direction === 'prev' ? newDate.setDate(newDate.getDate() - 1) : newDate.setDate(newDate.getDate() + 1)
+        break
+      case 'week':
+        direction === 'prev' ? newDate.setDate(newDate.getDate() - 7) : newDate.setDate(newDate.getDate() + 7)
+        break
+      case 'month':
+        direction === 'prev' ? newDate.setMonth(newDate.getMonth() - 1) : newDate.setMonth(newDate.getMonth() + 1)
+        break
+    }
+    
+    setCurrentDate(newDate)
+    onDateChange?.(newDate)
+  }, [view, state.currentDate, onDateChange, setCurrentDate])
   
   // Swipe navigation for mobile
   const swipeContainerRef = useSwipeNavigation(
@@ -374,25 +395,6 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     return memoizedStatusColor(status)
   }, [memoizedStatusColor])
   
-  // Date navigation
-  const navigateDate = useCallback((direction: 'prev' | 'next') => {
-    const newDate = new Date(state.currentDate)
-    
-    switch (view) {
-      case 'day':
-        direction === 'prev' ? newDate.setDate(newDate.getDate() - 1) : newDate.setDate(newDate.getDate() + 1)
-        break
-      case 'week':
-        direction === 'prev' ? newDate.setDate(newDate.getDate() - 7) : newDate.setDate(newDate.getDate() + 7)
-        break
-      case 'month':
-        direction === 'prev' ? newDate.setMonth(newDate.getMonth() - 1) : newDate.setMonth(newDate.getMonth() + 1)
-        break
-    }
-    
-    setCurrentDate(newDate)
-    onDateChange?.(newDate)
-  }, [view, state.currentDate, onDateChange, setCurrentDate])
   
   // Render view-specific content
   const renderView = () => {

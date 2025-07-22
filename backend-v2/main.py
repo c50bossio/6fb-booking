@@ -1132,7 +1132,7 @@ async def test_frontend_payment_integration():
         "frontend_test_instructions": [
             f"Visit http://localhost:3000 to test payment flow",
             f"Use test appointment ID: {results.get('test_appointment', {}).get('appointment_id')} for testing",
-            "Frontend will use live Stripe publishable key: pk_live_v6ilAqP9y2gT46Os63ONgGmC",
+            f"Frontend will use Stripe publishable key: {os.getenv('STRIPE_PUBLISHABLE_KEY', 'STRIPE_PUBLISHABLE_KEY_NOT_SET')}",
             "Payment processing will use live Stripe secret key for real transactions",
             "⚠️  CAUTION: This will process real payments - use test cards only"
         ],
