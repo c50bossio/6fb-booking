@@ -16,7 +16,7 @@ import { NotificationPreferences } from '@/components/calendar/shared/Notificati
 import { ErrorDisplay } from '@/components/ui/ErrorStates'
 import { Textarea } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ButtonLoading } from '@/components/ui/LoadingStates'
+import { ButtonLoading } from '@/components/LoadingStates'
 import { 
   SERVICE_STYLES, 
   getServiceConfig,

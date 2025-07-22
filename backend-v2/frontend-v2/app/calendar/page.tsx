@@ -1086,6 +1086,7 @@ export default function CalendarPage() {
                 onRetry={() => window.location.reload()}
                 className="h-[800px]"
               />
+              </CalendarVisualEnhancement>
             </Suspense>
           </Card>
 

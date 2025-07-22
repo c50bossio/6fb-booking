@@ -467,7 +467,7 @@ const RetentionAnalyticsDashboard: React.FC = () => {
                     <Badge variant="secondary">{metrics.churnPrediction.mediumRiskClients}</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Low Risk (<60%)</span>
+                    <span className="text-sm">Low Risk (&lt;60%)</span>
                     <Badge variant="default">{metrics.churnPrediction.lowRiskClients}</Badge>
                   </div>
                 </div>

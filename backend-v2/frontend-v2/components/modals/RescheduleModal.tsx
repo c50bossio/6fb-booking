@@ -19,7 +19,7 @@ import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { ButtonLoading } from '@/components/ui/LoadingStates'
+import { ButtonLoading } from '@/components/LoadingStates'
 import { ErrorDisplay } from '@/components/ui/ErrorStates'
 import { 
   SERVICE_STYLES, 

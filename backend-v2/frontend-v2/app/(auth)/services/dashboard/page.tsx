@@ -43,7 +43,7 @@ import {
   type Service,
   type User
 } from '@/lib/api'
-import { LoadingSpinner } from '@/components/ui/LoadingStates'
+import { LoadingSpinner } from '@/components/LoadingStates'
 import { EmptyState } from '@/components/ui/empty-state'
 
 interface ServiceMetrics {

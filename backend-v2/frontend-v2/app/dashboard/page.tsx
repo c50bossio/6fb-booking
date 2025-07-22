@@ -6,6 +6,9 @@ import { getProfile, logout, getMyBookings, getClientDashboardMetrics, getDashbo
 import { handleAuthError } from '@/lib/auth-error-handler'
 import { batchDashboardData } from '@/lib/requestBatcher'
 import { getDefaultDashboard } from '@/lib/routeGuards'
+import { dashboardRouter } from '@/lib/dashboard-router'
+import { DashboardSwitcher } from '@/components/ui/DashboardSwitcher'
+import { canAccessAdmin, canManageServices, canManageClients } from '@/lib/role-utils'
 import TimezoneSetupModal from '@/components/TimezoneSetupModal'
 import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
@@ -17,7 +20,7 @@ import CalendarDayMini from '@/components/calendar/CalendarDayMini'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { TrialStatusBanner } from '@/components/ui/TrialStatusBanner'
 import { TrialWarningSystem } from '@/components/ui/TrialWarningSystem'
-import { ErrorBoundary } from '@/components/error-boundaries'
+import { StandardErrorBoundary, getErrorBoundaryType } from '@/components/error-boundaries'
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -113,13 +116,13 @@ function DashboardContent() {
           return
         }
         
-        // Check if user should be redirected to role-specific dashboard
-        // Temporarily disabled to allow admin users to see the dashboard
-        // const defaultDashboard = getDefaultDashboard(userData)
-        // if (defaultDashboard !== '/dashboard' && window.location.pathname === '/dashboard') {
-        //   router.push(defaultDashboard)
-        //   return
-        // }
+        // Smart dashboard routing - redirect if user has a better dashboard option
+        const smartRedirect = dashboardRouter.getSmartRedirect(userData, '/dashboard')
+        if (smartRedirect && smartRedirect !== '/dashboard') {
+          console.log(`Dashboard: Smart redirect to ${smartRedirect} for role ${userData.role}`)
+          router.push(smartRedirect)
+          return
+        }
         
         if (!userData.timezone) {
           setShowTimezoneWarning(true)
@@ -140,7 +143,7 @@ function DashboardContent() {
         ]
 
         // Add role-specific requests
-        if (userData.role === 'admin' || userData.role === 'barber') {
+        if (canManageServices(userData.role)) {
           dashboardRequests.push(
             {
               endpoint: '/api/v1/dashboard/client-metrics',
@@ -170,7 +173,7 @@ function DashboardContent() {
           }
 
           // Process role-specific data
-          if (userData.role === 'admin' || userData.role === 'barber') {
+          if (canManageServices(userData.role)) {
             // Client metrics
             if (results[1]) {
               setClientMetrics(results[1])
@@ -198,7 +201,7 @@ function DashboardContent() {
             setBookings([])
           }
 
-          if (userData.role === 'admin' || userData.role === 'barber') {
+          if (canManageServices(userData.role)) {
             const [metricsResult, analyticsResult] = await Promise.allSettled([
               getClientDashboardMetrics(),
               getDashboardAnalytics(userData.id)
@@ -296,7 +299,7 @@ function DashboardContent() {
   }
 
   // Render specialized barber dashboard layout
-  if (user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin') {
+  if (canManageServices(user?.role || '')) {
     // Calculate completion rate from analytics data
     const completionRate = analytics?.appointment_summary ? 
       Math.round(100 - (analytics.appointment_summary.cancellation_rate + analytics.appointment_summary.no_show_rate)) : 95
@@ -385,16 +388,20 @@ function DashboardContent() {
             </Card>
           )}
 
-          <ErrorBoundary 
-            feature="barber-dashboard"
-            userId={user?.id}
+          <StandardErrorBoundary 
+            type="dashboard"
+            context={{
+              feature: "barber-dashboard",
+              userId: user?.id,
+              component: "BarberDashboardLayout"
+            }}
           >
             <BarberDashboardLayout 
               user={user}
               todayStats={todayStats}
               upcomingAppointments={upcomingAppointments}
             />
-          </ErrorBoundary>
+          </StandardErrorBoundary>
         </div>
 
         <TimezoneSetupModal
@@ -410,47 +417,82 @@ function DashboardContent() {
     <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0">
           <div className="space-y-2">
-            <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">
+            <h1 className="text-page-title">
               Command Center
             </h1>
-            <p className="text-ios-body text-ios-gray-600 dark:text-zinc-300">
+            <p className="text-page-subtitle">
               Welcome back, {user?.first_name || 'there'}. Here's what's happening today.
             </p>
           </div>
           
-          {/* Quick Actions - Mobile Hidden, Desktop Visible */}
-          <div className="hidden lg:flex items-center space-x-3">
-            <Button 
-              onClick={() => router.push('/book')} 
-              variant="primary" 
-              size="md"
-              elevated
-              leftIcon={<BookIcon />}
-            >
-              Book Appointment
-            </Button>
-            {(user?.role === 'admin' || user?.role === 'barber') && (
+          {/* Dashboard Switcher & Quick Actions */}
+          <div className="flex items-center space-x-4">
+            {/* Dashboard Switcher - Compact mode for header */}
+            <DashboardSwitcher 
+              user={user}
+              compact={true}
+              className=""
+            />
+            
+            {/* Quick Actions - Mobile Hidden, Desktop Visible */}
+            <div className="hidden lg:flex items-center space-x-3">
               <Button 
-                onClick={() => router.push('/notifications')} 
-                variant="secondary" 
+                onClick={() => router.push('/book')} 
+                variant="primary" 
                 size="md"
-                leftIcon={<BellIcon />}
+                elevated
+                leftIcon={<BookIcon />}
               >
-                Notifications
+                Book Appointment
               </Button>
-            )}
-            <Button 
-              onClick={() => router.push('/settings')} 
-              variant="ghost" 
-              size="md"
-              leftIcon={<SettingsIcon />}
-            >
-              Settings
-            </Button>
+              {(user?.role === 'admin' || user?.role === 'barber') && (
+                <Button 
+                  onClick={() => router.push('/notifications')} 
+                  variant="secondary" 
+                  size="md"
+                  leftIcon={<BellIcon />}
+                >
+                  Notifications
+                </Button>
+              )}
+              <Button 
+                onClick={() => router.push('/settings')} 
+                variant="ghost" 
+                size="md"
+                leftIcon={<SettingsIcon />}
+              >
+                Settings
+              </Button>
+            </div>
           </div>
         </div>
+
+        {/* Dashboard Recommendations - Full width for important suggestions */}
+        {dashboardRouter.getRecommendations(user, '/dashboard').length > 0 && (
+          <div className="mb-6">
+            {dashboardRouter.getRecommendations(user, '/dashboard').map((rec, index) => (
+              <Card key={index} className="border-primary-200 bg-primary-50 dark:border-primary-700 dark:bg-primary-900/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-primary-700 dark:text-primary-300">{rec.title}</h3>
+                      <p className="text-sm text-primary-600 dark:text-primary-400 mt-1">{rec.reason}</p>
+                    </div>
+                    <Button
+                      onClick={() => router.push(rec.route)}
+                      variant="primary"
+                      size="sm"
+                    >
+                      Switch
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Trial Warning System */}
         {user && (user.subscription_status === 'trial' || user.is_trial_active) && (
@@ -532,9 +574,17 @@ function DashboardContent() {
 
         {/* Quick Actions - Prominent placement after warnings */}
         {user && (
-          <ErrorBoundary feature="quick-actions" userId={user?.id}>
+          <StandardErrorBoundary 
+            type="dashboard"
+            context={{
+              feature: "quick-actions",
+              userId: user?.id,
+              component: "QuickActions",
+              metadata: { userRole: user.role }
+            }}
+          >
             <QuickActions userRole={user.role} className="mb-8" />
-          </ErrorBoundary>
+          </StandardErrorBoundary>
         )}
 
         {user && (
@@ -566,22 +616,33 @@ function DashboardContent() {
                 
                 {/* Today's Appointments Mini Calendar */}
                 <div className="md:col-span-1">
-                  <ErrorBoundary feature="calendar-mini" userId={user?.id}>
+                  <StandardErrorBoundary 
+                    type="calendar"
+                    context={{
+                      feature: "calendar-mini",
+                      userId: user?.id,
+                      component: "CalendarDayMini",
+                      metadata: { 
+                        appointmentCount: bookings.length,
+                        selectedDate: new Date().toISOString()
+                      }
+                    }}
+                  >
                     <CalendarDayMini
                       appointments={bookings}
                       selectedDate={new Date()}
                       maxItems={3}
                       onViewAll={() => router.push('/calendar')}
                     />
-                  </ErrorBoundary>
+                  </StandardErrorBoundary>
                 </div>
                 
                 <Card variant="default">
                   <CardContent>
                     <h3 className="font-semibold text-accent-900 mb-3">
-                      {user?.role === 'admin' || user?.role === 'barber' ? 'Client Management' : 'Services'}
+                      {canManageClients(user?.role || '') ? 'Client Management' : 'Services'}
                     </h3>
-                    {user?.role === 'admin' || user?.role === 'barber' ? (
+                    {canManageClients(user?.role || '') ? (
                       <div className="space-y-2">
                         {clientMetrics ? (
                           <div className="text-sm space-y-1">
@@ -634,7 +695,7 @@ function DashboardContent() {
                 </Card>
               </div>
 
-              {user?.role === 'admin' && (
+              {canAccessAdmin(user?.role || '') && (
                 <Card variant="default" className="mt-6 border-l-4 border-accent-400">
                   <CardContent>
                     <h3 className="font-semibold text-accent-900 mb-2">🛠️ Admin Panel</h3>

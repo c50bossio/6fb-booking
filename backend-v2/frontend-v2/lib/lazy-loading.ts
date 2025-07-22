@@ -2,7 +2,7 @@
 
 import React, { lazy, ComponentType, Suspense, memo, useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { Loading, LoadingSpinner, CardLoading } from '@/components/ui/LoadingStates'
+import { Loading, LoadingSpinner, CardLoading } from '@/components/LoadingStates'
 import { cn } from '@/lib/utils'
 
 /**

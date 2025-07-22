@@ -31,7 +31,7 @@ export {
   CardLoading,
   InlineLoading,
   PageLoading 
-} from './LoadingStates';
+} from '@/components/LoadingStates';
 
 // Error States
 export { 

@@ -33,7 +33,7 @@ export function useCustomerPixels(organizationSlug: string | undefined) {
     const loadPixels = async () => {
       try {
         // Fetch customer's tracking pixels
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/customer-pixels/public/${organizationSlug}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v2/customer-pixels/public/${organizationSlug}`)
         if (!response.ok) {
           throw new Error(`Failed to fetch pixels: ${response.status}`)
         }
@@ -230,47 +230,147 @@ function loadCustomCode(code: string) {
 }
 
 /**
- * Fire a conversion event for all loaded pixels
+ * Booking data interface for conversion tracking
  */
-export function fireConversionEvent(eventName: string, value?: number, currency?: string) {
-  // GTM event
-  if (window.dataLayer) {
-    window.dataLayer.push({
-      event: eventName,
-      value: value,
-      currency: currency
-    })
-  }
+interface BookingData {
+  id: string | number
+  service_id?: string | number
+  service_name?: string
+  barber_id?: string | number
+  barber_name?: string
+  total_price: number
+  currency?: string
+  appointment_date?: string
+  duration_minutes?: number
+  location_id?: string | number
+}
 
-  // GA4 event
-  if (window.gtag) {
-    window.gtag('event', eventName, {
-      value: value,
-      currency: currency
-    })
-  }
-
-  // Meta Pixel event
-  if (window.fbq) {
-    if (eventName === 'booking_completed') {
-      window.fbq('track', 'Purchase', {
-        value: value,
-        currency: currency || 'USD'
-      })
-    } else {
-      window.fbq('trackCustom', eventName, {
-        value: value,
-        currency: currency
-      })
+/**
+ * Fire a conversion event for all loaded pixels with enhanced booking data
+ */
+export function fireConversionEvent(eventName: string, value?: number, currency?: string, bookingData?: BookingData) {
+  const eventCurrency = currency || 'USD'
+  
+  // Enhanced event data for tracking
+  const enhancedData = {
+    value: value || bookingData?.total_price,
+    currency: eventCurrency,
+    ...bookingData && {
+      content_ids: [bookingData.service_id?.toString()],
+      content_name: bookingData.service_name,
+      content_type: 'appointment',
+      appointment_id: bookingData.id?.toString(),
+      service_category: 'barbershop_service'
     }
   }
 
-  // Google Ads conversion
-  if (window.gtag && eventName === 'booking_completed') {
+  // GTM/GA4 enhanced event
+  if (window.dataLayer) {
+    window.dataLayer.push({
+      event: eventName,
+      ecommerce: {
+        value: enhancedData.value,
+        currency: eventCurrency,
+        items: bookingData ? [{
+          item_id: bookingData.service_id?.toString(),
+          item_name: bookingData.service_name,
+          item_category: 'barbershop_service',
+          price: bookingData.total_price,
+          quantity: 1
+        }] : []
+      },
+      appointment_data: bookingData && {
+        appointment_id: bookingData.id,
+        barber_name: bookingData.barber_name,
+        appointment_date: bookingData.appointment_date,
+        duration_minutes: bookingData.duration_minutes
+      }
+    })
+  }
+
+  // GA4 enhanced event
+  if (window.gtag) {
+    if (eventName === 'appointment_scheduled' || eventName === 'booking_completed') {
+      window.gtag('event', 'purchase', {
+        transaction_id: bookingData?.id?.toString(),
+        value: enhancedData.value,
+        currency: eventCurrency,
+        items: bookingData ? [{
+          item_id: bookingData.service_id?.toString(),
+          item_name: bookingData.service_name,
+          item_category: 'barbershop_service',
+          price: bookingData.total_price,
+          quantity: 1
+        }] : []
+      })
+    } else {
+      window.gtag('event', eventName, enhancedData)
+    }
+  }
+
+  // Meta Pixel enhanced events
+  if (window.fbq) {
+    if (eventName === 'appointment_scheduled' || eventName === 'booking_completed') {
+      // Primary conversion event - Schedule
+      window.fbq('track', 'Schedule', {
+        value: enhancedData.value,
+        currency: eventCurrency,
+        content_ids: enhancedData.content_ids,
+        content_name: enhancedData.content_name,
+        content_type: 'appointment',
+        num_items: 1,
+        ...bookingData && {
+          appointment_id: bookingData.id,
+          service_category: 'barbershop_service'
+        }
+      })
+      
+      // Also fire Purchase event for e-commerce attribution
+      window.fbq('track', 'Purchase', {
+        value: enhancedData.value,
+        currency: eventCurrency,
+        content_ids: enhancedData.content_ids,
+        content_name: enhancedData.content_name,
+        content_type: 'appointment'
+      })
+    } else if (eventName === 'booking_initiated') {
+      window.fbq('track', 'InitiateCheckout', {
+        value: enhancedData.value,
+        currency: eventCurrency,
+        content_ids: enhancedData.content_ids,
+        content_name: enhancedData.content_name,
+        content_type: 'appointment'
+      })
+    } else if (eventName === 'service_viewed') {
+      window.fbq('track', 'ViewContent', {
+        value: enhancedData.value,
+        currency: eventCurrency,
+        content_ids: enhancedData.content_ids,
+        content_name: enhancedData.content_name,
+        content_type: 'appointment'
+      })
+    } else {
+      // Custom events for other tracking
+      window.fbq('trackCustom', eventName, enhancedData)
+    }
+  }
+
+  // Google Ads conversion (enhanced)
+  if (window.gtag && (eventName === 'appointment_scheduled' || eventName === 'booking_completed')) {
     window.gtag('event', 'conversion', {
       send_to: window.dataLayer?.find((item: any) => item[0] === 'config')?.[1],
-      value: value,
-      currency: currency || 'USD'
+      value: enhancedData.value,
+      currency: eventCurrency,
+      transaction_id: bookingData?.id?.toString()
+    })
+  }
+  
+  // Log conversion event for debugging
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🎯 Conversion Event Fired: ${eventName}`, {
+      value: enhancedData.value,
+      currency: eventCurrency,
+      booking: bookingData
     })
   }
 }

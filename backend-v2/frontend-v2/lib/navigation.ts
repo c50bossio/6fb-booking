@@ -101,7 +101,7 @@ export function filterNavigationByRole(
   // Always show basic navigation items
   const basicItems = [
     items.find(item => item.name === 'Dashboard'),
-    items.find(item => item.name === 'Calendar & Scheduling'),
+    items.find(item => item.name === 'Appointments'),
     items.find(item => item.name === 'Settings')
   ].filter(Boolean) as NavigationItem[]
   

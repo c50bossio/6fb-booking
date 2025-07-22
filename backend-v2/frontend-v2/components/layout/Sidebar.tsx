@@ -30,7 +30,7 @@ interface SidebarProps {
 export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const { colors, isDark } = useThemeStyles()
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set(['dashboard', 'calendar & scheduling']))
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set(['dashboard', 'appointments']))
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
   
   // Navigation intelligence hooks
