@@ -3,7 +3,7 @@
 import React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
-import { ButtonLoading } from './LoadingStates'
+import { ButtonLoading } from '../LoadingStates'
 
 const buttonVariants = cva(
   // Enhanced base styles with performance optimizations

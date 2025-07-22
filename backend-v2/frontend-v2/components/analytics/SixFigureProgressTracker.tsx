@@ -14,7 +14,7 @@ import {
   CurrencyDollarIcon,
   UserGroupIcon,
   ClockIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   StarIcon
@@ -92,7 +92,7 @@ export default function SixFigureProgressTracker({
         description: 'Six Figure methodology target: $120+',
         targetValue: 120,
         currentValue: current_performance.average_ticket,
-        icon: <TrendingUpIcon className="w-5 h-5" />,
+        icon: <ArrowTrendingUpIcon className="w-5 h-5" />,
         colorScheme: 'blue',
         isCompleted: current_performance.average_ticket >= 120,
         progress: Math.min((current_performance.average_ticket / 120) * 100, 100)

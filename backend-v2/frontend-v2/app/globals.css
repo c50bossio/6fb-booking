@@ -5,6 +5,9 @@
 /* Premium Calendar Styles */
 @import '../styles/calendar-premium.css';
 
+/* Design System Utilities - temporarily disabled due to build issues */
+/* @import '../styles/design-system.css'; */
+
 /* Modern CSS Reset & Performance Optimizations */
 @layer base {
   /* Box sizing and modern reset */
