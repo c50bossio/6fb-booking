@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { 
@@ -13,7 +13,10 @@ import {
   ArrowRightOnRectangleIcon,
   LinkIcon,
   QrCodeIcon,
-  ClipboardDocumentIcon
+  ClipboardDocumentIcon,
+  PlusIcon,
+  CommandLineIcon,
+  BoltIcon
 } from '@heroicons/react/24/outline'
 import { type User, logout } from '@/lib/api'
 import { useThemeStyles } from '@/hooks/useTheme'
@@ -22,6 +25,8 @@ import { navigation, getUserMenuItems } from '@/lib/navigation'
 import { Logo } from '@/components/ui/Logo'
 import { Portal } from '@/components/ui/Portal'
 import QRCodeShareModal, { useQRCodeShareModal } from '@/components/booking/QRCodeShareModal'
+import { useNavigationFavorites } from '@/hooks/useNavigationFavorites'
+import { useNavigationTracking } from '@/hooks/useNavigationTracking'
 
 interface HeaderProps {
   user: User | null
@@ -32,25 +37,80 @@ interface HeaderProps {
   }>
   onMenuToggle: () => void
   showMenuToggle?: boolean
+  onOpenCommandPalette?: () => void
 }
 
-export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false }: HeaderProps) {
+export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false, onOpenCommandPalette }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [showQuickCreate, setShowQuickCreate] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
   const [notificationDropdownPosition, setNotificationDropdownPosition] = useState({ top: 0, left: 0 })
   const [shareDropdownPosition, setShareDropdownPosition] = useState({ top: 0, left: 0 })
+  const [quickCreatePosition, setQuickCreatePosition] = useState({ top: 0, left: 0 })
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
   const shareMenuRef = useRef<HTMLDivElement>(null)
+  const quickCreateRef = useRef<HTMLDivElement>(null)
   const notificationButtonRef = useRef<HTMLButtonElement>(null)
   const shareButtonRef = useRef<HTMLButtonElement>(null)
+  const quickCreateButtonRef = useRef<HTMLButtonElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const { colors, isDark } = useThemeStyles()
+  
+  // Navigation intelligence hooks
+  const favorites = useNavigationFavorites()
+  const tracking = useNavigationTracking()
   
   // QR Code modal hook
   const qrModal = useQRCodeShareModal()
 
+  // Get quick actions for user role
+  const quickActions = useMemo(() => {
+    return navigation.getQuickActions(user?.role).slice(0, 6) // Limit to 6 actions
+  }, [user?.role])
+  
+  // Enhanced search functionality
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+    
+    // Simple search through navigation items and recent items
+    const allItems = [...navigation.items, ...favorites.favorites, ...tracking.getRecentlyUsed()]
+    const results = allItems
+      .filter(item => item.name.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 5)
+    
+    setSearchResults(results)
+  }
+  
+  // Keyboard shortcuts for header actions
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + / to focus search
+      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+      
+      // Cmd/Ctrl + Shift + N for quick create
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'N') {
+        e.preventDefault()
+        handleQuickCreateClick()
+      }
+    }
+    
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
+  
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,6 +129,12 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
         const portalShare = document.querySelector('[data-share-menu-portal]')
         if (!portalShare || !portalShare.contains(event.target as Node)) {
           setShowShareMenu(false)
+        }
+      }
+      if (quickCreateRef.current && !quickCreateRef.current.contains(event.target as Node)) {
+        const portalQuickCreate = document.querySelector('[data-quick-create-portal]')
+        if (!portalQuickCreate || !portalQuickCreate.contains(event.target as Node)) {
+          setShowQuickCreate(false)
         }
       }
     }
@@ -163,14 +229,49 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
     navigator.clipboard.writeText(text)
     // You could show a toast notification here
   }
+  
+  const handleQuickCreateClick = () => {
+    if (!showQuickCreate && quickCreateButtonRef.current) {
+      const buttonRect = quickCreateButtonRef.current.getBoundingClientRect()
+      const dropdownWidth = 300
+      const gap = 8
+      
+      let top = buttonRect.bottom + gap
+      let left = buttonRect.right - dropdownWidth
+      
+      if (left < 8) {
+        left = 8
+      }
+      
+      const estimatedHeight = 350
+      if (top + estimatedHeight > window.innerHeight - 8) {
+        top = buttonRect.top - estimatedHeight - gap
+      }
+      
+      setQuickCreatePosition({ top, left })
+    }
+    setShowQuickCreate(!showQuickCreate)
+  }
+  
+  const handleQuickAction = (action: any) => {
+    // Track usage if available
+    if (tracking.isLoaded) {
+      tracking.trackNavigation(action.href, action.name)
+    }
+    
+    router.push(action.href)
+    setShowQuickCreate(false)
+  }
 
 
   return (
     <header className={`
-      sticky top-0 z-50 
+      sticky top-0 z-40
       ${colors.background.card} border-b ${colors.border.default}
-      backdrop-blur-ios bg-white/90 dark:bg-gray-900/90
-      transition-colors duration-200
+      backdrop-blur-navigation bg-white/95 dark:bg-gray-900/95
+      transition-all duration-300 ease-out
+      shadow-header-navigation
+      sticky-enhanced
     `}>
       <div className="flex items-center justify-between h-16 px-4 sm:px-6">
         {/* Left Section */}
@@ -216,28 +317,161 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           </nav>
         </div>
 
-        {/* Center Section - Search (Desktop) */}
+        {/* Center Section - Enhanced Search (Desktop) */}
         <div className="hidden md:flex flex-1 max-w-md mx-8">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
             </div>
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search bookings, clients..."
+              placeholder="Search pages, clients... (⌘/)"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              onFocus={() => onOpenCommandPalette?.()}
               className={`
-                block w-full pl-10 pr-3 py-2 border ${colors.border.default} rounded-ios-lg
+                block w-full pl-10 pr-20 py-2 border ${colors.border.default} rounded-ios-lg
                 ${colors.background.primary} ${colors.text.primary}
                 placeholder-gray-500 dark:placeholder-gray-400
-                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
-                text-sm transition-colors duration-200
+                search-input-enhanced
+                text-sm
               `}
             />
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <div className="flex items-center gap-1 text-xs text-gray-400">
+                <kbd className="kbd-shortcut">⌘K</kbd>
+              </div>
+            </div>
+            
+            {/* Quick search results */}
+            {searchResults.length > 0 && (
+              <div className="search-results-container absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                {searchResults.map((result, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      router.push(result.href)
+                      setSearchQuery('')
+                      setSearchResults([])
+                    }}
+                    className="search-result-item first:rounded-t-lg last:rounded-b-lg"
+                  >
+                    <div className="font-medium text-gray-900 dark:text-white">{result.name}</div>
+                    {result.description && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{result.description}</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Right Section */}
         <div className="flex items-center space-x-2">
+          {/* Quick Create Button */}
+          {user && quickActions.length > 0 && (
+            <div className="relative" ref={quickCreateRef}>
+              <button
+                ref={quickCreateButtonRef}
+                onClick={handleQuickCreateClick}
+                className={`
+                  quick-create-button
+                  ${showQuickCreate ? 'ring-2 ring-primary-500 ring-opacity-50 quick-create-active' : ''}
+                `}
+                title="Quick Create (⌘⇧N)"
+              >
+                <PlusIcon className="w-5 h-5" />
+              </button>
+
+              {/* Quick Create Dropdown */}
+              {showQuickCreate && (
+                <Portal>
+                  <div 
+                    data-quick-create-portal
+                    className="quick-create-dropdown fixed"
+                    style={{ 
+                      zIndex: 2147483647,
+                      top: `${quickCreatePosition.top}px`,
+                      left: `${quickCreatePosition.left}px`,
+                      width: '300px',
+                      maxWidth: 'calc(100vw - 40px)'
+                    }}
+                  >
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center gap-2">
+                        <BoltIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          Quick Actions
+                        </h3>
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Frequently used actions
+                      </p>
+                    </div>
+                    <div className="p-2">
+                      {quickActions.map((action, index) => {
+                        const Icon = action.icon
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleQuickAction(action)}
+                            className="group quick-action-item w-full text-left"
+                          >
+                            <div className={`
+                              quick-action-icon
+                              ${action.color === 'primary' ? 'bg-primary-100 dark:bg-primary-900/20' : ''}
+                            `}>
+                              <Icon className={`
+                                w-4 h-4
+                                ${action.color === 'primary' ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-400'}
+                              `} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {action.name}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                {action.description}
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                      
+                      {/* Command Palette Shortcut */}
+                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => {
+                            setShowQuickCreate(false)
+                            onOpenCommandPalette?.()
+                          }}
+                          className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150 text-left"
+                        >
+                          <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
+                            <CommandLineIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              Command Palette
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              Search everything
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                            <kbd className="kbd-shortcut">⌘K</kbd>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Portal>
+              )}
+            </div>
+          )}
+          
           {/* Theme Toggle */}
           <SimpleThemeToggle className="hidden sm:block" />
 

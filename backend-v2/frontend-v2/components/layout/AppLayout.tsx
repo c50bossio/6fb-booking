@@ -258,6 +258,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   breadcrumbs={getBreadcrumbs()}
                   onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
                   showMenuToggle={true}
+                  onOpenCommandPalette={() => setCommandPaletteOpen(true)}
                 />
                 <MainContent error={error} className="pb-20">
                   {children}
@@ -278,6 +279,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     breadcrumbs={getBreadcrumbs()}
                     onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
                     showMenuToggle={false}
+                    onOpenCommandPalette={() => setCommandPaletteOpen(true)}
                   />
                   <MainContent error={error} className="flex-1 overflow-auto">
                     {children}
