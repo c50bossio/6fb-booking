@@ -36,7 +36,7 @@ export default function RegisterPage() {
         lastName: data.accountInfo.lastName,
         email: data.accountInfo.email,
         password: data.accountInfo.password,
-        user_type: data.businessType === 'individual' ? 'barber' : 'barbershop',
+        user_type: (data.businessType || 'individual') === 'individual' ? 'barber' : 'barbershop',
         businessName: data.businessInfo.businessName,
         businessType: data.businessType || 'individual',
         address: {
@@ -97,7 +97,7 @@ export default function RegisterPage() {
     } catch (err: any) {
       // Generate enhanced error message for registration
       const enhancedError = getBusinessContextError('registration', err, {
-        userType: data.businessType === 'individual' ? 'barber' : 'barbershop',
+        userType: (data.businessType || 'individual') === 'individual' ? 'barber' : 'barbershop',
         feature: 'account_creation'
       })
       
