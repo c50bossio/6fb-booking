@@ -509,7 +509,7 @@ export default function ReviewsPage() {
       </Card>
 
       {/* Review Tabs */}
-      <Tabs value={currentTab} onValueChange={applyTabFilter}>
+      <Tabs value={currentTab} onValueChange={applyTabFilter} defaultValue="all">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="all">All Reviews</TabsTrigger>
           <TabsTrigger value="needs_response">Needs Response</TabsTrigger>
