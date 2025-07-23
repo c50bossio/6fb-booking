@@ -484,7 +484,7 @@ export default function ReviewsPage() {
                   value={filters.min_rating?.toString() || ''}
                   onChange={(value) => setFilters({ ...filters, min_rating: value ? Number(value) : undefined })}
                   options={filterOptions.ratings.map((rating) => ({
-                    value: rating.value,
+                    value: rating.value.toString(),
                     label: rating.label
                   }))}
                 />
