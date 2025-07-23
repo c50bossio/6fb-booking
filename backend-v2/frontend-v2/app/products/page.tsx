@@ -369,7 +369,7 @@ export default function ProductsPage() {
       {/* Pagination */}
       {(() => {
         // Pre-validate data to satisfy TypeScript strict mode
-        if (!data || !data.total || typeof data.total !== 'number' || data.total <= (filters.limit || 20)) {
+        if (!data || !data?.total || typeof data?.total !== 'number' || (data?.total || 0) <= (filters.limit || 20)) {
           return null
         }
         
