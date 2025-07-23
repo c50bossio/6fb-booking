@@ -2,10 +2,11 @@
 Social Authentication Service
 Handles OAuth 2.0 token exchange and user management for social providers.
 """
+from __future__ import annotations
 
 import httpx
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 import secrets
@@ -191,7 +192,7 @@ class SocialAuthService:
                 detail="Facebook OAuth processing failed"
             )
     
-    async def create_or_get_user(self, user_info: Dict[str, Any], provider: str) -> tuple[User, bool]:
+    async def create_or_get_user(self, user_info: Dict[str, Any], provider: str) -> Tuple[User, bool]:
         """Create new user or get existing user from social auth info"""
         try:
             email = user_info.get("email")
