@@ -393,70 +393,40 @@ async def get_six_figure_barber_metrics(
         raise HTTPException(status_code=400, detail="Target annual income must be between $1 and $1,000,000")
     
     try:
-        # Add timeout protection and error handling
+        # Use the optimized analytics service with proper error handling
         analytics_service = AnalyticsService(db)
         
-        # For now, return mock data to prevent dashboard hanging
-        # TODO: Fix the underlying database query performance issue
-        # Updated to match SixFigureBarberMetrics interface structure
-        return {
-            "current_performance": {
-                "monthly_revenue": 6690.0,
-                "annual_revenue_projection": 80280.0,
-                "average_ticket": 33.37,
-                "utilization_rate": 72.3,
-                "average_visits_per_client": 4.2,
-                "total_active_clients": 159
-            },
-            "targets": {
-                "annual_income_target": target_annual_income,
-                "monthly_revenue_target": target_annual_income / 12,
-                "daily_revenue_target": target_annual_income / 365,
-                "daily_clients_target": int((target_annual_income / 365) / 33.37),
-                "revenue_gap": target_annual_income - 80280.0,
-                "on_track": 80280.0 >= (target_annual_income * 0.8)  # True if within 20% of goal
-            },
-            "recommendations": {
-                "price_optimization": {
-                    "current_average_ticket": 33.37,
-                    "recommended_average_ticket": 38.38,  # Added missing field
-                    "recommended_increase_percentage": 15.0,
-                    "potential_annual_increase": 12042.0,
-                    "justification": "Your current pricing is below market average"
-                },
-                "client_acquisition": {
-                    "current_monthly_clients": 12,  # Renamed to match frontend
-                    "target_monthly_clients": 18,   # Renamed to match frontend
-                    "additional_clients_needed": 6,  # Added missing field
-                    "cost_per_acquisition": 25.0,
-                    "potential_annual_increase": 6000.0
-                },
-                "retention_improvement": {
-                    "current_retention_rate": 75.0,
-                    "target_retention_rate": 85.0,
-                    "potential_annual_increase": 8500.0,
-                    "strategies": ["Follow-up system", "Loyalty program", "Service quality improvements"]
-                },
-                "efficiency_optimization": {
-                    "current_utilization_rate": 72.3,
-                    "target_utilization_rate": 80.0,
-                    "potential_annual_increase": 4500.0,
-                    "suggestions": ["Better scheduling", "Reduce no-shows", "Optimize service times"]
-                }
-            },
-            "progress_tracking": {
-                "monthly_progress": 80.28,
-                "year_to_date_performance": 65.2,
-                "quarterly_trend": "improving",
-                "efficiency_trend": "stable"
-            },
-            "generated_at": datetime.utcnow().isoformat(),
-            "status": "mock_data",
-            "note": "Using mock data while fixing database performance"
-        }
+        # Enable real Six Figure Barber analytics with timeout protection
+        logger.info(f"Calculating Six Figure Barber metrics for user {target_user_id} with target ${target_annual_income}")
         
-        # Uncomment this line once database queries are optimized:
-        # return analytics_service.calculate_six_figure_barber_metrics(target_user_id, target_annual_income)
+        # Calculate the real metrics using the optimized implementation
+        analytics_data = analytics_service.calculate_six_figure_barber_metrics(target_user_id, target_annual_income)
+        
+        # Enhance with 6FB AI coaching insights
+        from services.six_figure_barber_coach import SixFBCoach
+        coach = SixFBCoach(analytics_data)
+        
+        # Add coaching insights to the response
+        analytics_data['coaching_insights'] = [
+            {
+                'category': insight.category.value,
+                'priority': insight.priority.value,
+                'title': insight.title,
+                'message': insight.message,
+                'impact_description': insight.impact_description,
+                'potential_revenue_increase': insight.potential_revenue_increase,
+                'action_steps': insight.action_steps,
+                'timeline': insight.timeline,
+                'success_metrics': insight.success_metrics,
+                'resources': insight.resources or []
+            }
+            for insight in coach.generate_comprehensive_coaching()[:5]  # Top 5 insights
+        ]
+        
+        # Add daily focus areas
+        analytics_data['daily_focus'] = coach.generate_daily_focus_areas()
+        
+        return analytics_data
         
     except Exception as e:
         # Log the error but don't crash the dashboard
@@ -467,6 +437,146 @@ async def get_six_figure_barber_metrics(
             "target_annual_income": target_annual_income,
             "message": "Six Figure Barber analytics are temporarily disabled due to performance issues"
         }
+
+@router.get("/six-figure-barber/progress")
+async def get_six_fb_progress_tracking(
+    target_annual_income: float = Query(100000.0, description="Target annual income goal"),
+    user_id: Optional[int] = Query(None, description="User ID to analyze (defaults to current user)"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get comprehensive 6FB progress tracking with milestones and achievements
+    """
+    # Determine target user ID
+    if user_id:
+        # Check permissions - only admin or the user themselves can view their metrics
+        if current_user.role != "admin" and current_user.id != user_id:
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+        target_user_id = user_id
+    else:
+        # Default to current user
+        target_user_id = current_user.id
+    
+    # Validate target income
+    if target_annual_income <= 0 or target_annual_income > 1000000:
+        raise HTTPException(status_code=400, detail="Target annual income must be between $1 and $1,000,000")
+    
+    try:
+        # Import the existing progress tracker
+        from services.six_fb_progress_tracker import SixFBProgressTracker
+        
+        # Create progress tracker instance
+        progress_tracker = SixFBProgressTracker(db, target_user_id, target_annual_income)
+        
+        # Get comprehensive progress data
+        progress_overview = progress_tracker.get_progress_overview()
+        milestones = progress_tracker.get_milestone_progress()
+        achievement_summary = progress_tracker.get_achievement_summary()
+        
+        return {
+            "user_id": target_user_id,
+            "target_annual_income": target_annual_income,
+            "progress_overview": {
+                "current_annual_pace": progress_overview.current_annual_pace,
+                "target_annual_income": progress_overview.target_annual_income,
+                "progress_percentage": progress_overview.progress_percentage,
+                "months_to_goal": progress_overview.months_to_goal,
+                "daily_target": progress_overview.daily_target,
+                "weekly_target": progress_overview.weekly_target,
+                "monthly_target": progress_overview.monthly_target,
+                "days_ahead_behind": progress_overview.days_ahead_behind,
+                "trend_direction": progress_overview.trend_direction
+            },
+            "milestones": [
+                {
+                    "id": milestone.id,
+                    "type": milestone.type.value,
+                    "level": milestone.level.value,
+                    "title": milestone.title,
+                    "description": milestone.description,
+                    "target_value": milestone.target_value,
+                    "current_value": milestone.current_value,
+                    "progress_percentage": milestone.progress_percentage,
+                    "achieved": milestone.achieved,
+                    "achieved_date": milestone.achieved_date.isoformat() if milestone.achieved_date else None,
+                    "reward_message": milestone.reward_message,
+                    "next_milestone_hint": milestone.next_milestone_hint
+                }
+                for milestone in milestones
+            ],
+            "achievement_summary": achievement_summary,
+            "generated_at": datetime.utcnow().isoformat(),
+            "status": "success"
+        }
+        
+    except Exception as e:
+        logger.error(f"6FB progress tracking error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate progress tracking: {str(e)}")
+
+@router.get("/six-figure-barber/milestones/{milestone_type}")
+async def get_six_fb_milestones_by_type(
+    milestone_type: str,
+    target_annual_income: float = Query(100000.0, description="Target annual income goal"),
+    user_id: Optional[int] = Query(None, description="User ID to analyze (defaults to current user)"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get 6FB milestones filtered by type (revenue, clients, retention, efficiency, pricing)
+    """
+    # Determine target user ID
+    if user_id:
+        if current_user.role != "admin" and current_user.id != user_id:
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+        target_user_id = user_id
+    else:
+        target_user_id = current_user.id
+    
+    # Validate milestone type
+    valid_types = ["revenue", "clients", "retention", "efficiency", "pricing"]
+    if milestone_type not in valid_types:
+        raise HTTPException(status_code=400, detail=f"Invalid milestone type. Must be one of: {', '.join(valid_types)}")
+    
+    try:
+        from services.six_fb_progress_tracker import SixFBProgressTracker, MilestoneType
+        
+        progress_tracker = SixFBProgressTracker(db, target_user_id, target_annual_income)
+        all_milestones = progress_tracker.get_milestone_progress()
+        
+        # Filter by milestone type
+        filtered_milestones = [
+            milestone for milestone in all_milestones 
+            if milestone.type.value == milestone_type
+        ]
+        
+        return {
+            "milestone_type": milestone_type,
+            "user_id": target_user_id,
+            "milestones": [
+                {
+                    "id": milestone.id,
+                    "level": milestone.level.value,
+                    "title": milestone.title,
+                    "description": milestone.description,
+                    "target_value": milestone.target_value,
+                    "current_value": milestone.current_value,
+                    "progress_percentage": milestone.progress_percentage,
+                    "achieved": milestone.achieved,
+                    "reward_message": milestone.reward_message,
+                    "next_milestone_hint": milestone.next_milestone_hint
+                }
+                for milestone in filtered_milestones
+            ],
+            "total_milestones": len(filtered_milestones),
+            "achieved_count": len([m for m in filtered_milestones if m.achieved]),
+            "next_milestone": next((m for m in filtered_milestones if not m.achieved), None),
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"6FB milestone filtering error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get milestones: {str(e)}")
 
 @router.get("/comparative")
 async def get_comparative_analytics(
