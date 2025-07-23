@@ -79,12 +79,10 @@ export default function RegisterPage() {
           for (const template of data.serviceTemplates) {
             await applyServiceTemplate({
               template_id: template.id,
-              customizations: {
-                // Use suggested pricing as default
-                price: template.suggested_base_price,
-                duration: template.estimated_duration,
-                description: template.description || ''
-              }
+              custom_price: template.suggested_base_price,
+              custom_description: template.description || '',
+              apply_business_rules: true,
+              apply_pricing_rules: true
             })
           }
           
