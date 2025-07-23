@@ -1,0 +1,486 @@
+# BookedBarber V2 - Production Monitoring Configuration
+# Comprehensive monitoring and alerting for production environment
+# Last updated: 2025-07-23
+
+# Sentry Configuration for Error Tracking
+sentry:
+  production:
+    dsn: "${SENTRY_PRODUCTION_DSN}"
+    environment: production
+    release: "${GITHUB_SHA}"
+    
+    # Error Sampling (80% of errors to balance cost and coverage)
+    sample_rate: 0.8
+    
+    # Performance Monitoring (5% of transactions)
+    traces_sample_rate: 0.05
+    
+    # Profiling (2% of profiles)
+    profiles_sample_rate: 0.02
+    
+    # Security Settings
+    send_default_pii: false
+    include_local_variables: false
+    attach_stacktrace: true
+    
+    # Custom Tags
+    tags:
+      service: bookedbarber-backend
+      tier: production
+      region: oregon
+    
+    # Alert Rules
+    alerts:
+      error_rate:
+        threshold: 0.01  # 1% error rate
+        time_window: 5m
+        notification: "#production-alerts"
+      
+      performance_regression:
+        threshold: 2000  # 2 second response time
+        time_window: 10m
+        notification: "#performance-alerts"
+      
+      payment_failures:
+        filter: "event.tags.component:payment"
+        threshold: 5  # 5 payment failures
+        time_window: 5m
+        notification: "#critical-alerts"
+
+# Uptime Monitoring with UptimeRobot
+uptimerobot:
+  monitors:
+    - name: "BookedBarber Production"
+      url: "https://bookedbarber.com"
+      type: "http"
+      interval: 300  # 5 minutes
+      timeout: 30
+      http_status_codes: [200, 301, 302]
+      alert_contacts:
+        - email: "alerts@bookedbarber.com"
+        - slack: "#uptime-alerts"
+      
+    - name: "BookedBarber API Health"
+      url: "https://api.bookedbarber.com/health"
+      type: "http"
+      interval: 180  # 3 minutes
+      timeout: 30
+      http_status_codes: [200]
+      alert_contacts:
+        - email: "alerts@bookedbarber.com"
+        - slack: "#api-alerts"
+      
+    - name: "Stripe Webhook Endpoint"
+      url: "https://api.bookedbarber.com/webhooks/stripe"
+      type: "http"
+      method: "POST"
+      interval: 300  # 5 minutes
+      timeout: 30
+      http_status_codes: [400, 405]  # Expected for webhook without signature
+      alert_contacts:
+        - email: "payments@bookedbarber.com"
+        - slack: "#payment-alerts"
+      
+    - name: "Critical User Flow - Registration"
+      url: "https://bookedbarber.com/register"
+      type: "http"
+      interval: 600  # 10 minutes
+      timeout: 30
+      http_status_codes: [200]
+      alert_contacts:
+        - email: "product@bookedbarber.com"
+        - slack: "#user-experience-alerts"
+
+# Application Performance Monitoring (APM)
+apm:
+  # New Relic Configuration
+  newrelic:
+    license_key: "${NEW_RELIC_LICENSE_KEY}"
+    app_name: "BookedBarber Production"
+    
+    # Performance Thresholds
+    apdex_threshold: 0.5  # 500ms for satisfactory response
+    error_collector:
+      enabled: true
+      ignore_status_codes: [404, 401]
+    
+    # Custom Metrics
+    custom_metrics:
+      - name: "Custom/Bookings/Created"
+        unit: "count"
+      - name: "Custom/Payments/Processed"
+        unit: "count"
+      - name: "Custom/Users/Active"
+        unit: "count"
+    
+    # Alert Policies
+    alert_policies:
+      - name: "High Error Rate"
+        condition: "error_percentage > 1"
+        duration: 5
+        notification: "#apm-alerts"
+      
+      - name: "Slow Response Time"
+        condition: "response_time > 2000"
+        duration: 10
+        notification: "#performance-alerts"
+      
+      - name: "High CPU Usage"
+        condition: "cpu_usage > 80"
+        duration: 5
+        notification: "#infrastructure-alerts"
+
+# Database Monitoring
+database:
+  # PostgreSQL Monitoring
+  postgres:
+    connection_string: "${DATABASE_URL}"
+    
+    # Performance Metrics
+    metrics:
+      - active_connections
+      - idle_connections
+      - query_duration
+      - lock_waits
+      - buffer_cache_hit_ratio
+      - disk_usage
+    
+    # Alert Thresholds
+    alerts:
+      connection_limit:
+        threshold: 80  # 80% of max connections
+        notification: "#database-alerts"
+      
+      slow_queries:
+        threshold: 1000  # 1 second
+        notification: "#performance-alerts"
+      
+      disk_usage:
+        threshold: 85  # 85% disk usage
+        notification: "#infrastructure-alerts"
+      
+      replication_lag:
+        threshold: 30  # 30 seconds
+        notification: "#database-alerts"
+
+# Redis Cache Monitoring
+redis:
+  connection_string: "${REDIS_URL}"
+  
+  # Performance Metrics
+  metrics:
+    - connected_clients
+    - used_memory
+    - keyspace_hits
+    - keyspace_misses
+    - expired_keys
+    - evicted_keys
+  
+  # Alert Thresholds
+  alerts:
+    memory_usage:
+      threshold: 80  # 80% memory usage
+      notification: "#cache-alerts"
+    
+    hit_rate:
+      threshold: 0.8  # 80% hit rate minimum
+      notification: "#performance-alerts"
+    
+    connection_limit:
+      threshold: 90  # 90% of max connections
+      notification: "#cache-alerts"
+
+# Custom Business Metrics
+business_metrics:
+  # Six Figure Barber Success Metrics
+  six_fb_metrics:
+    - name: "daily_bookings"
+      query: "SELECT COUNT(*) FROM appointments WHERE created_at >= CURRENT_DATE"
+      threshold: 100  # Alert if less than 100 bookings per day
+      notification: "#business-alerts"
+    
+    - name: "revenue_per_day"
+      query: "SELECT SUM(amount) FROM payments WHERE created_at >= CURRENT_DATE AND status = 'succeeded'"
+      threshold: 5000  # Alert if less than $5000 per day
+      notification: "#revenue-alerts"
+    
+    - name: "client_retention_rate"
+      query: "SELECT COUNT(DISTINCT user_id) FROM appointments WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'"
+      threshold: 500  # Alert if less than 500 unique clients per month
+      notification: "#growth-alerts"
+    
+    - name: "payment_failure_rate"
+      query: "SELECT (COUNT(*) FILTER (WHERE status = 'failed')::float / COUNT(*)) FROM payments WHERE created_at >= CURRENT_DATE"
+      threshold: 0.05  # Alert if more than 5% failure rate
+      notification: "#payment-alerts"
+
+# Log Monitoring and Analysis
+logging:
+  # Centralized Logging with ELK Stack
+  elasticsearch:
+    host: "${ELASTICSEARCH_HOST}"
+    port: 9200
+    
+    # Log Retention
+    retention_days: 30
+    
+    # Index Patterns
+    indices:
+      - name: "bookedbarber-backend-*"
+        pattern: "backend-v2-*"
+      - name: "bookedbarber-frontend-*"
+        pattern: "frontend-v2-*"
+    
+    # Alert Queries
+    alerts:
+      - name: "High Error Rate in Logs"
+        query: "level:ERROR AND @timestamp:[now-5m TO now]"
+        threshold: 10  # More than 10 errors in 5 minutes
+        notification: "#log-alerts"
+      
+      - name: "Payment Processing Errors"
+        query: "component:payment AND level:ERROR"
+        threshold: 1  # Any payment error
+        notification: "#critical-alerts"
+      
+      - name: "Database Connection Errors"
+        query: "message:*database* AND level:ERROR"
+        threshold: 3  # 3 database errors
+        notification: "#database-alerts"
+
+# Security Monitoring
+security:
+  # Intrusion Detection
+  security_alerts:
+    - name: "Multiple Failed Login Attempts"
+      query: "endpoint:/api/v2/auth/login AND status:401"
+      threshold: 5  # 5 failed attempts from same IP
+      time_window: 300  # 5 minutes
+      notification: "#security-alerts"
+    
+    - name: "Suspicious Payment Activity"
+      query: "component:payment AND (amount:>10000 OR frequency:>10)"
+      threshold: 1
+      notification: "#security-alerts"
+    
+    - name: "Rate Limit Exceeded"
+      query: "status:429"
+      threshold: 50  # 50 rate limit hits
+      time_window: 300
+      notification: "#security-alerts"
+
+# Health Check Monitoring
+health_checks:
+  endpoints:
+    - url: "https://bookedbarber.com/health"
+      expected_status: 200
+      timeout: 10
+      interval: 60  # 1 minute
+    
+    - url: "https://api.bookedbarber.com/health"
+      expected_status: 200
+      timeout: 10
+      interval: 60
+    
+    - url: "https://api.bookedbarber.com/api/v2/health"
+      expected_status: 200
+      timeout: 10
+      interval: 60
+  
+  # Composite Health Score
+  health_score:
+    components:
+      - name: "API Health"
+        weight: 40
+      - name: "Database Health"
+        weight: 30
+      - name: "Cache Health"
+        weight: 20
+      - name: "External Services"
+        weight: 10
+    
+    thresholds:
+      critical: 60  # Below 60% health score
+      warning: 80   # Below 80% health score
+
+# Notification Channels
+notifications:
+  slack:
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+    channels:
+      production-alerts: "#production-alerts"
+      critical-alerts: "#critical-alerts"
+      performance-alerts: "#performance-alerts"
+      database-alerts: "#database-alerts"
+      security-alerts: "#security-alerts"
+      business-alerts: "#business-alerts"
+      revenue-alerts: "#revenue-alerts"
+  
+  email:
+    smtp_server: "${SMTP_SERVER}"
+    smtp_port: 587
+    username: "${SMTP_USERNAME}"
+    password: "${SMTP_PASSWORD}"
+    
+    recipients:
+      critical: ["cto@bookedbarber.com", "devops@bookedbar ber.com"]
+      business: ["ceo@bookedbarber.com", "product@bookedbarber.com"]
+      technical: ["backend@bookedbarber.com", "frontend@bookedbarber.com"]
+  
+  pagerduty:
+    integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+    
+    escalation_policies:
+      critical:
+        - level: 1
+          delay: 0
+          targets: ["primary-oncall"]
+        - level: 2
+          delay: 300  # 5 minutes
+          targets: ["secondary-oncall"]
+      
+      business:
+        - level: 1
+          delay: 0
+          targets: ["business-team"]
+
+# Dashboard Configuration
+dashboards:
+  grafana:
+    url: "${GRAFANA_URL}"
+    api_key: "${GRAFANA_API_KEY}"
+    
+    # Production Dashboard
+    production_dashboard:
+      panels:
+        - name: "Request Rate"
+          type: "graph"
+          metrics: ["http_requests_per_second"]
+        
+        - name: "Response Time"
+          type: "graph"
+          metrics: ["http_request_duration_p95"]
+        
+        - name: "Error Rate"
+          type: "graph"
+          metrics: ["http_errors_per_second"]
+        
+        - name: "Active Users"
+          type: "stat"
+          metrics: ["active_sessions"]
+        
+        - name: "Daily Revenue"
+          type: "stat"
+          metrics: ["daily_revenue"]
+        
+        - name: "Database Connections"
+          type: "graph"
+          metrics: ["db_connections_active"]
+        
+        - name: "Cache Hit Rate"
+          type: "graph"
+          metrics: ["redis_hit_rate"]
+    
+    # Business Metrics Dashboard
+    business_dashboard:
+      panels:
+        - name: "Six Figure Barber KPIs"
+          type: "table"
+          metrics: ["daily_bookings", "revenue_per_day", "client_retention"]
+        
+        - name: "Growth Metrics"
+          type: "graph"
+          metrics: ["new_users", "returning_users", "churn_rate"]
+        
+        - name: "Payment Metrics"
+          type: "graph"
+          metrics: ["payment_success_rate", "average_payment_amount"]
+
+# Monitoring Automation Scripts
+automation:
+  # Health Check Script
+  health_check_script: |
+    #!/bin/bash
+    # Production health check automation
+    
+    # Check API health
+    api_status=$(curl -s -o /dev/null -w "%{http_code}" https://api.bookedbarber.com/health)
+    
+    # Check frontend
+    frontend_status=$(curl -s -o /dev/null -w "%{http_code}" https://bookedbarber.com)
+    
+    # Check database connectivity
+    db_status=$(psql $DATABASE_URL -c "SELECT 1;" 2>/dev/null && echo "200" || echo "500")
+    
+    # Send results to monitoring
+    curl -X POST "${MONITORING_WEBHOOK}" \
+      -H "Content-Type: application/json" \
+      -d "{
+        \"api_status\": $api_status,
+        \"frontend_status\": $frontend_status,
+        \"database_status\": $db_status,
+        \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+      }"
+  
+  # Performance Baseline Script
+  performance_baseline_script: |
+    #!/bin/bash
+    # Capture performance baseline for comparison
+    
+    # API response time
+    api_time=$(curl -w "%{time_total}" -s -o /dev/null https://api.bookedbarber.com/health)
+    
+    # Frontend load time
+    frontend_time=$(curl -w "%{time_total}" -s -o /dev/null https://bookedbarber.com)
+    
+    # Database query time
+    db_time=$(psql $DATABASE_URL -c "\timing on; SELECT COUNT(*) FROM users;" 2>&1 | grep "Time:" | cut -d' ' -f2)
+    
+    # Log metrics
+    echo "$(date): API=${api_time}s, Frontend=${frontend_time}s, DB=${db_time}" >> /var/log/performance.log
+
+# SLA Monitoring
+sla:
+  targets:
+    uptime: 99.9          # 99.9% uptime
+    response_time: 500    # 500ms p95 response time
+    error_rate: 0.01      # 1% error rate
+  
+  measurement_window: "30d"  # 30-day rolling window
+  
+  breach_notifications:
+    - threshold: 99.5     # Warning at 99.5%
+      notification: "#sla-warnings"
+    - threshold: 99.0     # Critical at 99.0%
+      notification: "#sla-critical"
+
+# Cost Monitoring
+cost_monitoring:
+  # Monitor infrastructure costs
+  thresholds:
+    monthly_budget: 500   # $500/month budget
+    daily_budget: 17      # ~$17/day budget
+  
+  alerts:
+    - name: "Daily Budget Exceeded"
+      threshold: 20       # $20/day alert
+      notification: "#cost-alerts"
+    
+    - name: "Monthly Projection High"
+      threshold: 600      # $600/month projection
+      notification: "#budget-alerts"
+
+# Backup Monitoring
+backup_monitoring:
+  # Monitor backup success
+  database_backups:
+    frequency: "daily"
+    retention: 90         # 90 days
+    success_threshold: 1  # Must succeed once per day
+    notification: "#backup-alerts"
+  
+  application_backups:
+    frequency: "weekly"
+    retention: 52         # 52 weeks
+    success_threshold: 1  # Must succeed once per week
+    notification: "#backup-alerts"

@@ -1,0 +1,564 @@
+name: Enhanced Staging Deployment
+
+on:
+  pull_request:
+    branches: [staging]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [staging]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment even if no changes'
+        required: false
+        default: 'false'
+      skip_tests:
+        description: 'Skip comprehensive tests (emergency only)'
+        required: false
+        default: 'false'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BACKEND: bookedbarber/backend
+  IMAGE_NAME_FRONTEND: bookedbarber/frontend
+  ENVIRONMENT: staging
+  STAGING_URL: https://staging.bookedbarber.com
+  STAGING_API_URL: https://api-staging.bookedbarber.com
+
+jobs:
+  environment-validation:
+    name: Validate Staging Environment
+    runs-on: ubuntu-latest
+    outputs:
+      validation-status: ${{ steps.env-check.outputs.status }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Validate environment configuration
+        id: env-check
+        run: |
+          # Create temporary staging env file for validation
+          cat > .env.staging.temp << EOF
+          ENVIRONMENT=staging
+          STRIPE_SECRET_KEY=${{ secrets.STAGING_STRIPE_SECRET_KEY }}
+          STRIPE_PUBLISHABLE_KEY=${{ secrets.STAGING_STRIPE_PUBLISHABLE_KEY }}
+          SENDGRID_API_KEY=${{ secrets.STAGING_SENDGRID_API_KEY }}
+          TWILIO_ACCOUNT_SID=${{ secrets.STAGING_TWILIO_ACCOUNT_SID }}
+          GOOGLE_CLIENT_ID=${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
+          META_CLIENT_ID=${{ secrets.STAGING_META_CLIENT_ID }}
+          DATABASE_URL=${{ secrets.STAGING_DATABASE_URL }}
+          REDIS_URL=${{ secrets.STAGING_REDIS_URL }}
+          EOF
+          
+          # Run environment validation
+          python scripts/validate-environment-keys.py .env.staging.temp
+          
+          # Check for test keys (staging should use test keys)
+          if ! grep -q "sk_test_" .env.staging.temp; then
+            echo "❌ Staging must use Stripe TEST keys (sk_test_*)"
+            exit 1
+          fi
+          
+          if ! grep -q "pk_test_" .env.staging.temp; then
+            echo "❌ Staging must use Stripe TEST publishable keys (pk_test_*)"
+            exit 1
+          fi
+          
+          echo "✅ Environment validation passed"
+          echo "status=passed" >> $GITHUB_OUTPUT
+          
+          # Cleanup
+          rm .env.staging.temp
+
+      - name: Check for production keys in staging
+        run: |
+          # Ensure no production keys accidentally used in staging
+          if echo "${{ secrets.STAGING_STRIPE_SECRET_KEY }}" | grep -q "sk_live_"; then
+            echo "🚨 CRITICAL: Live Stripe key detected in staging environment!"
+            exit 1
+          fi
+          
+          if echo "${{ secrets.STAGING_SENDGRID_API_KEY }}" | grep -q "production"; then
+            echo "🚨 CRITICAL: Production SendGrid key detected in staging!"
+            exit 1
+          fi
+          
+          echo "✅ No production keys detected in staging"
+
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    needs: environment-validation
+    outputs:
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      infrastructure-changed: ${{ steps.changes.outputs.infrastructure }}
+      deploy-needed: ${{ steps.deploy-check.outputs.needed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend-v2/**'
+              - '!backend-v2/frontend-v2/**'
+              - 'requirements.txt'
+              - 'Dockerfile'
+            frontend:
+              - 'backend-v2/frontend-v2/**'
+              - 'package.json'
+              - 'package-lock.json'
+            infrastructure:
+              - '.github/workflows/**'
+              - 'k8s/**'
+              - 'terraform/**'
+              - 'render.yaml'
+              - 'render.staging.yaml'
+
+      - name: Check if deployment needed
+        id: deploy-check
+        run: |
+          if [[ "${{ steps.changes.outputs.backend }}" == "true" ]] || \
+             [[ "${{ steps.changes.outputs.frontend }}" == "true" ]] || \
+             [[ "${{ steps.changes.outputs.infrastructure }}" == "true" ]] || \
+             [[ "${{ github.event.inputs.force_deploy }}" == "true" ]]; then
+            echo "needed=true" >> $GITHUB_OUTPUT
+            echo "🚀 Deployment needed - changes detected"
+          else
+            echo "needed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No deployment needed - no relevant changes"
+          fi
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: environment-validation
+    if: github.event_name == 'pull_request' || github.event.inputs.force_deploy == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: ${{ env.STAGING_URL }}
+          rules_file_name: '.zap/rules.tsv'
+
+      - name: Check for secrets in code
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+    needs: environment-validation
+    if: needs.environment-validation.outputs.validation-status == 'passed'
+    strategy:
+      matrix:
+        component: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Backend Environment
+        if: matrix.component == 'backend'
+        run: |
+          cd backend-v2
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov black isort mypy
+
+      - name: Setup Frontend Environment
+        if: matrix.component == 'frontend'
+        run: |
+          cd backend-v2/frontend-v2
+          npm ci
+
+      - name: Lint Backend
+        if: matrix.component == 'backend'
+        run: |
+          cd backend-v2
+          black --check .
+          isort --check-only .
+          mypy . --ignore-missing-imports
+
+      - name: Lint Frontend
+        if: matrix.component == 'frontend'
+        run: |
+          cd backend-v2/frontend-v2
+          npm run lint
+          npm run type-check
+
+      - name: Test Backend
+        if: matrix.component == 'backend'
+        run: |
+          cd backend-v2
+          pytest --cov=. --cov-report=xml --cov-report=term
+          
+      - name: Test Frontend
+        if: matrix.component == 'frontend'
+        run: |
+          cd backend-v2/frontend-v2
+          npm run test:coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flag: ${{ matrix.component }}
+
+  build-and-push:
+    name: Build and Push Images
+    runs-on: ubuntu-latest
+    needs: [detect-changes, lint-and-test, security-scan]
+    if: needs.detect-changes.outputs.deploy-needed == 'true'
+    outputs:
+      backend-image: ${{ steps.backend-image.outputs.image }}
+      frontend-image: ${{ steps.frontend-image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        if: needs.detect-changes.outputs.backend-changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend-v2
+          file: ./backend-v2/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:staging-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:staging-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            ENVIRONMENT=staging
+            BUILD_DATE=${{ github.run_id }}
+
+      - name: Build and push frontend image
+        if: needs.detect-changes.outputs.frontend-changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend-v2/frontend-v2
+          file: ./backend-v2/frontend-v2/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:staging-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:staging-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.STAGING_API_URL }}
+            NEXT_PUBLIC_ENVIRONMENT=staging
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.STAGING_STRIPE_PUBLISHABLE_KEY }}
+
+      - name: Output image tags
+        id: backend-image
+        run: echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:staging-${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Output frontend image
+        id: frontend-image
+        run: echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:staging-${{ github.sha }}" >> $GITHUB_OUTPUT
+
+  deploy-render-staging:
+    name: Deploy to Render Staging
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-and-push]
+    if: needs.detect-changes.outputs.deploy-needed == 'true'
+    environment:
+      name: staging
+      url: ${{ env.STAGING_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Render
+        run: |
+          # Trigger Render deployment via webhook
+          curl -X POST "${{ secrets.RENDER_STAGING_DEPLOY_HOOK }}" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "serviceId": "${{ secrets.RENDER_STAGING_SERVICE_ID }}",
+              "clearCache": "clear"
+            }'
+
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for Render deployment to complete..."
+          sleep 120  # Give Render time to deploy
+
+      - name: Verify deployment
+        run: |
+          # Check if staging site is responding
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.STAGING_URL }}/health)
+          if [ $response -eq 200 ]; then
+            echo "✅ Staging deployment successful - site is responding"
+          else
+            echo "❌ Staging deployment failed - site returned $response"
+            exit 1
+          fi
+
+  comprehensive-testing:
+    name: Comprehensive Staging Tests
+    runs-on: ubuntu-latest
+    needs: deploy-render-staging
+    if: github.event.inputs.skip_tests != 'true'
+    strategy:
+      matrix:
+        test-suite: [smoke, integration, e2e, performance]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install test dependencies
+        run: |
+          npm install -g playwright
+          playwright install chromium
+          pip install pytest requests
+
+      - name: Run Smoke Tests
+        if: matrix.test-suite == 'smoke'
+        env:
+          BASE_URL: ${{ env.STAGING_URL }}
+          API_URL: ${{ env.STAGING_API_URL }}
+        run: |
+          cd tests/smoke
+          python test_staging_health.py
+          python test_critical_paths.py
+
+      - name: Run Integration Tests
+        if: matrix.test-suite == 'integration'
+        env:
+          BASE_URL: ${{ env.STAGING_URL }}
+          API_URL: ${{ env.STAGING_API_URL }}
+          TEST_USER_EMAIL: ${{ secrets.STAGING_TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.STAGING_TEST_USER_PASSWORD }}
+        run: |
+          cd tests/integration
+          python test_auth_flow.py
+          python test_booking_flow.py
+          python test_payment_flow.py
+
+      - name: Run E2E Tests
+        if: matrix.test-suite == 'e2e'
+        env:
+          BASE_URL: ${{ env.STAGING_URL }}
+        run: |
+          cd tests/e2e
+          playwright test --config=staging.config.js
+
+      - name: Run Performance Tests
+        if: matrix.test-suite == 'performance'
+        run: |
+          # Install k6
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+          
+          cd tests/performance
+          k6 run --out json=results.json staging-load-test.js
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.test-suite }}
+          path: tests/${{ matrix.test-suite }}/results/
+
+  api-validation:
+    name: API Validation
+    runs-on: ubuntu-latest
+    needs: deploy-render-staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate API endpoints
+        env:
+          API_URL: ${{ env.STAGING_API_URL }}
+        run: |
+          # Test critical API endpoints
+          endpoints=(
+            "/health"
+            "/api/v2/auth/health"
+            "/api/v2/appointments/health"
+            "/docs"
+          )
+          
+          for endpoint in "${endpoints[@]}"; do
+            echo "Testing $endpoint..."
+            response=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL$endpoint")
+            if [ $response -eq 200 ] || [ $response -eq 401 ]; then
+              echo "✅ $endpoint: $response"
+            else
+              echo "❌ $endpoint: $response"
+              exit 1
+            fi
+          done
+
+      - name: Test payment endpoints with test keys
+        env:
+          API_URL: ${{ env.STAGING_API_URL }}
+          STRIPE_TEST_KEY: ${{ secrets.STAGING_STRIPE_SECRET_KEY }}
+        run: |
+          # Verify payment endpoints use test keys
+          if ! echo "$STRIPE_TEST_KEY" | grep -q "sk_test_"; then
+            echo "❌ Staging is not using Stripe test keys!"
+            exit 1
+          fi
+          echo "✅ Confirmed staging uses Stripe test keys"
+
+  deployment-verification:
+    name: Deployment Verification
+    runs-on: ubuntu-latest
+    needs: [deploy-render-staging, comprehensive-testing, api-validation]
+    if: always()
+    steps:
+      - name: Check deployment success
+        run: |
+          staging_deploy_status="${{ needs.deploy-render-staging.result }}"
+          testing_status="${{ needs.comprehensive-testing.result }}"
+          api_status="${{ needs.api-validation.result }}"
+          
+          echo "Deployment Status: $staging_deploy_status"
+          echo "Testing Status: $testing_status"
+          echo "API Status: $api_status"
+          
+          if [[ "$staging_deploy_status" == "success" && 
+                "$testing_status" == "success" && 
+                "$api_status" == "success" ]]; then
+            echo "✅ Staging deployment fully successful!"
+          else
+            echo "❌ Staging deployment has issues"
+            exit 1
+          fi
+
+      - name: Update deployment status
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const deploymentSuccess = '${{ needs.deploy-render-staging.result }}' === 'success' &&
+                                     '${{ needs.comprehensive-testing.result }}' === 'success' &&
+                                     '${{ needs.api-validation.result }}' === 'success';
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: deploymentSuccess ? 'success' : 'failure',
+              target_url: '${{ env.STAGING_URL }}',
+              description: deploymentSuccess ? 
+                'Staging deployment successful' : 
+                'Staging deployment failed',
+              context: 'staging/deployment'
+            });
+
+  notify-stakeholders:
+    name: Notify Stakeholders
+    runs-on: ubuntu-latest
+    needs: [deployment-verification]
+    if: always()
+    steps:
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ needs.deployment-verification.result }}
+          channel: '#staging-deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          custom_payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🚀 *BookedBarber V2 Staging Deployment*\n*Status*: ${{ needs.deployment-verification.result == 'success' && '✅ Success' || '❌ Failed' }}\n*Environment*: <${{ env.STAGING_URL }}|staging.bookedbarber.com>\n*Branch*: `${{ github.ref_name }}`\n*Commit*: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author*: ${{ github.actor }}\n*Trigger*: ${{ github.event_name }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Ready for Production?*\nIf staging validation is successful, create a production deployment PR."
+                  }
+                }
+              ]
+            }
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const deploymentSuccess = '${{ needs.deployment-verification.result }}' === 'success';
+            const body = deploymentSuccess ? 
+              `🚀 **Staging Deployment Successful!**
+              
+              ✅ Environment validation passed
+              ✅ Security scan completed
+              ✅ All tests passed
+              ✅ API validation successful
+              
+              **Staging Environment**: ${{ env.STAGING_URL }}
+              **API Documentation**: ${{ env.STAGING_API_URL }}/docs
+              
+              Ready for production deployment once this PR is approved and merged to staging.` :
+              `❌ **Staging Deployment Failed**
+              
+              Please check the workflow logs and fix any issues before proceeding.
+              
+              [View Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  cleanup:
+    name: Cleanup Resources
+    runs-on: ubuntu-latest
+    needs: [deployment-verification]
+    if: always()
+    steps:
+      - name: Clean up temporary resources
+        run: |
+          echo "Cleaning up temporary files and resources..."
+          # Add any cleanup commands here
+          echo "✅ Cleanup complete"
