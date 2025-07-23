@@ -4,6 +4,12 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Calendar } from '@/components/ui/calendar'
 import UnifiedCalendar from '@/components/UnifiedCalendar'
+import type { BookingResponse } from '@/lib/api'
+
+// Use the same Appointment interface as UnifiedCalendar
+interface Appointment extends BookingResponse {
+  height?: number // Calendar-specific computed field
+}
 import TimeSlots from '@/components/TimeSlots'
 import PaymentForm from '@/components/PaymentForm'
 import TimezoneTooltip from '@/components/TimezoneTooltip'
@@ -410,15 +416,21 @@ export default function BookPage() {
         const endTime = new Date(startTime)
         endTime.setMinutes(endTime.getMinutes() + 30) // Default 30 min slots
         
+        const selectedServiceData = SERVICES.find(s => s.id === selectedService)
         const appointment = {
           id: -1000 - index, // Negative IDs to distinguish from real appointments
+          user_id: 0, // Guest booking
           barber_id: 1, // Dummy barber ID
+          service_name: selectedServiceData?.name || 'Service',
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
-          status: 'pending' as const,
-          total_price: SERVICES.find(s => s.id === selectedService)?.amount || 0,
+          duration_minutes: 30,
+          price: selectedServiceData?.amount || 0,
+          status: 'pending',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          client_name: 'Available Slot',
+          barber_name: 'Available',
           barber: {
             id: 1,
             name: 'Available',
@@ -446,13 +458,18 @@ export default function BookPage() {
         
         const appointment = {
           id: -2000 - index,
+          user_id: 1, // Booked by someone
           barber_id: 1,
+          service_name: 'Booked Slot',
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
-          status: 'confirmed' as const,
-          total_price: 0,
+          duration_minutes: 30,
+          price: 0,
+          status: 'confirmed',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          client_name: 'Booked',
+          barber_name: 'Booked',
           barber: {
             id: 1,
             name: 'Booked',
