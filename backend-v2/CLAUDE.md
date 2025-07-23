@@ -579,7 +579,54 @@ CREATE TABLE conversion_events (
 );
 ```
 
+## 🚨 MANDATORY V2-ONLY API POLICY
+
+### **NEVER USE V1 APIs - V2 ONLY**
+All API calls in this codebase MUST use `/api/v2/` endpoints. V1 endpoints are deprecated and cause authentication failures.
+
+#### **Critical V2 Endpoints (Reference)**
+```typescript
+// Authentication
+/api/v2/auth/login         // Login endpoint
+/api/v2/auth/me           // User profile
+/api/v2/auth/refresh      // Refresh token
+
+// Core Data
+/api/v2/appointments/     // User appointments
+/api/v2/dashboard/client-metrics  // Dashboard metrics
+/api/v2/analytics/dashboard/{id}  // Analytics data
+
+// Tracking & Pixels
+/api/v2/tracking/meta-conversions  // Meta pixel tracking
+/api/v2/customer-pixels/public/{slug}  // Customer pixels
+
+// Other Services
+/api/v2/privacy/consent   // Privacy consent
+/api/v2/payments/history  // Payment history
+```
+
+#### **How to Fix V1 → V2 Issues**
+When encountering V1 endpoints:
+1. **Search and replace**: `/api/v1/` → `/api/v2/`
+2. **Test immediately**: Verify endpoint works
+3. **Update tests**: Change test expectations to v2
+
+#### **V1 Detection Commands**
+```bash
+# Find all V1 API calls
+grep -r "/api/v1/" frontend-v2/ --include="*.ts" --include="*.tsx"
+
+# Fix a specific file
+sed -i 's|/api/v1/|/api/v2/|g' path/to/file.ts
+```
+
 ## 🔧 Common Fixes Applied
+
+### V1 → V2 API Migration (Fixed 2025-07-23)
+**CRITICAL**: The authentication stack overflow was caused by API version mismatch:
+- **Problem**: Login used `/api/v2/auth/login` but validation used `/api/v1/auth/me`
+- **Solution**: All endpoints migrated to V2
+- **Impact**: Eliminates infinite redirect loops in authentication
 
 ### Login API Field Mismatch (Fixed 2025-07-01)
 The V2 backend now uses `email` field instead of `username` for login:

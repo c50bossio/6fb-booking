@@ -1278,6 +1278,40 @@ export async function confirmPayment(data: PaymentConfirmRequest) {
 // ANALYTICS API
 // ============================================================================
 
+export interface SixFigureBarberCoachingInsight {
+  category: 'pricing' | 'client_acquisition' | 'retention' | 'efficiency' | 'service_mix' | 'marketing'
+  priority: 'critical' | 'high' | 'medium' | 'low'
+  title: string
+  message: string
+  impact_description: string
+  potential_revenue_increase: number
+  action_steps: string[]
+  timeline: string
+  success_metrics: string[]
+  resources: string[]
+  // Educational components
+  why_this_matters?: string
+  business_principle?: string
+  market_context?: string
+  six_fb_methodology?: string
+}
+
+export interface SixFigureDailyFocus {
+  focus_areas: Array<{
+    title: string
+    category: string
+    priority: string
+    impact: string
+  }>
+  daily_actions: Array<{
+    category: string
+    action: string
+    impact: string
+  }>
+  key_metric_to_track: string
+  motivational_message: string
+}
+
 export interface SixFigureBarberMetrics {
   current_performance: {
     monthly_revenue: number
@@ -1313,6 +1347,8 @@ export interface SixFigureBarberMetrics {
     }
   }
   action_items: (string | ActionItem)[]
+  coaching_insights?: SixFigureBarberCoachingInsight[]
+  daily_focus?: SixFigureDailyFocus
 }
 
 export interface DashboardAnalytics {
@@ -1814,6 +1850,96 @@ export async function getDashboardAnalytics(
   
   const queryString = params.toString()
   return fetchAPI(`/api/v2/analytics/dashboard${queryString ? `?${queryString}` : ''}`)
+}
+
+// 6FB Progress Tracking Interfaces
+export interface SixFBProgressOverview {
+  current_annual_pace: number
+  target_annual_income: number
+  progress_percentage: number
+  months_to_goal: number | null
+  daily_target: number
+  weekly_target: number
+  monthly_target: number
+  days_ahead_behind: number
+  trend_direction: 'up' | 'down' | 'stable'
+}
+
+export interface SixFBMilestone {
+  id: string
+  type: 'revenue' | 'clients' | 'retention' | 'efficiency' | 'pricing'
+  level: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'master'
+  title: string
+  description: string
+  target_value: number
+  current_value: number
+  progress_percentage: number
+  achieved: boolean
+  achieved_date: string | null
+  reward_message: string
+  next_milestone_hint: string
+}
+
+export interface SixFBAchievementSummary {
+  total_milestones: number
+  achieved_milestones: number
+  achievement_percentage: number
+  by_category: Record<string, { total: number; achieved: number }>
+  priority_milestones: Array<{
+    id: string
+    title: string
+    type: string
+    progress_percentage: number
+    next_hint: string
+  }>
+  recent_achievements: Array<{
+    id: string
+    title: string
+    type: string
+    reward_message: string
+  }>
+}
+
+export interface SixFBProgressData {
+  user_id: number
+  target_annual_income: number
+  progress_overview: SixFBProgressOverview
+  milestones: SixFBMilestone[]
+  achievement_summary: SixFBAchievementSummary
+  generated_at: string
+  status: string
+}
+
+// 6FB Progress Tracking API Functions
+export async function getSixFBProgressTracking(
+  targetAnnualIncome: number = 100000,
+  userId?: number
+): Promise<SixFBProgressData> {
+  const params = new URLSearchParams()
+  params.append('target_annual_income', targetAnnualIncome.toString())
+  if (userId) params.append('user_id', userId.toString())
+  
+  return fetchAPI(`/api/v2/analytics/six-figure-barber/progress?${params.toString()}`)
+}
+
+export async function getSixFBMilestonesByType(
+  milestoneType: 'revenue' | 'clients' | 'retention' | 'efficiency' | 'pricing',
+  targetAnnualIncome: number = 100000,
+  userId?: number
+): Promise<{
+  milestone_type: string
+  user_id: number
+  milestones: SixFBMilestone[]
+  total_milestones: number
+  achieved_count: number
+  next_milestone: SixFBMilestone | null
+  generated_at: string
+}> {
+  const params = new URLSearchParams()
+  params.append('target_annual_income', targetAnnualIncome.toString())
+  if (userId) params.append('user_id', userId.toString())
+  
+  return fetchAPI(`/api/v2/analytics/six-figure-barber/milestones/${milestoneType}?${params.toString()}`)
 }
 
 // Enterprise Analytics Interfaces
