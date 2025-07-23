@@ -604,7 +604,7 @@ export default function BookPage() {
               {SERVICES.map((service, index) => (
                 <Card
                   key={service.id}
-                  ref={(el) => (serviceCardRefs.current[index] = el)}
+                  ref={(el) => { serviceCardRefs.current[index] = el; }}
                   variant="default"
                   interactive
                   selected={selectedService === service.id}
