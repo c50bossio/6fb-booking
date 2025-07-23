@@ -22,7 +22,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from database import Base
-from models import User, Appointment, Service
+from models import User, Appointment, Service, ServiceCategoryEnum
 from config import settings
 from passlib.context import CryptContext
 
@@ -106,6 +106,9 @@ class StagingDataPopulator:
             # Clear existing data
             self._clear_existing_data(db)
             
+            # Create admin user
+            self._create_admin_user(db)
+            
             # Create services
             service_objects = self._create_services(db)
             
@@ -133,6 +136,36 @@ class StagingDataPopulator:
         db.commit()
         print("   ✅ Existing data cleared")
 
+    def _create_admin_user(self, db):
+        """Create admin user for testing."""
+        print("👤 Creating admin user...")
+        
+        # Check if admin user already exists
+        existing_admin = db.execute(text("SELECT id FROM users WHERE email = 'admin@bookedbarber.com'")).fetchone()
+        if existing_admin:
+            print("   ℹ️ Admin user already exists, skipping creation")
+            return
+        
+        admin_user = User(
+            email="admin@bookedbarber.com",
+            hashed_password=pwd_context.hash("password123"),
+            name="System Administrator",
+            phone="+1-555-0001",
+            role="admin",
+            is_active=True,
+            email_verified=True,
+            profile_data=json.dumps({
+                "bio": "System administrator account for testing",
+                "permissions": ["all"],
+                "created_for": "staging_testing"
+            }),
+            timezone="America/New_York"
+        )
+        db.add(admin_user)
+        db.commit()
+        db.refresh(admin_user)
+        print(f"   ✅ Created admin user: admin@bookedbarber.com (password: password123)")
+
     def _create_services(self, db) -> List[Service]:
         """Create service types."""
         print("🛠️ Creating service types...")
@@ -142,17 +175,17 @@ class StagingDataPopulator:
             service = Service(
                 name=service_data["name"],
                 duration_minutes=service_data["duration"],
-                price=service_data["price"],
-                color=service_data["color"],
+                base_price=service_data["price"],
                 description=service_data["description"],
-                category="haircut",
+                category=ServiceCategoryEnum.HAIRCUT,
                 is_active=True
             )
             db.add(service)
             service_objects.append(service)
         
         db.commit()
-        db.refresh_all()
+        for service in service_objects:
+            db.refresh(service)
         print(f"   ✅ Created {len(service_objects)} service types")
         return service_objects
 
@@ -169,7 +202,7 @@ class StagingDataPopulator:
                 phone=barber_data["phone"],
                 role="barber",
                 is_active=True,
-                is_verified=True,
+                email_verified=True,
                 profile_data=json.dumps({
                     "specialties": barber_data["specialties"],
                     "bio": barber_data["bio"], 
@@ -205,7 +238,7 @@ class StagingDataPopulator:
                 phone=client_data["phone"],
                 role="client",
                 is_active=True,
-                is_verified=True,
+                email_verified=True,
                 timezone="America/New_York"
             )
             db.add(client)
