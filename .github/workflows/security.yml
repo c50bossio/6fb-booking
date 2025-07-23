@@ -17,13 +17,13 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Run Python Safety check
-      working-directory: ./backend
+      working-directory: ./backend-v2
       run: |
         pip install safety
         safety check --json || true
 
     - name: Run npm audit
-      working-directory: ./frontend
+      working-directory: ./backend-v2/frontend-v2
       run: |
         npm audit --json || true
 
@@ -49,10 +49,10 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Build backend image
-      run: docker build -t 6fb-backend:scan ./backend
+      run: docker build -t 6fb-backend:scan ./backend-v2
 
     - name: Build frontend image
-      run: docker build -t 6fb-frontend:scan ./frontend
+      run: docker build -t 6fb-frontend:scan ./backend-v2/frontend-v2
 
     - name: Run Trivy on backend
       uses: aquasecurity/trivy-action@master
@@ -80,7 +80,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Run Bandit for Python
-      working-directory: ./backend
+      working-directory: ./backend-v2
       run: |
         pip install bandit
         bandit -r . -f json -o bandit-report.json || true
