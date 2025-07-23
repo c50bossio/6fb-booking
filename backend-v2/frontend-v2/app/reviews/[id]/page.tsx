@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
@@ -128,13 +128,17 @@ function ResponseEditor({ review, template, onSave, onSend, isLoading }: Respons
             <Select
               value={selectedTemplate}
               onValueChange={setSelectedTemplate}
-              placeholder="Select a template..."
             >
-              {templates.map((template) => (
-                <option key={template.id} value={template.id.toString()}>
-                  {template.name} ({template.category})
-                </option>
-              ))}
+              <SelectTrigger>
+                <SelectValue placeholder="Select a template..." />
+              </SelectTrigger>
+              <SelectContent>
+                {templates.map((template) => (
+                  <SelectItem key={template.id} value={template.id.toString()}>
+                    {template.name} ({template.category})
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
           
