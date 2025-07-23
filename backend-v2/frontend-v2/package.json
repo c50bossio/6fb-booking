@@ -48,6 +48,10 @@
     "ports": "lsof -i :3000 && lsof -i :3001 && lsof -i :8000 && lsof -i :8001 || echo 'Checking ports...'",
     "kill:staging": "lsof -ti:3001 | xargs kill -9 && lsof -ti:8001 | xargs kill -9 || echo 'No staging processes to kill'"
   },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
+  },
   "dependencies": {
     "@builder.io/react": "^8.2.5",
     "@builder.io/sdk": "^6.1.1",
