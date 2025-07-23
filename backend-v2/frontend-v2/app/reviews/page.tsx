@@ -238,7 +238,7 @@ export default function ReviewsPage() {
       sort_by: 'review_date',
       sort_order: 'desc'
     }),
-    keepPreviousData: true
+    placeholderData: (previousData) => previousData
   })
 
   // Sync reviews mutation
