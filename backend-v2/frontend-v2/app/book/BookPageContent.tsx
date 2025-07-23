@@ -75,7 +75,7 @@ export default function BookPage() {
 
   // Accessibility state for keyboard navigation
   const [focusedServiceIndex, setFocusedServiceIndex] = useState<number>(-1)
-  const serviceCardRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const serviceCardRefs = useRef<(HTMLDivElement | null)[]>([])
   const { announceStatus, announceNavigation } = useScreenReader()
 
   // State for timezone display
