@@ -367,16 +367,16 @@ export default function ProductsPage() {
       </Card>
       
       {/* Pagination */}
-      {data && data.total && data.total > filters.limit! && (
+      {data && typeof data.total === 'number' && data.total > (filters.limit || 20) && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600">
-            Showing {filters.offset! + 1} to {Math.min(filters.offset! + filters.limit!, data.total)} of {data.total} products
+            Showing {(filters.offset || 0) + 1} to {Math.min((filters.offset || 0) + (filters.limit || 20), data.total || 0)} of {data.total || 0} products
           </p>
           <div className="flex gap-2">
             <Button
               onClick={() => setFilters(prev => ({
                 ...prev,
-                offset: Math.max(0, prev.offset! - prev.limit!)
+                offset: Math.max(0, (prev.offset || 0) - (prev.limit || 20))
               }))}
               disabled={filters.offset === 0}
               variant="outline"
@@ -386,9 +386,9 @@ export default function ProductsPage() {
             <Button
               onClick={() => setFilters(prev => ({
                 ...prev,
-                offset: prev.offset! + prev.limit!
+                offset: (prev.offset || 0) + (prev.limit || 20)
               }))}
-              disabled={!data.has_more}
+              disabled={!data?.has_more}
               variant="outline"
             >
               Next
