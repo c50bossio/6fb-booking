@@ -82,7 +82,7 @@ export function Logo({
   
   if (href && href !== null) {
     return (
-      <Link href={href} className="inline-block">
+      <Link href={href} className="inline-block" aria-label="BookedBarber - Go to homepage">
         {logoImage}
       </Link>
     )

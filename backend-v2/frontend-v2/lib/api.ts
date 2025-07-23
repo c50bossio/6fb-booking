@@ -141,12 +141,12 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
   }
   
   // Handle 401 with automatic token refresh
-  if (response.status === 401 && retry && endpoint !== '/api/v1/auth/refresh') {
+  if (response.status === 401 && retry && endpoint !== '/api/v2/auth/refresh') {
     try {
       // Try to refresh token
       const refresh_token = localStorage.getItem('refresh_token')
       if (refresh_token) {
-        const refreshResponse = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+        const refreshResponse = await fetch(`${API_URL}/api/v2/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refresh_token }),
@@ -259,7 +259,7 @@ export async function login(email: string, password: string) {
   console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
   
   const response = await retryOperation(
-    () => fetchAPI('/api/v1/auth/login', {
+    () => fetchAPI('/api/v2/auth/login', {
       method: 'POST',
       body: JSON.stringify(requestBody),
     }),
@@ -293,7 +293,7 @@ export async function logout() {
 
 // @deprecated - Use registerComplete() instead. This old function uses a single "name" field.
 // export async function register(email: string, password: string, name: string, createTestData: boolean = false, userType: string = 'client') {
-//   return fetchAPI('/api/v1/auth/register', {
+//   return fetchAPI('/api/v2/auth/register', {
 //     method: 'POST',
 //     body: JSON.stringify({ email, password, name, role: userType }),
 //   })
@@ -332,7 +332,7 @@ export interface CompleteRegistrationData {
 }
 
 export async function registerComplete(registrationData: CompleteRegistrationData) {
-  return fetchAPI('/api/v1/auth/register-complete', {
+  return fetchAPI('/api/v2/auth/register-complete', {
     method: 'POST',
     body: JSON.stringify(registrationData),
   })
@@ -362,7 +362,7 @@ export interface ClientRegistrationResponse {
 }
 
 export async function registerClient(registrationData: ClientRegistrationData): Promise<ClientRegistrationResponse> {
-  return fetchAPI('/api/v1/auth/register-client', {
+  return fetchAPI('/api/v2/auth/register-client', {
     method: 'POST',
     body: JSON.stringify(registrationData),
   })
@@ -392,25 +392,25 @@ export interface TrialStatus {
 }
 
 export async function getTrialStatus(organizationId: number): Promise<TrialStatus> {
-  return fetchAPI(`/api/v1/organizations/${organizationId}/trial-status`)
+  return fetchAPI(`/api/v2/organizations/${organizationId}/trial-status`)
 }
 
 export async function forgotPassword(email: string) {
-  return fetchAPI('/api/v1/auth/forgot-password', {
+  return fetchAPI('/api/v2/auth/forgot-password', {
     method: 'POST',
     body: JSON.stringify({ email }),
   })
 }
 
 export async function resetPassword(token: string, newPassword: string) {
-  return fetchAPI('/api/v1/auth/reset-password', {
+  return fetchAPI('/api/v2/auth/reset-password', {
     method: 'POST',
     body: JSON.stringify({ token, new_password: newPassword }),
   })
 }
 
 export async function changePassword(currentPassword: string, newPassword: string) {
-  return fetchAPI('/api/v1/auth/change-password', {
+  return fetchAPI('/api/v2/auth/change-password', {
     method: 'POST',
     body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
   })
@@ -418,20 +418,20 @@ export async function changePassword(currentPassword: string, newPassword: strin
 
 // Email verification functions
 export async function verifyEmail(token: string) {
-  return fetchAPI(`/api/v1/auth/verify-email?token=${encodeURIComponent(token)}`, {
+  return fetchAPI(`/api/v2/auth/verify-email?token=${encodeURIComponent(token)}`, {
     method: 'GET',
   })
 }
 
 export async function resendVerification(email: string) {
-  return fetchAPI('/api/v1/auth/resend-verification', {
+  return fetchAPI('/api/v2/auth/resend-verification', {
     method: 'POST',
     body: JSON.stringify({ email }),
   })
 }
 
 export async function getVerificationStatus() {
-  return fetchAPI('/api/v1/auth/verification-status', {
+  return fetchAPI('/api/v2/auth/verification-status', {
     method: 'GET',
     requireAuth: true,
   })
@@ -443,7 +443,7 @@ export async function refreshToken() {
     throw new Error('No refresh token available')
   }
   
-  const response = await fetchAPI('/api/v1/auth/refresh', {
+  const response = await fetchAPI('/api/v2/auth/refresh', {
     method: 'POST',
     body: JSON.stringify({ refresh_token }),
   })
@@ -464,17 +464,17 @@ export async function refreshToken() {
 // Basic API functions
 export async function getProfile(): Promise<User> {
   return retryOperation(
-    () => fetchAPI('/api/v1/auth/me'),
+    () => fetchAPI('/api/v2/auth/me'),
     defaultRetryConfigs.standard
   )
 }
 
 export async function getAppointments() {
-  return fetchAPI('/api/v1/appointments/')
+  return fetchAPI('/api/v2/appointments/')
 }
 
 export async function createAppointment(data: any) {
-  return fetchAPI('/api/v1/appointments/', {
+  return fetchAPI('/api/v2/appointments/', {
     method: 'POST',
     body: JSON.stringify(data),
   })
@@ -742,20 +742,20 @@ export async function getAvailableSlots(params: { date: string; service_id?: num
   if (params.barber_id) {
     queryParams.append('barber_id', params.barber_id.toString())
   }
-  console.log('🔗 Calling slots API:', `/api/v1/appointments/slots?${queryParams.toString()}`)
-  return fetchAPI(`/api/v1/appointments/slots?${queryParams.toString()}`)
+  console.log('🔗 Calling slots API:', `/api/v2/appointments/slots?${queryParams.toString()}`)
+  return fetchAPI(`/api/v2/appointments/slots?${queryParams.toString()}`)
 }
 
 export async function getNextAvailableSlot(): Promise<NextAvailableSlot> {
-  return fetchAPI('/api/v1/appointments/slots/next-available')
+  return fetchAPI('/api/v2/appointments/slots/next-available')
 }
 
 export async function getBookingSettings(): Promise<BookingSettings> {
-  return fetchAPI('/api/v1/appointments/settings')
+  return fetchAPI('/api/v2/appointments/settings')
 }
 
 export async function updateBookingSettings(updates: BookingSettingsUpdate): Promise<BookingSettings> {
-  return fetchAPI('/api/v1/appointments/settings', {
+  return fetchAPI('/api/v2/appointments/settings', {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
@@ -763,7 +763,7 @@ export async function updateBookingSettings(updates: BookingSettingsUpdate): Pro
 
 export async function createBooking(date: string, time: string, service: string): Promise<BookingResponse> {
   return retryOperation(
-    () => fetchAPI('/api/v1/appointments/', {
+    () => fetchAPI('/api/v2/appointments/', {
       method: 'POST',
       body: JSON.stringify({ date, time, service }),
     }),
@@ -864,7 +864,7 @@ function normalizeAppointmentData(rawData: any): BookingResponse {
 
 export async function quickBooking(bookingData: QuickBookingData): Promise<BookingResponse> {
   const appointment = await retryOperation(
-    () => fetchAPI('/api/v1/appointments/quick', {
+    () => fetchAPI('/api/v2/appointments/quick', {
       method: 'POST',
       body: JSON.stringify(bookingData),
     }),
@@ -886,15 +886,15 @@ export async function getMyBookings(): Promise<BookingListResponse> {
     
     // For admin/barber users, fetch all appointments for calendar view
     if (userProfile.role === 'admin' || userProfile.role === 'super_admin' || userProfile.role === 'barber') {
-      response = await fetchAPI('/api/v1/appointments/all/list')
+      response = await fetchAPI('/api/v2/appointments/all/list')
     } else {
       // For regular users, fetch only their appointments
-      response = await fetchAPI('/api/v1/appointments/')
+      response = await fetchAPI('/api/v2/appointments/')
     }
   } catch (error) {
     // Fallback to user appointments if profile fetch fails
     console.warn('Failed to get user profile, falling back to user appointments:', error)
-    response = await fetchAPI('/api/v1/appointments/')
+    response = await fetchAPI('/api/v2/appointments/')
   }
   
   // Map AppointmentResponse to BookingResponse format with error handling
@@ -917,7 +917,7 @@ export async function getMyBookings(): Promise<BookingListResponse> {
 
 export async function cancelBooking(bookingId: number): Promise<BookingResponse> {
   const appointment = await retryOperation(
-    () => fetchAPI(`/api/v1/appointments/${bookingId}/cancel`, {
+    () => fetchAPI(`/api/v2/appointments/${bookingId}/cancel`, {
       method: 'PUT',
     }),
     defaultRetryConfigs.critical, // Critical retry config for cancellations
@@ -939,7 +939,7 @@ export async function updateBooking(bookingId: number, data: {
   service?: string
   notes?: string
 }): Promise<BookingResponse> {
-  const appointment = await fetchAPI(`/api/v1/appointments/${bookingId}`, {
+  const appointment = await fetchAPI(`/api/v2/appointments/${bookingId}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
@@ -948,7 +948,7 @@ export async function updateBooking(bookingId: number, data: {
 
 export async function rescheduleBooking(bookingId: number, date: string, time: string): Promise<BookingResponse> {
   const appointment = await retryOperation(
-    () => fetchAPI(`/api/v1/appointments/${bookingId}/reschedule`, {
+    () => fetchAPI(`/api/v2/appointments/${bookingId}/reschedule`, {
       method: 'POST',
       body: JSON.stringify({ date, time }),
     }),
@@ -967,7 +967,7 @@ export async function rescheduleBooking(bookingId: number, date: string, time: s
 
 // Client management functions
 export async function createClient(clientData: ClientCreate): Promise<Client> {
-  return fetchAPI('/api/v1/clients/', {
+  return fetchAPI('/api/v2/clients/', {
     method: 'POST',
     body: JSON.stringify(clientData),
   })
@@ -988,46 +988,46 @@ export async function getClients(params?: {
   if (params?.tags) queryParams.append('tags', params.tags)
   
   const query = queryParams.toString()
-  return fetchAPI(`/api/v1/clients/${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/clients/${query ? '?' + query : ''}`)
 }
 
 export async function getClient(clientId: number): Promise<Client> {
-  return fetchAPI(`/api/v1/clients/${clientId}`)
+  return fetchAPI(`/api/v2/clients/${clientId}`)
 }
 
 export async function updateClient(clientId: number, updates: ClientUpdate): Promise<Client> {
-  return fetchAPI(`/api/v1/clients/${clientId}`, {
+  return fetchAPI(`/api/v2/clients/${clientId}`, {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
 }
 
 export async function deleteClient(clientId: number) {
-  return fetchAPI(`/api/v1/clients/${clientId}`, {
+  return fetchAPI(`/api/v2/clients/${clientId}`, {
     method: 'DELETE',
   })
 }
 
 export async function getClientHistory(clientId: number) {
-  return fetchAPI(`/api/v1/clients/${clientId}/history`)
+  return fetchAPI(`/api/v2/clients/${clientId}/history`)
 }
 
 export async function updateCustomerType(clientId: number, customerType: string) {
-  return fetchAPI(`/api/v1/clients/${clientId}/customer-type`, {
+  return fetchAPI(`/api/v2/clients/${clientId}/customer-type`, {
     method: 'PUT',
     body: JSON.stringify({ customer_type: customerType }),
   })
 }
 
 export async function searchClients(query: string, limit = 10) {
-  return fetchAPI('/api/v1/clients/search', {
+  return fetchAPI('/api/v2/clients/search', {
     method: 'POST',
     body: JSON.stringify({ query, limit }),
   })
 }
 
 export async function importClients(clients: any[]) {
-  return fetchAPI('/api/v1/clients/import', {
+  return fetchAPI('/api/v2/clients/import', {
     method: 'POST',
     body: JSON.stringify({ clients }),
   })
@@ -1054,7 +1054,7 @@ export async function exportClients(params: {
     })
   }
   
-  return fetchAPI(`/api/v1/exports/clients?${queryParams.toString()}`, {
+  return fetchAPI(`/api/v2/exports/clients?${queryParams.toString()}`, {
     method: 'GET',
   })
 }
@@ -1076,7 +1076,7 @@ export async function exportAppointments(params: {
     params.status.forEach(s => queryParams.append('status', s))
   }
   
-  return fetchAPI(`/api/v1/exports/appointments?${queryParams.toString()}`, {
+  return fetchAPI(`/api/v2/exports/appointments?${queryParams.toString()}`, {
     method: 'GET',
   })
 }
@@ -1100,7 +1100,7 @@ export async function exportTransactions(params: {
     params.status.forEach(s => queryParams.append('status', s))
   }
   
-  return fetchAPI(`/api/v1/exports/appointments?${queryParams.toString()}`, {
+  return fetchAPI(`/api/v2/exports/appointments?${queryParams.toString()}`, {
     method: 'GET',
   })
 }
@@ -1118,47 +1118,47 @@ export async function exportAnalytics(params: {
     ...(params.date_range?.end && { date_to: params.date_range.end }),
   })
   
-  return fetchAPI(`/api/v1/exports/analytics?${queryParams.toString()}`, {
+  return fetchAPI(`/api/v2/exports/analytics?${queryParams.toString()}`, {
     method: 'GET',
   })
 }
 
 // Enhanced client management functions
 export async function getClientAnalytics(clientId: number) {
-  return fetchAPI(`/api/v1/clients/${clientId}/analytics`)
+  return fetchAPI(`/api/v2/clients/${clientId}/analytics`)
 }
 
 export async function getClientRecommendations(clientId: number) {
-  return fetchAPI(`/api/v1/clients/${clientId}/recommendations`)
+  return fetchAPI(`/api/v2/clients/${clientId}/recommendations`)
 }
 
 export async function getClientCommunicationPreferences(clientId: number) {
-  return fetchAPI(`/api/v1/clients/${clientId}/communication-preferences`)
+  return fetchAPI(`/api/v2/clients/${clientId}/communication-preferences`)
 }
 
 export async function updateClientCommunicationPreferences(clientId: number, preferences: any) {
-  return fetchAPI(`/api/v1/clients/${clientId}/communication-preferences`, {
+  return fetchAPI(`/api/v2/clients/${clientId}/communication-preferences`, {
     method: 'PUT',
     body: JSON.stringify(preferences),
   })
 }
 
 export async function addClientNote(clientId: number, note: string, noteType: string = 'general') {
-  return fetchAPI(`/api/v1/clients/${clientId}/notes`, {
+  return fetchAPI(`/api/v2/clients/${clientId}/notes`, {
     method: 'POST',
     body: JSON.stringify({ note, note_type: noteType }),
   })
 }
 
 export async function updateClientTags(clientId: number, tags: string[]) {
-  return fetchAPI(`/api/v1/clients/${clientId}/tags`, {
+  return fetchAPI(`/api/v2/clients/${clientId}/tags`, {
     method: 'PUT',
     body: JSON.stringify({ tags }),
   })
 }
 
 export async function getClientDashboardMetrics() {
-  return fetchAPI('/api/v1/clients/dashboard/metrics')
+  return fetchAPI('/api/v2/clients/dashboard/metrics')
 }
 
 export async function advancedClientSearch(params: {
@@ -1177,7 +1177,7 @@ export async function advancedClientSearch(params: {
   })
   
   const query = queryParams.toString()
-  return fetchAPI(`/api/v1/clients/advanced-search${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/clients/advanced-search${query ? '?' + query : ''}`)
 }
 
 // Quick booking function for next available slot (legacy - use quickBooking instead)
@@ -1188,14 +1188,14 @@ export async function bookNextAvailableSlot(service: string): Promise<BookingRes
 
 // Timezone functions
 export async function updateUserTimezone(timezone: string): Promise<User> {
-  return fetchAPI('/api/v1/auth/timezone', {
+  return fetchAPI('/api/v2/auth/timezone', {
     method: 'PUT',
     body: JSON.stringify({ timezone }),
   })
 }
 
 export async function updateUserProfile(profileData: { name?: string; email?: string }): Promise<User> {
-  return fetchAPI('/api/v1/users/profile', {
+  return fetchAPI('/api/v2/users/profile', {
     method: 'PUT',
     body: JSON.stringify(profileData),
   })
@@ -1207,14 +1207,14 @@ export async function updateOnboardingStatus(onboardingData: {
   current_step?: number
   skipped?: boolean
 }): Promise<User> {
-  return fetchAPI('/api/v1/users/onboarding', {
+  return fetchAPI('/api/v2/users/onboarding', {
     method: 'PUT',
     body: JSON.stringify(onboardingData),
   })
 }
 
 export async function updateUserRole(userId: number, role: string): Promise<User> {
-  return fetchAPI(`/api/v1/users/${userId}/role`, {
+  return fetchAPI(`/api/v2/users/${userId}/role`, {
     method: 'PUT',
     body: JSON.stringify({ role }),
   })
@@ -1222,11 +1222,11 @@ export async function updateUserRole(userId: number, role: string): Promise<User
 
 export async function getAllUsers(role?: string): Promise<User[]> {
   const params = role ? `?role=${encodeURIComponent(role)}` : ''
-  return fetchAPI(`/api/v1/users${params}`)
+  return fetchAPI(`/api/v2/users${params}`)
 }
 
 export async function getBarbers(): Promise<User[]> {
-  return fetchAPI('/api/v1/barbers')
+  return fetchAPI('/api/v2/barbers')
 }
 
 export interface Timezone {
@@ -1237,7 +1237,7 @@ export interface Timezone {
 }
 
 export async function getTimezones(): Promise<Timezone[]> {
-  return fetchAPI('/api/v1/timezones')
+  return fetchAPI('/api/v2/timezones')
 }
 
 // Payment functions
@@ -1261,14 +1261,14 @@ export interface PaymentConfirmRequest {
 }
 
 export async function createPaymentIntent(data: PaymentIntentRequest): Promise<PaymentIntentResponse> {
-  return fetchAPI('/api/v1/payments/create-intent', {
+  return fetchAPI('/api/v2/payments/create-intent', {
     method: 'POST',
     body: JSON.stringify(data),
   })
 }
 
 export async function confirmPayment(data: PaymentConfirmRequest) {
-  return fetchAPI('/api/v1/payments/confirm', {
+  return fetchAPI('/api/v2/payments/confirm', {
     method: 'POST',
     body: JSON.stringify(data),
   })
@@ -1799,7 +1799,7 @@ export async function getSixFigureBarberMetrics(
   params.append('target_annual_income', targetAnnualIncome.toString())
   if (userId) params.append('user_id', userId.toString())
   
-  return fetchAPI(`/api/v1/analytics/six-figure-barber?${params.toString()}`)
+  return fetchAPI(`/api/v2/analytics/six-figure-barber?${params.toString()}`)
 }
 
 export async function getDashboardAnalytics(
@@ -1813,7 +1813,7 @@ export async function getDashboardAnalytics(
   if (endDate) params.append('end_date', endDate)
   
   const queryString = params.toString()
-  return fetchAPI(`/api/v1/analytics/dashboard${queryString ? `?${queryString}` : ''}`)
+  return fetchAPI(`/api/v2/analytics/dashboard${queryString ? `?${queryString}` : ''}`)
 }
 
 // Enterprise Analytics Interfaces
@@ -1875,7 +1875,7 @@ export async function getEnterpriseAnalytics(
   const queryString = params.toString()
   
   try {
-    return await fetchAPI(`/api/v1/enterprise/dashboard${queryString ? `?${queryString}` : ''}`)
+    return await fetchAPI(`/api/v2/enterprise/dashboard${queryString ? `?${queryString}` : ''}`)
   } catch (error) {
     // If API is not yet implemented, return mock data for development
     if (process.env.NODE_ENV === 'development') {
@@ -1979,7 +1979,7 @@ export async function getRevenueAnalytics(
   if (endDate) params.append('end_date', endDate)
   params.append('group_by', groupBy)
   
-  return fetchAPI(`/api/v1/analytics/revenue?${params.toString()}`)
+  return fetchAPI(`/api/v2/analytics/revenue?${params.toString()}`)
 }
 
 export interface RevenueBreakdown {
@@ -2085,7 +2085,7 @@ export async function getRevenueBreakdown(
   if (endDate) params.append('end_date', endDate)
   params.append('breakdown_by', breakdownBy)
   
-  return fetchAPI(`/api/v1/analytics/revenue-breakdown?${params.toString()}`)
+  return fetchAPI(`/api/v2/analytics/revenue-breakdown?${params.toString()}`)
 }
 
 // Location-specific analytics
@@ -2131,7 +2131,7 @@ export async function getLocationAnalytics(
   const queryString = params.toString()
   
   try {
-    return await fetchAPI(`/api/v1/analytics/location/${locationId}?${queryString}`)
+    return await fetchAPI(`/api/v2/analytics/location/${locationId}?${queryString}`)
   } catch (error) {
     // If API is not yet implemented, return mock data for development
     if (process.env.NODE_ENV === 'development') {
@@ -2217,7 +2217,7 @@ export interface ServicePriceCalculation {
 
 // Services endpoints
 export async function getServiceCategories(): Promise<ServiceCategory[]> {
-  return fetchAPI('/api/v1/services/categories')
+  return fetchAPI('/api/v2/services/categories')
 }
 
 export async function getServices(params?: {
@@ -2237,7 +2237,7 @@ export async function getServices(params?: {
   if (params?.limit) queryParams.append('limit', params.limit.toString())
   
   const query = queryParams.toString()
-  return fetchAPI(`/api/v1/services/${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/services/${query ? '?' + query : ''}`)
 }
 
 export async function getPublicServices(params?: {
@@ -2251,7 +2251,7 @@ export async function getPublicServices(params?: {
   if (params?.limit) queryParams.append('limit', params.limit.toString())
   
   const query = queryParams.toString()
-  return fetchAPI(`/api/v1/public/services/${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/public/services/${query ? '?' + query : ''}`)
 }
 
 export async function getService(serviceId: number, barberId?: number): Promise<Service> {
@@ -2259,59 +2259,59 @@ export async function getService(serviceId: number, barberId?: number): Promise<
   if (barberId) params.append('barber_id', barberId.toString())
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/services/${serviceId}${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/services/${serviceId}${query ? '?' + query : ''}`)
 }
 
 export async function createService(serviceData: ServiceCreate): Promise<Service> {
-  return fetchAPI('/api/v1/services/', {
+  return fetchAPI('/api/v2/services/', {
     method: 'POST',
     body: JSON.stringify(serviceData),
   })
 }
 
 export async function updateService(serviceId: number, updates: ServiceUpdate): Promise<Service> {
-  return fetchAPI(`/api/v1/services/${serviceId}`, {
+  return fetchAPI(`/api/v2/services/${serviceId}`, {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
 }
 
 export async function deleteService(serviceId: number) {
-  return fetchAPI(`/api/v1/services/${serviceId}`, {
+  return fetchAPI(`/api/v2/services/${serviceId}`, {
     method: 'DELETE',
   })
 }
 
 export async function createServicePricingRule(serviceId: number, ruleData: ServicePricingRuleCreate) {
-  return fetchAPI(`/api/v1/services/${serviceId}/pricing-rules`, {
+  return fetchAPI(`/api/v2/services/${serviceId}/pricing-rules`, {
     method: 'POST',
     body: JSON.stringify(ruleData),
   })
 }
 
 export async function getServicePricingRules(serviceId: number): Promise<ServicePricingRule[]> {
-  return fetchAPI(`/api/v1/services/${serviceId}/pricing-rules`)
+  return fetchAPI(`/api/v2/services/${serviceId}/pricing-rules`)
 }
 
 export async function deleteServicePricingRule(serviceId: number, ruleId: number) {
-  return fetchAPI(`/api/v1/services/${serviceId}/pricing-rules/${ruleId}`, {
+  return fetchAPI(`/api/v2/services/${serviceId}/pricing-rules/${ruleId}`, {
     method: 'DELETE',
   })
 }
 
 export async function createServiceBookingRule(serviceId: number, ruleData: ServiceBookingRuleCreate) {
-  return fetchAPI(`/api/v1/services/${serviceId}/booking-rules`, {
+  return fetchAPI(`/api/v2/services/${serviceId}/booking-rules`, {
     method: 'POST',
     body: JSON.stringify(ruleData),
   })
 }
 
 export async function getServiceBookingRules(serviceId: number): Promise<ServiceBookingRule[]> {
-  return fetchAPI(`/api/v1/services/${serviceId}/booking-rules`)
+  return fetchAPI(`/api/v2/services/${serviceId}/booking-rules`)
 }
 
 export async function deleteServiceBookingRule(serviceId: number, ruleId: number) {
-  return fetchAPI(`/api/v1/services/${serviceId}/booking-rules/${ruleId}`, {
+  return fetchAPI(`/api/v2/services/${serviceId}/booking-rules/${ruleId}`, {
     method: 'DELETE',
   })
 }
@@ -2326,14 +2326,14 @@ export async function assignServiceToBarber(
   if (customPrice !== undefined) body.custom_price = customPrice
   if (customDuration !== undefined) body.custom_duration = customDuration
   
-  return fetchAPI(`/api/v1/services/${serviceId}/barbers/${barberId}`, {
+  return fetchAPI(`/api/v2/services/${serviceId}/barbers/${barberId}`, {
     method: 'POST',
     body: JSON.stringify(body),
   })
 }
 
 export async function removeServiceFromBarber(serviceId: number, barberId: number) {
-  return fetchAPI(`/api/v1/services/${serviceId}/barbers/${barberId}`, {
+  return fetchAPI(`/api/v2/services/${serviceId}/barbers/${barberId}`, {
     method: 'DELETE',
   })
 }
@@ -2343,7 +2343,7 @@ export async function getBarberServices(barberId: number, isAvailable?: boolean)
   if (isAvailable !== undefined) params.append('is_available', isAvailable.toString())
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/services/barbers/${barberId}${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/services/barbers/${barberId}${query ? '?' + query : ''}`)
 }
 
 export async function calculateServicePrice(
@@ -2358,7 +2358,7 @@ export async function calculateServicePrice(
   if (bookingTime) params.append('booking_time', bookingTime)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/services/${serviceId}/calculate-price${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/services/${serviceId}/calculate-price${query ? '?' + query : ''}`)
 }
 
 // Service Analytics functions
@@ -2375,7 +2375,7 @@ export async function getServiceAnalytics(params?: {
   if (params?.barberId) queryParams.append('barber_id', params.barberId.toString())
   
   const query = queryParams.toString()
-  return fetchAPI(`/api/v1/analytics/services${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/analytics/services${query ? '?' + query : ''}`)
 }
 
 export async function getServiceMetrics(serviceId: number, params?: {
@@ -2389,7 +2389,7 @@ export async function getServiceMetrics(serviceId: number, params?: {
   if (params?.endDate) queryParams.append('end_date', params.endDate)
   
   const query = queryParams.toString()
-  return fetchAPI(`/api/v1/analytics/services/${serviceId}/metrics${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/analytics/services/${serviceId}/metrics${query ? '?' + query : ''}`)
 }
 
 // ============================================================================
@@ -2425,7 +2425,7 @@ export async function getBarberSchedule(
   params.append('end_date', endDate)
   if (timezone) params.append('timezone', timezone)
   
-  return fetchAPI(`/api/v1/barber-availability/schedule/${barberId}?${params.toString()}`)
+  return fetchAPI(`/api/v2/barber-availability/schedule/${barberId}?${params.toString()}`)
 }
 
 export async function getBarberAvailability(barberId: number, dayOfWeek?: number): Promise<BarberAvailability[]> {
@@ -2433,14 +2433,14 @@ export async function getBarberAvailability(barberId: number, dayOfWeek?: number
   if (dayOfWeek !== undefined) params.append('day_of_week', dayOfWeek.toString())
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/barber-availability/availability/${barberId}${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/barber-availability/availability/${barberId}${query ? '?' + query : ''}`)
 }
 
 export async function createBarberAvailability(
   barberId: number,
   availabilityData: BarberAvailabilityCreate
 ): Promise<BarberAvailability> {
-  return fetchAPI(`/api/v1/barber-availability/availability/${barberId}`, {
+  return fetchAPI(`/api/v2/barber-availability/availability/${barberId}`, {
     method: 'POST',
     body: JSON.stringify(availabilityData),
   })
@@ -2450,14 +2450,14 @@ export async function updateBarberAvailability(
   availabilityId: number,
   updates: BarberAvailabilityUpdate
 ): Promise<BarberAvailability> {
-  return fetchAPI(`/api/v1/barber-availability/availability/${availabilityId}`, {
+  return fetchAPI(`/api/v2/barber-availability/availability/${availabilityId}`, {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
 }
 
 export async function deleteBarberAvailability(availabilityId: number) {
-  return fetchAPI(`/api/v1/barber-availability/availability/${availabilityId}`, {
+  return fetchAPI(`/api/v2/barber-availability/availability/${availabilityId}`, {
     method: 'DELETE',
   })
 }
@@ -2472,14 +2472,14 @@ export async function getBarberTimeOff(
   if (endDate) params.append('end_date', endDate)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/barber-availability/time-off/${barberId}${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/barber-availability/time-off/${barberId}${query ? '?' + query : ''}`)
 }
 
 export async function createTimeOffRequest(
   barberId: number,
   timeOffData: BarberTimeOffCreate
 ): Promise<BarberTimeOff> {
-  return fetchAPI(`/api/v1/barber-availability/time-off/${barberId}`, {
+  return fetchAPI(`/api/v2/barber-availability/time-off/${barberId}`, {
     method: 'POST',
     body: JSON.stringify(timeOffData),
   })
@@ -2493,14 +2493,14 @@ export async function getSpecialAvailability(
   if (date) params.append('date', date)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/barber-availability/special/${barberId}${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/barber-availability/special/${barberId}${query ? '?' + query : ''}`)
 }
 
 export async function createSpecialAvailability(
   barberId: number,
   specialData: BarberSpecialAvailabilityCreate
 ): Promise<BarberSpecialAvailability> {
-  return fetchAPI(`/api/v1/barber-availability/special/${barberId}`, {
+  return fetchAPI(`/api/v2/barber-availability/special/${barberId}`, {
     method: 'POST',
     body: JSON.stringify(specialData),
   })
@@ -2519,7 +2519,7 @@ export async function checkBarberAvailability(
   params.append('end_time', endTime)
   if (excludeAppointmentId) params.append('exclude_appointment_id', excludeAppointmentId.toString())
   
-  return fetchAPI(`/api/v1/barber-availability/check/${barberId}?${params.toString()}`)
+  return fetchAPI(`/api/v2/barber-availability/check/${barberId}?${params.toString()}`)
 }
 
 export async function getAvailableBarbersForSlot(
@@ -2534,7 +2534,7 @@ export async function getAvailableBarbersForSlot(
   params.append('end_time', endTime)
   if (serviceId) params.append('service_id', serviceId.toString())
   
-  return fetchAPI(`/api/v1/barber-availability/available-barbers?${params.toString()}`)
+  return fetchAPI(`/api/v2/barber-availability/available-barbers?${params.toString()}`)
 }
 
 // ============================================================================
@@ -2607,7 +2607,7 @@ export interface UpcomingRecurringAppointment {
 
 // Recurring appointments endpoints
 export async function createRecurringPattern(patternData: RecurringPatternCreate): Promise<RecurringPattern> {
-  return fetchAPI('/api/v1/recurring-appointments/patterns', {
+  return fetchAPI('/api/v2/recurring-appointments/patterns', {
     method: 'POST',
     body: JSON.stringify(patternData),
   })
@@ -2618,25 +2618,25 @@ export async function getRecurringPatterns(isActive?: boolean): Promise<Recurrin
   if (isActive !== undefined) params.append('is_active', isActive.toString())
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/recurring-appointments/patterns${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/recurring-appointments/patterns${query ? '?' + query : ''}`)
 }
 
 export async function getRecurringPattern(patternId: number): Promise<RecurringPattern> {
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}`)
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}`)
 }
 
 export async function updateRecurringPattern(
   patternId: number,
   updates: RecurringPatternUpdate
 ): Promise<RecurringPattern> {
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}`, {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
 }
 
 export async function deleteRecurringPattern(patternId: number) {
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}`, {
     method: 'DELETE',
   })
 }
@@ -2650,7 +2650,7 @@ export async function generateAppointmentsFromPattern(
   params.append('preview_only', previewOnly.toString())
   params.append('max_appointments', maxAppointments.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}/generate?${params.toString()}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}/generate?${params.toString()}`, {
     method: 'POST',
   })
 }
@@ -2659,14 +2659,14 @@ export async function getUpcomingRecurringAppointments(daysAhead: number = 30) {
   const params = new URLSearchParams()
   params.append('days_ahead', daysAhead.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/upcoming?${params.toString()}`)
+  return fetchAPI(`/api/v2/recurring-appointments/upcoming?${params.toString()}`)
 }
 
 export async function cancelRecurringSeries(patternId: number, cancelFutureOnly: boolean = true) {
   const params = new URLSearchParams()
   params.append('cancel_future_only', cancelFutureOnly.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}/cancel?${params.toString()}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}/cancel?${params.toString()}`, {
     method: 'POST',
   })
 }
@@ -2684,7 +2684,7 @@ export async function modifySingleOccurrence(
   if (newBarberId) params.append('new_barber_id', newBarberId.toString())
   params.append('cancel', cancel.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/appointments/${appointmentId}/modify?${params.toString()}`, {
+  return fetchAPI(`/api/v2/recurring-appointments/appointments/${appointmentId}/modify?${params.toString()}`, {
     method: 'PUT',
   })
 }
@@ -2693,7 +2693,7 @@ export async function previewPatternOccurrences(patternId: number, limit: number
   const params = new URLSearchParams()
   params.append('limit', limit.toString())
   
-  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}/preview?${params.toString()}`)
+  return fetchAPI(`/api/v2/recurring-appointments/patterns/${patternId}/preview?${params.toString()}`)
 }
 
 // ============================================================================
@@ -2733,13 +2733,13 @@ export interface NotificationPreferenceUpdate {
 
 // Notifications endpoints
 export async function getNotificationPreferences(): Promise<NotificationPreference> {
-  return fetchAPI('/api/v1/notifications/preferences')
+  return fetchAPI('/api/v2/notifications/preferences')
 }
 
 export async function updateNotificationPreferences(
   preferences: NotificationPreferenceUpdate
 ): Promise<NotificationPreference> {
-  return fetchAPI('/api/v1/notifications/preferences', {
+  return fetchAPI('/api/v2/notifications/preferences', {
     method: 'PUT',
     body: JSON.stringify(preferences),
   })
@@ -2754,7 +2754,7 @@ export async function getNotificationTemplates(
   params.append('active_only', activeOnly.toString())
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/notifications/templates${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/notifications/templates${query ? '?' + query : ''}`)
 }
 
 export async function getNotificationHistory(
@@ -2770,24 +2770,24 @@ export async function getNotificationHistory(
   if (status) params.append('status', status)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/notifications/history${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/notifications/history${query ? '?' + query : ''}`)
 }
 
 export async function getNotificationStats(days: number = 7): Promise<NotificationStats> {
   const params = new URLSearchParams()
   params.append('days', days.toString())
   
-  return fetchAPI(`/api/v1/notifications/stats?${params.toString()}`)
+  return fetchAPI(`/api/v2/notifications/stats?${params.toString()}`)
 }
 
 export async function sendTestEmail() {
-  return fetchAPI('/api/v1/notifications/test-email', {
+  return fetchAPI('/api/v2/notifications/test-email', {
     method: 'POST',
   })
 }
 
 export async function sendTestSms() {
-  return fetchAPI('/api/v1/notifications/test-sms', {
+  return fetchAPI('/api/v2/notifications/test-sms', {
     method: 'POST',
   })
 }
@@ -2796,13 +2796,13 @@ export async function processNotificationQueue(batchSize: number = 50) {
   const params = new URLSearchParams()
   params.append('batch_size', batchSize.toString())
   
-  return fetchAPI(`/api/v1/notifications/process-queue?${params.toString()}`, {
+  return fetchAPI(`/api/v2/notifications/process-queue?${params.toString()}`, {
     method: 'POST',
   })
 }
 
 export async function cancelNotification(notificationId: number) {
-  return fetchAPI(`/api/v1/notifications/history/${notificationId}`, {
+  return fetchAPI(`/api/v2/notifications/history/${notificationId}`, {
     method: 'DELETE',
   })
 }
@@ -3341,56 +3341,56 @@ export async function getBookingRules(
   if (isActive !== undefined) params.append('is_active', isActive.toString())
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/booking-rules/${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/booking-rules/${query ? '?' + query : ''}`)
 }
 
 export async function createBookingRule(ruleData: BookingRuleCreate): Promise<BookingRule> {
-  return fetchAPI('/api/v1/booking-rules/', {
+  return fetchAPI('/api/v2/booking-rules/', {
     method: 'POST',
     body: JSON.stringify(ruleData),
   })
 }
 
 export async function getBookingRule(ruleId: number): Promise<BookingRule> {
-  return fetchAPI(`/api/v1/booking-rules/${ruleId}`)
+  return fetchAPI(`/api/v2/booking-rules/${ruleId}`)
 }
 
 export async function updateBookingRule(ruleId: number, updates: BookingRuleUpdate): Promise<BookingRule> {
-  return fetchAPI(`/api/v1/booking-rules/${ruleId}`, {
+  return fetchAPI(`/api/v2/booking-rules/${ruleId}`, {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
 }
 
 export async function deleteBookingRule(ruleId: number) {
-  return fetchAPI(`/api/v1/booking-rules/${ruleId}`, {
+  return fetchAPI(`/api/v2/booking-rules/${ruleId}`, {
     method: 'DELETE',
   })
 }
 
 export async function validateBooking(bookingData: BookingValidation): Promise<BookingValidationResponse> {
-  return fetchAPI('/api/v1/booking-rules/validate', {
+  return fetchAPI('/api/v2/booking-rules/validate', {
     method: 'POST',
     body: JSON.stringify(bookingData),
   })
 }
 
 export async function getServiceBookingRulesAdvanced(serviceId: number): Promise<ServiceBookingRule[]> {
-  return fetchAPI(`/api/v1/booking-rules/services/${serviceId}/rules`)
+  return fetchAPI(`/api/v2/booking-rules/services/${serviceId}/rules`)
 }
 
 export async function createServiceBookingRuleAdvanced(
   serviceId: number,
   ruleData: ServiceBookingRuleCreate
 ): Promise<ServiceBookingRule> {
-  return fetchAPI(`/api/v1/booking-rules/services/${serviceId}/rules`, {
+  return fetchAPI(`/api/v2/booking-rules/services/${serviceId}/rules`, {
     method: 'POST',
     body: JSON.stringify(ruleData),
   })
 }
 
 export async function getRuleTypes() {
-  return fetchAPI('/api/v1/booking-rules/rule-types')
+  return fetchAPI('/api/v2/booking-rules/rule-types')
 }
 
 // ============================================================================
@@ -3398,7 +3398,7 @@ export async function getRuleTypes() {
 // ============================================================================
 
 export async function webhookHealth() {
-  return fetchAPI('/api/v1/webhooks/health')
+  return fetchAPI('/api/v2/webhooks/health')
 }
 
 
@@ -3428,17 +3428,17 @@ export async function getAllTimezones(
   params.append('limit', limit.toString())
   params.append('offset', offset.toString())
   
-  return fetchAPI(`/api/v1/timezones?${params.toString()}`)
+  return fetchAPI(`/api/v2/timezones?${params.toString()}`)
 }
 
 export async function getCommonTimezones(): Promise<TimezoneListResponse> {
-  return fetchAPI('/api/v1/timezones/common')
+  return fetchAPI('/api/v2/timezones/common')
 }
 
 export async function getTimezoneDetails(timezoneName: string): Promise<TimezoneInfo> {
   // Encode timezone name for URL
   const encodedName = encodeURIComponent(timezoneName)
-  return fetchAPI(`/api/v1/timezones/${encodedName}`)
+  return fetchAPI(`/api/v2/timezones/${encodedName}`)
 }
 
 // ============================================================================
@@ -3563,7 +3563,7 @@ export async function getAppointmentAnalytics(
   if (endDate) params.append('end_date', endDate)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/analytics/appointments${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/analytics/appointments${query ? '?' + query : ''}`)
 }
 
 /**
@@ -3585,7 +3585,7 @@ export async function getAppointmentPatterns(
   if (endDate) params.append('end_date', endDate)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/analytics/appointment-patterns${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/analytics/appointment-patterns${query ? '?' + query : ''}`)
 }
 
 /**
@@ -3607,7 +3607,7 @@ export async function getClientRetentionAnalytics(
   if (endDate) params.append('end_date', endDate)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/analytics/client-retention${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/analytics/client-retention${query ? '?' + query : ''}`)
 }
 
 /**
@@ -3629,7 +3629,7 @@ export async function getClientLifetimeValueAnalytics(
   if (endDate) params.append('end_date', endDate)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/analytics/client-lifetime-value${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/analytics/client-lifetime-value${query ? '?' + query : ''}`)
 }
 
 /**
@@ -3651,7 +3651,7 @@ export async function getBarberPerformanceMetrics(
   if (endDate) params.append('end_date', endDate)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/analytics/barber-performance${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/analytics/barber-performance${query ? '?' + query : ''}`)
 }
 
 /**
@@ -3669,7 +3669,7 @@ export async function getComparativeAnalytics(
   params.append('comparison_period', comparisonPeriod)
   if (userId) params.append('user_id', userId.toString())
   
-  return fetchAPI(`/api/v1/analytics/comparative?${params.toString()}`)
+  return fetchAPI(`/api/v2/analytics/comparative?${params.toString()}`)
 }
 
 /**
@@ -3696,7 +3696,7 @@ export async function exportAnalyticsData(
   if (endDate) params.append('end_date', endDate)
   if (userId) params.append('user_id', userId.toString())
   
-  return fetchAPI(`/api/v1/analytics/export?${params.toString()}`)
+  return fetchAPI(`/api/v2/analytics/export?${params.toString()}`)
 }
 
 /**
@@ -3718,7 +3718,7 @@ export async function getBusinessInsights(
   if (endDate) params.append('end_date', endDate)
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/analytics/insights${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/analytics/insights${query ? '?' + query : ''}`)
 }
 
 // ============================================================================
@@ -4433,21 +4433,21 @@ export interface StripeConnectStatusResponse {
 
 // Extended payment endpoints
 export async function processRefund(refundData: RefundCreate): Promise<RefundResponse> {
-  return fetchAPI('/api/v1/payments/refund', {
+  return fetchAPI('/api/v2/payments/refund', {
     method: 'POST',
     body: JSON.stringify(refundData),
   })
 }
 
 export async function createGiftCertificate(giftCertData: GiftCertificateCreate): Promise<GiftCertificateResponse> {
-  return fetchAPI('/api/v1/payments/gift-certificates', {
+  return fetchAPI('/api/v2/payments/gift-certificates', {
     method: 'POST',
     body: JSON.stringify(giftCertData),
   })
 }
 
 export async function validateGiftCertificate(validationData: GiftCertificateValidate) {
-  return fetchAPI('/api/v1/payments/gift-certificates/validate', {
+  return fetchAPI('/api/v2/payments/gift-certificates/validate', {
     method: 'POST',
     body: JSON.stringify(validationData),
   })
@@ -4455,31 +4455,31 @@ export async function validateGiftCertificate(validationData: GiftCertificateVal
 
 
 export async function generatePaymentReport(reportRequest: PaymentReportRequest): Promise<PaymentReportResponse> {
-  return fetchAPI('/api/v1/payments/reports', {
+  return fetchAPI('/api/v2/payments/reports', {
     method: 'POST',
     body: JSON.stringify(reportRequest),
   })
 }
 
 export async function processPayout(payoutData: PayoutCreate): Promise<PayoutResponse> {
-  return fetchAPI('/api/v1/payments/payouts', {
+  return fetchAPI('/api/v2/payments/payouts', {
     method: 'POST',
     body: JSON.stringify(payoutData),
   })
 }
 
 export async function listGiftCertificates(): Promise<GiftCertificateResponse[]> {
-  return fetchAPI('/api/v1/payments/gift-certificates')
+  return fetchAPI('/api/v2/payments/gift-certificates')
 }
 
 export async function createStripeConnectAccount(): Promise<StripeConnectOnboardingResponse> {
-  return fetchAPI('/api/v1/payments/stripe-connect/onboard', {
+  return fetchAPI('/api/v2/payments/stripe-connect/onboard', {
     method: 'POST',
   })
 }
 
 export async function getStripeConnectStatus(): Promise<StripeConnectStatusResponse> {
-  return fetchAPI('/api/v1/payments/stripe-connect/status')
+  return fetchAPI('/api/v2/payments/stripe-connect/status')
 }
 
 // SMS Conversation Types
@@ -4554,11 +4554,11 @@ export async function getSMSConversations(
   if (unread_only) params.append('unread_only', 'true')
   if (search) params.append('search', search)
   
-  return fetchAPI(`/api/v1/sms/conversations?${params.toString()}`)
+  return fetchAPI(`/api/v2/sms/conversations?${params.toString()}`)
 }
 
 export async function getSMSConversation(conversationId: number): Promise<SMSConversation> {
-  return fetchAPI(`/api/v1/sms/conversations/${conversationId}`)
+  return fetchAPI(`/api/v2/sms/conversations/${conversationId}`)
 }
 
 export async function getConversationMessages(
@@ -4570,14 +4570,14 @@ export async function getConversationMessages(
   params.append('limit', limit.toString())
   params.append('offset', offset.toString())
   
-  return fetchAPI(`/api/v1/sms/conversations/${conversationId}/messages?${params.toString()}`)
+  return fetchAPI(`/api/v2/sms/conversations/${conversationId}/messages?${params.toString()}`)
 }
 
 export async function sendSMSMessage(
   conversationId: number,
   messageData: SMSMessageCreate
 ): Promise<SMSMessage> {
-  return fetchAPI(`/api/v1/sms/conversations/${conversationId}/messages`, {
+  return fetchAPI(`/api/v2/sms/conversations/${conversationId}/messages`, {
     method: 'POST',
     body: JSON.stringify(messageData),
   })
@@ -4586,7 +4586,7 @@ export async function sendSMSMessage(
 export async function createSMSConversation(
   conversationData: SMSConversationCreate
 ): Promise<SMSConversation> {
-  return fetchAPI('/api/v1/sms/conversations', {
+  return fetchAPI('/api/v2/sms/conversations', {
     method: 'POST',
     body: JSON.stringify(conversationData),
   })
@@ -4596,14 +4596,14 @@ export async function updateSMSConversation(
   conversationId: number,
   updateData: SMSConversationUpdate
 ): Promise<SMSConversation> {
-  return fetchAPI(`/api/v1/sms/conversations/${conversationId}`, {
+  return fetchAPI(`/api/v2/sms/conversations/${conversationId}`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
   })
 }
 
 export async function archiveSMSConversation(conversationId: number): Promise<{ message: string }> {
-  return fetchAPI(`/api/v1/sms/conversations/${conversationId}`, {
+  return fetchAPI(`/api/v2/sms/conversations/${conversationId}`, {
     method: 'DELETE',
   })
 }
@@ -4626,7 +4626,7 @@ export async function getSMSStats(): Promise<{
     user_id: number
   }
 }> {
-  return fetchAPI('/api/v1/sms/stats')
+  return fetchAPI('/api/v2/sms/stats')
 }
 
 // ============================================================================
@@ -4795,12 +4795,12 @@ export async function getPaymentHistory(filters?: PaymentHistoryFilter): Promise
   if (filters?.page_size) params.append('page_size', filters.page_size.toString())
   
   const query = params.toString()
-  return fetchAPI(`/api/v1/payments/history${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/payments/history${query ? '?' + query : ''}`)
 }
 
 // Refunds
 export async function createRefund(refundData: RefundCreate): Promise<RefundResponse> {
-  return fetchAPI('/api/v1/payments/refund', {
+  return fetchAPI('/api/v2/payments/refund', {
     method: 'POST',
     body: JSON.stringify(refundData),
   })
@@ -4809,19 +4809,19 @@ export async function createRefund(refundData: RefundCreate): Promise<RefundResp
 // Gift Certificates
 
 export async function getGiftCertificates(): Promise<GiftCertificate[]> {
-  return fetchAPI('/api/v1/payments/gift-certificates')
+  return fetchAPI('/api/v2/payments/gift-certificates')
 }
 
 
 export async function sendGiftCertificateEmail(certificateId: number): Promise<{ message: string }> {
-  return fetchAPI(`/api/v1/payments/gift-certificates/${certificateId}/send`, {
+  return fetchAPI(`/api/v2/payments/gift-certificates/${certificateId}/send`, {
     method: 'POST',
   })
 }
 
 // Payment Reports
 export async function getPaymentReport(request: PaymentReportRequest): Promise<PaymentReportResponse> {
-  return fetchAPI('/api/v1/payments/reports', {
+  return fetchAPI('/api/v2/payments/reports', {
     method: 'POST',
     body: JSON.stringify(request),
   })
@@ -4832,7 +4832,7 @@ export async function createStripeConnectAccountSimple(): Promise<{
   account_id: string
   onboarding_url: string
 }> {
-  return fetchAPI('/api/v1/payments/stripe-connect/onboard', {
+  return fetchAPI('/api/v2/payments/stripe-connect/onboard', {
     method: 'POST',
   })
 }
@@ -4845,12 +4845,12 @@ export async function getStripeConnectStatusDetail(): Promise<{
   details_submitted: boolean
   requirements?: string[]
 }> {
-  return fetchAPI('/api/v1/payments/stripe-connect/status')
+  return fetchAPI('/api/v2/payments/stripe-connect/status')
 }
 
 // Payment Receipt
 export async function sendPaymentReceipt(paymentId: number): Promise<{ message: string }> {
-  return fetchAPI(`/api/v1/payments/${paymentId}/receipt`, {
+  return fetchAPI(`/api/v2/payments/${paymentId}/receipt`, {
     method: 'POST',
   })
 }
@@ -4862,7 +4862,7 @@ export async function sendRefundNotification(data: {
   amount: number
   reason: string
 }): Promise<{ message: string }> {
-  return fetchAPI('/api/v1/notifications/refund', {
+  return fetchAPI('/api/v2/notifications/refund', {
     method: 'POST',
     body: JSON.stringify(data),
   })
@@ -5052,12 +5052,12 @@ export const webhooksAPI = {
     if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString())
     
     const query = searchParams.toString()
-    return fetchAPI(`/api/v1/webhooks${query ? '?' + query : ''}`)
+    return fetchAPI(`/api/v2/webhooks${query ? '?' + query : ''}`)
   },
 
   // Get webhook details
   get: async (id: string): Promise<WebhookEndpoint> => {
-    return fetchAPI(`/api/v1/webhooks/${id}`)
+    return fetchAPI(`/api/v2/webhooks/${id}`)
   },
 
   // Create webhook
@@ -5073,7 +5073,7 @@ export const webhooksAPI = {
     retry_delay_seconds?: number
     timeout_seconds?: number
   }): Promise<WebhookEndpoint> => {
-    return fetchAPI('/api/v1/webhooks', {
+    return fetchAPI('/api/v2/webhooks', {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -5093,7 +5093,7 @@ export const webhooksAPI = {
     retry_delay_seconds: number
     timeout_seconds: number
   }>): Promise<WebhookEndpoint> => {
-    return fetchAPI(`/api/v1/webhooks/${id}`, {
+    return fetchAPI(`/api/v2/webhooks/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     })
@@ -5101,7 +5101,7 @@ export const webhooksAPI = {
 
   // Delete webhook
   delete: async (id: string): Promise<void> => {
-    return fetchAPI(`/api/v1/webhooks/${id}`, {
+    return fetchAPI(`/api/v2/webhooks/${id}`, {
       method: 'DELETE',
     })
   },
@@ -5124,12 +5124,12 @@ export const webhooksAPI = {
     if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString())
     
     const query = searchParams.toString()
-    return fetchAPI(`/api/v1/webhooks/${id}/logs${query ? '?' + query : ''}`)
+    return fetchAPI(`/api/v2/webhooks/${id}/logs${query ? '?' + query : ''}`)
   },
 
   // Test webhook
   test: async (id: string, eventType: string): Promise<WebhookLog> => {
-    return fetchAPI(`/api/v1/webhooks/${id}/test`, {
+    return fetchAPI(`/api/v2/webhooks/${id}/test`, {
       method: 'POST',
       body: JSON.stringify({ event_type: eventType }),
     })
@@ -5137,19 +5137,19 @@ export const webhooksAPI = {
 
   // Retry webhook delivery
   retryDelivery: async (id: string, logId: string): Promise<WebhookLog> => {
-    return fetchAPI(`/api/v1/webhooks/${id}/logs/${logId}/retry`, {
+    return fetchAPI(`/api/v2/webhooks/${id}/logs/${logId}/retry`, {
       method: 'POST',
     })
   },
 
   // Get available events
   getEvents: async (): Promise<WebhookEvent[]> => {
-    return fetchAPI('/api/v1/webhooks/events')
+    return fetchAPI('/api/v2/webhooks/events')
   },
 
   // Get webhook statistics
   getStats: async (): Promise<WebhookStats> => {
-    return fetchAPI('/api/v1/webhooks/stats/summary')
+    return fetchAPI('/api/v2/webhooks/stats/summary')
   },
 }
 
@@ -5604,7 +5604,7 @@ export { sendTestSms as sendTestSMS }
 
 // Add missing functions that are imported by components
 export async function getUsers(): Promise<User[]> {
-  return fetchAPI('/api/v1/users')
+  return fetchAPI('/api/v2/users')
 }
 
 // ================================================================================
@@ -5681,12 +5681,12 @@ export const appointmentsAPI = {
   async getAvailableSlots(appointmentDate: string, timezone?: string): Promise<any> {
     const params = new URLSearchParams({ appointment_date: appointmentDate })
     if (timezone) params.append('timezone', timezone)
-    return fetchAPI(`/api/v1/appointments/slots?${params}`)
+    return fetchAPI(`/api/v2/appointments/slots?${params}`)
   },
 
   // Create new appointment
   async create(appointmentData: AppointmentCreate): Promise<AppointmentResponse> {
-    return fetchAPI('/api/v1/appointments/', {
+    return fetchAPI('/api/v2/appointments/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(appointmentData)
@@ -5695,7 +5695,7 @@ export const appointmentsAPI = {
 
   // Create quick appointment (next available slot)
   async createQuick(quickData: QuickAppointmentCreate): Promise<AppointmentResponse> {
-    return fetchAPI('/api/v1/appointments/quick', {
+    return fetchAPI('/api/v2/appointments/quick', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(quickData)
@@ -5704,7 +5704,7 @@ export const appointmentsAPI = {
 
   // Create enhanced appointment with full options (admin/staff only)
   async createEnhanced(enhancedData: EnhancedAppointmentCreate): Promise<AppointmentResponse> {
-    return fetchAPI('/api/v1/appointments/enhanced', {
+    return fetchAPI('/api/v2/appointments/enhanced', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(enhancedData)
@@ -5718,17 +5718,17 @@ export const appointmentsAPI = {
       limit: limit.toString() 
     })
     if (status) params.append('status', status)
-    return fetchAPI(`/api/v1/appointments?${params}`)
+    return fetchAPI(`/api/v2/appointments?${params}`)
   },
 
   // Get specific appointment
   async get(appointmentId: number): Promise<AppointmentResponse> {
-    return fetchAPI(`/api/v1/appointments/${appointmentId}`)
+    return fetchAPI(`/api/v2/appointments/${appointmentId}`)
   },
 
   // Update appointment
   async update(appointmentId: number, updateData: AppointmentUpdate): Promise<AppointmentResponse> {
-    return fetchAPI(`/api/v1/appointments/${appointmentId}`, {
+    return fetchAPI(`/api/v2/appointments/${appointmentId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updateData)
@@ -5737,7 +5737,7 @@ export const appointmentsAPI = {
 
   // Reschedule appointment
   async reschedule(appointmentId: number, rescheduleData: AppointmentReschedule): Promise<AppointmentResponse> {
-    return fetchAPI(`/api/v1/appointments/${appointmentId}/reschedule`, {
+    return fetchAPI(`/api/v2/appointments/${appointmentId}/reschedule`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(rescheduleData)
@@ -5746,7 +5746,7 @@ export const appointmentsAPI = {
 
   // Cancel appointment
   async cancel(appointmentId: number): Promise<{ message: string }> {
-    return fetchAPI(`/api/v1/appointments/${appointmentId}`, {
+    return fetchAPI(`/api/v2/appointments/${appointmentId}`, {
       method: 'DELETE'
     })
   },
@@ -5767,7 +5767,7 @@ export const appointmentsAPI = {
     if (filters?.date_to) params.append('date_to', filters.date_to)
     if (filters?.barber_id) params.append('barber_id', filters.barber_id.toString())
     
-    return fetchAPI(`/api/v1/appointments/all/list?${params}`)
+    return fetchAPI(`/api/v2/appointments/all/list?${params}`)
   }
 }
 
@@ -5833,7 +5833,7 @@ export interface GuestBookingResponse {
 export async function createGuestBooking(bookingData: GuestBookingCreate): Promise<GuestBookingResponse> {
   // Use retryOperation with fetchAPI for consistent error handling and retry logic
   const result = await retryOperation(
-    () => fetchAPI('/api/v1/appointments/guest', {
+    () => fetchAPI('/api/v2/appointments/guest', {
       method: 'POST',
       body: JSON.stringify(bookingData),
     }),
@@ -5855,7 +5855,7 @@ export async function createGuestBooking(bookingData: GuestBookingCreate): Promi
 export async function createGuestQuickBooking(bookingData: GuestQuickBookingCreate): Promise<GuestBookingResponse> {
   // Use retryOperation with fetchAPI for consistent error handling and retry logic
   const result = await retryOperation(
-    () => fetchAPI('/api/v1/appointments/guest/quick', {
+    () => fetchAPI('/api/v2/appointments/guest/quick', {
       method: 'POST',
       body: JSON.stringify(bookingData),
     }),
@@ -5878,7 +5878,7 @@ export async function createGuestQuickBooking(bookingData: GuestQuickBookingCrea
 // ============================================================================
 
 export async function markSMSMessagesAsRead(conversationId: string): Promise<{ message: string }> {
-  return fetchAPI(`/api/v1/sms/conversations/${conversationId}/mark-read`, {
+  return fetchAPI(`/api/v2/sms/conversations/${conversationId}/mark-read`, {
     method: 'POST',
   })
 }
@@ -5902,13 +5902,13 @@ export async function getPerformanceAnalytics(params?: {
   if (params?.location_id) searchParams.append('location_id', params.location_id.toString())
   
   const query = searchParams.toString()
-  return fetchAPI(`/api/v1/analytics/performance${query ? '?' + query : ''}`)
+  return fetchAPI(`/api/v2/analytics/performance${query ? '?' + query : ''}`)
 }
 
 // Location Management API
 export async function getLocations(): Promise<Location[]> {
   try {
-    return await fetchAPI('/api/v1/locations')
+    return await fetchAPI('/api/v2/locations')
   } catch (error) {
     // If API is not yet implemented, return mock data for development
     if (process.env.NODE_ENV === 'development') {
@@ -6097,7 +6097,7 @@ export interface AIProvider {
 // Agent Templates API
 export async function getAgentTemplates(): Promise<AgentTemplate[]> {
   try {
-    return await fetchAPI('/api/v1/agents/templates')
+    return await fetchAPI('/api/v2/agents/templates')
   } catch (error) {
     // Return mock data for development
     if (process.env.NODE_ENV === 'development') {
@@ -6148,7 +6148,7 @@ export async function getAgentTemplates(): Promise<AgentTemplate[]> {
 
 export async function getAgentTemplate(agentType: string): Promise<AgentTemplate> {
   try {
-    return await fetchAPI(`/api/v1/agents/templates/${agentType}`)
+    return await fetchAPI(`/api/v2/agents/templates/${agentType}`)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       const templates = await getAgentTemplates()
@@ -6161,7 +6161,7 @@ export async function getAgentTemplate(agentType: string): Promise<AgentTemplate
 
 // Agent Instances API
 export async function createAgentInstance(instance: AgentInstanceCreate): Promise<AgentInstance> {
-  return fetchAPI('/api/v1/agents/instances', {
+  return fetchAPI('/api/v2/agents/instances', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(instance)
@@ -6173,7 +6173,7 @@ export async function getAgentInstances(status?: string): Promise<AgentInstance[
   if (status) params.append('status', status)
   
   try {
-    return await fetchAPI(`/api/v1/agents/instances${params.toString() ? '?' + params.toString() : ''}`)
+    return await fetchAPI(`/api/v2/agents/instances${params.toString() ? '?' + params.toString() : ''}`)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('Agent instances API not available, using mock data')
@@ -6217,11 +6217,11 @@ export async function getAgentInstances(status?: string): Promise<AgentInstance[
 }
 
 export async function getAgentInstance(instanceId: number): Promise<AgentInstance> {
-  return fetchAPI(`/api/v1/agents/instances/${instanceId}`)
+  return fetchAPI(`/api/v2/agents/instances/${instanceId}`)
 }
 
 export async function updateAgentInstance(instanceId: number, update: AgentInstanceUpdate): Promise<AgentInstance> {
-  return fetchAPI(`/api/v1/agents/instances/${instanceId}`, {
+  return fetchAPI(`/api/v2/agents/instances/${instanceId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(update)
@@ -6229,19 +6229,19 @@ export async function updateAgentInstance(instanceId: number, update: AgentInsta
 }
 
 export async function activateAgentInstance(instanceId: number): Promise<AgentInstance> {
-  return fetchAPI(`/api/v1/agents/instances/${instanceId}/activate`, {
+  return fetchAPI(`/api/v2/agents/instances/${instanceId}/activate`, {
     method: 'POST'
   })
 }
 
 export async function pauseAgentInstance(instanceId: number): Promise<AgentInstance> {
-  return fetchAPI(`/api/v1/agents/instances/${instanceId}/pause`, {
+  return fetchAPI(`/api/v2/agents/instances/${instanceId}/pause`, {
     method: 'POST'
   })
 }
 
 export async function deleteAgentInstance(instanceId: number): Promise<{ message: string }> {
-  return fetchAPI(`/api/v1/agents/instances/${instanceId}`, {
+  return fetchAPI(`/api/v2/agents/instances/${instanceId}`, {
     method: 'DELETE'
   })
 }
@@ -6259,11 +6259,11 @@ export async function getAgentConversations(params?: {
   if (params?.limit) searchParams.append('limit', params.limit.toString())
   if (params?.offset) searchParams.append('offset', params.offset.toString())
 
-  return fetchAPI(`/api/v1/agents/conversations${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
+  return fetchAPI(`/api/v2/agents/conversations${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
 }
 
 export async function getAgentConversation(conversationId: string): Promise<AgentConversation> {
-  return fetchAPI(`/api/v1/agents/conversations/${conversationId}`)
+  return fetchAPI(`/api/v2/agents/conversations/${conversationId}`)
 }
 
 // Agent Analytics API
@@ -6276,7 +6276,7 @@ export async function getAgentAnalytics(params?: {
   if (params?.end_date) searchParams.append('end_date', params.end_date)
 
   try {
-    return await fetchAPI(`/api/v1/agents/analytics${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
+    return await fetchAPI(`/api/v2/agents/analytics${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('Agent analytics API not available, using mock data')
@@ -6307,13 +6307,13 @@ export async function getAgentInstanceAnalytics(instanceId: number, params?: {
   if (params?.start_date) searchParams.append('start_date', params.start_date)
   if (params?.end_date) searchParams.append('end_date', params.end_date)
 
-  return fetchAPI(`/api/v1/agents/instances/${instanceId}/analytics${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
+  return fetchAPI(`/api/v2/agents/instances/${instanceId}/analytics${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
 }
 
 // Agent Subscription API
 export async function getAgentSubscription(): Promise<AgentSubscription> {
   try {
-    return await fetchAPI('/api/v1/agents/subscription')
+    return await fetchAPI('/api/v2/agents/subscription')
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('Agent subscription API not available, using mock data')
@@ -6341,7 +6341,7 @@ export async function createAgentSubscription(subscription: {
   tier: string
   billing_cycle?: string
 }): Promise<AgentSubscription> {
-  return fetchAPI('/api/v1/agents/subscription', {
+  return fetchAPI('/api/v2/agents/subscription', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(subscription)
@@ -6355,7 +6355,7 @@ export async function getAIProviders(): Promise<{
   validation_status: Record<string, boolean>
 }> {
   try {
-    return await fetchAPI('/api/v1/agents/providers')
+    return await fetchAPI('/api/v2/agents/providers')
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('AI providers API not available, using mock data')
@@ -6384,7 +6384,7 @@ export async function estimateAgentCost(request: {
   provider?: string
   max_tokens?: number
 }): Promise<{ estimated_costs: Record<string, number> }> {
-  return fetchAPI('/api/v1/agents/providers/estimate-cost', {
+  return fetchAPI('/api/v2/agents/providers/estimate-cost', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request)
@@ -6420,12 +6420,12 @@ export interface PixelInstructions {
 
 // Get current organization's tracking pixels
 export async function getCustomerPixels(): Promise<TrackingPixel> {
-  return fetchAPI('/api/v1/customer-pixels/')
+  return fetchAPI('/api/v2/customer-pixels/')
 }
 
 // Update tracking pixels
 export async function updateCustomerPixels(pixelData: Partial<TrackingPixel>): Promise<TrackingPixel> {
-  return fetchAPI('/api/v1/customer-pixels/', {
+  return fetchAPI('/api/v2/customer-pixels/', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(pixelData)
@@ -6434,28 +6434,28 @@ export async function updateCustomerPixels(pixelData: Partial<TrackingPixel>): P
 
 // Remove a specific tracking pixel
 export async function removeCustomerPixel(pixelType: 'gtm' | 'ga4' | 'meta' | 'google_ads'): Promise<{ message: string }> {
-  return fetchAPI(`/api/v1/customer-pixels/${pixelType}`, {
+  return fetchAPI(`/api/v2/customer-pixels/${pixelType}`, {
     method: 'DELETE'
   })
 }
 
 // Test tracking pixels
 export async function testCustomerPixels(): Promise<TrackingTestResult[]> {
-  return fetchAPI('/api/v1/customer-pixels/test', {
+  return fetchAPI('/api/v2/customer-pixels/test', {
     method: 'POST'
   })
 }
 
 // Get setup instructions for a pixel type
 export async function getPixelInstructions(pixelType: 'gtm' | 'ga4' | 'meta' | 'google_ads'): Promise<PixelInstructions> {
-  return fetchAPI(`/api/v1/customer-pixels/instructions?pixel_type=${pixelType}`, {
+  return fetchAPI(`/api/v2/customer-pixels/instructions?pixel_type=${pixelType}`, {
     method: 'POST'
   })
 }
 
 // Public endpoint - Get tracking pixels for a booking page (no auth required)
 export async function getPublicTrackingPixels(organizationSlug: string): Promise<TrackingPixel> {
-  return fetchAPI(`/api/v1/customer-pixels/public/${organizationSlug}`, {}, false)
+  return fetchAPI(`/api/v2/customer-pixels/public/${organizationSlug}`, {}, false)
 }
 
 // Export API client objects for backwards compatibility

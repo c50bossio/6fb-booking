@@ -1,6 +1,6 @@
 /**
  * API client for review management in BookedBarber V2
- * Handles communication with /api/v1/reviews/* endpoints
+ * Handles communication with /api/v2/reviews/* endpoints
  */
 
 import { 
@@ -26,7 +26,7 @@ import {
 import { apiClient } from '@/lib/api'
 
 export class ReviewsAPI {
-  private baseUrl = '/api/v1/reviews'
+  private baseUrl = '/api/v2/reviews'
 
   /**
    * Get paginated reviews with filtering and sorting

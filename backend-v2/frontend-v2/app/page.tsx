@@ -181,7 +181,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-800">
+      <section id="features" className="py-20 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -214,7 +214,7 @@ export default function LandingPage() {
       </section>
 
       {/* Social Proof Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section id="testimonials" className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -374,7 +374,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
+              <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/register" className="hover:text-white">Free Trial</Link></li>
                 <li><Link href="#features" className="hover:text-white">Features</Link></li>
@@ -383,7 +383,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
+              <h3 className="font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-sm">
                 <li><a href="#" className="hover:text-white">Documentation</a></li>
                 <li><a href="#" className="hover:text-white">Contact Us</a></li>
@@ -392,7 +392,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
+              <h3 className="font-semibold mb-4">Legal</h3>
               <ul className="space-y-2 text-sm">
                 <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
                 <li><a href="#" className="hover:text-white">Terms of Service</a></li>

@@ -20,14 +20,43 @@ const nextConfig = {
 
   // Image optimization configuration
   images: {
-    domains: [
-      'localhost', 
-      'bookedbarber.com', 
-      'api.bookedbarber.com',
-      'staging.bookedbarber.com',
-      'api-staging.bookedbarber.com',
-      'sixfb-backend-v2-staging.onrender.com',
-      'sixfb-frontend-v2-staging.onrender.com'
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '8000',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bookedbarber.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.bookedbarber.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'staging.bookedbarber.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api-staging.bookedbarber.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'sixfb-backend-v2-staging.onrender.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'sixfb-frontend-v2-staging.onrender.com',
+        pathname: '/**',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
