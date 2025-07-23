@@ -8,7 +8,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 import logging
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_admin_user
 from models import User
 from models import WebhookEndpoint, WebhookLog, WebhookEventType, WebhookAuthType, WebhookStatus

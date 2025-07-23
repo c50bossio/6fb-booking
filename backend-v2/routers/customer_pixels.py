@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional, Any
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_active_user, require_organization_access
 from models import User, Organization
 from models.organization import UserRole

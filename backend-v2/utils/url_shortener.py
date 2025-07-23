@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urljoin
 from sqlalchemy.orm import Session
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, desc
-from database import Base, engine
+from db import Base, engine
 import logging
 
 logger = logging.getLogger(__name__)

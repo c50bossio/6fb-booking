@@ -10,7 +10,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from services.google_calendar_service import GoogleCalendarService, GoogleCalendarError
 from models import User, Appointment, GoogleCalendarSettings, GoogleCalendarSyncLog

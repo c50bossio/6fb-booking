@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import func, and_, or_
 
 from services.celery_app import celery_app
-from database import SessionLocal
+from db import SessionLocal
 from models import Appointment, User, Client, Payment, DataExportRequest
 from models.consent import ExportStatus as ExportStatusModel
 from config import settings

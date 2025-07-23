@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import text
-from database import engine
+from db import engine
 from utils.auth import verify_password, create_access_token, create_refresh_token
 from datetime import timedelta
 import schemas

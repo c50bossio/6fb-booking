@@ -13,8 +13,8 @@ from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
 from datetime import datetime, timedelta
 
-from database import get_db
-from models import User, Organization, UserOrganization
+from db import get_db
+from models import User, Organization, UserOrganization, Appointment, Payment
 from models.organization import BillingPlan, UserRole, OrganizationType
 from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 from schemas import (
@@ -583,14 +583,48 @@ def get_organization_stats(
             detail="Organization not found"
         )
     
-    # Calculate stats (placeholder implementation)
-    # In a real implementation, these would be calculated from appointments, payments, etc.
+    # Calculate actual organization stats
+    # Get current month's date range
+    now = datetime.now()
+    month_start = datetime(now.year, now.month, 1)
+    if now.month == 12:
+        month_end = datetime(now.year + 1, 1, 1)
+    else:
+        month_end = datetime(now.year, now.month + 1, 1)
+    
+    # Get all barber IDs in this organization
+    barber_ids = [
+        uo.user_id for uo in organization.user_organizations 
+        if uo.role in ['barber', 'owner', 'admin']
+    ]
+    
+    # Calculate monthly appointments
+    monthly_appointments = 0
+    if barber_ids:
+        monthly_appointments = db.query(Appointment).filter(
+            Appointment.barber_id.in_(barber_ids),
+            Appointment.appointment_date >= month_start,
+            Appointment.appointment_date < month_end,
+            Appointment.status.in_(['completed', 'confirmed'])
+        ).count()
+    
+    # Calculate monthly revenue
+    monthly_revenue = 0.0
+    if barber_ids:
+        revenue_result = db.query(Payment).filter(
+            Payment.barber_id.in_(barber_ids),
+            Payment.created_at >= month_start,
+            Payment.created_at < month_end,
+            Payment.status == 'succeeded'
+        ).all()
+        monthly_revenue = sum(payment.amount for payment in revenue_result if payment.amount)
+    
     stats = OrganizationStatsResponse(
         organization_id=organization_id,
         total_chairs=organization.total_chairs_count,
         active_staff=len(organization.user_organizations),
-        monthly_appointments=0,  # TODO: Calculate from appointments table
-        monthly_revenue=0.0,  # TODO: Calculate from payments table
+        monthly_appointments=monthly_appointments,
+        monthly_revenue=float(monthly_revenue),
         trial_days_remaining=organization.trial_days_remaining if organization.subscription_status == 'trial' else None,
         subscription_status=organization.subscription_status,
         enabled_features=organization.enabled_features

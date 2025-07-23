@@ -9,7 +9,7 @@ import logging
 
 import models
 import schemas
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from services.timezone_service import timezone_service
 from utils.timezone import validate_timezone, get_common_timezones

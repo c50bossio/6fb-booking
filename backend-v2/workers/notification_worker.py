@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import logging
 from contextlib import contextmanager
 
-from database import SessionLocal
+from db import SessionLocal
 from services.notification_service import notification_service
 from config import settings
 

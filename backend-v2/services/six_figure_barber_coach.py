@@ -41,6 +41,11 @@ class CoachingInsight:
     timeline: str
     success_metrics: List[str]
     resources: List[str] = None
+    # Educational components
+    why_this_matters: str = ""
+    business_principle: str = ""
+    market_context: str = ""
+    six_fb_methodology: str = ""
 
 class SixFBCoach:
     """
@@ -118,7 +123,12 @@ class SixFBCoach:
                         "6FB Pricing Mastery Module",
                         "6FB Value Communication Scripts",
                         "6FB Market Research Templates"
-                    ]
+                    ],
+                    # Educational explanations
+                    why_this_matters="Pricing is the fastest lever to increase revenue without acquiring more clients. A small price increase compounds across all services and clients, creating exponential income growth. Many barbers undervalue their expertise and charge below market rate, leaving thousands on the table annually.",
+                    business_principle="Revenue = Clients × Average Ticket × Frequency. Increasing average ticket affects your total revenue immediately and requires no additional time investment or marketing spend. This is why pricing optimization is always the first focus in business growth.",
+                    market_context="Professional barbering is a skilled trade that commands premium pricing. Clients who value quality craftsmanship are willing to pay for expertise, consistency, and experience. Budget-conscious clients often become loyal when they experience superior service.",
+                    six_fb_methodology="The Six Figure Barber method prioritizes value-based pricing over time-based pricing. You're not selling time - you're selling transformation, confidence, and expertise. Price your services based on the value you deliver, not the time it takes."
                 ))
         
         return insights
@@ -160,7 +170,12 @@ class SixFBCoach:
                     "6FB Marketing Playbook",
                     "6FB Social Media Content Templates",
                     "6FB Referral Program Setup Guide"
-                ]
+                ],
+                # Educational explanations
+                why_this_matters="Client acquisition compounds over time through lifetime value. Each new client represents not just their first visit, but potentially years of future revenue. The cost of acquiring a client becomes negligible when spread across their lifetime value.",
+                business_principle="Customer Acquisition Cost (CAC) must be less than Customer Lifetime Value (CLV). Focus on acquisition channels with the highest quality clients, not just the highest quantity. One loyal client is worth 10 one-time visitors.",
+                market_context="Word-of-mouth is the strongest marketing channel in personal services. People trust recommendations from friends and family over advertising. Building a referral engine creates sustainable, low-cost growth that competitors can't easily replicate.",
+                six_fb_methodology="6FB focuses on attracting clients who value quality over price. Target clients who appreciate craftsmanship and are willing to pay for expertise. These clients become long-term relationships that drive sustainable six-figure income."
             ))
         
         return insights
@@ -202,7 +217,12 @@ class SixFBCoach:
                     "6FB Client Experience Guide",
                     "6FB Follow-up System Templates",
                     "6FB Loyalty Program Framework"
-                ]
+                ],
+                # Educational explanations
+                why_this_matters="Retaining existing clients is 5-25x more cost-effective than acquiring new ones. A 5% increase in retention can increase profits by 25-95%. Client retention directly impacts your predictable income and reduces dependence on constant marketing.",
+                business_principle="The Pareto Principle applies to clients: 80% of your revenue comes from 20% of your clients. Focus on keeping your best clients happy rather than chasing new ones. Loyal clients become advocates who bring referrals.",
+                market_context="In personal services, clients switch providers for three main reasons: poor service quality, lack of personal connection, or feeling undervalued. Most retention issues are preventable through consistent communication and exceptional service delivery.",
+                six_fb_methodology="6FB treats every client as a long-term relationship, not a transaction. Build genuine connections, remember personal details, and consistently exceed expectations. Your goal is to become their barber for life, not just their next haircut."
             ))
         
         return insights
@@ -244,7 +264,12 @@ class SixFBCoach:
                     "6FB Time Management System",
                     "6FB No-Show Prevention Strategies",
                     "6FB Schedule Optimization Tools"
-                ]
+                ],
+                # Educational explanations
+                why_this_matters="Time is your most finite resource. Unlike pricing or client count, you can't create more hours in the day. Maximizing utilization means earning more from the same time investment. Empty appointment slots represent lost revenue that can never be recovered.",
+                business_principle="Utilization Rate = (Billable Hours / Available Hours) × 100. Higher utilization increases revenue without increasing costs. The goal isn't to work more hours, but to eliminate wasted time within your existing schedule.",
+                market_context="No-shows and cancellations cost service businesses billions annually. Industry average no-show rate is 12-15%, but with proper systems, you can reduce this to under 5%. Each prevented no-show directly increases your utilization rate.",
+                six_fb_methodology="6FB emphasizes premium positioning, which allows you to be selective with clients and maintain higher show rates. Quality clients who value your expertise are more likely to respect your time and show up for appointments."
             ))
         
         return insights
@@ -280,7 +305,12 @@ class SixFBCoach:
                 "6FB Service Menu Templates",
                 "6FB Profitability Analysis Worksheet",
                 "6FB Upselling Training Materials"
-            ]
+            ],
+            # Educational explanations
+            why_this_matters="Not all services are created equal. Some services drive higher profits while others attract new clients. A strategic service mix allows you to maximize revenue while providing comprehensive value to clients. It's about working smarter, not harder.",
+            business_principle="The 80/20 rule applies to services: 20% of your services likely generate 80% of your profit. Focus on high-margin services while using lower-margin services as entry points. Service bundling increases perceived value and average transaction size.",
+            market_context="Modern consumers seek convenience and comprehensive solutions. They prefer paying more for bundled services from a trusted provider rather than visiting multiple locations. Premium services also create differentiation in a competitive market.",
+            six_fb_methodology="6FB focuses on becoming the complete solution for client grooming needs. Position yourself as the expert authority, not just another barber. Premium services justify premium pricing and attract clients who value expertise over bargains."
         ))
         
         return insights

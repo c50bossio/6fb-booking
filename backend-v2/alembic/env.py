@@ -11,7 +11,7 @@ from sqlalchemy import pool
 from alembic import context
 
 # Import the Base and models
-from database import Base
+from db import Base
 from models import User, Appointment, Payment, PasswordResetToken, BookingSettings, Client
 from location_models import BarbershopLocation, BarberLocation, ChairInventory, CompensationPlan
 

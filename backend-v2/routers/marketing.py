@@ -6,7 +6,7 @@ import csv
 import io
 import json
 
-from database import get_db
+from db import get_db
 from models import User, Client, NotificationTemplate
 from schemas import (
     MarketingCampaignCreate, MarketingCampaignUpdate, MarketingCampaignResponse,

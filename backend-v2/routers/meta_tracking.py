@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, validator
 
-from database import get_db
+from db import get_db
 from models.integration import Integration, IntegrationType
 from models import User
 from services.meta_business_service import meta_business_service

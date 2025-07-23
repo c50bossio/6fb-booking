@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from models import User, Appointment, Client, Payment
 

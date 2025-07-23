@@ -8,7 +8,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 import logging
 
-from database import get_db
+from db import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role
 from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint

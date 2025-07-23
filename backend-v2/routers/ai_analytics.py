@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from models import User
 from models.consent import ConsentType, ConsentStatus

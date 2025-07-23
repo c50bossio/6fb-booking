@@ -17,7 +17,7 @@ import jwt
 from jwt import InvalidTokenError
 
 from config import settings
-from database import SessionLocal
+from db import SessionLocal
 from models import User
 from models.mfa import UserMFASecret, MFAEvent
 from services.mfa_service import MFAService

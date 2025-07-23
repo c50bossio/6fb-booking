@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(__file__))
 
-from database import SessionLocal
+from db import SessionLocal
 from models import User, UnifiedUserRole
 from models.organization import Organization, UserOrganization, UserRole
 from sqlalchemy.exc import IntegrityError

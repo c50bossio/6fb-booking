@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, validator
 from datetime import datetime
 from enum import Enum
 
-from database import get_db
+from db import get_db
 from models import Service, ServiceTemplate, User
 from services.service_template_service import ServiceTemplateService
 from routers.auth import get_current_user

@@ -8,7 +8,7 @@ Enables plug-and-play onboarding with 6FB methodology-aligned presets.
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from database import get_db
+from db import get_db
 from models import User
 from dependencies import get_current_user
 from services.service_template_service import ServiceTemplateService, get_service_template_service

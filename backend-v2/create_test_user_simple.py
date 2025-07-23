@@ -2,7 +2,7 @@
 """Create a test user for development"""
 
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
+from db import SessionLocal, engine
 from models import User
 from utils.auth import get_password_hash
 import sys

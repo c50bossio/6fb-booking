@@ -1,5 +1,5 @@
 from main import app
-from database import SessionLocal
+from db import SessionLocal
 from utils.auth import get_password_hash
 import models
 from datetime import datetime, timedelta

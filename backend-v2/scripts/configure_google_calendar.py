@@ -35,7 +35,7 @@ from sqlalchemy.orm import Session
 from config import settings
 from services.google_calendar_service import GoogleCalendarService, CalendarEvent
 from models import User
-from database import get_db
+from db import get_db
 
 logger = logging.getLogger(__name__)
 

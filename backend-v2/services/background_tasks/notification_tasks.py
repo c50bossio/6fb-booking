@@ -10,7 +10,7 @@ from celery import current_task
 
 from services.celery_app import celery_app
 from services.notification_service import NotificationService
-from database import SessionLocal
+from db import SessionLocal
 from models import Appointment, User, Client
 from config import settings
 

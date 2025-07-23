@@ -418,3 +418,30 @@ class CommissionService:
             "service_payments_count": len(service_payments),
             "retail_breakdown": retail_breakdown
         }
+    
+    def calculate_paid_amount(
+        self, 
+        barber_id: int, 
+        start_date: Optional[datetime] = None, 
+        end_date: Optional[datetime] = None
+    ) -> float:
+        """Calculate total amount already paid out to barber in specified period."""
+        from models import Payout
+        
+        # Query completed payouts for the barber in the specified period
+        query = self.db.query(Payout).filter(
+            Payout.barber_id == barber_id,
+            Payout.status == "completed"
+        )
+        
+        if start_date:
+            query = query.filter(Payout.period_start >= start_date)
+        if end_date:
+            query = query.filter(Payout.period_end <= end_date)
+        
+        payouts = query.all()
+        total_paid = sum(payout.amount or 0 for payout in payouts)
+        
+        logger.info(f"Calculated paid amount for barber {barber_id}: ${total_paid:.2f} from {len(payouts)} completed payouts")
+        
+        return float(total_paid)

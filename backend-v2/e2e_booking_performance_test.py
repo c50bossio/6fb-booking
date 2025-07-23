@@ -51,7 +51,7 @@ class E2EBookingPerformanceTest:
         self.booking_flow_steps = [
             BookingFlowStep(
                 name="Health Check",
-                endpoint="/api/v1/health",
+                endpoint="/api/v2/health",
                 method="GET"
             ),
             BookingFlowStep(
@@ -560,7 +560,7 @@ async def main():
     # Check backend availability
     backend_url = "http://localhost:8000"
     try:
-        response = requests.get(f"{backend_url}/api/v1/health", timeout=5)
+        response = requests.get(f"{backend_url}/api/v2/health", timeout=5)
         if response.status_code != 200:
             logger.error(f"Backend server not responding properly at {backend_url}")
             return

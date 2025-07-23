@@ -9,7 +9,7 @@ from functools import wraps
 from typing import Optional, Union, List
 from fastapi import HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from database import get_db
+from db import get_db
 from utils.auth import get_current_user
 import inspect
 

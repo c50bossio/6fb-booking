@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from models import User, UserOrganization, UnifiedUserRole
 from models.organization import UserRole as OrgUserRole
 from dependencies import get_current_user
-from database import get_db
+from db import get_db
 
 
 class Permission(Enum):

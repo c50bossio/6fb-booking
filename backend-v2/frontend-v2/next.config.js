@@ -1,21 +1,64 @@
 const path = require('path')
 
+// CDN Configuration Helper
+function getCDNConfig() {
+  const cdnProvider = process.env.NEXT_PUBLIC_CDN_PROVIDER || 'disabled'
+  
+  if (cdnProvider === 'disabled') {
+    return { assetPrefix: '', basePath: '' }
+  }
+  
+  let cdnDomain = ''
+  switch (cdnProvider) {
+    case 'cloudflare':
+      cdnDomain = process.env.NEXT_PUBLIC_CLOUDFLARE_DOMAIN || ''
+      break
+    case 'cloudfront':
+      cdnDomain = process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN || ''
+      break
+    case 'fastly':
+      cdnDomain = process.env.NEXT_PUBLIC_FASTLY_DOMAIN || ''
+      break
+    default:
+      cdnDomain = ''
+  }
+  
+  if (!cdnDomain) {
+    console.warn(`CDN provider ${cdnProvider} configured but no domain specified. CDN disabled.`)
+    return { assetPrefix: '', basePath: '' }
+  }
+  
+  const cdnUrl = cdnDomain.startsWith('http') ? cdnDomain : `https://${cdnDomain}`
+  console.log(`CDN enabled: ${cdnProvider} at ${cdnUrl}`)
+  
+  return {
+    assetPrefix: cdnUrl,
+    basePath: '',
+  }
+}
+
+const cdnConfig = getCDNConfig()
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // CDN Configuration
+  ...cdnConfig,
   // React strict mode for better error detection
   reactStrictMode: true,
 
   // Enable SWC minification for better performance
   swcMinify: true,
 
-  // Disable ESLint during build to avoid ESLint 9.x compatibility issues
+  // ESLint enforcement enabled for production security
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
+    dirs: ['app', 'components', 'lib', 'hooks'],
   },
 
-  // Disable TypeScript errors during build for now (staging deployment)
+  // TypeScript error checking enabled for production safety
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
+    tsconfigPath: './tsconfig.json',
   },
 
   // Image optimization configuration
@@ -343,6 +386,10 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    NEXT_PUBLIC_CDN_PROVIDER: process.env.NEXT_PUBLIC_CDN_PROVIDER || 'disabled',
+    NEXT_PUBLIC_CLOUDFLARE_DOMAIN: process.env.NEXT_PUBLIC_CLOUDFLARE_DOMAIN || '',
+    NEXT_PUBLIC_CLOUDFRONT_DOMAIN: process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN || '',
+    NEXT_PUBLIC_FASTLY_DOMAIN: process.env.NEXT_PUBLIC_FASTLY_DOMAIN || '',
   },
 
   // Enable modular imports for specific packages

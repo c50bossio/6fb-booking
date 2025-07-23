@@ -10,7 +10,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from sqlalchemy import create_engine, text
-from database import engine
+from db import engine
 
 def verify_test_barber():
     """Simple verification of test-barber@6fb.com user."""

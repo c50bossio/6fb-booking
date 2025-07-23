@@ -36,7 +36,7 @@ class HealthChecker:
         # Critical endpoints to test
         self.critical_endpoints = [
             '/health',
-            '/api/v1/health',
+            '/api/v2/health',
             '/api/v1/auth/health',
             '/api/v1/appointments/health'
         ]

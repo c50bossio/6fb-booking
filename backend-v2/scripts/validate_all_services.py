@@ -32,7 +32,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from config import settings
-from database import get_db
+from db import get_db
 
 logger = logging.getLogger(__name__)
 

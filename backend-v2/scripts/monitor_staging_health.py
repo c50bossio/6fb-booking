@@ -21,7 +21,7 @@ class StagingHealthMonitor:
         self.health_checks = [
             {"path": "/", "name": "Root endpoint"},
             {"path": "/health", "name": "Health check"},
-            {"path": "/api/v1/health/", "name": "API health check"},
+            {"path": "/api/v2/health/", "name": "API health check"},
             {"path": "/docs", "name": "API documentation"},
         ]
     

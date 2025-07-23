@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from models import User
 from services.commission_rate_manager import CommissionRateManager

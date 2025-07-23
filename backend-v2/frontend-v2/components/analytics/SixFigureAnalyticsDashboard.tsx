@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { getSixFigureBarberMetrics, SixFigureBarberMetrics } from '@/lib/api'
+import { getSixFigureBarberMetrics, SixFigureBarberMetrics, getSixFBProgressTracking, SixFBProgressData } from '@/lib/api'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
@@ -42,12 +42,14 @@ export default function SixFigureAnalyticsDashboard({
   todayStats = { appointments: 0, revenue: 0, newClients: 0, completionRate: 0 }
 }: SixFigureAnalyticsDashboardProps) {
   const [metrics, setMetrics] = useState<SixFigureBarberMetrics | null>(null)
+  const [progressData, setProgressData] = useState<SixFBProgressData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [targetIncome, setTargetIncome] = useState(100000)
   const [retryCount, setRetryCount] = useState(0)
   const [insights, setInsights] = useState<CoachingInsight[]>([])
   const [currentInsightIndex, setCurrentInsightIndex] = useState(0)
+  const [activeCoachingTab, setActiveCoachingTab] = useState<'insights' | 'progress' | 'milestones'>('insights')
 
   // Generate coaching insights based on today's performance and metrics (memoized for performance)
   const generateInsights = useCallback((stats: typeof todayStats, metrics: SixFigureBarberMetrics | null): CoachingInsight[] => {
@@ -150,28 +152,38 @@ export default function SixFigureAnalyticsDashboard({
       setLoading(true)
       setError(null)
       
-      console.log('🔍 Fetching Six Figure Barber metrics...', { targetIncome, userId })
-      const data = await getSixFigureBarberMetrics(targetIncome, userId)
+      console.log('🔍 Fetching Six Figure Barber metrics and progress...', { targetIncome, userId })
       
-      console.log('📊 Received metrics data:', data)
+      // Fetch both metrics and progress data in parallel
+      const [metricsData, progressTracking] = await Promise.all([
+        getSixFigureBarberMetrics(targetIncome, userId),
+        getSixFBProgressTracking(targetIncome, userId).catch(err => {
+          console.warn('Progress tracking failed:', err)
+          return null
+        })
+      ])
       
-      // Validate data structure before setting state
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid data structure received from API')
+      console.log('📊 Received metrics data:', metricsData)
+      console.log('🎯 Received progress data:', progressTracking)
+      
+      // Validate metrics data structure before setting state
+      if (!metricsData || typeof metricsData !== 'object') {
+        throw new Error('Invalid metrics data structure received from API')
       }
       
       // Check for required fields
       const requiredFields = ['current_performance', 'targets', 'recommendations']
-      const missingFields = requiredFields.filter(field => !data[field])
+      const missingFields = requiredFields.filter(field => !metricsData[field])
       if (missingFields.length > 0) {
         throw new Error(`Missing required fields: ${missingFields.join(', ')}`)
       }
       
-      setMetrics(data)
+      setMetrics(metricsData)
+      setProgressData(progressTracking)
       
       // Generate insights with the new data (with safety check)
       try {
-        const newInsights = generateInsights(todayStats, data)
+        const newInsights = generateInsights(todayStats, metricsData)
         setInsights(newInsights)
       } catch (insightError) {
         console.warn('Failed to generate insights:', insightError)
@@ -180,7 +192,7 @@ export default function SixFigureAnalyticsDashboard({
       
       setRetryCount(0)
     } catch (err) {
-      console.error('Failed to fetch Six Figure Barber metrics:', err)
+      console.error('Failed to fetch Six Figure Barber data:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to load analytics data'
       setError(errorMessage)
     } finally {
@@ -283,7 +295,7 @@ export default function SixFigureAnalyticsDashboard({
         </CardHeader>
       </Card>
 
-      {/* AI Coach Section */}
+      {/* Enhanced 6FB AI Coach Section */}
       <Card variant="elevated" padding="lg">
         <CardContent>
           <div className="flex items-center justify-between mb-4">
@@ -296,7 +308,7 @@ export default function SixFigureAnalyticsDashboard({
                   6FB AI Coach
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {userName ? `Personalized insights for ${userName}` : 'Your daily business coaching'}
+                  {userName ? `Comprehensive coaching for ${userName}` : 'Your AI business advisor'}
                 </p>
               </div>
             </div>
@@ -306,68 +318,331 @@ export default function SixFigureAnalyticsDashboard({
             </div>
           </div>
 
-          {insights.length > 0 ? (
-            <div className="space-y-4">
-              <div className="bg-white/70 dark:bg-zinc-800/70 rounded-lg p-4 border border-primary-100 dark:border-zinc-600">
-                <div className="flex items-start space-x-3">
-                  {getIconForType(insights[currentInsightIndex].type)}
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                      {insights[currentInsightIndex].title}
-                    </h4>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                      {insights[currentInsightIndex].message}
-                    </p>
-                    {insights[currentInsightIndex].actionText && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (insights[currentInsightIndex].actionUrl) {
-                            window.location.href = insights[currentInsightIndex].actionUrl!
-                          }
-                        }}
-                        className="text-xs"
-                      >
-                        {insights[currentInsightIndex].actionText}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
+          {/* Coach Navigation Tabs */}
+          <div className="flex space-x-1 mb-4 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            {[
+              { key: 'insights', label: 'AI Insights', icon: '🤖' },
+              { key: 'progress', label: 'Progress', icon: '📈' },
+              { key: 'milestones', label: 'Milestones', icon: '🏆' }
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveCoachingTab(tab.key as any)}
+                className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeCoachingTab === tab.key
+                    ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
 
-              {insights.length > 1 && (
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={prevInsight}
-                    className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
-                  >
-                    ← Previous
-                  </button>
-                  <div className="flex space-x-1">
-                    {insights.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`w-2 h-2 rounded-full ${
-                          index === currentInsightIndex 
-                            ? 'bg-primary-600 dark:bg-primary-400' 
-                            : 'bg-primary-200 dark:bg-primary-600/30'
-                        }`}
-                      />
+          {/* AI Insights Tab */}
+          {activeCoachingTab === 'insights' && (
+            <div className="space-y-4">
+              {/* Professional Coaching Insights from Backend */}
+              {metrics?.coaching_insights && metrics.coaching_insights.length > 0 ? (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                    🎯 Priority Recommendations
+                  </h4>
+                  {metrics.coaching_insights.slice(0, 3).map((insight, index) => (
+                    <div key={index} className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
+                      <div className="flex items-start space-x-3">
+                        <div className={`p-2 rounded-full ${
+                          insight.priority === 'critical' ? 'bg-red-100 dark:bg-red-900' :
+                          insight.priority === 'high' ? 'bg-orange-100 dark:bg-orange-900' :
+                          insight.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900' :
+                          'bg-blue-100 dark:bg-blue-900'
+                        }`}>
+                          {insight.category === 'pricing' ? '💰' :
+                           insight.category === 'client_acquisition' ? '👥' :
+                           insight.category === 'retention' ? '🤝' :
+                           insight.category === 'efficiency' ? '⚡' :
+                           insight.category === 'service_mix' ? '🛠️' : '📊'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h5 className="font-semibold text-gray-900 dark:text-white text-sm">
+                              {insight.title}
+                            </h5>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              insight.priority === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                              insight.priority === 'high' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
+                              insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                              'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                            }`}>
+                              {insight.priority}
+                            </span>
+                          </div>
+                          
+                          <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                            {insight.message}
+                          </p>
+                          
+                          <p className="text-xs text-green-600 dark:text-green-400 font-medium mb-3">
+                            💡 {insight.impact_description}
+                          </p>
+
+                          {/* Educational Section - Why This Matters */}
+                          {insight.why_this_matters && (
+                            <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3 mb-3 border-l-4 border-blue-500">
+                              <h6 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1 flex items-center">
+                                🎓 Why This Matters
+                              </h6>
+                              <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {insight.why_this_matters}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Business Principle */}
+                          {insight.business_principle && (
+                            <div className="bg-purple-50/70 dark:bg-purple-900/20 rounded-lg p-3 mb-3 border-l-4 border-purple-500">
+                              <h6 className="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-1 flex items-center">
+                                📈 Business Principle
+                              </h6>
+                              <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {insight.business_principle}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* 6FB Methodology */}
+                          {insight.six_fb_methodology && (
+                            <div className="bg-orange-50/70 dark:bg-orange-900/20 rounded-lg p-3 mb-3 border-l-4 border-orange-500">
+                              <h6 className="text-xs font-semibold text-orange-700 dark:text-orange-300 mb-1 flex items-center">
+                                🏆 Six Figure Barber Method
+                              </h6>
+                              <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {insight.six_fb_methodology}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Market Context */}
+                          {insight.market_context && (
+                            <div className="bg-green-50/70 dark:bg-green-900/20 rounded-lg p-3 mb-3 border-l-4 border-green-500">
+                              <h6 className="text-xs font-semibold text-green-700 dark:text-green-300 mb-1 flex items-center">
+                                🌍 Market Context
+                              </h6>
+                              <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {insight.market_context}
+                              </p>
+                            </div>
+                          )}
+                          
+                          <div className="text-xs text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <span className="font-medium">Revenue impact:</span> +${insight.potential_revenue_increase.toLocaleString()}/year
+                            <span className="mx-2">•</span>
+                            <span className="font-medium">Timeline:</span> {insight.timeline}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Fallback to basic insights if backend coaching not available */}
+                  {insights.length > 0 ? (
+                    <>
+                      <div className="bg-white/70 dark:bg-zinc-800/70 rounded-lg p-4 border border-primary-100 dark:border-zinc-600">
+                        <div className="flex items-start space-x-3">
+                          {getIconForType(insights[currentInsightIndex].type)}
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                              {insights[currentInsightIndex].title}
+                            </h4>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                              {insights[currentInsightIndex].message}
+                            </p>
+                            {insights[currentInsightIndex].actionText && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  if (insights[currentInsightIndex].actionUrl) {
+                                    window.location.href = insights[currentInsightIndex].actionUrl!
+                                  }
+                                }}
+                                className="text-xs"
+                              >
+                                {insights[currentInsightIndex].actionText}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {insights.length > 1 && (
+                        <div className="flex items-center justify-between">
+                          <button
+                            onClick={prevInsight}
+                            className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+                          >
+                            ← Previous
+                          </button>
+                          <div className="flex space-x-1">
+                            {insights.map((_, index) => (
+                              <div
+                                key={index}
+                                className={`w-2 h-2 rounded-full ${
+                                  index === currentInsightIndex 
+                                    ? 'bg-primary-600 dark:bg-primary-400' 
+                                    : 'bg-primary-200 dark:bg-primary-600/30'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <button
+                            onClick={nextInsight}
+                            className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+                          >
+                            Next →
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 dark:text-gray-400">Loading coaching insights...</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Daily Focus from Backend */}
+              {metrics?.daily_focus && (
+                <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-green-100 dark:border-green-800 mt-4">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+                    🎯 Today's Focus Areas
+                  </h4>
+                  <div className="space-y-2">
+                    {metrics.daily_focus.daily_actions.slice(0, 2).map((action, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{action.action}</span>
+                        <span className="text-xs text-green-600 dark:text-green-400 font-medium">({action.impact})</span>
+                      </div>
                     ))}
                   </div>
-                  <button
-                    onClick={nextInsight}
-                    className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
-                  >
-                    Next →
-                  </button>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-3 italic">
+                    📊 Key metric: {metrics.daily_focus.key_metric_to_track}
+                  </p>
+                  <p className="text-sm text-primary-600 dark:text-primary-400 font-medium mt-2">
+                    {metrics.daily_focus.motivational_message}
+                  </p>
                 </div>
               )}
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-600 dark:text-gray-400">Loading coaching insights...</p>
+          )}
+
+          {/* Progress Tab */}
+          {activeCoachingTab === 'progress' && (
+            <div className="space-y-4">
+              {progressData ? (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Annual Pace</p>
+                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        ${progressData.progress_overview.current_annual_pace.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Progress</p>
+                      <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                        {progressData.progress_overview.progress_percentage.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Trend</p>
+                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                        {progressData.progress_overview.trend_direction === 'up' ? '📈' : 
+                         progressData.progress_overview.trend_direction === 'down' ? '📉' : '➡️'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Goal Analysis</h4>
+                    <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                      <p>• Daily target: ${progressData.progress_overview.daily_target.toFixed(0)}</p>
+                      <p>• Monthly target: ${progressData.progress_overview.monthly_target.toLocaleString()}</p>
+                      {progressData.progress_overview.months_to_goal && (
+                        <p>• Time to goal: {progressData.progress_overview.months_to_goal.toFixed(1)} months</p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 dark:text-gray-400">Loading progress data...</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Milestones Tab */}
+          {activeCoachingTab === 'milestones' && (
+            <div className="space-y-4">
+              {progressData ? (
+                <>
+                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg p-4 border border-yellow-100 dark:border-yellow-800">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                      🏆 Achievement Summary
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div>
+                        <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                          {progressData.achievement_summary.achieved_milestones}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Achieved</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                          {progressData.achievement_summary.achievement_percentage.toFixed(0)}%
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Complete</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                      🎯 Next Priority Milestones
+                    </h4>
+                    {progressData.achievement_summary.priority_milestones.slice(0, 3).map((milestone, index) => (
+                      <div key={milestone.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between mb-2">
+                          <h5 className="font-medium text-gray-900 dark:text-white text-sm">
+                            {milestone.title}
+                          </h5>
+                          <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full">
+                            {milestone.type}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full transition-all"
+                            style={{ width: `${milestone.progress_percentage}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          {milestone.progress_percentage.toFixed(0)}% • {milestone.next_hint}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 dark:text-gray-400">Loading milestone data...</p>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

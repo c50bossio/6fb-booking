@@ -38,7 +38,7 @@ from sqlalchemy.pool import QueuePool, StaticPool
 from sqlalchemy.engine import Engine
 import psutil
 
-from database import get_db, engine
+from db import get_db, engine
 from models import Appointment, Payment, User
 import models
 

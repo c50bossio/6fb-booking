@@ -21,7 +21,7 @@ from fastapi.testclient import TestClient
 from fastapi import status
 
 from main import app
-from database import get_db
+from db import get_db
 from models import (
     User, Appointment, Payment, Service, Client, 
     PerformanceBenchmark, CrossUserMetric, BenchmarkCategory, BusinessSegment

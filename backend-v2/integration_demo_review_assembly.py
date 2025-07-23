@@ -12,7 +12,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from sqlalchemy.orm import Session
-from database import SessionLocal
+from db import SessionLocal
 from models import User
 from models.review import Review, ReviewPlatform, ReviewSentiment, ReviewResponseStatus
 from services.dynamic_content_assembly import DynamicContentAssemblyService, QualityLevel

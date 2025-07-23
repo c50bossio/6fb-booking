@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import logging
 
-from database import get_db
+from db import get_db
 from services.trial_monitoring_service import TrialMonitoringService
 from utils.auth import get_current_user
 from models import User

@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from main import app
-from database import get_db, Base
+from db import get_db, Base
 from models import User, Appointment, Payment, Location, Service
 from services.booking_service import BookingService
 from services.payment_service import PaymentService

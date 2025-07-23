@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
 
 from datetime import datetime, timedelta
-from database import SessionLocal
+from db import SessionLocal
 from services.notification_service import notification_service
 from models import NotificationTemplate, NotificationQueue, NotificationStatus
 import logging

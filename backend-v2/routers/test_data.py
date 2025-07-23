@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Dict, Any
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from services import test_data_service
 import models

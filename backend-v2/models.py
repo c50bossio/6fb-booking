@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Boolean, Text, JSON, Time, Enum, Table, Date, Index
 from sqlalchemy.orm import relationship
-from database import Base
+from db import Base
 from datetime import datetime, timedelta, time, timezone, date
 import enum
 from utils.encryption import EncryptedString, EncryptedText, SearchableEncryptedString

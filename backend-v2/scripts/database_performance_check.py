@@ -15,7 +15,7 @@ from typing import Dict, List, Any
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import create_engine, text
-from database import engine, get_db
+from db import engine, get_db
 from config import settings
 
 logger = logging.getLogger(__name__)

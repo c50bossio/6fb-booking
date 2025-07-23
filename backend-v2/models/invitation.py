@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import secrets
 import enum
 
-from database import Base
+from db import Base
 
 
 class InvitationStatus(enum.Enum):

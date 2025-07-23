@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 import logging
 from typing import Dict, Any
 
-from database import get_db
+from db import get_db
 from utils.url_shortener import url_shortener
 
 router = APIRouter(

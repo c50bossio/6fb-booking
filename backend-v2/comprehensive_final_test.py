@@ -58,7 +58,7 @@ def main():
     api_endpoints = [
         # Core endpoints
         "/",
-        "/api/v1/health",
+        "/api/v2/health",
         
         # Authentication endpoints  
         "/api/v1/auth/check",

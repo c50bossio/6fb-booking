@@ -214,7 +214,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from models import Base
-from database import engine, SessionLocal
+from db import engine, SessionLocal
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from sqlalchemy.orm import relationship
 

@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import User
-from database import Base
+from db import Base
 import schemas
 from routers.auth import register_client
 from passlib.context import CryptContext

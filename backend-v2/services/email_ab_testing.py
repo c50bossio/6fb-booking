@@ -23,7 +23,7 @@ from models import (
     EmailABTest, EmailAnalyticsEvent, EmailAnalyticsSummary, 
     NotificationTemplate, User, NotificationQueue
 )
-from database import get_db
+from db import get_db
 from config import settings
 
 logger = logging.getLogger(__name__)

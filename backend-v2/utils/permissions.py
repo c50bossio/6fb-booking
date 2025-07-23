@@ -10,7 +10,7 @@ from fastapi import HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional, Callable
 
-from database import get_db
+from db import get_db
 from models import User, UserOrganization, Organization
 from models.organization import UserRole
 

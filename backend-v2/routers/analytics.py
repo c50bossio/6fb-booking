@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 import logging
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 from models import User
@@ -418,7 +418,12 @@ async def get_six_figure_barber_metrics(
                 'action_steps': insight.action_steps,
                 'timeline': insight.timeline,
                 'success_metrics': insight.success_metrics,
-                'resources': insight.resources or []
+                'resources': insight.resources or [],
+                # Educational components
+                'why_this_matters': insight.why_this_matters,
+                'business_principle': insight.business_principle,
+                'market_context': insight.market_context,
+                'six_fb_methodology': insight.six_fb_methodology
             }
             for insight in coach.generate_comprehensive_coaching()[:5]  # Top 5 insights
         ]

@@ -9,7 +9,7 @@ from datetime import datetime
 import secrets
 import string
 
-from database import Base
+from db import Base
 
 
 class UserMFASecret(Base):

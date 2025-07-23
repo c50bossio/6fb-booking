@@ -133,7 +133,7 @@ class Settings(BaseSettings):
     ga4_api_secret: str = ""  # GA4 Measurement Protocol API Secret
     ga4_measurement_protocol_url: str = "https://www.google-analytics.com/mp/collect"
     ga4_measurement_protocol_debug_url: str = "https://www.google-analytics.com/debug/mp/collect"
-    ga4_debug_mode: bool = True
+    ga4_debug_mode: bool = False  # Disabled for production security
     ga4_collect_geo_data: bool = True
     ga4_collect_advertising_id: bool = False
     ga4_allow_google_signals: bool = True
@@ -163,9 +163,9 @@ class Settings(BaseSettings):
     ga4_realtime_threshold: int = 10
     ga4_cross_domain_tracking: bool = False
     ga4_cross_domain_linker: list = []
-    ga4_test_mode: bool = True
+    ga4_test_mode: bool = False  # Disabled for production security
     ga4_validate_events: bool = True
-    ga4_log_events: bool = True
+    ga4_log_events: bool = False  # Disabled for production - reduces log verbosity
     ga4_batch_events: bool = True
     ga4_batch_size: int = 10
     ga4_batch_timeout: int = 1000
@@ -177,7 +177,7 @@ class Settings(BaseSettings):
     gtm_server_container_api_key: str = ""  # Server-side container API key
     gtm_measurement_protocol_url: str = "https://www.googletagmanager.com/gtm.js"
     gtm_server_side_url: str = ""  # Server-side GTM URL
-    gtm_debug_mode: bool = True  # Enable debug mode for development
+    gtm_debug_mode: bool = False  # Disabled for production security
     gtm_preview_mode: bool = False  # Enable preview mode for testing
     gtm_consent_mode: bool = True  # Enable consent mode for GDPR/CCPA
     gtm_anonymize_ip: bool = True  # Anonymize IP addresses for privacy
@@ -210,9 +210,9 @@ class Settings(BaseSettings):
     gtm_server_side_container_id: str = ""  # Server-side container ID
     gtm_conversion_linker: bool = True  # Enable conversion linker
     gtm_conversion_linker_domains: list = []  # Domains for conversion linker
-    gtm_test_mode: bool = True  # Enable test mode for development
+    gtm_test_mode: bool = False  # Disabled for production security
     gtm_validate_events: bool = True  # Validate events before sending
-    gtm_log_events: bool = True  # Log events to console/logs
+    gtm_log_events: bool = False  # Disabled for production - reduces log verbosity
     gtm_enable_monitoring: bool = True  # Enable GTM monitoring
     gtm_async_loading: bool = True  # Load GTM asynchronously
     gtm_defer_loading: bool = False  # Defer GTM loading
@@ -300,11 +300,39 @@ class Settings(BaseSettings):
             if self.debug:
                 issues.append("CRITICAL: DEBUG mode is enabled in production")
             
+            # Enhanced secret key validation with placeholder detection
+            from utils.secret_management import secret_manager
+            
             if not self.secret_key or len(self.secret_key) < 32:
                 issues.append("CRITICAL: SECRET_KEY must be at least 32 characters in production")
+            elif secret_manager._is_placeholder(self.secret_key):
+                issues.append("CRITICAL: SECRET_KEY is using a placeholder value in production")
             
             if not self.jwt_secret_key or len(self.jwt_secret_key) < 32:
                 issues.append("CRITICAL: JWT_SECRET_KEY must be at least 32 characters in production")
+            elif secret_manager._is_placeholder(self.jwt_secret_key):
+                issues.append("CRITICAL: JWT_SECRET_KEY is using a placeholder value in production")
+            
+            # Enhanced Stripe key validation
+            if self.stripe_secret_key:
+                if secret_manager._is_placeholder(self.stripe_secret_key):
+                    issues.append("CRITICAL: STRIPE_SECRET_KEY is using a placeholder value in production")
+                elif self.stripe_secret_key.startswith('sk_test_'):
+                    issues.append("WARNING: Using Stripe test key in production")
+            else:
+                issues.append("CRITICAL: STRIPE_SECRET_KEY is required for production")
+            
+            if self.stripe_publishable_key:
+                if secret_manager._is_placeholder(self.stripe_publishable_key):
+                    issues.append("CRITICAL: STRIPE_PUBLISHABLE_KEY is using a placeholder value in production")
+            else:
+                issues.append("CRITICAL: STRIPE_PUBLISHABLE_KEY is required for production")
+            
+            if self.stripe_webhook_secret:
+                if secret_manager._is_placeholder(self.stripe_webhook_secret):
+                    issues.append("CRITICAL: STRIPE_WEBHOOK_SECRET is using a placeholder value in production")
+            else:
+                issues.append("CRITICAL: STRIPE_WEBHOOK_SECRET is required for production")
             
             # Check for localhost in production URLs
             if "localhost" in self.cors_origins:
@@ -315,18 +343,6 @@ class Settings(BaseSettings):
             
             if self.database_url.startswith("sqlite"):
                 issues.append("WARNING: SQLite database in production - consider PostgreSQL")
-            
-            # Check for weak or default values
-            if self.secret_key in ["your-secret-key-here", "test-secret-key", "changeme"]:
-                issues.append("CRITICAL: Using default/weak SECRET_KEY in production")
-            
-            if self.jwt_secret_key in ["your-jwt-secret-here", "test-jwt-secret", "changeme"]:
-                issues.append("CRITICAL: Using default/weak JWT_SECRET_KEY in production")
-            
-            # Validate external service configurations
-            test_prefix = 'sk_' + 'test_'
-            if self.stripe_secret_key and self.stripe_secret_key.startswith(test_prefix):
-                issues.append("WARNING: Using Stripe test key in production")
             
             # Check security settings
             if self.bcrypt_rounds < 12:

@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 import csv
 import io
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from models import User
 from services.commission_service import CommissionService
@@ -89,6 +89,10 @@ def get_commissions(
                 detail="Barber not found"
             )
         
+        # Create commission service to calculate paid amounts
+        commission_service = CommissionService(db)
+        paid_amount = commission_service.calculate_paid_amount(barber_id, start_date, end_date)
+        
         # Create summary
         summary = {
             "barber_id": barber_id,
@@ -99,8 +103,8 @@ def get_commissions(
             "retail_commission": commission_data["retail_commission"],
             "total_commission": commission_data["total_commission"],
             "items_count": commission_data["service_payments_count"] + commission_data["retail_items_count"],
-            "paid_amount": 0,  # TODO: Calculate from payout history
-            "pending_amount": commission_data["total_commission"]  # TODO: Subtract paid amount
+            "paid_amount": paid_amount,
+            "pending_amount": commission_data["total_commission"] - paid_amount
         }
         
         # Filter response based on role
@@ -141,8 +145,8 @@ def get_commissions(
                 "retail_commission": commission_data["retail_commission"],
                 "total_commission": commission_data["total_commission"],
                 "items_count": commission_data["service_payments_count"] + commission_data["retail_items_count"],
-                "paid_amount": 0,  # TODO: Calculate from payout history
-                "pending_amount": commission_data["total_commission"]  # TODO: Subtract paid amount
+                "paid_amount": commission_service.calculate_paid_amount(barber.id, start_date, end_date),
+                "pending_amount": commission_data["total_commission"] - commission_service.calculate_paid_amount(barber.id, start_date, end_date)
             }
             
             summaries.append(summary)

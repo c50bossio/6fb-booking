@@ -11,7 +11,7 @@ from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
 from datetime import datetime, date
 
-from database import get_db
+from db import get_db
 from models.organization import Organization
 from models import User, Service
 from models.guest_booking import GuestBooking

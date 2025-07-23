@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 from datetime import date, datetime, timedelta
 
-from database import get_db
+from db import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role
 # Cached services temporarily disabled - use main services instead

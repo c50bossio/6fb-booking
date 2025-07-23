@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
 
-from database import get_db
+from db import get_db
 from models import User
 from models.review import Review, ReviewResponse, ReviewTemplate, ReviewPlatform, ReviewSentiment
 from models.integration import Integration, IntegrationType

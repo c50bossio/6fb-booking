@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from pydantic import BaseModel, EmailStr, Field
 
-from database import get_db
+from db import get_db
 from models import User, Organization, UserOrganization
 from models.invitation import StaffInvitation, InvitationStatus, InvitationRole
 from models.organization import UserRole

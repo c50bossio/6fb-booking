@@ -688,7 +688,7 @@ class SecurityAuditor:
         # Check if production would enforce HTTPS
         
         try:
-            response = self.session.get(f"{BASE_URL}/api/v1/health")
+            response = self.session.get(f"{BASE_URL}/api/v2/health")
             
             # Check security headers
             security_headers = {

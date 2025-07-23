@@ -152,7 +152,7 @@ def main():
         # Public endpoints
         ("/", False),
         ("/health", False),
-        ("/api/v1/health", False),
+        ("/api/v2/health", False),
         
         # Auth required endpoints
         ("/api/v1/analytics/dashboard", True),

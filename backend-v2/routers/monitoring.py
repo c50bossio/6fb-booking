@@ -12,7 +12,7 @@ Provides comprehensive monitoring endpoints for production deployment including:
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from database import get_db
+from db import get_db
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 import psutil

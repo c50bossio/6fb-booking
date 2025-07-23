@@ -11,7 +11,7 @@ from typing import Dict, List, Optional
 from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel, Field, validator
 
-from database import get_db
+from db import get_db
 from models import User, Organization, UserOrganization
 from models import UnifiedUserRole  # Import from parent models.py
 from models.organization import OrganizationType
@@ -25,6 +25,7 @@ from utils.role_permissions import (
 import logging
 from utils.pricing import calculate_progressive_price
 from services.stripe_service import StripeSubscriptionService
+from services.notification_service import NotificationService
 import stripe
 from fastapi import Request, Response
 import json
@@ -854,8 +855,44 @@ async def handle_stripe_webhook(
                 
                 db.commit()
                 
-                # TODO: Send notification email to organization owner
-                # notification_service.send_payment_failure_email(org, failure_details)
+                # Send notification email to organization owner
+                try:
+                    notification_service = NotificationService()
+                    
+                    # Get organization owner email
+                    owner = db.query(User).join(UserOrganization).filter(
+                        UserOrganization.organization_id == org.id,
+                        UserOrganization.role.in_(["owner", "admin"])
+                    ).first()
+                    
+                    if owner and owner.email:
+                        subject = f"Payment Failure Alert - {org.name}"
+                        body = f"""
+                        Dear {owner.name or 'Organization Owner'},
+                        
+                        We encountered an issue processing payment for your BookedBarber subscription.
+                        
+                        Organization: {org.name}
+                        Failure Details: {failure_details.get('reason', 'Payment processing error')}
+                        Amount: ${failure_details.get('amount', 0):.2f}
+                        Date: {failure_details.get('timestamp', datetime.now().isoformat())}
+                        
+                        Please update your payment method in the billing section of your dashboard to avoid service interruption.
+                        
+                        If you need assistance, please contact our support team.
+                        
+                        Best regards,
+                        The BookedBarber Team
+                        """
+                        
+                        notification_service.send_email(
+                            to_email=owner.email,
+                            subject=subject,
+                            body=body
+                        )
+                        logger.info(f"Payment failure notification sent to {owner.email} for organization {org.id}")
+                except Exception as e:
+                    logger.error(f"Failed to send payment failure notification: {str(e)}")
     
     elif event["type"] == "invoice.payment_failed":
         invoice = event["data"]["object"]

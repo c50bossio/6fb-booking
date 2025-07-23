@@ -19,7 +19,7 @@ from dependencies import get_db
 from sqlalchemy.orm import Session
 from models.barber import Barber
 from models.availability import Availability
-from database import Base, engine
+from db import Base, engine
 
 # Create test client
 client = TestClient(app)

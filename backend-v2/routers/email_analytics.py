@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 import logging
 
-from database import get_db
+from db import get_db
 from utils.auth import get_current_user
 from models import User
 from services.email_analytics import get_email_analytics_service, EmailAnalyticsService

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user, check_user_role
 from models import User
 from models.tracking import (

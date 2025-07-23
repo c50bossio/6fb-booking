@@ -7,7 +7,7 @@ to get multi-location analytics and KPIs.
 
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from database import SessionLocal
+from db import SessionLocal
 from services.enterprise_analytics_service import EnterpriseAnalyticsService
 from schemas import DateRange
 

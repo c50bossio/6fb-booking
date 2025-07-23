@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
+from db import SessionLocal, engine
 from models import User, BarberAvailability
 from datetime import datetime, timedelta, time
 

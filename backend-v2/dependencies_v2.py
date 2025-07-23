@@ -6,7 +6,7 @@ Provides location-aware dependency injection for secure data access
 from typing import Optional, List, Union
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-from database import get_db
+from db import get_db
 from models import User, Appointment, Payment, Client, Service, Barber
 from utils.auth import get_current_user
 from middleware.multi_tenancy import LocationContext, LocationAccessError, location_filter

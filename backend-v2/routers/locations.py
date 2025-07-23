@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
 
-from database import get_db
+from db import get_db
 from models import User, Organization, UserOrganization, Appointment
 from models.organization import OrganizationType
 from schemas import LocationResponse, LocationListResponse, LocationCreate, LocationUpdate

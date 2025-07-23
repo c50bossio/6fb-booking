@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 from services.celery_app import celery_app
 from services.startup_cache import get_cache_service, cache_health_check
-from database import SessionLocal
+from db import SessionLocal
 from config import settings
 
 logger = logging.getLogger(__name__)

@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch, MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from database import Base
+from db import Base
 from models import User, Payment, Appointment, Payout
 from models.product import Order, OrderItem, POSTransaction, Product
 from services.base_commission import UnifiedCommissionService, CommissionType

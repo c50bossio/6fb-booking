@@ -24,7 +24,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from main import app
-from database import get_db, Base
+from db import get_db, Base
 from models.user import User
 from models.appointment import Appointment
 from models.payment import Payment
@@ -710,7 +710,7 @@ class E2ETestRunner:
         # 1. Test network timeout
         try:
             timeout_client = httpx.AsyncClient(base_url=self.base_url, timeout=0.001)
-            await timeout_client.get("/api/v1/health")
+            await timeout_client.get("/api/v2/health")
         except httpx.TimeoutException:
             errors_handled.append("network_timeout")
         
@@ -788,7 +788,7 @@ class E2ETestRunner:
         
         # Test endpoints under load
         endpoints = [
-            ("/api/v1/health", "GET"),
+            ("/api/v2/health", "GET"),
             ("/api/v1/barbers/search?location=test", "GET"),
             ("/api/v1/services", "GET")
         ]

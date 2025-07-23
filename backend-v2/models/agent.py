@@ -9,7 +9,7 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 import enum
 from datetime import datetime, timezone
-from database import Base
+from db import Base
 
 
 def utcnow():

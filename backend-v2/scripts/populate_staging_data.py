@@ -21,7 +21,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from database import Base
+from db import Base
 from models import User, Appointment, Service
 from config import settings
 from passlib.context import CryptContext

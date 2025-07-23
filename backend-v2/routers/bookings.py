@@ -5,7 +5,7 @@ from datetime import date, datetime, time, timedelta
 import warnings
 import schemas
 import models
-from database import get_db
+from db import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
 from services import booking_service

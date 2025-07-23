@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from models import User
 from models.organization import UserOrganization

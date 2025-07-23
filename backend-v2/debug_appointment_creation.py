@@ -5,7 +5,7 @@ Debug appointment creation flow to identify issues.
 import sys
 sys.path.append('.')
 
-from database import SessionLocal
+from db import SessionLocal
 from models import User, Appointment, Service
 from services import booking_service
 from datetime import date, timedelta

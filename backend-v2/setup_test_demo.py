@@ -30,7 +30,7 @@ import json
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import our models and utilities
-from database import Base, engine, SessionLocal
+from db import Base, engine, SessionLocal
 from models import User, Appointment, Service, Client
 from utils.auth import get_password_hash, authenticate_user
 

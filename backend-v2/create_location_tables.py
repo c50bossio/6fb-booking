@@ -2,7 +2,7 @@
 Create location tables manually
 """
 
-from database import engine, Base
+from db import engine, Base
 import location_models
 
 # Create all tables from location_models

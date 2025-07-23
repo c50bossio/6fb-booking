@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, Path
 from sqlalchemy.orm import Session
 from datetime import timedelta
 import logging
-from database import get_db
+from db import get_db
 from utils.rate_limit import login_rate_limit, refresh_rate_limit, password_reset_rate_limit, register_rate_limit
 from utils.auth import (
     authenticate_user, 
@@ -49,7 +49,7 @@ async def test_auth_route():
     return {"status": "ok", "message": "Auth router is responding"}
 
 @router.post("/login", response_model=schemas.Token)
-# @login_rate_limit  # Temporarily disabled for debugging
+@login_rate_limit  # CRITICAL: Rate limiting re-enabled for production security
 async def login(request: Request, user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     """Enhanced login endpoint with MFA support."""
     client_ip = request.client.host if request.client else "unknown"
@@ -361,7 +361,9 @@ async def forgot_password(
     return {"message": "If the email exists, a reset link has been sent"}
 
 @router.post("/reset-password", response_model=schemas.PasswordResetResponse)
+@password_reset_rate_limit  # CRITICAL: Rate limiting for password reset security
 async def reset_password(
+    request: Request,
     reset_confirm: schemas.PasswordResetConfirm,
     db: Session = Depends(get_db)
 ):
@@ -734,6 +736,7 @@ async def register_complete(
     }
 
 @router.post("/change-password", response_model=schemas.ChangePasswordResponse)
+@password_reset_rate_limit  # CRITICAL: Rate limiting for password change security
 async def change_password(
     request: Request,
     password_change: schemas.ChangePasswordRequest,
@@ -1030,8 +1033,10 @@ async def get_password_policy():
         "message": "Password must meet all security requirements for account protection"
     }
 
-@router.post("/validate-password")
+@router.post("/validate-password") 
+@login_rate_limit  # CRITICAL: Rate limiting for password validation security
 async def validate_password_endpoint(
+    request: Request,
     password_data: dict,  # {"password": "string", "user_data": {...}}
     current_user: models.User = Depends(get_current_user)
 ):

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from datetime import datetime, timezone
 
-from database import get_db
+from db import get_db
 from models import Client, User, Appointment
 from schemas import ClientCreate, ClientUpdate, Client as ClientSchema, ClientList, ClientHistory
 from utils.auth import get_current_user

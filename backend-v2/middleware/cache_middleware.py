@@ -109,7 +109,7 @@ class SmartCacheMiddleware(BaseHTTPMiddleware):
             
             # Health checks (very short TTL)
             CacheableRoute(
-                "/api/v1/health",
+                "/api/v2/health",
                 methods=["GET"],
                 ttl=30,  # 30 seconds for health
                 cache_condition=lambda req: True  # Always cache health checks
@@ -308,7 +308,7 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
         
         # Define cache control policies by route pattern
         self.cache_policies = {
-            "/api/v1/health": "public, max-age=30",
+            "/api/v2/health": "public, max-age=30",
             "/api/v1/services": "public, max-age=3600",
             "/api/v1/locations": "public, max-age=3600",
             "/api/v1/users/me": "private, max-age=60",
@@ -349,7 +349,7 @@ class CacheWarmer:
             
             base_url = settings.backend_url
             common_endpoints = [
-                "/api/v1/health",
+                "/api/v2/health",
                 "/api/v1/services",
                 "/api/v1/locations",
             ]

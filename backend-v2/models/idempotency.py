@@ -10,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import enum
 
-from database import Base
+from db import Base
 
 
 class IdempotencyKey(Base):

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from models import User
 from services.six_fb_compliance_service import SixFBComplianceService

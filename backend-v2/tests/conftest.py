@@ -15,7 +15,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 
 from main import app
-from database import Base, get_db
+from db import Base, get_db
 from models import User
 from utils.auth import get_password_hash, create_access_token
 

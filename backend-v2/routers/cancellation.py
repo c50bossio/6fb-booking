@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from database import get_db
+from db import get_db
 from auth import get_current_user, get_current_admin_user
 from models import User, Appointment
 from models.cancellation import (

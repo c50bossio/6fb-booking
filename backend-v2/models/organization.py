@@ -7,7 +7,7 @@ to support individual barbers, single barbershops, and multi-location enterprise
 
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Boolean, Text, JSON, Table, Index
 from sqlalchemy.orm import relationship
-from database import Base
+from db import Base
 from datetime import datetime, timezone
 import enum
 

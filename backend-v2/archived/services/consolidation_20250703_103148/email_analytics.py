@@ -9,7 +9,7 @@ from sqlalchemy import func, and_, or_
 import logging
 from enum import Enum
 
-from database import get_db
+from db import get_db
 from models import User, EmailEvent, EmailCampaign
 from config import Settings
 

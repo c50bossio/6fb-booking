@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Background
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from database import get_db
+from db import get_db
 from models import User
 from utils.idempotency import idempotent_operation, get_current_user_id
 from models.product import Product, ProductVariant, InventoryItem, Order, POSTransaction

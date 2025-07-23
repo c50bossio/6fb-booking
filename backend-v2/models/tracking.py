@@ -12,7 +12,7 @@ from sqlalchemy.sql import func
 from datetime import datetime
 import enum
 
-from database import Base
+from db import Base
 
 
 class EventType(str, enum.Enum):

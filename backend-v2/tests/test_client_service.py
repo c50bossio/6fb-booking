@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, date, timezone
 from sqlalchemy.orm import Session
 from services import client_service
 from models import Client, User, Appointment
-from database import get_db
+from db import get_db
 
 
 class TestClientService:

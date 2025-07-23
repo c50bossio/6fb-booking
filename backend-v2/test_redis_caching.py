@@ -9,7 +9,7 @@ from datetime import datetime, date
 from sqlalchemy.orm import Session
 
 # Import necessary components
-from database import SessionLocal
+from db import SessionLocal
 from services.analytics_service import AnalyticsService
 from services.appointment_cache_service import AppointmentCacheService
 from services.cache_invalidation import cache_invalidator

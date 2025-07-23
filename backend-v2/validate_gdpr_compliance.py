@@ -24,7 +24,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Import our models and dependencies
-from database import Base
+from db import Base
 from models.consent import (
     UserConsent, CookieConsent, DataProcessingLog, DataExportRequest, LegalConsentAudit,
     ConsentType, ConsentStatus, DataProcessingPurpose, ExportStatus

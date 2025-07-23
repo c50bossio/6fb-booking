@@ -11,7 +11,7 @@ from enum import Enum
 
 import schemas
 import models
-from database import get_db
+from db import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role
 from services.import_service import ImportService

@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from models import User, UnifiedUserRole
 from dependencies import get_current_user
-from database import get_db
+from db import get_db
 
 
 class PermissionError(HTTPException):

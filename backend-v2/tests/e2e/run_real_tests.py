@@ -361,7 +361,7 @@ class RealWorldTestRunner:
         print("\n⚡ Testing Real-World Performance...")
         
         endpoints = [
-            ("/api/v1/health", "Health Check"),
+            ("/api/v2/health", "Health Check"),
             ("/api/v1/services", "Service List"),
             ("/api/v1/barbers/search?location=test", "Barber Search"),
             ("/", "Frontend Homepage")
@@ -439,7 +439,7 @@ class RealWorldTestRunner:
         # 2. Test rate limiting
         rate_limit_hit = False
         for i in range(150):
-            response = await self.client.get("/api/v1/health")
+            response = await self.client.get("/api/v2/health")
             if response.status_code == 429:
                 rate_limit_hit = True
                 break

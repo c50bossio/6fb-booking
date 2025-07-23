@@ -5,7 +5,7 @@ from datetime import datetime
 import logging
 from typing import Dict, Any
 
-from database import get_db
+from db import get_db
 from config import settings
 from models import (
     SMSConversation, SMSMessage, SMSMessageDirection, 

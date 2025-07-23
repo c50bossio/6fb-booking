@@ -1,4 +1,4 @@
-from database import SessionLocal
+from db import SessionLocal
 from utils.auth import verify_password
 import models
 

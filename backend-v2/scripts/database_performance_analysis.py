@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import text, inspect, MetaData
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
+from db import SessionLocal, engine
 from models import *
 import time
 from datetime import datetime, timedelta
@@ -299,7 +299,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import text
-from database import SessionLocal, engine
+from db import SessionLocal, engine
 import time
 
 def apply_performance_indexes():

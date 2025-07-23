@@ -6,7 +6,7 @@ import logging
 from datetime import datetime, timedelta
 from celery import current_app as celery_app
 from sqlalchemy.orm import Session
-from database import SessionLocal
+from db import SessionLocal
 from services.agent_orchestration_service import agent_orchestration_service
 from services.conversation_service import conversation_service
 from models import AgentInstance, AgentMetrics, AgentStatus

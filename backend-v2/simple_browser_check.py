@@ -35,7 +35,7 @@ js_errors = driver.execute_script("""
     // Check API health endpoint
     let apiStatus = 'Unknown';
     try {
-        fetch('http://localhost:8000/api/v1/health').then(r => {
+        fetch('http://localhost:8000/api/v2/health').then(r => {
             console.log('API Health Status:', r.status);
         }).catch(e => {
             console.error('API Health Check Failed:', e);

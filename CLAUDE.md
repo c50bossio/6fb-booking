@@ -534,6 +534,35 @@ alembic downgrade -1
 
 ## 🚀 Deployment
 
+### 📚 **Deployment Documentation (CRITICAL)**
+- **`DEPLOYMENT_PROCESS.md`**: Complete standard deployment workflow and best practices
+- **`NUCLEAR_RESET_PLAYBOOK.md`**: Emergency recovery process for critical deployment issues
+
+### **Standard Deployment Process**
+```bash
+# 1. Feature Development (from staging)
+git checkout staging && git pull origin staging
+git checkout -b feature/description-YYYYMMDD
+
+# 2. Deploy to Staging (via PR)
+gh pr create --base staging --title "Feature: Description"
+
+# 3. Deploy to Production (after staging validation)
+gh pr create --base production --title "Release: Description"
+```
+
+### **Emergency Nuclear Reset Process**
+**Use when branch divergence > 20 commits or deployment pipeline broken**
+```bash
+# 1. Create backup
+git checkout production && git checkout -b backup/emergency-$(date +%Y%m%d)
+
+# 2. Reset production to staging
+git checkout production
+git reset --hard origin/staging
+git push origin production --force-with-lease
+```
+
 ### Production Checklist
 - [ ] Environment variables configured
 - [ ] Database migrations applied
@@ -541,17 +570,11 @@ alembic downgrade -1
 - [ ] SSL certificates active
 - [ ] Monitoring enabled
 - [ ] Backup strategy in place
+- [ ] **Follow DEPLOYMENT_PROCESS.md for all deployments**
 
-### Render Deployment
-```bash
-# Backend
-git push origin main  # Auto-deploys via webhook
-
-# Frontend
-cd backend-v2/frontend-v2
-npm run build
-# Deploy via Render dashboard
-```
+### Auto-Deployment via Render
+- **staging branch** → Auto-deploys to `staging.bookedbarber.com`
+- **production branch** → Auto-deploys to `bookedbarber.com`
 
 ### Docker Deployment
 ```bash

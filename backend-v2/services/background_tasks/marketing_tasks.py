@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 from services.celery_app import celery_app
 from services.marketing_service import MarketingService
-from database import SessionLocal
+from db import SessionLocal
 from models import MarketingCampaign, Client, User
 from config import settings
 

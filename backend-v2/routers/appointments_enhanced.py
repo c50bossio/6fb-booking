@@ -11,7 +11,7 @@ from typing import List, Optional
 from datetime import datetime, date, time
 import pytz
 
-from database import get_db
+from db import get_db
 from dependencies_v2 import require_user
 from models import User, Appointment, Service, Client
 from schemas_new.booking_validation import (

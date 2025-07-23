@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from datetime import date, time
 import schemas
 import models
-from database import get_db
+from db import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role
 from services import booking_rules_service

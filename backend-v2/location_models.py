@@ -5,7 +5,7 @@ Location-related models for enterprise dashboard functionality
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Enum, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from database import Base
+from db import Base
 import enum
 
 

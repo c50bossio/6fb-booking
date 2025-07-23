@@ -5,7 +5,7 @@ from typing import List, Optional
 from datetime import datetime, date, time, timezone
 import enum
 
-from database import get_db
+from db import get_db
 from models import Service, ServiceCategoryEnum, ServicePricingRule, ServiceBookingRule, barber_services
 from schemas import ServiceCreate, ServiceUpdate, ServiceResponse, ServicePricingRuleCreate, ServiceBookingRuleCreate
 from utils.auth import get_current_user, verify_admin_or_barber

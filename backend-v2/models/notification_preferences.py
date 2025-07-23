@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, JSON, Text, Index
 from sqlalchemy.orm import relationship
-from database import Base
+from db import Base
 from datetime import datetime, timezone
 import secrets
 import hashlib

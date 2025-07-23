@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import uuid
 import logging
 
-from database import get_db
+from db import get_db
 from dependencies import get_current_user
 from models import User
 from models.consent import (

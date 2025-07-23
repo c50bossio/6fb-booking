@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from typing import Dict, Any
 import logging
 
-from database import get_db
+from db import get_db
 from services.social_auth_service import SocialAuthService
 from config import settings
 

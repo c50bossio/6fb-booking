@@ -20,7 +20,7 @@ from models import (
     User, Appointment, NotificationTemplate, NotificationPreference,
     NotificationQueue, NotificationStatus, Client, NotificationPreferences
 )
-from database import get_db
+from db import get_db
 from utils.url_shortener import create_appointment_short_url, create_booking_short_url
 
 logger = logging.getLogger(__name__)

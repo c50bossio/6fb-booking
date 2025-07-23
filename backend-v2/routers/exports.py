@@ -7,7 +7,7 @@ import base64
 import logging
 from pydantic import BaseModel, Field
 
-from database import get_db
+from db import get_db
 from utils.auth import get_current_user, require_admin_role
 from services.export_service import export_service
 import models

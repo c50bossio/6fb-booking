@@ -31,7 +31,7 @@ from twilio.rest import Client as TwilioClient
 from twilio.base.exceptions import TwilioRestException
 from config import settings
 from services.notification_service import NotificationService
-from database import get_db
+from db import get_db
 
 logger = logging.getLogger(__name__)
 

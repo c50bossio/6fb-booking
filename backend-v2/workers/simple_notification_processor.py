@@ -15,7 +15,7 @@ import threading
 # Add parent directory to path to import modules
 sys.path.append(str(Path(__file__).parent.parent))
 
-from database import SessionLocal
+from db import SessionLocal
 from services.notification_service import notification_service
 from config import settings
 

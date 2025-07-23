@@ -1,0 +1,25 @@
+# CDN Deployment Script Dependencies
+# Install with: pip install -r requirements-cdn.txt
+
+# Core dependencies
+requests>=2.31.0
+boto3>=1.34.0
+botocore>=1.34.0
+
+# For CloudFlare API
+cloudflare>=2.19.0
+
+# For async operations (optional enhancement)
+aiohttp>=3.9.0
+asyncio-throttle>=1.0.2
+
+# Utility dependencies
+pathlib2>=2.3.7
+click>=8.1.0
+colorama>=0.4.6
+
+# Development dependencies (optional)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+responses>=0.24.0
+moto>=4.2.0

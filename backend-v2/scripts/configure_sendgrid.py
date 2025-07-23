@@ -31,7 +31,7 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from config import settings
 from services.notification_service import NotificationService
-from database import get_db
+from db import get_db
 
 logger = logging.getLogger(__name__)
 

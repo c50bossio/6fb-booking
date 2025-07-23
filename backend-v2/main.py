@@ -1,13 +1,13 @@
 from fastapi import FastAPI
+from db import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
-from database import engine, Base
 import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, social_auth
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, social_auth, cdn
 # service_templates temporarily disabled due to FastAPI error
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
@@ -245,7 +245,7 @@ def configure_cors():
         allowed_origins.append(f"https://{railway_url}")
     if vercel_url and ENVIRONMENT != "production":
         allowed_origins.append(f"https://{vercel_url}")
-    if render_url:
+    if render_url and ENVIRONMENT != "production":
         allowed_origins.append(render_url)
     
     # Remove duplicates and empty values
@@ -350,6 +350,7 @@ app.include_router(tracking.router)  # Conversion tracking and attribution
 app.include_router(customer_pixels.router)  # Customer tracking pixel management
 app.include_router(public_booking.router)  # Public booking endpoints for organization-specific pages
 app.include_router(products.router)  # Product management and Shopify integration - re-enabled
+app.include_router(cdn.router)  # CDN management and optimization
 # app.include_router(shopify_webhooks.router)  # Shopify webhook handlers for real-time sync - disabled due to bleach dependency
 
 # Include public routes (no authentication required)

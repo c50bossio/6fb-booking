@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 from datetime import datetime, timedelta, timezone
 
-from database import get_db
+from db import get_db
 from models import (
     User, NotificationTemplate, NotificationPreference, 
     NotificationQueue, NotificationStatus

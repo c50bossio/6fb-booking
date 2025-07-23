@@ -27,7 +27,7 @@ import stripe
 from config import settings
 from services.stripe_integration_service import StripeIntegrationService
 from services.payment_service import PaymentService
-from database import get_db
+from db import get_db
 
 logger = logging.getLogger(__name__)
 

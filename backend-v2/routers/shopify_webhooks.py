@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, Header
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from database import get_db
+from db import get_db
 from models.integration import Integration, IntegrationType
 from services.shopify_integration_service import ShopifyIntegrationService
 from utils.idempotency import webhook_idempotent

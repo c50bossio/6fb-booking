@@ -5,7 +5,7 @@ from typing import Optional, List
 from datetime import datetime
 import logging
 
-from database import get_db
+from db import get_db
 from models import (
     User, SMSConversation, SMSMessage, SMSMessageDirection, 
     SMSMessageStatus, Client

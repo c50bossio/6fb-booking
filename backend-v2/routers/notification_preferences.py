@@ -8,7 +8,7 @@ import secrets
 import hashlib
 import logging
 
-from database import get_db
+from db import get_db
 from models import (
     NotificationPreferences, NotificationPreferenceAudit, UnsubscribeRequest,
     NotificationChannel

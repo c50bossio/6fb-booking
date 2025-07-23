@@ -42,6 +42,10 @@ RATE_LIMITS = {
     "pos_transaction": "150/minute" if is_development else "50/minute", # POS transactions
     "commission_report": "60/minute" if is_development else "20/minute", # Commission reports
     "stripe_connect": "30/hour" if is_development else "10/hour",   # Stripe Connect operations
+    # Gift certificate rate limits
+    "gift_certificate_create": "50/hour" if is_development else "20/hour",  # Gift certificate creation
+    "gift_certificate_validate": "100/hour" if is_development else "60/hour", # Gift certificate validation
+    "payment_report": "60/hour" if is_development else "30/hour",   # Payment report generation
     # Booking/Appointment rate limits
     "booking_create": "50/hour" if is_development else "30/hour",   # Authenticated booking creation
     "guest_booking": "10/hour" if is_development else "3/hour",     # Stricter limit for guest bookings
@@ -76,6 +80,12 @@ order_create_rate_limit = limiter.limit(RATE_LIMITS["order_create"])
 pos_transaction_rate_limit = limiter.limit(RATE_LIMITS["pos_transaction"])
 commission_report_rate_limit = limiter.limit(RATE_LIMITS["commission_report"])
 stripe_connect_rate_limit = limiter.limit(RATE_LIMITS["stripe_connect"])
+# Gift certificate and payment report rate limits
+gift_certificate_create_limit = limiter.limit(RATE_LIMITS["gift_certificate_create"])
+gift_certificate_validate_limit = limiter.limit(RATE_LIMITS["gift_certificate_validate"])
+payment_report_limit = limiter.limit(RATE_LIMITS["payment_report"])
+# Alias for consistency with payments.py imports
+stripe_connect_limit = stripe_connect_rate_limit
 # Booking/Appointment rate limits
 booking_create_rate_limit = limiter.limit(RATE_LIMITS["booking_create"])
 guest_booking_rate_limit = limiter.limit(RATE_LIMITS["guest_booking"])

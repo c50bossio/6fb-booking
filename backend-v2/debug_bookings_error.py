@@ -1,7 +1,7 @@
 import sys
 sys.path.append('.')
 
-from database import SessionLocal
+from db import SessionLocal
 from models import User, Appointment
 from services import booking_service
 
