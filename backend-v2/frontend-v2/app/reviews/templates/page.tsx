@@ -648,6 +648,16 @@ export default function ReviewTemplatesPage() {
     }
   }
 
+  const handleSaveTemplate = (templateData: ReviewTemplateCreate | ReviewTemplateUpdate) => {
+    if (editingTemplate) {
+      // Cast to ReviewTemplateUpdate for update operation
+      handleUpdateTemplate(templateData as ReviewTemplateUpdate)
+    } else {
+      // Cast to ReviewTemplateCreate for create operation  
+      handleCreateTemplate(templateData as ReviewTemplateCreate)
+    }
+  }
+
   const handleDeleteTemplate = (templateId: number) => {
     if (confirm('Are you sure you want to delete this template? This action cannot be undone.')) {
       deleteMutation.mutate(templateId)
@@ -810,7 +820,7 @@ export default function ReviewTemplatesPage() {
           setIsCreateModalOpen(false)
           setEditingTemplate(null)
         }}
-        onSave={editingTemplate ? handleUpdateTemplate : handleCreateTemplate}
+        onSave={handleSaveTemplate}
         isLoading={createMutation.isPending || updateMutation.isPending}
       />
     </div>
