@@ -432,6 +432,56 @@ get_network_requests since_minutes=5
 4. ✅ All network requests successful (status 200-299)
 5. ✅ JavaScript errors resolved with stack trace verification
 
+### Simplified Code Policy
+**CRITICAL: Always revert simplified code back to original features after debugging**
+
+When debugging complex issues, you may need to create simplified versions of features to isolate problems. However, once the issue is resolved, you MUST restore the original, full-featured implementation.
+
+#### Policy Requirements
+1. **Document Original**: Before simplifying, note the original implementation details
+2. **Create Simple Version**: Temporarily simplify only what's necessary for debugging
+3. **Solve Problem**: Use the simplified version to identify and fix the issue
+4. **Restore Original**: IMMEDIATELY revert to the full-featured original code
+5. **Verify Functionality**: Ensure all original features work correctly after restoration
+
+#### Common Scenarios
+- **Complex UI Components**: Simplifying to isolate rendering issues
+- **Multi-step Workflows**: Reducing steps to find specific failure points
+- **Integration Features**: Removing dependencies to test core functionality
+- **Data Processing**: Using minimal data sets for debugging algorithms
+
+#### Process Example
+```bash
+# 1. Document original feature
+# Original: Complex payment form with validation, multiple steps, animations
+
+# 2. Create simplified version for debugging
+# Simplified: Basic form with single payment field
+
+# 3. Debug and fix the issue
+# Found: Race condition in validation logic
+
+# 4. MANDATORY: Restore original implementation
+# Restored: Full payment form with all features
+
+# 5. Verify all features work
+# Tested: Validation, animations, multi-step flow all functional
+```
+
+#### ⚠️ WARNING: Production Code Policy
+- **NEVER** leave simplified debugging code in production branches
+- **NEVER** commit simplified versions without clear debugging comments
+- **ALWAYS** restore full functionality before marking tasks complete
+- **ALWAYS** run full test suite after reverting to original
+
+#### Verification Checklist
+Before closing any debugging task:
+- [ ] Original feature complexity restored
+- [ ] All original functionality verified working
+- [ ] No simplified code remains in codebase
+- [ ] Tests pass with full feature set
+- [ ] UI/UX matches original specifications
+
 ## 🔍 Browser Debugging & MCP Integration
 
 ### Browser Logs MCP Server
