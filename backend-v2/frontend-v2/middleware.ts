@@ -30,6 +30,7 @@ const publicRoutes = [
   '/privacy', 
   '/cookies',
   '/offline',
+  '/calendar-showcase',
   '/service-worker.js',
   '/manifest.json',
 ]

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card'
-import { Badge } from '../../../components/ui/Badge'
+import { Badge } from '../../../components/ui/badge'
 import { LoadingSpinner } from '../../../components/LoadingStates'
 import { ErrorDisplay } from '../../../components/LoadingStates'
 import { useAuth } from '../../../hooks/useAuth'
