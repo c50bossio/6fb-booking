@@ -708,7 +708,7 @@ export default function ReviewTemplatesPage() {
           <div className="flex items-center space-x-4">
             <Select
               value={filterCategory}
-              onChange={setFilterCategory}
+              onChange={(value) => setFilterCategory(value as string)}
               placeholder="All Categories"
               options={[
                 { value: "", label: "All Categories" },
@@ -720,7 +720,7 @@ export default function ReviewTemplatesPage() {
             
             <Select
               value={filterPlatform}
-              onChange={setFilterPlatform}
+              onChange={(value) => setFilterPlatform(value as string)}
               placeholder="All Platforms"
               options={[
                 { value: "", label: "All Platforms" },
