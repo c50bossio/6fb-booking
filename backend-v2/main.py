@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, appointments_enhanced, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, homepage_builder, client_tiers, six_figure_pricing, staging_webhooks
+from routers import auth, auth_simple, bookings, appointments, appointments_enhanced, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, homepage_builder, client_tiers, six_figure_pricing, staging_webhooks, social_auth
 from api.v1 import realtime_availability, walkin_queue, external_payments, simple_ai_integration, unified_payment_analytics, oauth, cache_optimization, hybrid_payments, platform_collections, external_payment_webhooks
 # Import V2 API endpoints
 from api.v2.endpoints import notifications as notifications_v2
@@ -343,6 +343,7 @@ app.include_router(barber_availability.router, prefix="/api/v2")
 app.include_router(realtime_availability.router)  # Real-time availability for mobile-first booking
 app.include_router(walkin_queue.router)  # Walk-in queue management for barbershop workflow
 app.include_router(oauth.router, prefix="/api/v2", tags=["OAuth"])  # OAuth integration for Google and Facebook login
+app.include_router(social_auth.router, prefix="/api/v2")  # Social authentication (Google/Facebook OAuth)
 app.include_router(cache_optimization.router, prefix="/api/v2", tags=["Cache"])  # Enhanced cache optimization system
 app.include_router(external_payments.router, prefix="/api/v2")  # Hybrid payment system for external payment processors
 app.include_router(unified_payment_analytics.router)  # Unified payment analytics across all payment flows

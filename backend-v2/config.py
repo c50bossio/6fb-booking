@@ -52,6 +52,10 @@ class Settings(BaseSettings):
         "https://www.googleapis.com/auth/calendar.events"
     ]
     
+    # Facebook OAuth2 settings
+    facebook_app_id: str = ""
+    facebook_app_secret: str = ""
+    
     # Booking Configuration
     booking_min_lead_time_minutes: int = 15  # Minimum time before appointment can be booked
     booking_max_advance_days: int = 30       # Maximum days in advance bookings allowed
