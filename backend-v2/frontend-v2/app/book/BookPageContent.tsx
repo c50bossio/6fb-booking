@@ -702,7 +702,6 @@ export default function BookPage() {
                   <Calendar
                     selected={selectedDate}
                     onSelect={(date) => handleDateSelect(date!)}
-                    bookingDates={bookingDates}
                   />
                 </div>
 
