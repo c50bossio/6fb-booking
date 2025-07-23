@@ -6,6 +6,12 @@ export {
 } from './AnalyticsErrorBoundary'
 
 export { 
+  AuthErrorBoundary, 
+  withAuthErrorBoundary, 
+  AuthErrorFallback 
+} from './AuthErrorBoundary'
+
+export { 
   BookingErrorBoundary, 
   withBookingErrorBoundary, 
   BookingErrorFallback 

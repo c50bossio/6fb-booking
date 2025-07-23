@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { User } from '@/lib/api'
 import { hasRoutePermission, getDefaultDashboard } from '@/lib/routeGuards'
+import { AuthErrorBoundary } from './error-boundaries/AuthErrorBoundary'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -11,7 +12,7 @@ interface ProtectedRouteProps {
   loading: boolean
 }
 
-export function ProtectedRoute({ children, user, loading }: ProtectedRouteProps) {
+function ProtectedRouteInternal({ children, user, loading }: ProtectedRouteProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [redirecting, setRedirecting] = useState(false)
@@ -93,6 +94,16 @@ export function ProtectedRoute({ children, user, loading }: ProtectedRouteProps)
   }
 
   return <>{children}</>
+}
+
+export function ProtectedRoute({ children, user, loading }: ProtectedRouteProps) {
+  return (
+    <AuthErrorBoundary
+      onLogin={() => window.location.href = '/login'}
+    >
+      <ProtectedRouteInternal children={children} user={user} loading={loading} />
+    </AuthErrorBoundary>
+  )
 }
 
 // Utility component for role-based conditional rendering

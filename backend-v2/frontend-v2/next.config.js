@@ -117,16 +117,20 @@ const nextConfig = {
       }
     }
 
-    // Bundle analyzer in development
-    if (!isServer && !dev) {
-      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-      config.plugins.push(
-        new BundleAnalyzerPlugin({
-          analyzerMode: 'static',
-          reportFilename: '../bundle-analyzer.html',
-          openAnalyzer: false,
-        })
-      )
+    // Bundle analyzer (only if webpack-bundle-analyzer is available)
+    if (!isServer && !dev && process.env.ANALYZE === 'true') {
+      try {
+        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+        config.plugins.push(
+          new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            reportFilename: '../bundle-analyzer.html',
+            openAnalyzer: false,
+          })
+        )
+      } catch (error) {
+        console.warn('webpack-bundle-analyzer not available, skipping bundle analysis')
+      }
     }
 
     // Enhanced chunk optimization

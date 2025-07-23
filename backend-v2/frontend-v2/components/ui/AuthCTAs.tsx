@@ -3,7 +3,7 @@
 import { CTAButton, CTAGroup } from './CTASystem'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { ErrorBoundary } from 'react-error-boundary'
+import { AuthErrorBoundary } from '../error-boundaries/AuthErrorBoundary'
 
 /**
  * Static fallback CTAs for header when auth fails
@@ -91,9 +91,12 @@ function AuthHeaderCTAsInternal({ className = '' }: { className?: string }) {
 
 export function AuthHeaderCTAs({ className = '' }: { className?: string }) {
   return (
-    <ErrorBoundary fallback={<StaticHeaderCTAs className={className} />}>
+    <AuthErrorBoundary 
+      fallback={<StaticHeaderCTAs className={className} />}
+      onLogin={() => window.location.href = '/login'}
+    >
       <AuthHeaderCTAsInternal className={className} />
-    </ErrorBoundary>
+    </AuthErrorBoundary>
   )
 }
 
@@ -155,8 +158,11 @@ function AuthHeroCTAsInternal({ className = '' }: { className?: string }) {
 
 export function AuthHeroCTAs({ className = '' }: { className?: string }) {
   return (
-    <ErrorBoundary fallback={<StaticHeroCTAs className={className} />}>
+    <AuthErrorBoundary 
+      fallback={<StaticHeroCTAs className={className} />}
+      onLogin={() => window.location.href = '/login'}
+    >
       <AuthHeroCTAsInternal className={className} />
-    </ErrorBoundary>
+    </AuthErrorBoundary>
   )
 }
