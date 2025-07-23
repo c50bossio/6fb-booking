@@ -203,13 +203,14 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
             <label className="block text-sm font-medium mb-2">Category</label>
             <Select
               value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value })}
+              onChange={(value) => setFormData({ ...formData, category: value })}
               required
-            >
-              <option value="positive">Positive</option>
-              <option value="negative">Negative</option>
-              <option value="neutral">Neutral</option>
-            </Select>
+              options={[
+                { value: "positive", label: "Positive" },
+                { value: "negative", label: "Negative" },
+                { value: "neutral", label: "Neutral" }
+              ]}
+            />
           </div>
         </div>
 
@@ -228,32 +229,34 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
             <label className="block text-sm font-medium mb-2">Platform (Optional)</label>
             <Select
               value={formData.platform || ''}
-              onValueChange={(value) => setFormData({ ...formData, platform: value as ReviewPlatform })}
+              onChange={(value) => setFormData({ ...formData, platform: value as ReviewPlatform })}
               placeholder="Any platform"
-            >
-              <option value="">Any Platform</option>
-              <option value={ReviewPlatform.GOOGLE}>Google</option>
-              <option value={ReviewPlatform.YELP}>Yelp</option>
-              <option value={ReviewPlatform.FACEBOOK}>Facebook</option>
-              <option value={ReviewPlatform.INSTAGRAM}>Instagram</option>
-              <option value={ReviewPlatform.BOOKSY}>Booksy</option>
-              <option value={ReviewPlatform.FRESHA}>Fresha</option>
-              <option value={ReviewPlatform.STYLESEAT}>StyleSeat</option>
-            </Select>
+              options={[
+                { value: "", label: "Any Platform" },
+                { value: ReviewPlatform.GOOGLE, label: "Google" },
+                { value: ReviewPlatform.YELP, label: "Yelp" },
+                { value: ReviewPlatform.FACEBOOK, label: "Facebook" },
+                { value: ReviewPlatform.INSTAGRAM, label: "Instagram" },
+                { value: ReviewPlatform.BOOKSY, label: "Booksy" },
+                { value: ReviewPlatform.FRESHA, label: "Fresha" },
+                { value: ReviewPlatform.STYLESEAT, label: "StyleSeat" }
+              ]}
+            />
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-2">Sentiment Trigger</label>
             <Select
               value={formData.sentiment_trigger || ''}
-              onValueChange={(value) => setFormData({ ...formData, sentiment_trigger: value as ReviewSentiment })}
+              onChange={(value) => setFormData({ ...formData, sentiment_trigger: value as ReviewSentiment })}
               placeholder="Any sentiment"
-            >
-              <option value="">Any Sentiment</option>
-              <option value={ReviewSentiment.POSITIVE}>Positive</option>
-              <option value={ReviewSentiment.NEUTRAL}>Neutral</option>
-              <option value={ReviewSentiment.NEGATIVE}>Negative</option>
-            </Select>
+              options={[
+                { value: "", label: "Any Sentiment" },
+                { value: ReviewSentiment.POSITIVE, label: "Positive" },
+                { value: ReviewSentiment.NEUTRAL, label: "Neutral" },
+                { value: ReviewSentiment.NEGATIVE, label: "Negative" }
+              ]}
+            />
           </div>
         </div>
 
@@ -696,29 +699,31 @@ export default function ReviewTemplatesPage() {
           <div className="flex items-center space-x-4">
             <Select
               value={filterCategory}
-              onValueChange={setFilterCategory}
+              onChange={setFilterCategory}
               placeholder="All Categories"
-            >
-              <option value="">All Categories</option>
-              <option value="positive">Positive</option>
-              <option value="negative">Negative</option>
-              <option value="neutral">Neutral</option>
-            </Select>
+              options={[
+                { value: "", label: "All Categories" },
+                { value: "positive", label: "Positive" },
+                { value: "negative", label: "Negative" },
+                { value: "neutral", label: "Neutral" }
+              ]}
+            />
             
             <Select
               value={filterPlatform}
-              onValueChange={setFilterPlatform}
+              onChange={setFilterPlatform}
               placeholder="All Platforms"
-            >
-              <option value="">All Platforms</option>
-              <option value="google">Google</option>
-              <option value="yelp">Yelp</option>
-              <option value="facebook">Facebook</option>
-              <option value="instagram">Instagram</option>
-              <option value="booksy">Booksy</option>
-              <option value="fresha">Fresha</option>
-              <option value="styleseat">StyleSeat</option>
-            </Select>
+              options={[
+                { value: "", label: "All Platforms" },
+                { value: "google", label: "Google" },
+                { value: "yelp", label: "Yelp" },
+                { value: "facebook", label: "Facebook" },
+                { value: "instagram", label: "Instagram" },
+                { value: "booksy", label: "Booksy" },
+                { value: "fresha", label: "Fresha" },
+                { value: "styleseat", label: "StyleSeat" }
+              ]}
+            />
             
             <div className="flex items-center space-x-2">
               <Switch
