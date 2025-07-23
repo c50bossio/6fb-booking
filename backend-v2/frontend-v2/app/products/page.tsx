@@ -367,35 +367,42 @@ export default function ProductsPage() {
       </Card>
       
       {/* Pagination */}
-      {data && typeof data.total === 'number' && data.total > (filters.limit || 20) && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">
-            Showing {(filters.offset || 0) + 1} to {Math.min((filters.offset || 0) + (filters.limit || 20), data.total || 0)} of {data.total || 0} products
-          </p>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setFilters(prev => ({
-                ...prev,
-                offset: Math.max(0, (prev.offset || 0) - (prev.limit || 20))
-              }))}
-              disabled={filters.offset === 0}
-              variant="outline"
-            >
-              Previous
-            </Button>
-            <Button
-              onClick={() => setFilters(prev => ({
-                ...prev,
-                offset: (prev.offset || 0) + (prev.limit || 20)
-              }))}
-              disabled={!data?.has_more}
-              variant="outline"
-            >
-              Next
-            </Button>
+      {(() => {
+        // Pre-validate data to satisfy TypeScript strict mode
+        if (!data || typeof data.total !== 'number' || data.total <= (filters.limit || 20)) {
+          return null
+        }
+        
+        return (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              Showing {(filters.offset || 0) + 1} to {Math.min((filters.offset || 0) + (filters.limit || 20), data.total)} of {data.total} products
+            </p>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setFilters(prev => ({
+                  ...prev,
+                  offset: Math.max(0, (prev.offset || 0) - (prev.limit || 20))
+                }))}
+                disabled={filters.offset === 0}
+                variant="outline"
+              >
+                Previous
+              </Button>
+              <Button
+                onClick={() => setFilters(prev => ({
+                  ...prev,
+                  offset: (prev.offset || 0) + (prev.limit || 20)
+                }))}
+                disabled={!data.has_more}
+                variant="outline"
+              >
+                Next
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
