@@ -108,6 +108,11 @@ const nextConfig = {
     // Global error handling improvements
     config.resolve = {
       ...config.resolve,
+      // Path aliases for @/ imports (fix for Render build environment)
+      alias: {
+        ...config.resolve?.alias,
+        '@': __dirname,
+      },
       // Fallback for Node.js modules in browser
       fallback: {
         ...config.resolve?.fallback,
