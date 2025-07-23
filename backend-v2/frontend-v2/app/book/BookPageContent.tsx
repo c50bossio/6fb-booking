@@ -861,7 +861,7 @@ export default function BookPage() {
                 ) : (
                   <ErrorDisplay 
                     error={error} 
-                    onRetry={() => selectedDate && fetchTimeSlots(selectedDate)}
+                    onRetry={() => selectedDate && loadTimeSlots(formatDateForAPI(selectedDate))}
                     title="Failed to load time slots"
                   />
                 )}
