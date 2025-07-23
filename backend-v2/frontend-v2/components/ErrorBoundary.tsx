@@ -59,33 +59,39 @@ export class ErrorBoundary extends Component<Props, State> {
     // Capture the error with Sentry and get the event ID
     let sentryEventId: string | undefined
     
-    Sentry.withScope((scope) => {
-      // Add context about the error boundary
-      scope.setTag('errorBoundary', true)
-      scope.setTag('errorBoundary.feature', this.props.feature || 'unknown')
-      
-      // Add component stack and additional context
-      scope.setContext('errorBoundary', {
-        componentStack: errorInfo.componentStack,
-        feature: this.props.feature,
-        userId: this.props.userId,
-        errorCount: this.state.errorCount + 1,
-        timestamp: new Date().toISOString(),
-      })
-      
-      // Add breadcrumb for the error
-      addUserActionBreadcrumb(
-        'Error caught by boundary',
-        'interaction',
-        {
+    try {
+      Sentry.withScope((scope) => {
+        // Add context about the error boundary
+        scope.setTag('errorBoundary', true)
+        scope.setTag('errorBoundary.feature', this.props.feature || 'unknown')
+        
+        // Add component stack and additional context
+        scope.setContext('errorBoundary', {
+          componentStack: errorInfo.componentStack,
           feature: this.props.feature,
-          errorMessage: error.message,
-          errorStack: error.stack?.substring(0, 1000), // First 1000 chars
-        }
-      )
-      
-      sentryEventId = Sentry.captureException(error)
-    })
+          userId: this.props.userId,
+          errorCount: this.state.errorCount + 1,
+          timestamp: new Date().toISOString(),
+        })
+        
+        // Add breadcrumb for the error
+        addUserActionBreadcrumb(
+          'Error caught by boundary',
+          'interaction',
+          {
+            feature: this.props.feature,
+            errorMessage: error.message,
+            errorStack: error.stack?.substring(0, 1000), // First 1000 chars
+          }
+        )
+        
+        // Capture exception and store event ID
+        sentryEventId = Sentry.captureException(error) as string | undefined
+      })
+    } catch (sentryError) {
+      console.warn('Failed to capture error with Sentry:', sentryError)
+      sentryEventId = undefined
+    }
     
     this.setState((prev) => ({ 
       errorInfo,
