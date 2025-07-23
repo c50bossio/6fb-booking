@@ -113,6 +113,8 @@ services:
         value: staging
       - key: NEXT_PUBLIC_API_URL
         value: https://sixfb-backend-v2-staging.onrender.com
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: https://sixfb-backend-v2-staging.onrender.com/api/v1
       # Test Stripe publishable key
       - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
         sync: false  # Set test key in Render dashboard
