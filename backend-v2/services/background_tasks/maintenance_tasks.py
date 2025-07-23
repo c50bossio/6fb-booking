@@ -23,16 +23,21 @@ def cleanup_expired_cache():
     try:
         logger.info("🧹 Starting cache cleanup process")
         
-        cache_service = await get_cache_service()
-        if not cache_service:
+        # Use direct Redis connection for Celery tasks (sync)
+        import redis
+        try:
+            redis_client = redis.Redis.from_url("redis://localhost:6379/0")
+            redis_client.ping()  # Test connection
+        except Exception as e:
+            logger.warning(f"Redis not available - skipping cache cleanup: {str(e)}")
             return {
                 'status': 'skipped',
-                'reason': 'Cache service not available',
+                'reason': 'Redis not available',
                 'timestamp': datetime.utcnow().isoformat()
             }
         
         # Get cache statistics before cleanup
-        stats_before = await cache_service.get_stats()
+        info_before = redis_client.info('memory')
         
         # Redis automatically handles expired keys, but we can force cleanup of patterns
         cleanup_patterns = [
