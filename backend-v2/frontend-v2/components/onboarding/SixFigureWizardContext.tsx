@@ -332,7 +332,7 @@ export function SixFigureWizardProvider({ children }: { children: ReactNode }) {
         throw new Error('No authentication token available')
       }
 
-      const response = await fetch(`${API_URL}/api/v1/user/six-figure-wizard-progress`, {
+      const response = await fetch(`${API_URL}/api/v2/user/six-figure-wizard-progress`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -367,7 +367,7 @@ export function SixFigureWizardProvider({ children }: { children: ReactNode }) {
         throw new Error('No authentication token available')
       }
 
-      const response = await fetch(`${API_URL}/api/v1/user/complete-six-figure-wizard`, {
+      const response = await fetch(`${API_URL}/api/v2/user/complete-six-figure-wizard`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

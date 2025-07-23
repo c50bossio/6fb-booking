@@ -1911,7 +1911,7 @@ export interface ClientTierAnalytics {
  * Get detailed CLV metrics for a specific client
  */
 export async function getIndividualClientCLV(clientId: number): Promise<CLVMetrics> {
-  const response = await fetchAPI(`/api/v1/analytics/client-lifetime-value/${clientId}`)
+  const response = await fetchAPI(`/api/v2/analytics/client-lifetime-value/${clientId}`)
   return response.clv_metrics
 }
 
@@ -1929,7 +1929,7 @@ export async function getClientTierAnalytics(
     params.append('user_id', userId.toString())
   }
   
-  return fetchAPI(`/api/v1/analytics/client-tiers?${params.toString()}`)
+  return fetchAPI(`/api/v2/analytics/client-tiers?${params.toString()}`)
 }
 
 // Service Profitability Analytics Types
@@ -2111,7 +2111,7 @@ export async function getServiceProfitabilityAnalytics(
     params.append('user_id', userId.toString())
   }
   
-  const response = await fetchAPI(`/api/v1/analytics/service-profitability?${params.toString()}`)
+  const response = await fetchAPI(`/api/v2/analytics/service-profitability?${params.toString()}`)
   return response.profitability_analysis
 }
 
@@ -2133,7 +2133,7 @@ export async function getServiceOptimizationRecommendations(
     params.append('user_id', userId.toString())
   }
   
-  return fetchAPI(`/api/v1/analytics/service-optimization?${params.toString()}`)
+  return fetchAPI(`/api/v2/analytics/service-optimization?${params.toString()}`)
 }
 
 export async function getDashboardAnalytics(
@@ -6065,7 +6065,7 @@ export const appointmentsAPI = {
 
   // Six Figure Barber Premium Pricing Integration
   async calculateServicePrice(serviceName: string, barberId: string, clientId?: string, appointmentDateTime?: string, basePrice?: number): Promise<any> {
-    return fetchAPI('/api/v1/six-figure-pricing/calculate-price', {
+    return fetchAPI('/api/v2/six-figure-pricing/calculate-price', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -6079,7 +6079,7 @@ export const appointmentsAPI = {
   },
 
   async getBarberPricingRecommendations(barberId: string, analysisDays: number = 30): Promise<any> {
-    return fetchAPI(`/api/v1/six-figure-pricing/barber-recommendations/${barberId}?analysis_days=${analysisDays}`)
+    return fetchAPI(`/api/v2/six-figure-pricing/barber-recommendations/${barberId}?analysis_days=${analysisDays}`)
   },
 
   async getServicePricingMatrix(barberExperience: string = 'mid', clientTier: string = 'new', includeTimePremiums: boolean = true): Promise<any> {
@@ -6088,14 +6088,14 @@ export const appointmentsAPI = {
       client_tier: clientTier,
       include_time_premiums: includeTimePremiums.toString()
     })
-    return fetchAPI(`/api/v1/six-figure-pricing/service-pricing-matrix?${params.toString()}`)
+    return fetchAPI(`/api/v2/six-figure-pricing/service-pricing-matrix?${params.toString()}`)
   },
 
   async getRevenueOptimizationInsights(barberId: string, targetAnnualRevenue: number = 100000): Promise<any> {
     const params = new URLSearchParams({
       target_annual_revenue: targetAnnualRevenue.toString()
     })
-    return fetchAPI(`/api/v1/six-figure-pricing/revenue-optimization/${barberId}?${params.toString()}`)
+    return fetchAPI(`/api/v2/six-figure-pricing/revenue-optimization/${barberId}?${params.toString()}`)
   },
 
   // Create new appointment
@@ -6918,16 +6918,16 @@ export interface BulkTierAnalysisResult {
 
 // Client Tiers API Functions - Updated to use new V2 endpoints
 export async function getTierDashboardMetrics(): Promise<TierDashboardMetrics> {
-  return fetchAPI('/api/v1/client-tiers/')
+  return fetchAPI('/api/v2/client-tiers/')
 }
 
 export async function getClientTierAnalysis(clientId: number): Promise<ClientTierAnalysis> {
-  return fetchAPI(`/api/v1/client-tiers/client/${clientId}`)
+  return fetchAPI(`/api/v2/client-tiers/client/${clientId}`)
 }
 
 export async function updateClientTier(clientId: number): Promise<any> {
   // This would be used to manually recalculate a single client's tier
-  return fetchAPI(`/api/v1/client-tiers/calculate-bulk`, {
+  return fetchAPI(`/api/v2/client-tiers/calculate-bulk`, {
     method: 'POST',
     body: JSON.stringify({ client_ids: [clientId] })
   })
@@ -6935,14 +6935,14 @@ export async function updateClientTier(clientId: number): Promise<any> {
 
 export async function bulkCalculateClientTiers(clientIds?: number[]): Promise<BulkTierAnalysisResult> {
   const body = clientIds ? { client_ids: clientIds } : {}
-  return fetchAPI('/api/v1/client-tiers/calculate-bulk', {
+  return fetchAPI('/api/v2/client-tiers/calculate-bulk', {
     method: 'POST',
     body: JSON.stringify(body)
   })
 }
 
 export async function getRevenueOptimizationAnalytics(): Promise<any> {
-  return fetchAPI('/api/v1/client-tiers/analytics/revenue-optimization')
+  return fetchAPI('/api/v2/client-tiers/analytics/revenue-optimization')
 }
 
 // AI Agents API Functions

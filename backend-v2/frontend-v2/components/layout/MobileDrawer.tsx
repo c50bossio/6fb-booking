@@ -225,7 +225,7 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
     setIsClosing(true)
     
     try {
-      await fetch('/api/v1/auth/logout', { method: 'POST' })
+      await fetch('/api/v2/auth/logout', { method: 'POST' })
       localStorage.removeItem('token')
       localStorage.removeItem('refresh_token')
       

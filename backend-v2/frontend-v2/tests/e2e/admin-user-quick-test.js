@@ -296,7 +296,7 @@ class AdminUserQuickTest {
       }
       
       // Test health endpoint variations
-      const healthEndpoints = ['/health', '/api/health', '/api/v1/health', '/status'];
+      const healthEndpoints = ['/health', '/api/health', '/api/v2/health', '/status'];
       
       for (const endpoint of healthEndpoints) {
         try {

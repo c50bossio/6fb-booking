@@ -208,7 +208,7 @@ export function useTemplateOptimization(options: UseTemplateOptimizationOptions 
       setTestsLoading(true)
       setTestError(null)
       
-      const tests = await apiClient.get<ABTest[]>('/api/v1/template-optimization/ab-tests')
+      const tests = await apiClient.get<ABTest[]>('/api/v2/template-optimization/ab-tests')
       setActiveTests(tests)
       setLastUpdated(new Date())
     } catch (err) {
@@ -228,7 +228,7 @@ export function useTemplateOptimization(options: UseTemplateOptimizationOptions 
       setRecommendationError(null)
       
       const recs = await apiClient.get<TemplateRecommendation[]>(
-        `/api/v1/template-optimization/recommendations?limit=${maxRecommendations}`
+        `/api/v2/template-optimization/recommendations?limit=${maxRecommendations}`
       )
       setRecommendations(recs)
     } catch (err) {
@@ -247,7 +247,7 @@ export function useTemplateOptimization(options: UseTemplateOptimizationOptions 
       setResultsLoading(true)
       
       const results = await apiClient.get<TestResults>(
-        `/api/v1/template-optimization/ab-tests/${testId}/results`
+        `/api/v2/template-optimization/ab-tests/${testId}/results`
       )
       setTestResults(results)
     } catch (err) {
@@ -261,7 +261,7 @@ export function useTemplateOptimization(options: UseTemplateOptimizationOptions 
   // Create A/B test
   const createABTest = useCallback(async (request: CreateTestRequest): Promise<ABTest> => {
     try {
-      const test = await apiClient.post<ABTest>('/api/v1/template-optimization/ab-tests', request)
+      const test = await apiClient.post<ABTest>('/api/v2/template-optimization/ab-tests', request)
       await refreshActiveTests()
       return test
     } catch (err) {
@@ -273,7 +273,7 @@ export function useTemplateOptimization(options: UseTemplateOptimizationOptions 
   // Complete test
   const completeTest = useCallback(async (testId: string): Promise<void> => {
     try {
-      await apiClient.post(`/api/v1/template-optimization/ab-tests/${testId}/complete`)
+      await apiClient.post(`/api/v2/template-optimization/ab-tests/${testId}/complete`)
       await refreshActiveTests()
       
       // Refresh results if this is the selected test
@@ -313,7 +313,7 @@ export function useTemplateOptimization(options: UseTemplateOptimizationOptions 
       }
       
       const template = await apiClient.post<OptimalTemplate>(
-        '/api/v1/template-optimization/templates/optimal',
+        '/api/v2/template-optimization/templates/optimal',
         request
       )
       
@@ -327,7 +327,7 @@ export function useTemplateOptimization(options: UseTemplateOptimizationOptions 
   // Record interaction
   const recordInteraction = useCallback(async (request: RecordInteractionRequest): Promise<void> => {
     try {
-      await apiClient.post('/api/v1/template-optimization/interactions', request)
+      await apiClient.post('/api/v2/template-optimization/interactions', request)
     } catch (err) {
       console.error('Failed to record interaction:', err)
       throw err
@@ -341,7 +341,7 @@ export function useTemplateOptimization(options: UseTemplateOptimizationOptions 
   ): Promise<TemplatePerformance> => {
     try {
       const performance = await apiClient.get<TemplatePerformance>(
-        `/api/v1/template-optimization/performance/${templateId}?time_period=${timePeriod}`
+        `/api/v2/template-optimization/performance/${templateId}?time_period=${timePeriod}`
       )
       
       return performance

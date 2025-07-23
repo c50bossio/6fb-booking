@@ -148,7 +148,7 @@ export default function BarbersDirectoryPage() {
       try {
         setLoading(true)
         // TODO: Replace with actual API call
-        // const response = await fetch('/api/v1/barbers/profiles')
+        // const response = await fetch('/api/v2/barbers/profiles')
         // const data = await response.json()
         
         // Simulate API call

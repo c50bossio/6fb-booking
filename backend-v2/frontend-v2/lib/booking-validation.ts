@@ -747,7 +747,7 @@ export async function getValidatedTimeSlots(
 ): Promise<string[]> {
   try {
     // This would normally call your API
-    const response = await fetch(`/api/v1/appointments/slots?date=${format(date, 'yyyy-MM-dd')}&service_id=${serviceId}&barber_id=${barberId || ''}`)
+    const response = await fetch(`/api/v2/appointments/slots?date=${format(date, 'yyyy-MM-dd')}&service_id=${serviceId}&barber_id=${barberId || ''}`)
     
     if (!response.ok) {
       throw new Error('Failed to fetch time slots')

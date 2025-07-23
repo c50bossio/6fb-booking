@@ -188,7 +188,7 @@ export function useNoShowAnalytics(options: UseNoShowAnalyticsOptions = {}): Use
     try {
       setError(null)
       const response = await apiClient.get<NoShowAnalyticsData>(
-        `/api/v1/realtime-analytics/dashboard?time_range=${timeRange}`
+        `/api/v2/realtime-analytics/dashboard?time_range=${timeRange}`
       )
       setDashboardData(response)
       setLastUpdated(new Date())
@@ -209,7 +209,7 @@ export function useNoShowAnalytics(options: UseNoShowAnalyticsOptions = {}): Use
       setPredictionsError(null)
       
       const response = await apiClient.get<PredictionsResponse>(
-        `/api/v1/realtime-analytics/predictions?hours_ahead=48&include_low_risk=false`
+        `/api/v2/realtime-analytics/predictions?hours_ahead=48&include_low_risk=false`
       )
       setPredictions(response.predictions || [])
     } catch (err) {
@@ -229,7 +229,7 @@ export function useNoShowAnalytics(options: UseNoShowAnalyticsOptions = {}): Use
       setAlertsError(null)
       
       const response = await apiClient.get<AlertsResponse>(
-        `/api/v1/realtime-analytics/alerts?limit=50`
+        `/api/v2/realtime-analytics/alerts?limit=50`
       )
       setAlerts(response.alerts || [])
     } catch (err) {

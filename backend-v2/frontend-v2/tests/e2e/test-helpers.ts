@@ -203,7 +203,7 @@ export class APIHelper {
 
   async verifyPaymentStatus(paymentId: string) {
     const response = await this.page.request.get(
-      `${TEST_CONFIG.BACKEND_URL}/api/v1/payments/${paymentId}`
+      `${TEST_CONFIG.BACKEND_URL}/api/v2/payments/${paymentId}`
     );
     expect(response.status()).toBe(200);
     
@@ -214,7 +214,7 @@ export class APIHelper {
 
   async verifyAppointmentCreated(appointmentId: string) {
     const response = await this.page.request.get(
-      `${TEST_CONFIG.BACKEND_URL}/api/v1/appointments/${appointmentId}`
+      `${TEST_CONFIG.BACKEND_URL}/api/v2/appointments/${appointmentId}`
     );
     expect(response.status()).toBe(200);
     
@@ -225,7 +225,7 @@ export class APIHelper {
 
   async verifyWebhookDelivery() {
     const response = await this.page.request.get(
-      `${TEST_CONFIG.BACKEND_URL}/api/v1/webhooks/recent?limit=5`
+      `${TEST_CONFIG.BACKEND_URL}/api/v2/webhooks/recent?limit=5`
     );
     expect(response.status()).toBe(200);
     
@@ -241,7 +241,7 @@ export class APIHelper {
 
   async cleanupTestAppointment(appointmentId: string) {
     const response = await this.page.request.delete(
-      `${TEST_CONFIG.BACKEND_URL}/api/v1/appointments/${appointmentId}`
+      `${TEST_CONFIG.BACKEND_URL}/api/v2/appointments/${appointmentId}`
     );
     expect(response.status()).toBe(200);
   }

@@ -125,7 +125,7 @@ export function TemplateOptimizationDashboard({
   // Fetch active tests
   const fetchActiveTests = useCallback(async () => {
     try {
-      const tests = await apiClient.get<ABTest[]>('/api/v1/template-optimization/ab-tests')
+      const tests = await apiClient.get<ABTest[]>('/api/v2/template-optimization/ab-tests')
       setActiveTests(tests)
     } catch (err) {
       console.error('Failed to fetch active tests:', err)
@@ -137,7 +137,7 @@ export function TemplateOptimizationDashboard({
   const fetchRecommendations = useCallback(async () => {
     try {
       const recs = await apiClient.get<TemplateRecommendation[]>(
-        '/api/v1/template-optimization/recommendations?limit=10'
+        '/api/v2/template-optimization/recommendations?limit=10'
       )
       setRecommendations(recs)
     } catch (err) {
@@ -149,7 +149,7 @@ export function TemplateOptimizationDashboard({
   const fetchTestResults = useCallback(async (testId: string) => {
     try {
       const results = await apiClient.get<TestResults>(
-        `/api/v1/template-optimization/ab-tests/${testId}/results`
+        `/api/v2/template-optimization/ab-tests/${testId}/results`
       )
       setTestResults(results)
     } catch (err) {
@@ -180,7 +180,7 @@ export function TemplateOptimizationDashboard({
   const createABTest = async () => {
     try {
       setLoading(true)
-      await apiClient.post('/api/v1/template-optimization/ab-tests', createFormData)
+      await apiClient.post('/api/v2/template-optimization/ab-tests', createFormData)
       
       // Reset form and refresh data
       setCreateFormData({
@@ -206,7 +206,7 @@ export function TemplateOptimizationDashboard({
   // Complete test manually
   const completeTest = async (testId: string) => {
     try {
-      await apiClient.post(`/api/v1/template-optimization/ab-tests/${testId}/complete`)
+      await apiClient.post(`/api/v2/template-optimization/ab-tests/${testId}/complete`)
       await fetchActiveTests()
       if (selectedTest?.id === testId) {
         await fetchTestResults(testId)

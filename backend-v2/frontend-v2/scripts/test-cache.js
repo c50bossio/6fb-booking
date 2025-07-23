@@ -71,18 +71,18 @@ async function runCacheTests() {
   const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   
   // Test time slots endpoint
-  const slotsTest1 = await testAPIEndpoint(`/api/v1/appointments/slots?appointment_date=${today}`)
+  const slotsTest1 = await testAPIEndpoint(`/api/v2/appointments/slots?appointment_date=${today}`)
   await sleep(100)
-  const slotsTest2 = await testAPIEndpoint(`/api/v1/appointments/slots?appointment_date=${today}`)
+  const slotsTest2 = await testAPIEndpoint(`/api/v2/appointments/slots?appointment_date=${today}`)
   
   if (slotsTest1.success && slotsTest2.success) {
     console.log(`📊 Slots API consistency: ${slotsTest2.responseTime <= slotsTest1.responseTime ? '✅' : '⚠️'} (${slotsTest1.responseTime}ms → ${slotsTest2.responseTime}ms)`)
   }
   
   // Test next available endpoint
-  const nextAvailTest1 = await testAPIEndpoint('/api/v1/appointments/slots/next-available')
+  const nextAvailTest1 = await testAPIEndpoint('/api/v2/appointments/slots/next-available')
   await sleep(100)
-  const nextAvailTest2 = await testAPIEndpoint('/api/v1/appointments/slots/next-available')
+  const nextAvailTest2 = await testAPIEndpoint('/api/v2/appointments/slots/next-available')
   
   if (nextAvailTest1.success && nextAvailTest2.success) {
     console.log(`📊 Next Available API consistency: ${nextAvailTest2.responseTime <= nextAvailTest1.responseTime ? '✅' : '⚠️'} (${nextAvailTest1.responseTime}ms → ${nextAvailTest2.responseTime}ms)`)
@@ -114,7 +114,7 @@ async function runCacheTests() {
   console.log('\\n📋 Test 4: Preloading Test')
   
   // Request tomorrow's slots after today's - should be faster due to preloading
-  const tomorrowTest = await testAPIEndpoint(`/api/v1/appointments/slots?appointment_date=${tomorrow}`)
+  const tomorrowTest = await testAPIEndpoint(`/api/v2/appointments/slots?appointment_date=${tomorrow}`)
   if (tomorrowTest.success) {
     console.log(`📊 Tomorrow's slots (preloaded): ${tomorrowTest.responseTime <= 100 ? '✅ Fast' : '⚠️ Slow'} (${tomorrowTest.responseTime}ms)`)
   }

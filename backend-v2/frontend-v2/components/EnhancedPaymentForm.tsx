@@ -51,7 +51,7 @@ async function createPaymentIntentEnhanced(data: {
   preferred_gateway?: string;
   selection_strategy?: string;
 }): Promise<PaymentIntentResponse> {
-  const response = await fetch('/api/v1/payments/create-intent-enhanced', {
+  const response = await fetch('/api/v2/payments/create-intent-enhanced', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ async function confirmPaymentEnhanced(data: {
   booking_id: number;
   gateway_type?: string;
 }): Promise<any> {
-  const response = await fetch('/api/v1/payments/confirm-enhanced', {
+  const response = await fetch('/api/v2/payments/confirm-enhanced', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ async function confirmPaymentEnhanced(data: {
 
 async function getAvailableGateways(): Promise<PaymentGateway[]> {
   try {
-    const response = await fetch('/api/v1/payments/gateways', {
+    const response = await fetch('/api/v2/payments/gateways', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
       },

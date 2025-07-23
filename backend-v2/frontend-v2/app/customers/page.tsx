@@ -120,8 +120,8 @@ function UnifiedCustomersContent() {
         // Load customer summary
         try {
           const [clientsResponse, contactsResponse] = await Promise.all([
-            fetchAPI('/api/v1/clients/summary'),
-            userData.role !== 'client' ? fetchAPI('/api/v1/marketing/contacts/summary') : null
+            fetchAPI('/api/v2/clients/summary'),
+            userData.role !== 'client' ? fetchAPI('/api/v2/marketing/contacts/summary') : null
           ])
 
           setCustomerSummary({

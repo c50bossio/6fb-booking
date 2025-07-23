@@ -185,7 +185,7 @@ export default function RecurringAppointmentWizard({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       // First create the pattern (preview mode)
-      const patternResponse = await fetch(`${apiUrl}/api/v1/recurring-appointments/patterns`, {
+      const patternResponse = await fetch(`${apiUrl}/api/v2/recurring-appointments/patterns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -202,7 +202,7 @@ export default function RecurringAppointmentWizard({
 
       // Generate preview appointments
       const previewResponse = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/patterns/${pattern.id}/generate-enhanced?preview_only=true&max_appointments=20`,
+        `${apiUrl}/api/v2/recurring-appointments/patterns/${pattern.id}/generate-enhanced?preview_only=true&max_appointments=20`,
         {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` }
@@ -225,7 +225,7 @@ export default function RecurringAppointmentWizard({
       setConflicts(result.conflicts || []);
 
       // Clean up the temporary pattern
-      await fetch(`${apiUrl}/api/v1/recurring-appointments/patterns/${pattern.id}`, {
+      await fetch(`${apiUrl}/api/v2/recurring-appointments/patterns/${pattern.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

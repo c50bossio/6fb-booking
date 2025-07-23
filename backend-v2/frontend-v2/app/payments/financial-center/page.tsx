@@ -146,7 +146,7 @@ function FinancialCenterContent() {
 
         // Load real financial summary
         try {
-          const paymentsResponse = await fetchAPI(`/api/v1/payments/reports`, {
+          const paymentsResponse = await fetchAPI(`/api/v2/payments/reports`, {
             method: 'POST',
             body: JSON.stringify({ 
               start_date: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString(),

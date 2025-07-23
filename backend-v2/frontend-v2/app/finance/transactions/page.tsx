@@ -114,12 +114,12 @@ export default function TransactionsPage() {
           params.append('status', statusFilter)
         }
 
-        const response = await fetchAPI(`/api/v1/payments/history?${params}`)
+        const response = await fetchAPI(`/api/v2/payments/history?${params}`)
         setPayments(response.payments || [])
         setTotalPages(response.total_pages || 1)
 
         // Calculate stats
-        const report = await fetchAPI(`/api/v1/payments/reports`, {
+        const report = await fetchAPI(`/api/v2/payments/reports`, {
           method: 'POST',
           body: JSON.stringify({
             start_date: startDate,
@@ -155,7 +155,7 @@ export default function TransactionsPage() {
         end_date: endDate
       })
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/export?${params}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v2/payments/export?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

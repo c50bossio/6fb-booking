@@ -57,12 +57,12 @@ import CalendarAnalyticsSidebar from '@/components/calendar/CalendarAnalyticsSid
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import TimePickerModal from '@/components/modals/TimePickerModal'
 import RescheduleModal from '@/components/modals/RescheduleModal'
-import CalendarExport from '@/components/calendar/CalendarExport'
-import JumpToTodayButtonWithShortcut from '@/components/calendar/JumpToTodayButton'
-import AppointmentSuggestions from '@/components/calendar/AppointmentSuggestions'
-import CalendarVisualEnhancement from '@/components/calendar/CalendarVisualEnhancement'
-import MobileCalendarNavigation from '@/components/calendar/MobileCalendarNavigation'
-import CalendarMobileMenu from '@/components/calendar/CalendarMobileMenu'
+import { CalendarExport } from '@/components/calendar/CalendarExport'
+import { JumpToTodayButtonWithShortcut } from '@/components/calendar/JumpToTodayButton'
+import { AppointmentSuggestions } from '@/components/calendar/AppointmentSuggestions'
+import { CalendarVisualEnhancement } from '@/components/calendar/CalendarVisualEnhancement'
+import { MobileCalendarNavigation } from '@/components/calendar/MobileCalendarNavigation'
+import { CalendarMobileMenu } from '@/components/calendar/CalendarMobileMenu'
 
 // Use CalendarUser type from our standardized types
 

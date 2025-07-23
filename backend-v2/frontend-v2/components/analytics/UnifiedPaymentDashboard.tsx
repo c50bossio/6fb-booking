@@ -146,7 +146,7 @@ export const UnifiedPaymentDashboard: React.FC = () => {
   const loadAnalyticsData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/unified-payment-analytics/comprehensive?period=${selectedPeriod}&include_projections=true`);
+      const response = await fetch(`/api/v2/unified-payment-analytics/comprehensive?period=${selectedPeriod}&include_projections=true`);
       if (response.ok) {
         const data = await response.json();
         setAnalytics(data);
@@ -167,7 +167,7 @@ export const UnifiedPaymentDashboard: React.FC = () => {
 
   const loadRealtimeData = async () => {
     try {
-      const response = await fetch('/api/v1/unified-payment-analytics/dashboard');
+      const response = await fetch('/api/v2/unified-payment-analytics/dashboard');
       if (response.ok) {
         const data = await response.json();
         setRealtimeData(data);
@@ -189,7 +189,7 @@ export const UnifiedPaymentDashboard: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      const response = await fetch(`/api/v1/unified-payment-analytics/export?period=${selectedPeriod}&format=json`);
+      const response = await fetch(`/api/v2/unified-payment-analytics/export?period=${selectedPeriod}&format=json`);
       if (response.ok) {
         const data = await response.json();
         const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });

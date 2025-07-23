@@ -21,7 +21,7 @@ import type {
 } from '@/types/integration'
 
 class IntegrationsAPI {
-  private baseUrl = '/api/v1/integrations'
+  private baseUrl = '/api/v2/integrations'
 
   /**
    * Initiate OAuth connection flow

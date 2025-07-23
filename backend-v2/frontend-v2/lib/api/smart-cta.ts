@@ -53,7 +53,7 @@ export async function generateSmartCTAs(
   count: number = 3
 ): Promise<CTAGenerationResponse> {
   try {
-    const response = await fetch('/api/v1/smart-cta/generate', {
+    const response = await fetch('/api/v2/smart-cta/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -92,7 +92,7 @@ export async function getCTAPerformance(
       params.append('end_date', date_range.end)
     }
 
-    const response = await fetch(`/api/v1/smart-cta/performance?${params}`)
+    const response = await fetch(`/api/v2/smart-cta/performance?${params}`)
     
     if (!response.ok) {
       throw new Error(`Performance fetch failed: ${response.statusText}`)
@@ -114,7 +114,7 @@ export async function rateCTA(
   feedback?: string
 ): Promise<{ success: boolean }> {
   try {
-    const response = await fetch('/api/v1/smart-cta/rate', {
+    const response = await fetch('/api/v2/smart-cta/rate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -149,7 +149,7 @@ export async function getCTAExamples(
     if (context) params.append('context', context)
     if (cta_type) params.append('cta_type', cta_type)
 
-    const response = await fetch(`/api/v1/smart-cta/examples?${params}`)
+    const response = await fetch(`/api/v2/smart-cta/examples?${params}`)
     
     if (!response.ok) {
       throw new Error(`Examples fetch failed: ${response.statusText}`)
@@ -173,7 +173,7 @@ export async function saveCTATemplate(
   tags: string[] = []
 ): Promise<{ success: boolean; template_id: string }> {
   try {
-    const response = await fetch('/api/v1/smart-cta/templates', {
+    const response = await fetch('/api/v2/smart-cta/templates', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

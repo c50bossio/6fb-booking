@@ -131,7 +131,7 @@ class RealTimeAvailabilityAPI {
       if (location_id) params.append('location_id', location_id.toString())
 
       const response = await apiClient.get<RealTimeAvailabilityResponse>(
-        `/api/v1/realtime-availability/slots?${params}`
+        `/api/v2/realtime-availability/slots?${params}`
       )
 
       // Cache the response
@@ -199,7 +199,7 @@ class RealTimeAvailabilityAPI {
       })
 
       const response = await apiClient.get<QuickRebookOption[]>(
-        `/api/v1/realtime-availability/quick-rebook?${params}`
+        `/api/v2/realtime-availability/quick-rebook?${params}`
       )
 
       return response
@@ -215,7 +215,7 @@ class RealTimeAvailabilityAPI {
   async bookSlot(request: BookingRequest): Promise<BookingResponse> {
     try {
       const response = await apiClient.post<BookingResponse>(
-        '/api/v1/realtime-availability/book-slot',
+        '/api/v2/realtime-availability/book-slot',
         request
       )
 
@@ -267,7 +267,7 @@ class RealTimeAvailabilityAPI {
       }
 
       const response = await apiClient.get<MobileBookingStats>(
-        '/api/v1/realtime-availability/mobile-stats'
+        '/api/v2/realtime-availability/mobile-stats'
       )
 
       this.cache.set(cacheKey, response as any)
@@ -395,7 +395,7 @@ class RealTimeAvailabilityAPI {
     if (options.location_id) params.append('location_id', options.location_id.toString())
 
     return await apiClient.get<RealTimeAvailabilityResponse>(
-      `/api/v1/realtime-availability/slots?${params}`
+      `/api/v2/realtime-availability/slots?${params}`
     )
   }
 

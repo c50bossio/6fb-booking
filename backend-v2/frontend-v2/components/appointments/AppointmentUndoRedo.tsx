@@ -83,7 +83,7 @@ export function AppointmentUndoRedoProvider({
       case 'create':
         if (isUndoRedo && action.appointmentId) {
           // Undo create = delete
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}`, {
+          await apiRequest(`/api/v2/appointments/${action.appointmentId}`, {
             method: 'DELETE'
           })
           toast({
@@ -92,7 +92,7 @@ export function AppointmentUndoRedoProvider({
           })
         } else if (action.newData) {
           // Redo create = recreate
-          const response = await apiRequest('/api/v1/appointments', {
+          const response = await apiRequest('/api/v2/appointments', {
             method: 'POST',
             data: action.newData
           })
@@ -108,7 +108,7 @@ export function AppointmentUndoRedoProvider({
       case 'update':
         if (action.appointmentId) {
           const dataToApply = isUndoRedo ? action.previousData : action.newData
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}`, {
+          await apiRequest(`/api/v2/appointments/${action.appointmentId}`, {
             method: 'PUT',
             data: dataToApply
           })
@@ -122,7 +122,7 @@ export function AppointmentUndoRedoProvider({
       case 'delete':
         if (isUndoRedo && action.previousData) {
           // Undo delete = recreate
-          const response = await apiRequest('/api/v1/appointments', {
+          const response = await apiRequest('/api/v2/appointments', {
             method: 'POST',
             data: action.previousData
           })
@@ -133,7 +133,7 @@ export function AppointmentUndoRedoProvider({
           })
         } else if (action.appointmentId) {
           // Redo delete = delete again
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}`, {
+          await apiRequest(`/api/v2/appointments/${action.appointmentId}`, {
             method: 'DELETE'
           })
           toast({
@@ -146,7 +146,7 @@ export function AppointmentUndoRedoProvider({
       case 'reschedule':
         if (action.appointmentId) {
           const dataToApply = isUndoRedo ? action.previousData : action.newData
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}`, {
+          await apiRequest(`/api/v2/appointments/${action.appointmentId}`, {
             method: 'PUT',
             data: {
               appointment_time: dataToApply.appointment_time,
@@ -163,7 +163,7 @@ export function AppointmentUndoRedoProvider({
       case 'cancel':
         if (action.appointmentId) {
           const newStatus = isUndoRedo ? 'confirmed' : 'cancelled'
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}/status`, {
+          await apiRequest(`/api/v2/appointments/${action.appointmentId}/status`, {
             method: 'PUT',
             data: { status: newStatus }
           })

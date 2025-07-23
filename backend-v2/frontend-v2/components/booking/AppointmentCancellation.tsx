@@ -84,7 +84,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/v1/cancellation/appointments/${appointment.id}/preview?is_emergency=${isEmergency}`
+        `/api/v2/cancellation/appointments/${appointment.id}/preview?is_emergency=${isEmergency}`
       );
       
       if (!response.ok) throw new Error('Failed to fetch cancellation details');
@@ -106,7 +106,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
 
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/cancellation/appointments/${appointment.id}/cancel`, {
+      const response = await fetch(`/api/v2/cancellation/appointments/${appointment.id}/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -124,7 +124,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
       // If user wants to join waitlist, add them
       if (joinWaitlist) {
         try {
-          await fetch('/api/v1/cancellation/waitlist', {
+          await fetch('/api/v2/cancellation/waitlist', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

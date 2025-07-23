@@ -115,7 +115,7 @@ export function NoShowAnalyticsDashboard({
   const fetchDashboardData = useCallback(async () => {
     try {
       const response = await apiClient.get<DashboardData>(
-        `/api/v1/realtime-analytics/dashboard?time_range=${timeRange}`
+        `/api/v2/realtime-analytics/dashboard?time_range=${timeRange}`
       )
       setDashboardData(response)
       setError(null)
@@ -129,7 +129,7 @@ export function NoShowAnalyticsDashboard({
   const fetchLivePredictions = useCallback(async () => {
     try {
       const response = await apiClient.get<{predictions: LivePrediction[]}>(
-        `/api/v1/realtime-analytics/predictions?hours_ahead=48&include_low_risk=false`
+        `/api/v2/realtime-analytics/predictions?hours_ahead=48&include_low_risk=false`
       )
       setLivePredictions(response.predictions || [])
     } catch (err) {

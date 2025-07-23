@@ -218,7 +218,7 @@ export default function ProfilePage() {
     setLoadingBarberProfile(true)
     try {
       // Mock fetch - replace with actual API call
-      // const profile = await fetchAPI(`/api/v1/barbers/${user.id}/profile`)
+      // const profile = await fetchAPI(`/api/v2/barbers/${user.id}/profile`)
       
       // For now, return mock data
       const mockProfile = {
@@ -246,7 +246,7 @@ export default function ProfilePage() {
     
     try {
       // Mock save - replace with actual API call
-      // const updatedProfile = await fetchAPI(`/api/v1/barbers/${user.id}/profile`, {
+      // const updatedProfile = await fetchAPI(`/api/v2/barbers/${user.id}/profile`, {
       //   method: 'PUT',
       //   body: JSON.stringify(data)
       // })

@@ -1154,17 +1154,40 @@ if (typeof document !== 'undefined') {
 
 // Individual exports for direct importing
 export { BrandedSpinner, SixFigureSVGSpinner, BarberPoleSpinner, PremiumDotsSpinner, PulseRingSpinner, LoadingButton } from './ui/BrandedSpinners'
-// Temporarily simplified skeleton exports to fix loading issues
-export { BrandedSkeleton } from './ui/BrandedSkeletons'
-// TODO: Fix skeleton component exports - some functions exist, some don't
-// export { BrandedSkeleton, SixFigureAvatarSkeleton, BarberProfileSkeleton, ServiceCardSkeleton, AppointmentCardSkeleton, AnalyticsCardSkeleton, DashboardStatsSkeleton, SixFigureCalendarSkeleton, PremiumLoadingOverlay } from './ui/BrandedSkeletons'
+export { BrandedSkeleton, PremiumLoadingOverlay } from './ui/BrandedSkeletons'
 
-// Create simple fallbacks for missing skeleton components
-export const SixFigureAvatarSkeleton = BrandedSkeleton
-export const BarberProfileSkeleton = BrandedSkeleton
-export const ServiceCardSkeleton = BrandedSkeleton
-export const AppointmentCardSkeleton = BrandedSkeleton
-export const AnalyticsCardSkeleton = BrandedSkeleton
-export const DashboardStatsSkeleton = BrandedSkeleton
-export const SixFigureCalendarSkeleton = BrandedSkeleton
-export const PremiumLoadingOverlay = BrandedSkeleton
+// Import and re-export skeleton components from LoadingSkeletons
+export { 
+  ServiceCardSkeleton, 
+  AnalyticsCardSkeleton,
+  CalendarViewSkeleton as SixFigureCalendarSkeleton,
+  ProfileSkeleton as BarberProfileSkeleton,
+  StatsGridSkeleton as DashboardStatsSkeleton
+} from './ui/LoadingSkeletons'
+
+// Create avatar skeleton as a specialized BrandedSkeleton
+export const SixFigureAvatarSkeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <BrandedSkeleton 
+    variant="premium" 
+    shape="circle" 
+    className={cn("w-12 h-12", className)} 
+    {...props} 
+  />
+)
+
+// Create appointment card skeleton
+export const AppointmentCardSkeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3", className)} {...props}>
+    <div className="flex items-start justify-between">
+      <div className="space-y-2 flex-1">
+        <BrandedSkeleton variant="premium" className="h-5 w-3/4" />
+        <BrandedSkeleton variant="gentle" className="h-4 w-1/2" />
+      </div>
+      <BrandedSkeleton variant="luxury" shape="rounded" className="h-8 w-20" />
+    </div>
+    <div className="flex items-center gap-2">
+      <BrandedSkeleton variant="gentle" shape="circle" className="w-5 h-5" />
+      <BrandedSkeleton variant="gentle" className="h-4 w-32" />
+    </div>
+  </div>
+)
