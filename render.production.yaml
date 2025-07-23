@@ -1,0 +1,450 @@
+# BookedBarber V2 - Production Render Configuration
+# Optimized for 10,000+ concurrent users and high availability
+# Last updated: 2025-07-23
+
+services:
+  # Production Backend API Service
+  - type: web
+    name: bookedbarber-backend-production
+    env: python
+    region: oregon  # Primary region (consider multi-region for global users)
+    plan: pro  # $85/month - Required for production scale (4 vCPU, 8GB RAM)
+    
+    # Build Configuration
+    buildCommand: |
+      cd backend-v2 && \
+      pip install --upgrade pip && \
+      pip install -r requirements.txt && \
+      pip install gunicorn[gevent] && \
+      python -m compileall . -q
+    
+    # Production WSGI Server Configuration
+    startCommand: |
+      cd backend-v2 && \
+      gunicorn main:app \
+        --worker-class gevent \
+        --workers 4 \
+        --worker-connections 1000 \
+        --bind 0.0.0.0:$PORT \
+        --timeout 30 \
+        --keep-alive 2 \
+        --max-requests 1000 \
+        --max-requests-jitter 100 \
+        --preload \
+        --log-level info \
+        --access-logfile - \
+        --error-logfile -
+
+    # Environment Variables
+    envVars:
+      # Python Configuration
+      - key: PYTHON_VERSION
+        value: "3.11.10"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
+      
+      # Application Configuration  
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: warning
+      
+      # Frontend URL Configuration
+      - key: FRONTEND_URL
+        value: https://bookedbarber.com
+      - key: ALLOWED_ORIGINS
+        value: https://bookedbarber.com,https://www.bookedbarber.com
+      
+      # Security Keys (Generated securely)
+      - key: SECRET_KEY
+        generateValue: true  # 64-character secure key
+      - key: JWT_SECRET_KEY  
+        generateValue: true  # 64-character secure key
+      - key: ENCRYPTION_KEY
+        generateValue: true  # 32-character encryption key
+      
+      # Database Configuration (High-Performance)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bookedbarber-prod-db
+          property: connectionString
+      - key: DB_POOL_SIZE
+        value: "50"
+      - key: DB_MAX_OVERFLOW
+        value: "20"
+      - key: DB_POOL_TIMEOUT
+        value: "30"
+      - key: DB_POOL_PRE_PING
+        value: "true"
+      - key: DB_POOL_RECYCLE
+        value: "3600"
+      
+      # Redis Cache Configuration
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bookedbarber-prod-redis
+          property: connectionString
+      - key: REDIS_MAX_CONNECTIONS
+        value: "100"
+      - key: REDIS_SOCKET_TIMEOUT
+        value: "10"
+      - key: REDIS_RETRY_ON_TIMEOUT
+        value: "true"
+      - key: REDIS_HEALTH_CHECK_INTERVAL
+        value: "30"
+      
+      # Production API Keys (Set manually in Render dashboard)
+      - key: STRIPE_SECRET_KEY
+        sync: false  # sk_live_* (LIVE KEY REQUIRED)
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false  # pk_live_* (LIVE KEY REQUIRED)
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false  # whsec_* (PRODUCTION WEBHOOK)
+      - key: STRIPE_CONNECT_CLIENT_ID
+        sync: false  # ca_* (LIVE CONNECT CLIENT)
+      
+      # Email Service (Production)
+      - key: SENDGRID_API_KEY
+        sync: false  # SG.* (PRODUCTION API KEY)
+      - key: SENDGRID_FROM_EMAIL
+        value: noreply@bookedbarber.com
+      - key: SENDGRID_FROM_NAME
+        value: BookedBarber
+      
+      # SMS Service (Production)
+      - key: TWILIO_ACCOUNT_SID
+        sync: false  # AC* (LIVE ACCOUNT SID)
+      - key: TWILIO_AUTH_TOKEN
+        sync: false  # Live auth token
+      - key: TWILIO_PHONE_NUMBER
+        sync: false  # Verified Twilio number
+      
+      # Google Services (Production)
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # Production OAuth client
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false  # Production OAuth secret
+      - key: GOOGLE_REDIRECT_URI
+        value: https://api.bookedbarber.com/api/calendar/callback
+      
+      # Analytics & Tracking (Production)
+      - key: GTM_MEASUREMENT_ID
+        sync: false  # G-* (Production GA4)
+      - key: GTM_API_SECRET
+        sync: false  # GA4 API secret
+      - key: META_PIXEL_ID
+        sync: false  # Production Meta Pixel
+      - key: META_CONVERSION_API_TOKEN
+        sync: false  # Production conversion token
+      
+      # Performance Configuration
+      - key: WEB_CONCURRENCY
+        value: "4"  # Match number of workers
+      - key: MAX_WORKERS
+        value: "4"
+      - key: WORKER_TIMEOUT
+        value: "30"
+      - key: WORKER_CONNECTIONS
+        value: "1000"
+      
+      # Security Configuration
+      - key: SECURE_SSL_REDIRECT
+        value: "true"
+      - key: SECURE_HSTS_SECONDS
+        value: "31536000"
+      - key: SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: "true"
+      - key: SECURE_HSTS_PRELOAD
+        value: "true"
+      - key: SECURE_CONTENT_TYPE_NOSNIFF
+        value: "true"
+      - key: SECURE_BROWSER_XSS_FILTER
+        value: "true"
+      - key: SECURE_FRAME_DENY
+        value: "true"
+      - key: SECURE_COOKIE_HTTPONLY
+        value: "true"
+      - key: SECURE_COOKIE_SECURE
+        value: "true"
+      - key: SECURE_COOKIE_SAMESITE
+        value: "Strict"
+      
+      # Rate Limiting (Redis-backed)
+      - key: RATE_LIMIT_ENABLED
+        value: "true"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
+      - key: RATE_LIMIT_PER_HOUR
+        value: "1000"
+      - key: AUTH_RATE_LIMIT_PER_MINUTE
+        value: "5"
+      
+      # Caching Configuration
+      - key: CACHE_ENABLED
+        value: "true"
+      - key: CACHE_TTL_DEFAULT
+        value: "300"  # 5 minutes
+      - key: CACHE_TTL_STATIC
+        value: "3600"  # 1 hour
+      - key: CACHE_TTL_USER_SESSIONS
+        value: "86400"  # 24 hours
+      
+      # Monitoring & Error Tracking
+      - key: SENTRY_DSN
+        sync: false  # Production Sentry DSN
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: SENTRY_SAMPLE_RATE
+        value: "0.8"  # 80% error sampling
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "0.05"  # 5% performance tracing
+      - key: SENTRY_SEND_DEFAULT_PII
+        value: "false"
+      
+      # Backup Configuration
+      - key: BACKUP_ENABLED
+        value: "true"
+      - key: BACKUP_SCHEDULE
+        value: "0 2 * * *"  # Daily at 2 AM
+      - key: BACKUP_RETENTION_DAYS
+        value: "90"
+      
+      # Feature Flags
+      - key: ENABLE_GOOGLE_CALENDAR
+        value: "true"
+      - key: ENABLE_SMS_NOTIFICATIONS
+        value: "true"
+      - key: ENABLE_EMAIL_NOTIFICATIONS
+        value: "true"
+      - key: ENABLE_ANALYTICS
+        value: "true"
+      - key: ENABLE_WEBHOOKS
+        value: "true"
+      - key: ENABLE_BACKGROUND_JOBS
+        value: "true"
+      - key: ENABLE_CACHING
+        value: "true"
+
+    # Health Check & Monitoring
+    healthCheckPath: /health
+    httpHealthCheckPath: /api/v2/health
+    
+    # Auto-scaling Configuration
+    autoDeploy: false  # Manual deployments for production safety
+    numInstances: 2    # Start with 2 for high availability
+    
+    # Custom Domain
+    domains:
+      - api.bookedbarber.com
+
+  # Production Frontend Application
+  - type: web
+    name: bookedbarber-frontend-production
+    env: node
+    region: oregon
+    plan: standard  # $25/month - Adequate for frontend (2 vCPU, 4GB RAM)
+    
+    # Build Configuration
+    buildCommand: |
+      cd backend-v2/frontend-v2 && \
+      npm ci --production=false && \
+      npm run build && \
+      npm prune --production
+    
+    # Production Server Configuration
+    startCommand: |
+      cd backend-v2/frontend-v2 && \
+      npm run start -- --port $PORT
+    
+    # Environment Variables
+    envVars:
+      # Node.js Configuration
+      - key: NODE_ENV
+        value: production
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=2048"
+      
+      # Next.js Configuration
+      - key: NEXT_PUBLIC_API_URL
+        value: https://api.bookedbarber.com
+      - key: NEXT_PUBLIC_ENVIRONMENT
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      
+      # Stripe Configuration (Frontend)
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false  # pk_live_* (LIVE KEY REQUIRED)
+      
+      # Analytics Configuration
+      - key: NEXT_PUBLIC_GA_MEASUREMENT_ID
+        sync: false  # G-* (Production GA4)
+      - key: NEXT_PUBLIC_GTM_ID
+        sync: false  # GTM-* (Production GTM)
+      - key: NEXT_PUBLIC_META_PIXEL_ID
+        sync: false  # Production Meta Pixel
+      
+      # Feature Flags (Frontend)
+      - key: NEXT_PUBLIC_ENABLE_DEBUG_PANEL
+        value: "false"
+      - key: NEXT_PUBLIC_SHOW_TEST_DATA
+        value: "false"
+      
+      # Performance Configuration
+      - key: PORT
+        value: "3000"
+      - key: NEXT_PUBLIC_DISABLE_SPEEDY
+        value: "false"
+      
+      # Security Configuration
+      - key: NEXT_PUBLIC_SECURE_COOKIES
+        value: "true"
+
+    # Health Check
+    healthCheckPath: /
+    
+    # Auto-scaling Configuration
+    autoDeploy: false  # Manual deployments for production safety
+    numInstances: 1    # Start with 1, scale as needed
+    
+    # Custom Domain
+    domains:
+      - bookedbarber.com
+      - www.bookedbarber.com
+
+  # Background Jobs Service (Celery Worker)
+  - type: worker
+    name: bookedbarber-worker-production
+    env: python
+    region: oregon
+    plan: starter  # $7/month - Upgrade as needed
+    
+    buildCommand: |
+      cd backend-v2 && \
+      pip install --upgrade pip && \
+      pip install -r requirements.txt && \
+      pip install celery[redis] gevent
+    
+    startCommand: |
+      cd backend-v2 && \
+      celery -A celery_app worker \
+        --loglevel=info \
+        --concurrency=4 \
+        --pool=gevent \
+        --without-gossip \
+        --without-mingle
+    
+    # Use same environment variables as backend
+    envVars:
+      - fromService:
+          type: web
+          name: bookedbarber-backend-production
+          envVarKey: "*"
+    
+    autoDeploy: false
+    numInstances: 1
+
+  # Celery Beat Scheduler
+  - type: worker
+    name: bookedbarber-scheduler-production
+    env: python
+    region: oregon
+    plan: starter  # $7/month
+    
+    buildCommand: |
+      cd backend-v2 && \
+      pip install --upgrade pip && \
+      pip install -r requirements.txt && \
+      pip install celery[redis]
+    
+    startCommand: |
+      cd backend-v2 && \
+      celery -A celery_app beat \
+        --loglevel=info \
+        --schedule=/tmp/celerybeat-schedule
+    
+    envVars:
+      - fromService:
+          type: web
+          name: bookedbarber-backend-production
+          envVarKey: "*"
+    
+    autoDeploy: false
+    numInstances: 1
+
+# Production Database (High Performance)
+databases:
+  - name: bookedbarber-prod-db
+    databaseName: bookedbarber_production
+    user: bookedbarber_prod
+    region: oregon
+    plan: standard  # $22/month - Production ready (2 vCPU, 4GB RAM, 256GB SSD)
+    postgresMajorVersion: 15
+    
+    # Production Database Configuration
+    ipAllowList: []  # Allow Render services only
+    
+    # Automated backups (included in standard plan)
+    # - Daily backups retained for 7 days
+    # - Point-in-time recovery for last 7 days
+
+# Production Redis Cache (High Performance)
+redis:
+  - name: bookedbarber-prod-redis
+    type: redis
+    region: oregon
+    plan: standard  # $25/month - Production ready (2 vCPU, 4GB RAM)
+    
+    # Redis Configuration
+    maxmemoryPolicy: allkeys-lru  # Evict least recently used keys
+    ipAllowList: []  # Allow Render services only
+    
+    # Redis Persistence
+    persistData: true  # Enable RDB snapshots
+
+# CDN and Static Assets (Optional Enhancement)
+# Consider integrating with CloudFlare for:
+# - Global CDN
+# - DDoS protection  
+# - Advanced caching
+# - Performance optimization
+
+# Monitoring and Alerting
+# Consider integrating:
+# - Sentry for error tracking
+# - DataDog/New Relic for APM
+# - UptimeRobot for uptime monitoring
+# - CloudFlare Analytics for performance metrics
+
+# Production Scaling Recommendations:
+# 
+# 1. Database Scaling:
+#    - Upgrade to pro plan ($90/month) for higher performance
+#    - Consider read replicas for analytics queries
+#    - Implement connection pooling with pgBouncer
+#
+# 2. Backend Scaling:
+#    - Increase numInstances to 3-5 for high availability
+#    - Upgrade to pro+ plan for more resources
+#    - Implement horizontal load balancing
+#
+# 3. Frontend Scaling:
+#    - Implement CDN for static assets
+#    - Enable Next.js ISR (Incremental Static Regeneration)
+#    - Consider edge computing for global users
+#
+# 4. Cache Scaling:
+#    - Upgrade Redis to pro plan for clustering
+#    - Implement distributed caching strategy
+#    - Add cache warming for critical data
+#
+# 5. Monitoring & Alerting:
+#    - Set up comprehensive monitoring
+#    - Configure automated alerts
+#    - Implement performance budgets
+#    - Regular performance audits

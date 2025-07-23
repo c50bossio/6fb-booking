@@ -1,0 +1,590 @@
+# BookedBarber V2 - Production Database Optimization
+# Comprehensive PostgreSQL optimization for 10,000+ concurrent users
+# Last updated: 2025-07-23
+
+# Production Database Configuration
+database_config:
+  # Connection Pool Settings (Critical for scale)
+  connection_pool:
+    # PgBouncer Configuration
+    pgbouncer:
+      enabled: true
+      default_pool_size: 100      # Connections per database/user pair
+      max_client_conn: 1000       # Total client connections
+      reserve_pool_size: 10       # Emergency connections
+      reserve_pool_timeout: 5     # Seconds to wait for reserve pool
+      max_db_connections: 200     # Max connections to PostgreSQL
+      
+      # Pool Modes
+      pool_mode: transaction      # Most efficient for web apps
+      server_reset_query: "DISCARD ALL"
+      server_check_query: "SELECT 1"
+      
+      # Connection Timeouts
+      server_lifetime: 3600       # 1 hour server connection lifetime
+      server_idle_timeout: 600    # 10 minutes idle timeout
+      client_idle_timeout: 0      # No client timeout (handled by app)
+      
+      # Performance Tuning
+      ignore_startup_parameters: "extra_float_digits,search_path"
+      application_name_add_host: 1
+      
+    # Application-Level Pool (SQLAlchemy)
+    sqlalchemy:
+      pool_size: 50               # Base connection pool size
+      max_overflow: 100           # Additional connections when needed
+      pool_timeout: 30            # Seconds to wait for connection
+      pool_recycle: 3600          # Recycle connections every hour
+      pool_pre_ping: true         # Validate connections before use
+      
+  # PostgreSQL Configuration Optimization
+  postgresql_config:
+    # Memory Settings (for Render Pro+ instance)
+    shared_buffers: "4GB"         # 25% of available RAM
+    effective_cache_size: "12GB"  # 75% of available RAM
+    work_mem: "32MB"              # Per-operation memory
+    maintenance_work_mem: "1GB"   # Maintenance operations
+    
+    # Checkpoint Settings
+    checkpoint_completion_target: 0.9
+    checkpoint_timeout: "15min"
+    max_wal_size: "4GB"
+    min_wal_size: "1GB"
+    
+    # Connection Settings
+    max_connections: 200          # Must match PgBouncer max_db_connections
+    superuser_reserved_connections: 3
+    
+    # Query Planner Settings
+    random_page_cost: 1.1         # SSD optimization
+    effective_io_concurrency: 200 # SSD concurrent I/O
+    max_worker_processes: 8
+    max_parallel_workers_per_gather: 4
+    max_parallel_workers: 8
+    max_parallel_maintenance_workers: 4
+    
+    # Logging and Monitoring
+    log_min_duration_statement: 1000  # Log queries > 1 second
+    log_checkpoints: on
+    log_connections: on
+    log_disconnections: on
+    log_lock_waits: on
+    log_temp_files: 0
+    
+    # Performance Monitoring
+    track_activities: on
+    track_counts: on
+    track_io_timing: on
+    track_functions: "all"
+    
+    # Auto-vacuum Settings (Critical for performance)
+    autovacuum: on
+    autovacuum_max_workers: 4
+    autovacuum_naptime: "30s"
+    autovacuum_vacuum_threshold: 500
+    autovacuum_analyze_threshold: 250
+    autovacuum_vacuum_scale_factor: 0.1
+    autovacuum_analyze_scale_factor: 0.05
+    
+    # Write-Ahead Logging
+    wal_level: replica
+    archive_mode: on
+    archive_command: "/usr/local/bin/archive_wal.sh %f %p"
+    
+    # Replication Settings (for read replicas)
+    hot_standby: on
+    max_wal_senders: 3
+    wal_keep_segments: 64
+
+# Read Replica Configuration
+read_replicas:
+  enabled: true
+  replica_count: 2              # Two read replicas for scaling
+  
+  # Read Replica Settings
+  replica_config:
+    # Load balancing strategy
+    load_balancing: "round_robin"
+    
+    # Read operations to route to replicas
+    read_operations:
+      - "SELECT"
+      - "EXPLAIN"
+      - "SHOW"
+    
+    # Fallback to primary if replica unavailable
+    fallback_to_primary: true
+    max_lag_threshold: 5        # Seconds of acceptable replica lag
+    
+    # Connection settings for replicas
+    connection_pool:
+      pool_size: 25
+      max_overflow: 50
+      pool_timeout: 20
+
+# Database Indexes Optimization
+indexes:
+  # Critical indexes for BookedBarber V2
+  performance_indexes:
+    # User-related indexes
+    - table: "users"
+      columns: ["email"]
+      type: "unique"
+      name: "idx_users_email_unique"
+    
+    - table: "users"
+      columns: ["created_at"]
+      type: "btree"
+      name: "idx_users_created_at"
+    
+    # Appointment-related indexes (most critical)
+    - table: "appointments"
+      columns: ["barber_id", "appointment_date", "status"]
+      type: "btree"
+      name: "idx_appointments_barber_date_status"
+    
+    - table: "appointments"
+      columns: ["client_id", "appointment_date"]
+      type: "btree"
+      name: "idx_appointments_client_date"
+    
+    - table: "appointments"
+      columns: ["appointment_date", "status"]
+      type: "btree"
+      name: "idx_appointments_date_status"
+    
+    - table: "appointments"
+      columns: ["created_at"]
+      type: "btree"
+      name: "idx_appointments_created_at"
+    
+    # Payment-related indexes
+    - table: "payments"
+      columns: ["user_id", "status", "created_at"]
+      type: "btree"
+      name: "idx_payments_user_status_date"
+    
+    - table: "payments"
+      columns: ["stripe_payment_intent_id"]
+      type: "unique"
+      name: "idx_payments_stripe_intent_unique"
+    
+    - table: "payments"
+      columns: ["created_at", "status"]
+      type: "btree"
+      name: "idx_payments_date_status"
+    
+    # Barber profile indexes
+    - table: "barber_profiles"
+      columns: ["user_id"]
+      type: "unique"
+      name: "idx_barber_profiles_user_unique"
+    
+    - table: "barber_profiles"
+      columns: ["is_active", "created_at"]
+      type: "btree"
+      name: "idx_barber_profiles_active_date"
+    
+    # Service-related indexes
+    - table: "services"
+      columns: ["barber_id", "is_active"]
+      type: "btree"
+      name: "idx_services_barber_active"
+    
+    # Session and authentication indexes
+    - table: "user_sessions"
+      columns: ["session_token"]
+      type: "unique"
+      name: "idx_user_sessions_token_unique"
+    
+    - table: "user_sessions"
+      columns: ["expires_at"]
+      type: "btree"
+      name: "idx_user_sessions_expires"
+    
+    # Analytics and reporting indexes
+    - table: "appointment_analytics"
+      columns: ["date", "barber_id"]
+      type: "btree"
+      name: "idx_appointment_analytics_date_barber"
+    
+    # Full-text search indexes
+    - table: "barber_profiles"
+      columns: ["search_vector"]
+      type: "gin"
+      name: "idx_barber_profiles_search"
+    
+    - table: "services"
+      columns: ["search_vector"]
+      type: "gin"
+      name: "idx_services_search"
+
+  # Partial indexes for better performance
+  partial_indexes:
+    # Only index active appointments
+    - table: "appointments"
+      columns: ["appointment_date"]
+      condition: "status IN ('confirmed', 'pending')"
+      name: "idx_appointments_active_date"
+    
+    # Only index recent payments
+    - table: "payments"
+      columns: ["created_at"]
+      condition: "created_at >= CURRENT_DATE - INTERVAL '90 days'"
+      name: "idx_payments_recent"
+    
+    # Only index active barbers
+    - table: "barber_profiles"
+      columns: ["location_id"]
+      condition: "is_active = true"
+      name: "idx_barber_profiles_active_location"
+
+# Query Optimization
+query_optimization:
+  # Prepared Statements
+  prepared_statements:
+    enabled: true
+    cache_size: 1000
+    
+  # Common query patterns to optimize
+  query_patterns:
+    # Appointment availability queries
+    - name: "appointment_availability"
+      query: |
+        SELECT available_slots 
+        FROM barber_availability 
+        WHERE barber_id = $1 
+        AND date = $2 
+        AND is_available = true
+      optimization: "Use covering index on (barber_id, date, is_available)"
+    
+    # User dashboard queries
+    - name: "user_dashboard"
+      query: |
+        SELECT a.*, bp.name, s.name as service_name
+        FROM appointments a
+        JOIN barber_profiles bp ON a.barber_id = bp.user_id
+        JOIN services s ON a.service_id = s.id
+        WHERE a.client_id = $1
+        AND a.appointment_date >= CURRENT_DATE
+        ORDER BY a.appointment_date
+      optimization: "Use composite index and query plan optimization"
+    
+    # Revenue analytics queries
+    - name: "revenue_analytics"
+      query: |
+        SELECT 
+          DATE_TRUNC('day', created_at) as date,
+          SUM(amount) as daily_revenue,
+          COUNT(*) as transaction_count
+        FROM payments
+        WHERE status = 'succeeded'
+        AND created_at >= $1
+        GROUP BY DATE_TRUNC('day', created_at)
+        ORDER BY date
+      optimization: "Use partial index on succeeded payments"
+
+# Database Monitoring and Alerts
+monitoring:
+  # Performance Metrics to Track
+  metrics:
+    # Connection metrics
+    - name: "active_connections"
+      query: "SELECT count(*) FROM pg_stat_activity WHERE state = 'active'"
+      threshold: 150
+      alert_level: "warning"
+    
+    - name: "idle_connections"
+      query: "SELECT count(*) FROM pg_stat_activity WHERE state = 'idle'"
+      threshold: 200
+      alert_level: "warning"
+    
+    # Query performance metrics
+    - name: "slow_queries"
+      query: |
+        SELECT count(*) 
+        FROM pg_stat_statements 
+        WHERE mean_exec_time > 1000
+      threshold: 10
+      alert_level: "critical"
+    
+    - name: "query_time_p95"
+      query: |
+        SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY mean_exec_time)
+        FROM pg_stat_statements
+      threshold: 2000
+      alert_level: "warning"
+    
+    # Cache hit ratio
+    - name: "cache_hit_ratio"
+      query: |
+        SELECT 
+          round(
+            sum(blks_hit) * 100.0 / sum(blks_hit + blks_read), 2
+          ) as cache_hit_ratio
+        FROM pg_stat_database
+      threshold: 95
+      alert_level: "critical"
+    
+    # Database size monitoring
+    - name: "database_size_gb"
+      query: |
+        SELECT 
+          round(pg_database_size(current_database())::numeric / 1024 / 1024 / 1024, 2)
+      threshold: 50
+      alert_level: "warning"
+    
+    # Lock monitoring
+    - name: "lock_waits"
+      query: "SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock'"
+      threshold: 5
+      alert_level: "warning"
+    
+    # Replication lag (if using read replicas)
+    - name: "replication_lag_seconds"
+      query: |
+        SELECT 
+          CASE 
+            WHEN pg_last_wal_receive_lsn() = pg_last_wal_replay_lsn() 
+            THEN 0
+            ELSE EXTRACT(EPOCH FROM now() - pg_last_xact_replay_timestamp())
+          END
+      threshold: 30
+      alert_level: "critical"
+
+  # Automated Alerts
+  alerts:
+    # Connection pool exhaustion
+    - name: "connection_pool_exhaustion"
+      condition: "active_connections > 180"
+      severity: "critical"
+      action: "Scale up database or optimize connection usage"
+    
+    # High query response time
+    - name: "high_query_response_time"
+      condition: "query_time_p95 > 3000"
+      severity: "high"
+      action: "Investigate slow queries and optimize indexes"
+    
+    # Low cache hit ratio
+    - name: "low_cache_hit_ratio"
+      condition: "cache_hit_ratio < 90"
+      severity: "high"
+      action: "Consider increasing shared_buffers or optimizing queries"
+    
+    # Database size growth
+    - name: "rapid_database_growth"
+      condition: "database_size_gb > 40"
+      severity: "medium"
+      action: "Review data retention policies and archive old data"
+
+# Backup and Recovery Optimization
+backup_recovery:
+  # Backup Strategy
+  backup_strategy:
+    # Continuous archiving
+    wal_archiving:
+      enabled: true
+      archive_location: "s3://bookedbarber-backups/wal-archive/"
+      retention_days: 7
+    
+    # Base backups
+    base_backups:
+      frequency: "daily"
+      time: "02:00"  # 2 AM UTC
+      retention_days: 30
+      compression: true
+      location: "s3://bookedbarber-backups/base-backups/"
+    
+    # Point-in-time recovery
+    pitr:
+      enabled: true
+      retention_days: 7
+    
+  # Recovery Testing
+  recovery_testing:
+    frequency: "monthly"
+    test_scenarios:
+      - "Point-in-time recovery to 1 hour ago"
+      - "Full database restoration from base backup"
+      - "Recovery from corrupted table"
+    
+  # Backup Monitoring
+  backup_monitoring:
+    alerts:
+      - name: "backup_failure"
+        condition: "Last backup older than 25 hours"
+        severity: "critical"
+      
+      - name: "wal_archive_lag"
+        condition: "WAL archive lag > 5 minutes"
+        severity: "high"
+
+# Maintenance and Optimization Tasks
+maintenance:
+  # Automated Maintenance
+  automated_tasks:
+    # VACUUM and ANALYZE
+    vacuum_analyze:
+      frequency: "daily"
+      time: "03:00"  # 3 AM UTC
+      tables: "all"
+      analyze: true
+      
+    # REINDEX for critical tables
+    reindex:
+      frequency: "weekly"
+      time: "Sunday 04:00"
+      tables: ["appointments", "payments", "users"]
+    
+    # Statistics update
+    statistics_update:
+      frequency: "daily"
+      time: "01:00"
+      command: "ANALYZE"
+    
+    # Clean up old data
+    data_cleanup:
+      frequency: "weekly"
+      tasks:
+        - "DELETE FROM user_sessions WHERE expires_at < NOW() - INTERVAL '7 days'"
+        - "DELETE FROM audit_logs WHERE created_at < NOW() - INTERVAL '90 days'"
+        - "DELETE FROM rate_limit_logs WHERE created_at < NOW() - INTERVAL '24 hours'"
+  
+  # Manual Maintenance Tasks
+  manual_tasks:
+    monthly:
+      - "Review and optimize slow queries"
+      - "Check index usage and remove unused indexes"
+      - "Update table statistics manually for critical tables"
+      - "Review connection pool settings and usage patterns"
+    
+    quarterly:
+      - "Full VACUUM ANALYZE on all tables"
+      - "Database performance review and tuning"
+      - "Backup and recovery testing"
+      - "Capacity planning review"
+
+# Development and Testing Database Configuration
+development_config:
+  # Settings optimized for development
+  connection_pool:
+    pool_size: 5
+    max_overflow: 10
+    pool_timeout: 30
+  
+  postgresql_config:
+    shared_buffers: "256MB"
+    work_mem: "4MB"
+    maintenance_work_mem: "64MB"
+    max_connections: 20
+    
+  # Relaxed settings for faster development
+  performance_settings:
+    synchronous_commit: off      # Faster writes (less durable)
+    checkpoint_timeout: "30min"  # Less frequent checkpoints
+    log_min_duration_statement: 100  # Log queries > 100ms
+
+# Cost Optimization
+cost_optimization:
+  # Resource usage optimization
+  resource_efficiency:
+    # Right-size database instance based on usage
+    instance_sizing:
+      production: "db.r5.2xlarge"  # 8 vCPU, 64GB RAM
+      staging: "db.t3.medium"      # 2 vCPU, 4GB RAM
+      development: "db.t3.small"   # 2 vCPU, 2GB RAM
+    
+    # Storage optimization
+    storage:
+      type: "gp3"                 # Latest generation SSD
+      provisioned_iops: 3000      # Based on workload requirements
+      throughput: 125             # MB/s throughput
+      
+  # Cost monitoring
+  cost_monitoring:
+    alerts:
+      - name: "monthly_database_cost"
+        threshold: 400            # $400/month
+        action: "Review usage and optimize if possible"
+      
+      - name: "storage_growth_rate"
+        threshold: "10GB/month"
+        action: "Review data retention and archival policies"
+
+# Security Configuration
+security:
+  # Connection security
+  connection_security:
+    ssl_mode: "require"
+    ssl_cert_verification: true
+    
+  # Access control
+  access_control:
+    # Database users with minimal permissions
+    users:
+      - name: "app_user"
+        permissions: ["SELECT", "INSERT", "UPDATE", "DELETE"]
+        tables: ["appointments", "users", "payments", "services"]
+      
+      - name: "readonly_user"
+        permissions: ["SELECT"]
+        tables: "all"
+        description: "For analytics and reporting"
+      
+      - name: "backup_user"
+        permissions: ["SELECT"]
+        tables: "all"
+        description: "For backup operations"
+    
+  # Audit logging
+  audit_logging:
+    enabled: true
+    log_connections: true
+    log_disconnections: true
+    log_statement: "mod"         # Log all modifications
+    log_duration: true
+
+# Deployment Scripts
+deployment:
+  # Database setup script
+  setup_script: |
+    #!/bin/bash
+    # Production database setup and optimization
+    
+    echo "🗄️  Setting up BookedBarber V2 production database optimization..."
+    
+    # Apply PostgreSQL configuration
+    psql $DATABASE_URL -c "ALTER SYSTEM SET shared_buffers = '4GB';"
+    psql $DATABASE_URL -c "ALTER SYSTEM SET effective_cache_size = '12GB';"
+    psql $DATABASE_URL -c "ALTER SYSTEM SET work_mem = '32MB';"
+    psql $DATABASE_URL -c "ALTER SYSTEM SET maintenance_work_mem = '1GB';"
+    
+    # Reload configuration
+    psql $DATABASE_URL -c "SELECT pg_reload_conf();"
+    
+    # Create performance indexes
+    psql $DATABASE_URL -f /scripts/create_performance_indexes.sql
+    
+    # Update table statistics
+    psql $DATABASE_URL -c "ANALYZE;"
+    
+    echo "✅ Database optimization completed!"
+  
+  # Migration script for existing databases
+  migration_script: |
+    #!/bin/bash
+    # Migrate existing database to optimized configuration
+    
+    echo "🔄 Migrating database to optimized configuration..."
+    
+    # Backup before migration
+    pg_dump $DATABASE_URL > backup_before_optimization.sql
+    
+    # Apply optimizations gradually
+    psql $DATABASE_URL -f /scripts/gradual_optimization.sql
+    
+    # Monitor performance during migration
+    psql $DATABASE_URL -c "SELECT * FROM pg_stat_database;"
+    
+    echo "✅ Migration completed successfully!"

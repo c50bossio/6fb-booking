@@ -1,0 +1,53 @@
+# BookedBarber V2 - Database Optimization Configuration
+# Production-ready PostgreSQL optimization settings
+# Last updated: 2025-07-23
+
+database_config:
+  connection_pool:
+    pool_size: 50
+    max_overflow: 20
+    pool_timeout: 30
+    pool_recycle: 3600
+    pool_pre_ping: true
+    
+  postgresql_config:
+    shared_buffers: "4GB"
+    effective_cache_size: "12GB"
+    work_mem: "32MB"
+    maintenance_work_mem: "1GB"
+    checkpoint_completion_target: 0.9
+    checkpoint_timeout: "15min"
+    max_wal_size: "4GB"
+    min_wal_size: "1GB"
+    random_page_cost: 1.1
+    effective_io_concurrency: 200
+    log_min_duration_statement: 1000
+    log_checkpoints: "on"
+    log_lock_waits: "on"
+    autovacuum_naptime: "30s"
+    autovacuum_max_workers: 4
+
+caching:
+  redis_config:
+    default_ttl: 300
+    key_prefix: "bookedbarber:db:"
+    
+  cache_ttl_settings:
+    user_profile: 1800
+    barber_schedule: 300
+    appointment_list: 300
+    revenue_data: 600
+    analytics_data: 1800
+    service_list: 3600
+    static_data: 86400
+
+monitoring:
+  collection_interval: 60
+  metrics_retention_hours: 24
+  
+  alert_thresholds:
+    max_connection_usage_pct: 80
+    slow_query_threshold_ms: 1000
+    cache_hit_ratio_min: 0.95
+    queries_per_second_max: 1000
+    lock_wait_threshold_ms: 100

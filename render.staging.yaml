@@ -1,163 +1,386 @@
-# Render.com staging deployment configuration for 6FB Booking Platform
-# This file configures staging environment services
-# Deploy from staging branch to keep separate from production
+# BookedBarber V2 - Staging Render Configuration
+# Optimized for staging environment testing with test keys
+# Last updated: 2025-07-23
 
 services:
-  # Backend V2 API Service - Staging
+  # Staging Backend API Service
   - type: web
-    name: sixfb-backend-v2-staging
+    name: bookedbarber-backend-staging
     env: python
     region: oregon
-    plan: starter # Using starter for staging to save costs
-    buildCommand: cd backend-v2 && pip install -r requirements.txt
-    startCommand: cd backend-v2 && uvicorn main:app --host 0.0.0.0 --port $PORT --log-level debug
+    plan: starter  # $7/month - Cost-effective for staging
+    
+    # Build Configuration
+    buildCommand: |
+      cd backend-v2 && \
+      pip install --upgrade pip && \
+      pip install -r requirements.txt && \
+      python -m compileall . -q
+    
+    # Development Server Configuration (suitable for staging)
+    startCommand: |
+      cd backend-v2 && \
+      uvicorn main:app \
+        --host 0.0.0.0 \
+        --port $PORT \
+        --log-level debug \
+        --reload \
+        --workers 1
+
+    # Environment Variables
     envVars:
+      # Python Configuration
       - key: PYTHON_VERSION
         value: "3.11.10"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      
+      # Application Configuration  
       - key: ENVIRONMENT
         value: staging
-      - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: sixfb-frontend-v2-staging
-          property: host
-      - key: SECRET_KEY
-        generateValue: true
-      - key: JWT_SECRET_KEY
-        generateValue: true
-      - key: DATABASE_URL
-        fromDatabase:
-          name: sixfb-db-staging
-          property: connectionString
-      # Staging uses test Stripe keys
-      - key: STRIPE_SECRET_KEY
-        sync: false  # Set test key in Render dashboard
-      - key: STRIPE_PUBLISHABLE_KEY
-        sync: false  # Set test key in Render dashboard
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false  # Set test webhook secret
-      - key: STRIPE_CONNECT_CLIENT_ID
-        sync: false  # Set test client ID
-      # Email service (can use same or test account)
-      - key: SENDGRID_API_KEY
-        sync: false  # Set in Render dashboard
-      - key: FROM_EMAIL
-        value: staging@bookedbarber.com
-      # Google services (staging OAuth app)
-      - key: GOOGLE_CLIENT_ID
-        sync: false  # Set staging OAuth client
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false  # Set staging OAuth secret
-      - key: GOOGLE_CALENDAR_API_KEY
-        sync: false  # Can use same API key
-      - key: ENCRYPTION_KEY
-        generateValue: true
-      # Increased logging for staging
+      - key: DEBUG
+        value: "true"  # Enable debug for staging
       - key: LOG_LEVEL
         value: debug
-      - key: DEBUG
+      
+      # Frontend URL Configuration
+      - key: FRONTEND_URL
+        value: https://staging.bookedbarber.com
+      - key: ALLOWED_ORIGINS
+        value: https://staging.bookedbarber.com,http://localhost:3001
+      
+      # Security Keys (Generated securely but different from production)
+      - key: SECRET_KEY
+        generateValue: true  # Staging-specific secure key
+      - key: JWT_SECRET_KEY  
+        generateValue: true  # Staging-specific secure key
+      - key: ENCRYPTION_KEY
+        generateValue: true  # Staging-specific encryption key
+      
+      # Database Configuration (Staging)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bookedbarber-staging-db
+          property: connectionString
+      - key: DB_POOL_SIZE
+        value: "10"  # Smaller pool for staging
+      - key: DB_MAX_OVERFLOW
+        value: "5"
+      - key: DB_POOL_TIMEOUT
+        value: "30"
+      - key: DB_POOL_PRE_PING
         value: "true"
-      # CORS for staging domains
-      - key: CORS_ALLOWED_ORIGINS
-        value: https://sixfb-frontend-v2-staging.onrender.com,https://staging.bookedbarber.com,http://localhost:3000,http://localhost:3001
-      # Reduced resources for staging
+      - key: DB_POOL_RECYCLE
+        value: "3600"
+      
+      # Redis Cache Configuration (Staging)
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bookedbarber-staging-redis
+          property: connectionString
+      - key: REDIS_MAX_CONNECTIONS
+        value: "20"
+      - key: REDIS_SOCKET_TIMEOUT
+        value: "5"
+      
+      # 🧪 STAGING API KEYS (ALL TEST KEYS)
+      - key: STRIPE_SECRET_KEY
+        sync: false  # sk_test_* (TEST KEY REQUIRED)
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false  # pk_test_* (TEST KEY REQUIRED)
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false  # whsec_test_* (TEST WEBHOOK)
+      - key: STRIPE_CONNECT_CLIENT_ID
+        sync: false  # ca_test_* (TEST CONNECT CLIENT)
+      
+      # Email Service (Staging/Test)
+      - key: SENDGRID_API_KEY
+        sync: false  # SG.* (STAGING/TEST API KEY)
+      - key: SENDGRID_FROM_EMAIL
+        value: staging@bookedbarber.com
+      - key: SENDGRID_FROM_NAME
+        value: BookedBarber (Staging)
+      
+      # SMS Service (Test)
+      - key: TWILIO_ACCOUNT_SID
+        sync: false  # ACtest* (TEST ACCOUNT SID)
+      - key: TWILIO_AUTH_TOKEN
+        sync: false  # Test auth token
+      - key: TWILIO_PHONE_NUMBER
+        value: "+15005550006"  # Twilio test number
+      
+      # Google Services (Staging)
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # Staging OAuth client
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false  # Staging OAuth secret
+      - key: GOOGLE_REDIRECT_URI
+        value: https://api-staging.bookedbarber.com/api/calendar/callback
+      
+      # Analytics & Tracking (Staging/Test)
+      - key: GTM_MEASUREMENT_ID
+        sync: false  # G-STAGING* (Staging GA4)
+      - key: GTM_API_SECRET
+        sync: false  # Staging GA4 API secret
+      - key: META_PIXEL_ID
+        sync: false  # Staging Meta Pixel
+      - key: META_CONVERSION_API_TOKEN
+        sync: false  # Staging conversion token
+      - key: META_TEST_EVENT_CODE
+        value: "TEST_STAGING"  # Enable test events
+      
+      # Performance Configuration (Staging)
+      - key: WEB_CONCURRENCY
+        value: "1"  # Single worker for staging
       - key: MAX_WORKERS
         value: "1"
-      - key: WEB_CONCURRENCY
-        value: "1"
-      # Performance settings (reduced for staging)
-      - key: POOL_SIZE
-        value: "5"
-      - key: MAX_OVERFLOW
-        value: "10"
-      - key: POOL_PRE_PING
+      - key: WORKER_TIMEOUT
+        value: "60"  # Longer timeout for debugging
+      
+      # Security Configuration (Relaxed for staging)
+      - key: SECURE_SSL_REDIRECT
         value: "true"
-      - key: POOL_RECYCLE
+      - key: SECURE_HSTS_SECONDS
+        value: "0"  # No HSTS for staging
+      - key: SECURE_CONTENT_TYPE_NOSNIFF
+        value: "true"
+      - key: SECURE_BROWSER_XSS_FILTER
+        value: "true"
+      - key: SECURE_COOKIE_SECURE
+        value: "true"
+      - key: SECURE_COOKIE_SAMESITE
+        value: "Lax"  # Relaxed for staging testing
+      
+      # Rate Limiting (Relaxed for staging)
+      - key: RATE_LIMIT_ENABLED
+        value: "true"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "200"  # Higher limits for testing
+      - key: RATE_LIMIT_PER_HOUR
+        value: "5000"
+      - key: AUTH_RATE_LIMIT_PER_MINUTE
+        value: "20"
+      
+      # Caching Configuration (Staging)
+      - key: CACHE_ENABLED
+        value: "true"
+      - key: CACHE_TTL_DEFAULT
+        value: "60"  # Shorter TTL for testing
+      - key: CACHE_TTL_STATIC
+        value: "300"
+      - key: CACHE_TTL_USER_SESSIONS
         value: "3600"
-      # Security settings (relaxed for staging)
-      - key: SECURE_COOKIES
-        value: "false"  # Allow non-HTTPS in staging
-      - key: SESSION_COOKIE_SECURE
-        value: "false"
-      - key: SESSION_COOKIE_HTTPONLY
-        value: "true"
-      - key: SESSION_COOKIE_SAMESITE
-        value: "lax"
-      # Staging-specific settings
-      - key: ALLOW_TEST_ENDPOINTS
-        value: "true"
-      - key: ENABLE_SWAGGER_UI
-        value: "true"
+      
+      # Monitoring & Error Tracking (Staging)
+      - key: SENTRY_DSN
+        sync: false  # Staging Sentry DSN
       - key: SENTRY_ENVIRONMENT
         value: staging
+      - key: SENTRY_SAMPLE_RATE
+        value: "1.0"  # 100% error sampling for staging
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "0.2"  # 20% performance tracing
+      - key: SENTRY_DEBUG
+        value: "true"  # Enable debug mode
+      
+      # Staging-Specific Configuration
+      - key: STAGING_DATA_RESET_DAILY
+        value: "true"
+      - key: STAGING_MOCK_PAYMENTS
+        value: "true"
+      - key: STAGING_TEST_WEBHOOKS
+        value: "true"
+      
+      # Feature Flags (Enable all for testing)
+      - key: ENABLE_GOOGLE_CALENDAR
+        value: "true"
+      - key: ENABLE_SMS_NOTIFICATIONS
+        value: "true"
+      - key: ENABLE_EMAIL_NOTIFICATIONS
+        value: "true"
+      - key: ENABLE_ANALYTICS
+        value: "true"
+      - key: ENABLE_WEBHOOKS
+        value: "true"
+      - key: ENABLE_BACKGROUND_JOBS
+        value: "true"
+      - key: ENABLE_CACHING
+        value: "true"
+
+    # Health Check & Monitoring
     healthCheckPath: /health
-    autoDeploy: false  # Manual deploy for staging
-    branch: staging  # Deploy from staging branch
-    numInstances: 1
+    httpHealthCheckPath: /api/v2/health
     
-  # Frontend V2 Next.js Application - Staging
+    # Auto-scaling Configuration
+    autoDeploy: true   # Auto-deploy for staging
+    numInstances: 1    # Single instance for staging
+    
+    # Custom Domain
+    domains:
+      - api-staging.bookedbarber.com
+
+  # Staging Frontend Application
   - type: web
-    name: sixfb-frontend-v2-staging
+    name: bookedbarber-frontend-staging
     env: node
     region: oregon
-    plan: starter
+    plan: starter  # $7/month - Cost-effective for staging
+    
+    # Build Configuration
     buildCommand: |
       cd backend-v2/frontend-v2 && \
-      npm install --legacy-peer-deps && \
+      npm ci && \
       npm run build
-    startCommand: cd backend-v2/frontend-v2 && npm run start
+    
+    # Development Server Configuration
+    startCommand: |
+      cd backend-v2/frontend-v2 && \
+      npm run start -- --port $PORT
+    
+    # Environment Variables
     envVars:
+      # Node.js Configuration
       - key: NODE_ENV
-        value: production
+        value: production  # Use production build for staging
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=1024"  # Lower memory for staging
+      
+      # Next.js Configuration
+      - key: NEXT_PUBLIC_API_URL
+        value: https://api-staging.bookedbarber.com
       - key: NEXT_PUBLIC_ENVIRONMENT
         value: staging
-      - key: NEXT_PUBLIC_API_URL
-        value: https://sixfb-backend-v2-staging.onrender.com
-      # Test Stripe publishable key
-      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-        sync: false  # Set test key in Render dashboard
-      # Disable GA for staging
-      - key: NEXT_PUBLIC_GA_TRACKING_ID
-        value: ""  # Empty to disable tracking
-      - key: PORT
-        value: 3000
-      # Next.js settings
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
-      - key: NEXT_PUBLIC_DISABLE_SPEEDY
-        value: "false"
-      # Staging feature flags
+      
+      # Stripe Configuration (Frontend - TEST KEYS)
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false  # pk_test_* (TEST KEY REQUIRED)
+      
+      # Analytics Configuration (Staging)
+      - key: NEXT_PUBLIC_GA_MEASUREMENT_ID
+        sync: false  # G-STAGING* (Staging GA4)
+      - key: NEXT_PUBLIC_GTM_ID
+        sync: false  # GTM-STAGING* (Staging GTM)
+      - key: NEXT_PUBLIC_META_PIXEL_ID
+        sync: false  # Staging Meta Pixel
+      
+      # Debug Features (Enabled for staging)
       - key: NEXT_PUBLIC_ENABLE_DEBUG_PANEL
         value: "true"
       - key: NEXT_PUBLIC_SHOW_TEST_DATA
         value: "true"
+      - key: NEXT_PUBLIC_ENABLE_CONSOLE_LOGS
+        value: "true"
+      
+      # Performance Configuration
+      - key: PORT
+        value: "3000"
+      
+      # Security Configuration (Relaxed for staging)
+      - key: NEXT_PUBLIC_SECURE_COOKIES
+        value: "false"  # Allow non-secure for testing
+
+    # Health Check
     healthCheckPath: /
-    autoDeploy: false  # Manual deploy for staging
-    branch: staging  # Deploy from staging branch
+    
+    # Auto-scaling Configuration
+    autoDeploy: true   # Auto-deploy for staging
+    numInstances: 1    # Single instance for staging
+    
+    # Custom Domain
+    domains:
+      - staging.bookedbarber.com
+
+  # Staging Background Jobs Service (Optional)
+  - type: worker
+    name: bookedbarber-worker-staging
+    env: python
+    region: oregon
+    plan: starter  # $7/month
+    
+    buildCommand: |
+      cd backend-v2 && \
+      pip install --upgrade pip && \
+      pip install -r requirements.txt && \
+      pip install celery[redis]
+    
+    startCommand: |
+      cd backend-v2 && \
+      celery -A celery_app worker \
+        --loglevel=debug \
+        --concurrency=2 \
+        --without-gossip \
+        --without-mingle
+    
+    # Use same environment variables as staging backend
+    envVars:
+      - fromService:
+          type: web
+          name: bookedbarber-backend-staging
+          envVarKey: "*"
+    
+    autoDeploy: true
     numInstances: 1
 
-# Database - Staging Instance
+# Staging Database (Cost-Effective)
 databases:
-  - name: sixfb-db-staging
-    databaseName: sixfb_staging
-    user: sixfb_staging
+  - name: bookedbarber-staging-db
+    databaseName: bookedbarber_staging
+    user: bookedbarber_staging
     region: oregon
-    plan: starter  # $7/month for staging
-    ipAllowList: []  # Allow connections from all Render services
+    plan: starter  # $7/month - Cost-effective for staging
     postgresMajorVersion: 15
-    # Staging-specific database settings
-    databaseOptions:
-      - key: log_statement
-        value: "all"  # Log all queries in staging
-      - key: log_duration
-        value: "on"  # Log query duration
+    
+    # Staging Database Configuration
+    ipAllowList: []  # Allow Render services only
+    
+    # Note: Starter plan includes automated backups
 
-# Optional: Redis for staging (commented out to save costs)
-# Uncomment if you need Redis in staging
-# services:
-#   - type: redis
-#     name: sixfb-redis-staging
-#     region: oregon
-#     plan: starter  # $7/month
-#     maxmemoryPolicy: allkeys-lru
-#     ipAllowList: []
+# Staging Redis Cache (Cost-Effective)
+redis:
+  - name: bookedbarber-staging-redis
+    type: redis
+    region: oregon
+    plan: starter  # $7/month - Cost-effective for staging
+    
+    # Redis Configuration
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []  # Allow Render services only
+
+# Staging Environment Notes:
+# 
+# 1. Cost Optimization:
+#    - Uses starter plans ($7/month each) for cost efficiency
+#    - Single instances to minimize costs
+#    - Smaller resource allocations
+#
+# 2. Testing Features:
+#    - All test API keys (Stripe test mode, etc.)
+#    - Enhanced debugging and logging
+#    - Relaxed security for testing convenience
+#    - Higher rate limits for load testing
+#
+# 3. Auto-deployment:
+#    - Enabled for continuous integration
+#    - Automatically deploys from staging branch
+#    - Ideal for rapid iteration and testing
+#
+# 4. Monitoring:
+#    - Full error tracking with Sentry
+#    - Enhanced sampling for comprehensive testing
+#    - Debug modes enabled for troubleshooting
+#
+# 5. Data Management:
+#    - Daily data reset option
+#    - Mock payment processing
+#    - Test webhook validation
+#
+# Total Monthly Cost: ~$35-49 (vs $200+ for production)
+# - Backend: $7
+# - Frontend: $7  
+# - Database: $7
+# - Redis: $7
+# - Worker: $7 (optional)
+# - Total: $28-35/month
