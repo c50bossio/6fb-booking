@@ -1,0 +1,7 @@
+# BookedBarber Workflow Aliases
+alias wf='./scripts/workflow-menu.sh'
+alias 999='./999'
+alias deploy='./scripts/deploy-feature.sh'
+alias staging='./scripts/promote-to-production.sh'
+alias cleanup='./scripts/cleanup-after-merge.sh'
+alias status='./scripts/workflow-status.sh'
