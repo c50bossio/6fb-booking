@@ -178,7 +178,7 @@ function ReviewCard({ review, onRespond, onView }: ReviewCardProps) {
               
               {review.can_respond && review.response_status !== ReviewResponseStatus.SENT && (
                 <Button
-                  variant="default"
+                  variant="primary"
                   size="sm"
                   onClick={() => onRespond(review.id)}
                 >
