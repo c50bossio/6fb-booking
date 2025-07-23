@@ -452,50 +452,42 @@ export default function ReviewsPage() {
                 <Select
                   placeholder="Platform"
                   value={filters.platform || ''}
-                  onValueChange={(value) => setFilters({ ...filters, platform: value as ReviewPlatform })}
-                >
-                  {filterOptions.platforms.map((platform) => (
-                    <option key={platform.value} value={platform.value}>
-                      {platform.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, platform: value as ReviewPlatform })}
+                  options={filterOptions.platforms.map((platform) => ({
+                    value: platform.value,
+                    label: platform.label
+                  }))}
+                />
                 
                 <Select
                   placeholder="Sentiment"
                   value={filters.sentiment || ''}
-                  onValueChange={(value) => setFilters({ ...filters, sentiment: value as ReviewSentiment })}
-                >
-                  {filterOptions.sentiments.map((sentiment) => (
-                    <option key={sentiment.value} value={sentiment.value}>
-                      {sentiment.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, sentiment: value as ReviewSentiment })}
+                  options={filterOptions.sentiments.map((sentiment) => ({
+                    value: sentiment.value,
+                    label: sentiment.label
+                  }))}
+                />
                 
                 <Select
                   placeholder="Response Status"
                   value={filters.response_status || ''}
-                  onValueChange={(value) => setFilters({ ...filters, response_status: value as ReviewResponseStatus })}
-                >
-                  {filterOptions.responseStatuses.map((status) => (
-                    <option key={status.value} value={status.value}>
-                      {status.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, response_status: value as ReviewResponseStatus })}
+                  options={filterOptions.responseStatuses.map((status) => ({
+                    value: status.value,
+                    label: status.label
+                  }))}
+                />
                 
                 <Select
                   placeholder="Min Rating"
                   value={filters.min_rating?.toString() || ''}
-                  onValueChange={(value) => setFilters({ ...filters, min_rating: value ? Number(value) : undefined })}
-                >
-                  {filterOptions.ratings.map((rating) => (
-                    <option key={rating.value} value={rating.value}>
-                      {rating.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, min_rating: value ? Number(value) : undefined })}
+                  options={filterOptions.ratings.map((rating) => ({
+                    value: rating.value,
+                    label: rating.label
+                  }))}
+                />
               </div>
               
               <div className="flex items-center space-x-4 mt-4">
