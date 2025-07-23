@@ -397,13 +397,14 @@ export default function ReviewAnalyticsPage() {
         <div className="flex items-center space-x-4">
           <Select
             value={dateRange}
-            onValueChange={setDateRange}
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">Last year</option>
-          </Select>
+            onChange={(value) => setDateRange(value as string)}
+            options={[
+              { value: "7", label: "Last 7 days" },
+              { value: "30", label: "Last 30 days" },
+              { value: "90", label: "Last 90 days" },
+              { value: "365", label: "Last year" }
+            ]}
+          />
         </div>
       </div>
 
