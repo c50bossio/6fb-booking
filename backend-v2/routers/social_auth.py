@@ -23,12 +23,17 @@ router = APIRouter(tags=["social-authentication"])
 
 
 # OAuth callback endpoint that frontend expects
+from pydantic import BaseModel
+
+class SocialAuthCallbackRequest(BaseModel):
+    code: str
+    redirect_uri: str
+    state: Optional[str] = None
+
 @router.post("/auth/social/{provider}/callback")
 async def social_auth_callback(
     provider: str,
-    code: str,
-    redirect_uri: str,
-    state: Optional[str] = None,
+    request: SocialAuthCallbackRequest,
     db: Session = Depends(get_db)
 ):
     """
@@ -46,8 +51,8 @@ async def social_auth_callback(
             result = await service.handle_social_callback(
                 db=db,
                 provider=provider,
-                code=code,
-                redirect_uri=redirect_uri
+                code=request.code,
+                redirect_uri=request.redirect_uri
             )
         
         return result
@@ -57,11 +62,14 @@ async def social_auth_callback(
 
 
 # Link social account to existing user
+class SocialAccountLinkRequest(BaseModel):
+    code: str
+    redirect_uri: str
+
 @router.post("/auth/social/{provider}/link")
 async def link_social_account(
     provider: str,
-    code: str,
-    redirect_uri: str,
+    request: SocialAccountLinkRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -75,8 +83,8 @@ async def link_social_account(
                 db=db,
                 user_id=current_user.id,
                 provider=provider,
-                code=code,
-                redirect_uri=redirect_uri
+                code=request.code,
+                redirect_uri=request.redirect_uri
             )
         
         return result
