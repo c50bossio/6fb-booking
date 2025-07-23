@@ -127,7 +127,7 @@ function ResponseEditor({ review, template, onSave, onSend, isLoading }: Respons
             </label>
             <Select
               value={selectedTemplate}
-              onValueChange={setSelectedTemplate}
+              onChange={(value) => setSelectedTemplate(value as string)}
               placeholder="Select a template..."
               options={templates.map((template) => ({
                 value: template.id.toString(),
