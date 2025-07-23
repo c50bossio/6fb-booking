@@ -396,7 +396,7 @@ export default function BookPage() {
   }
 
   // Convert time slots to appointment format for UnifiedCalendar
-  const convertTimeSlotsToAppointments = () => {
+  const convertTimeSlotsToAppointments = (): Appointment[] => {
     if (!selectedDate || !selectedService) return []
     
     // Create available slot indicators for UnifiedCalendar
@@ -410,7 +410,7 @@ export default function BookPage() {
         const endTime = new Date(startTime)
         endTime.setMinutes(endTime.getMinutes() + 30) // Default 30 min slots
         
-        return {
+        const appointment = {
           id: -1000 - index, // Negative IDs to distinguish from real appointments
           barber_id: 1, // Dummy barber ID
           start_time: startTime.toISOString(),
@@ -419,15 +419,18 @@ export default function BookPage() {
           total_price: SERVICES.find(s => s.id === selectedService)?.amount || 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          // Custom properties for display
-          isAvailableSlot: true,
-          originalTime: slot.time,
           barber: {
             id: 1,
             name: 'Available',
             email: 'available@example.com'
           }
-        }
+        } as Appointment & { isAvailableSlot?: boolean; originalTime?: string }
+        
+        // Add custom properties
+        ;(appointment as any).isAvailableSlot = true
+        ;(appointment as any).originalTime = slot.time
+        
+        return appointment
       })
     
     // Create booked slot indicators
@@ -441,7 +444,7 @@ export default function BookPage() {
         const endTime = new Date(startTime)
         endTime.setMinutes(endTime.getMinutes() + 30)
         
-        return {
+        const appointment = {
           id: -2000 - index,
           barber_id: 1,
           start_time: startTime.toISOString(),
@@ -450,14 +453,17 @@ export default function BookPage() {
           total_price: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          // Custom properties for display
-          isAvailableSlot: false,
           barber: {
             id: 1,
             name: 'Booked',
             email: 'booked@example.com'
           }
-        }
+        } as Appointment & { isAvailableSlot?: boolean }
+        
+        // Add custom property
+        ;(appointment as any).isAvailableSlot = false
+        
+        return appointment
       })
     
     return [...availableSlots, ...bookedSlots]
