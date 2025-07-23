@@ -328,7 +328,8 @@ export function useGlobalDesktopShortcuts() {
     }
   ]
 
-  useKeyboardShortcuts(shortcuts, true)
+  // Return the hook result instead of calling it at module level
+  return useKeyboardShortcuts(shortcuts, true)
 }
 
 export default useDesktopInteractions

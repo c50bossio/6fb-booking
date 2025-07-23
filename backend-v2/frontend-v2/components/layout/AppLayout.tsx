@@ -171,20 +171,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   )
   const keyboardShortcuts = useKeyboardShortcuts(shortcuts, isClient && !isPublicRoute)
   
-  // Conditionally load desktop shortcuts only on desktop
-  useEffect(() => {
-    if (isClient && !isMobile) {
-      import('@/hooks/useDesktopInteractions').then((module) => {
-        // Use default export which is useDesktopInteractions
-        const useDesktopInteractions = module.default
-        if (useDesktopInteractions) {
-          useDesktopInteractions()
-        }
-      }).catch(() => {
-        // Silently ignore if desktop interactions hook fails to load
-      })
-    }
-  }, [isClient, isMobile])
+  // Desktop interactions are handled via the shortcuts system
+  // Dynamic imports of hooks removed to fix chunk loading errors
 
   // Generate breadcrumbs based on current path
   const getBreadcrumbs = () => {
