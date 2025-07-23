@@ -1,3 +1,5 @@
+const path = require('path')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // React strict mode for better error detection
@@ -108,6 +110,11 @@ const nextConfig = {
     // Global error handling improvements
     config.resolve = {
       ...config.resolve,
+      // Explicit path aliases for @ mapping
+      alias: {
+        ...config.resolve?.alias,
+        '@': path.resolve(__dirname),
+      },
       // Fallback for Node.js modules in browser
       fallback: {
         ...config.resolve?.fallback,
