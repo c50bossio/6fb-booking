@@ -11,7 +11,6 @@ import logging
 
 from database import get_db
 from services.social_auth_service import SocialAuthService
-from models.auth import Token
 
 # Configure logging
 logger = logging.getLogger(__name__)

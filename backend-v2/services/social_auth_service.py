@@ -12,9 +12,8 @@ import secrets
 import string
 
 from config import settings
-from models.user import User
-from services.auth_service import AuthService
-from utils.jwt_handler import create_access_token
+from models import User
+from utils.auth import get_password_hash, create_access_token
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ class SocialAuthService:
     def __init__(self, db: Session):
         self.db = db
         self.http_client = httpx.AsyncClient()
-        self.auth_service = AuthService(db) if db else None
+        # No need for auth service - we'll use utils directly
     
     async def authenticate_user(
         self,
@@ -217,7 +216,7 @@ class SocialAuthService:
                 email=email,
                 first_name=user_info.get("first_name", ""),
                 last_name=user_info.get("last_name", ""),
-                password_hash=self.auth_service.hash_password(random_password),  # Won't be used
+                password_hash=get_password_hash(random_password),  # Won't be used
                 is_verified=user_info.get("verified_email", True),  # Social auth emails are typically verified
                 role="client"  # Default role for social auth users
             )
