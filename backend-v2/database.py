@@ -58,9 +58,13 @@ else:
         }
         logger.info(f"Database connection pool configured: size={pool_settings['pool_size']}, max_overflow={pool_settings['max_overflow']}")
     else:
-        # SQLite settings for development
+        # SQLite settings for development with optimizations for concurrent access
         pool_settings = {
-            "connect_args": {"check_same_thread": False},
+            "connect_args": {
+                "check_same_thread": False,
+                "timeout": 5,               # Reduce SQLite timeout from default 30s to 5s
+                "isolation_level": None     # Autocommit mode for better concurrency
+            },
             "poolclass": pool.StaticPool       # Use StaticPool for SQLite
         }
 

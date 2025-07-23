@@ -200,7 +200,7 @@ class AITimeSuggestionEngine {
     dayAppointments: BookingResponse[] = []
   ): Promise<TimeSlot> {
     let confidence = 0.5 // Base confidence
-    let reasons: string[] = []
+    const reasons: string[] = []
     let preference: 'high' | 'medium' | 'low' = 'medium'
 
     const timeString = format(time, 'HH:mm')

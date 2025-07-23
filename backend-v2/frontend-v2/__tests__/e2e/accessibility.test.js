@@ -148,7 +148,7 @@ async function testAccessibility() {
         console.log('\n⌨️  Testing Keyboard Navigation...');
         
         await page.focus('body');
-        let tabStops = [];
+        const tabStops = [];
         let currentElement = await page.evaluateHandle(() => document.activeElement);
         
         // Test tabbing through elements

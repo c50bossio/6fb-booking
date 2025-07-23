@@ -1,0 +1,41 @@
+# Payment Reconciliation Cron Jobs for BookedBarber V2 Production
+# 
+# Add these entries to your production server's crontab:
+# crontab -e
+# 
+# CRITICAL: Ensure these jobs run in production environment with proper Stripe keys
+
+# Set environment variables for cron jobs
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=finance@bookedbarber.com
+
+# Set working directory and environment
+WORKDIR=/app/backend-v2
+PYTHON_ENV=/app/venv/bin/python
+LOG_DIR=/app/logs
+
+# Daily reconciliation at 2:00 AM UTC (after Stripe daily settlement)
+0 2 * * * cd $WORKDIR && $PYTHON_ENV tasks/scheduled_reconciliation.py --daily >> $LOG_DIR/daily_reconciliation.log 2>&1
+
+# Weekly comprehensive reconciliation every Sunday at 3:00 AM UTC
+0 3 * * SUN cd $WORKDIR && $PYTHON_ENV tasks/scheduled_reconciliation.py --weekly >> $LOG_DIR/weekly_reconciliation.log 2>&1
+
+# Emergency reconciliation check every 6 hours (for urgent issues)
+0 */6 * * * cd $WORKDIR && $PYTHON_ENV tasks/scheduled_reconciliation.py --emergency >> $LOG_DIR/emergency_reconciliation.log 2>&1
+
+# Log rotation to prevent disk space issues
+0 0 * * * find $LOG_DIR -name "*reconciliation*.log" -mtime +30 -delete
+
+# Health check for reconciliation system (every hour during business hours)
+0 9-17 * * 1-5 cd $WORKDIR && $PYTHON_ENV -c "from services.payment_reconciliation import PaymentReconciliationService; print('Reconciliation system healthy')" >> $LOG_DIR/health_check.log 2>&1
+
+
+# DEVELOPMENT/STAGING CRON JOBS (uncomment for non-production environments)
+# More frequent reconciliation for testing and validation
+
+# Daily reconciliation at multiple times for development
+# 0 2,8,14,20 * * * cd $WORKDIR && $PYTHON_ENV tasks/scheduled_reconciliation.py --daily >> $LOG_DIR/dev_reconciliation.log 2>&1
+
+# Weekly reconciliation on different days for testing
+# 0 3 * * WED cd $WORKDIR && $PYTHON_ENV tasks/scheduled_reconciliation.py --weekly >> $LOG_DIR/dev_weekly_reconciliation.log 2>&1

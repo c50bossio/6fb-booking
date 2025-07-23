@@ -1,0 +1,156 @@
+{
+  "test_summary": {
+    "all_tests_passed": true,
+    "tests_run": 3,
+    "duration_seconds": 0.000253,
+    "timestamp": "2025-07-22T01:43:48.673504"
+  },
+  "test_results": {
+    "ai_services": {
+      "ai_services_tested": [
+        "AI No-Show Prediction",
+        "AI Message Generation",
+        "AI Intervention System",
+        "Behavioral Learning",
+        "Template Optimization"
+      ],
+      "test_results": {
+        "no_show_prediction": {
+          "appointment_id": 123,
+          "risk_score": 0.75,
+          "risk_level": "HIGH",
+          "risk_factors": [
+            "new_client",
+            "weekend_appointment",
+            "high_price_service"
+          ],
+          "confidence_score": 0.85,
+          "prediction_timestamp": "2025-07-22T01:43:48.673431"
+        },
+        "message_generation": {
+          "appointment_id": 123,
+          "message_type": "reminder",
+          "channel": "sms",
+          "content": "Hi Test Client! This is a friendly reminder about your Premium Haircut appointment tomorrow. We're looking forward to seeing you!",
+          "personalization_level": "high",
+          "ai_provider": "mock",
+          "confidence_score": 0.92,
+          "generated_at": "2025-07-22T01:43:48.673445"
+        },
+        "intervention_campaign": {
+          "campaign_id": "campaign_123",
+          "appointment_id": 123,
+          "campaign_type": "reminder_escalation",
+          "risk_level": "HIGH",
+          "intervention_steps": [
+            {
+              "step": 1,
+              "channel": "sms",
+              "timing": "24h_before",
+              "message_type": "friendly_reminder"
+            },
+            {
+              "step": 2,
+              "channel": "email",
+              "timing": "12h_before",
+              "message_type": "professional_reminder"
+            },
+            {
+              "step": 3,
+              "channel": "phone",
+              "timing": "2h_before",
+              "message_type": "personal_call"
+            }
+          ],
+          "status": "active",
+          "created_at": "2025-07-22T01:43:48.673458"
+        },
+        "behavioral_analysis": {
+          "client_id": 456,
+          "analysis_timestamp": "2025-07-22T01:43:48.673467",
+          "appointment_history": {
+            "total_appointments": 5,
+            "completed_appointments": 4,
+            "no_shows": 1,
+            "cancellations": 0,
+            "completion_rate": 0.8
+          },
+          "communication_preferences": {
+            "preferred_channel": "sms",
+            "response_rate": 0.75,
+            "optimal_contact_time": "morning"
+          },
+          "engagement_score": 0.82,
+          "client_tier": "regular",
+          "recommendations": [
+            "Send reminders via SMS",
+            "Contact in the morning for best response",
+            "Consider loyalty incentives to improve retention"
+          ]
+        },
+        "template_optimization": {
+          "template_id": "reminder_sms_v1",
+          "optimization_timestamp": "2025-07-22T01:43:48.673475",
+          "variants_tested": [
+            {
+              "variant": "friendly",
+              "response_rate": 0.78,
+              "conversion_rate": 0.85
+            },
+            {
+              "variant": "professional",
+              "response_rate": 0.82,
+              "conversion_rate": 0.88
+            },
+            {
+              "variant": "urgent",
+              "response_rate": 0.75,
+              "conversion_rate": 0.79
+            }
+          ],
+          "optimal_variant": "professional",
+          "confidence_level": 0.95,
+          "improvement": "+12% conversion rate",
+          "recommendation": "Use professional tone for appointment reminders"
+        }
+      },
+      "success": true
+    },
+    "simple_ai_integration": {
+      "appointment_id": 123,
+      "ai_features_applied": true,
+      "enhancements": [
+        "Enhanced reminders scheduled",
+        "Risk factors identified: Premium service"
+      ],
+      "message": "Simple AI enhancements applied successfully",
+      "risk_factors": [
+        "Premium service"
+      ],
+      "needs_attention": false
+    },
+    "ai_status": {
+      "ai_available": true,
+      "features_enabled": [
+        "Enhanced Reminders",
+        "SMS Processing",
+        "Basic Risk Assessment",
+        "Behavioral Analysis",
+        "Template Optimization",
+        "Intervention Campaigns",
+        "Real-time Analytics"
+      ],
+      "status": "operational",
+      "message": "AI integration operational with 7 features available",
+      "system_health": {
+        "prediction_service": true,
+        "intervention_service": true,
+        "message_generator": true,
+        "behavioral_learning": true,
+        "template_optimization": true
+      },
+      "version": "2.0",
+      "last_health_check": "2025-07-22T01:43:48.673398"
+    }
+  }
+}

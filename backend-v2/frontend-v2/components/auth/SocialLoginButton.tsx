@@ -31,14 +31,14 @@ export function SocialLoginButton({
   const providerInfo = socialProviders[provider]
   const isConfigured = isProviderConfigured(provider)
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (!isConfigured) {
       onError?.(new Error(`${providerInfo.name} login is not configured`))
       return
     }
 
     try {
-      const authUrl = getOAuthUrl(provider)
+      const authUrl = await getOAuthUrl(provider)
       window.location.href = authUrl
     } catch (error) {
       onError?.(error as Error)

@@ -266,7 +266,7 @@ export function HomepageBuilderProvider({ children }: HomepageBuilderProviderPro
     setIsLoading(true)
     try {
       // TODO: Replace with actual API call
-      const response = await fetch('/api/v1/organizations/current/homepage-builder/config')
+      const response = await fetch('/api/v2/organizations/current/homepage-builder/config')
       if (response.ok) {
         const data = await response.json()
         setConfig(data)
@@ -286,7 +286,7 @@ export function HomepageBuilderProvider({ children }: HomepageBuilderProviderPro
 
   const saveConfig = useCallback(async () => {
     try {
-      const response = await fetch('/api/v1/organizations/current/homepage-builder/config', {
+      const response = await fetch('/api/v2/organizations/current/homepage-builder/config', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -310,7 +310,7 @@ export function HomepageBuilderProvider({ children }: HomepageBuilderProviderPro
 
   const publishHomepage = useCallback(async () => {
     try {
-      const response = await fetch('/api/v1/organizations/current/homepage-builder/publish', {
+      const response = await fetch('/api/v2/organizations/current/homepage-builder/publish', {
         method: 'POST',
       })
       
@@ -331,7 +331,7 @@ export function HomepageBuilderProvider({ children }: HomepageBuilderProviderPro
 
   const unpublishHomepage = useCallback(async () => {
     try {
-      const response = await fetch('/api/v1/organizations/current/homepage-builder/unpublish', {
+      const response = await fetch('/api/v2/organizations/current/homepage-builder/unpublish', {
         method: 'POST',
       })
       
@@ -351,7 +351,7 @@ export function HomepageBuilderProvider({ children }: HomepageBuilderProviderPro
 
   const applyTemplate = useCallback(async (templateId: string, preserveContent = true) => {
     try {
-      const response = await fetch(`/api/v1/organizations/current/homepage-builder/apply-template/${templateId}`, {
+      const response = await fetch(`/api/v2/organizations/current/homepage-builder/apply-template/${templateId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -379,7 +379,7 @@ export function HomepageBuilderProvider({ children }: HomepageBuilderProviderPro
       formData.append('file', file)
       formData.append('media_type', mediaType)
 
-      const response = await fetch('/api/v1/organizations/current/homepage-builder/upload-media', {
+      const response = await fetch('/api/v2/organizations/current/homepage-builder/upload-media', {
         method: 'POST',
         body: formData,
       })

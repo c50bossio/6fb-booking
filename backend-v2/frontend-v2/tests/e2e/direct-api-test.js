@@ -35,7 +35,7 @@ async function directAPITest() {
     const result = await page.evaluate(async () => {
       try {
         console.log('Testing API call...');
-        const response = await fetch('http://localhost:8002/api/v1/auth/login-simple', {
+        const response = await fetch('http://localhost:8002/api/v2/auth/login-simple', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

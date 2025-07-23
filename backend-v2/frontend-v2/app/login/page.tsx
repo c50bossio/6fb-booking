@@ -31,6 +31,7 @@ function LoginContent() {
   const [successMessage, setSuccessMessage] = useState('')
   const [verificationError, setVerificationError] = useState(false)
   const [showResendButton, setShowResendButton] = useState(false)
+  const [redirectMessage, setRedirectMessage] = useState('')
   
   const [loginState, loginActions] = useAsyncOperation()
   const [resendState, resendActions] = useAsyncOperation()
@@ -69,6 +70,23 @@ function LoginContent() {
       setSuccessMessage('Password reset successful! Please sign in with your new password.')
     } else if (searchParams.get('verified') === 'true') {
       setSuccessMessage('Email verified successfully! You can now sign in to your account.')
+    }
+    
+    // Handle redirect parameter to show context about protected page access
+    const redirectPath = searchParams.get('redirect')
+    if (redirectPath) {
+      const pageName = redirectPath.split('/').pop() || redirectPath
+      const friendlyNames: Record<string, string> = {
+        'calendar': 'Calendar',
+        'dashboard': 'Dashboard', 
+        'appointments': 'Appointments',
+        'analytics': 'Analytics',
+        'settings': 'Settings',
+        'bookings': 'Bookings'
+      }
+      
+      const friendlyName = friendlyNames[pageName] || pageName.charAt(0).toUpperCase() + pageName.slice(1)
+      setRedirectMessage(`Please sign in to access your ${friendlyName}.`)
     }
   }, [searchParams])
 
@@ -110,13 +128,13 @@ function LoginContent() {
           }
         }
         
-        console.log('✅ Login successful, redirecting to dashboard...')
+        console.log('✅ Login successful, redirecting...')
         
         // Wait a moment for auth state to update, then redirect
         setTimeout(() => {
-          const dashboardUrl = '/dashboard'
-          console.log('🎯 Redirecting to:', dashboardUrl)
-          router.push(dashboardUrl)
+          const redirectUrl = searchParams.get('redirect') || '/dashboard'
+          console.log('🎯 Redirecting to:', redirectUrl)
+          router.push(redirectUrl)
         }, 500)
         
         // Reset rate limit on successful login
@@ -191,7 +209,7 @@ function LoginContent() {
           <Logo variant="mono" size="lg" className="mx-auto" href="#" />
           <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">Welcome Back</h1>
           <p className="mt-2 text-accent-600 dark:text-gray-300">
-            Sign in to manage your barbershop
+            {redirectMessage || 'Sign in to manage your barbershop'}
           </p>
         </div>
 
@@ -263,6 +281,8 @@ function LoginContent() {
                   leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
                   showPasswordToggle={false}
                   helperText="Use the email associated with your BookedBarber account"
+                  required
+                  autoComplete="email"
                   {...getFieldProps('email')}
                 />
               </FormField>
@@ -275,6 +295,8 @@ function LoginContent() {
                   placeholder="Enter your password"
                   leftIcon={<Lock className="h-4 w-4 text-gray-400" />}
                   showPasswordToggle
+                  required
+                  autoComplete="current-password"
                   {...getFieldProps('password')}
                 />
               </FormField>

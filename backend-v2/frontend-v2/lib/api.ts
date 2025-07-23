@@ -259,7 +259,7 @@ export async function login(email: string, password: string) {
   console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
   
   const response = await retryOperation(
-    () => fetchAPI('/api/v2/auth/login', {
+    () => fetchAPI('/api/v2/auth-simple/login', {
       method: 'POST',
       body: JSON.stringify(requestBody),
     }),
@@ -455,7 +455,7 @@ export async function refreshToken() {
 // Basic API functions
 export async function getProfile(): Promise<User> {
   return retryOperation(
-    () => fetchAPI('/api/v2/auth/me'),
+    () => fetchAPI('/api/v2/auth-simple/me'),
     defaultRetryConfigs.standard
   )
 }
@@ -1220,6 +1220,33 @@ export async function getBarbers(): Promise<User[]> {
   return fetchAPI('/api/v2/barbers')
 }
 
+// Barber profile interface
+export interface BarberProfileData {
+  id: number
+  user_id: number
+  bio?: string
+  years_experience?: number
+  profile_image_url?: string
+  instagram_handle?: string
+  website_url?: string
+  specialties: string[]
+  certifications: string[]
+  hourly_rate?: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  user_name: string
+  user_email: string
+  user_phone?: string
+  user_role: string
+  user_is_active: boolean
+  user_created_at: string
+}
+
+export async function getBarberProfile(barberId: number): Promise<BarberProfileData> {
+  return fetchAPI(`/api/v2/barbers/${barberId}/profile`)
+}
+
 export interface Timezone {
   value: string
   label: string
@@ -1791,6 +1818,322 @@ export async function getSixFigureBarberMetrics(
   if (userId) params.append('user_id', userId.toString())
   
   return fetchAPI(`/api/v2/analytics/six-figure-barber?${params.toString()}`)
+}
+
+// Client Lifetime Value Analytics Types
+export interface CLVMetrics {
+  client_id: number
+  historical_clv: number
+  predicted_clv: number
+  remaining_clv: number
+  average_ticket: number
+  visit_frequency: number
+  last_visit_days_ago: number
+  total_visits: number
+  client_tier: 'platinum' | 'gold' | 'silver' | 'bronze' | 'new'
+  retention_probability: number
+  churn_risk: 'Low' | 'Medium' | 'High'
+  value_growth_trend: 'Increasing' | 'Stable' | 'Declining'
+  recommended_actions: string[]
+  months_active: number
+  lifetime_value_score: number
+}
+
+export interface CLVAnalysis {
+  summary: {
+    total_clients: number
+    total_historical_clv: number
+    total_predicted_clv: number
+    average_clv: number
+    median_clv: number
+    high_value_client_count: number
+    at_risk_client_count: number
+    growth_opportunity_clv: number
+  }
+  tier_breakdown: {
+    [tier: string]: {
+      count: number
+      total_clv: number
+      average_clv: number
+      median_clv: number
+      average_ticket: number
+      retention_rate: number
+    }
+  }
+  percentile_analysis: {
+    top_20_percent_clv: number
+    bottom_20_percent_clv: number
+  }
+  recommendations: {
+    acquisition: {
+      target_acquisition_profile: {
+        min_average_ticket: number
+        target_frequency: number
+        ideal_client_value?: number
+      }
+      acquisition_strategies: string[]
+      max_acquisition_cost: number
+    }
+    retention: {
+      immediate_actions: {
+        high_value_at_risk_count: number
+        total_at_risk_clv: number
+        priority_outreach_list: number[]
+      }
+      retention_strategies: string[]
+      retention_investment_recommendation: {
+        monthly_budget: number
+        focus_areas: string[]
+      }
+    }
+  }
+}
+
+export interface ClientTierAnalytics {
+  tier_distribution: {
+    counts: { [tier: string]: number }
+    percentages: { [tier: string]: number }
+    metrics: {
+      [tier: string]: {
+        total_revenue_potential: number
+        avg_confidence_score: number
+        avg_revenue_potential: number
+        client_ids: number[]
+      }
+    }
+  }
+  total_clients: number
+  analysis_period_days: number
+}
+
+
+/**
+ * Get detailed CLV metrics for a specific client
+ */
+export async function getIndividualClientCLV(clientId: number): Promise<CLVMetrics> {
+  const response = await fetchAPI(`/api/v2/analytics/client-lifetime-value/${clientId}`)
+  return response.clv_metrics
+}
+
+/**
+ * Get client tier distribution and analytics
+ */
+export async function getClientTierAnalytics(
+  userId?: number,
+  analysisPeriodDays: number = 180
+): Promise<ClientTierAnalytics> {
+  const params = new URLSearchParams()
+  params.append('analysis_period_days', analysisPeriodDays.toString())
+  
+  if (userId) {
+    params.append('user_id', userId.toString())
+  }
+  
+  return fetchAPI(`/api/v2/analytics/client-tiers?${params.toString()}`)
+}
+
+// Service Profitability Analytics Types
+export interface ServiceMetrics {
+  service_name: string
+  category: string
+  total_revenue: number
+  total_bookings: number
+  average_price: number
+  completion_rate: number
+  revenue_per_hour: number
+  premium_service: boolean
+  six_figure_score: number
+  growth_trend: 'increasing' | 'stable' | 'declining'
+  recommendations: string[]
+}
+
+export interface ServiceBundleOpportunity {
+  bundle_services: string[]
+  frequency: number
+  average_bundle_value: number
+  recommended_bundle_price: number
+  bundle_score: number
+}
+
+export interface ServiceProfitabilityAnalysis {
+  summary: {
+    total_services: number
+    total_revenue: number
+    analysis_period_days: number
+  }
+  service_metrics: ServiceMetrics[]
+  category_breakdown: {
+    [category: string]: {
+      total_revenue: number
+      total_bookings: number
+      average_price: number
+      completion_rate: number
+      premium_percentage: number
+      six_figure_score: number
+    }
+  }
+  premium_services: {
+    premium_service_count: number
+    standard_service_count: number
+    premium_revenue_percentage: number
+    premium_average_price: number
+    standard_average_price: number
+    upgrade_opportunities: Array<{
+      service_name: string
+      current_price: number
+      premium_threshold: number
+      price_increase_needed: number
+      potential_revenue_increase: number
+    }>
+    premium_services: Array<{
+      name: string
+      revenue: number
+      bookings: number
+      avg_price: number
+      six_figure_score: number
+    }>
+  }
+  bundling_opportunities: ServiceBundleOpportunity[]
+  pricing_recommendations: {
+    underpriced_services: Array<{
+      service_name: string
+      current_price: number
+      recommended_price: number
+      price_increase: number
+      potential_additional_revenue: number
+      confidence: 'high' | 'medium' | 'low'
+    }>
+    overpriced_services: Array<{
+      service_name: string
+      current_price: number
+      completion_rate: number
+      suggested_action: string
+    }>
+    premium_conversion_targets: Array<{
+      service_name: string
+      current_price: number
+      premium_threshold: number
+      six_figure_score: number
+      conversion_strategy: string
+    }>
+  }
+  six_figure_insights: {
+    six_figure_alignment_score: number
+    premium_service_percentage: number
+    premium_target_gap: number
+    revenue_per_hour_analysis: {
+      average_rph: number
+      high_efficiency_services: number
+      low_efficiency_services: number
+    }
+    service_mix_recommendations: string[]
+    six_figure_action_items: string[]
+  }
+  performance_benchmarks: {
+    average_service_price: number
+    median_service_price: number
+    average_completion_rate: number
+    average_revenue_per_hour: number
+    premium_service_percentage: number
+    six_figure_score_average: number
+  }
+}
+
+export interface ServiceOptimizationRecommendations {
+  pricing?: {
+    underpriced_services: Array<{
+      service_name: string
+      current_price: number
+      recommended_price: number
+      price_increase: number
+      potential_additional_revenue: number
+      confidence: string
+    }>
+    overpriced_services: Array<{
+      service_name: string
+      current_price: number
+      completion_rate: number
+      suggested_action: string
+    }>
+    premium_conversion_targets: Array<{
+      service_name: string
+      current_price: number
+      premium_threshold: number
+      six_figure_score: number
+      conversion_strategy: string
+    }>
+  }
+  premium?: {
+    current_premium_percentage: number
+    target_premium_percentage: number
+    upgrade_opportunities: Array<{
+      service_name: string
+      current_price: number
+      premium_threshold: number
+      price_increase_needed: number
+      potential_revenue_increase: number
+    }>
+    premium_services: Array<{
+      name: string
+      revenue: number
+      bookings: number
+      avg_price: number
+      six_figure_score: number
+    }>
+  }
+  bundling?: {
+    opportunities: ServiceBundleOpportunity[]
+    potential_revenue: number
+  }
+  efficiency?: {
+    low_efficiency_services: Array<{
+      service_name: string
+      current_rph: number
+      target_rph: number
+      improvement_needed: number
+      recommendations: string[]
+    }>
+    average_revenue_per_hour: number
+  }
+}
+
+/**
+ * Get comprehensive service profitability analysis
+ */
+export async function getServiceProfitabilityAnalytics(
+  userId?: number,
+  analysisPeriodDays: number = 90
+): Promise<ServiceProfitabilityAnalysis> {
+  const params = new URLSearchParams()
+  params.append('analysis_period_days', analysisPeriodDays.toString())
+  
+  if (userId) {
+    params.append('user_id', userId.toString())
+  }
+  
+  const response = await fetchAPI(`/api/v2/analytics/service-profitability?${params.toString()}`)
+  return response.profitability_analysis
+}
+
+/**
+ * Get targeted service optimization recommendations
+ */
+export async function getServiceOptimizationRecommendations(
+  userId?: number,
+  focusArea: 'all' | 'pricing' | 'premium' | 'bundling' | 'efficiency' = 'all'
+): Promise<{
+  recommendations: ServiceOptimizationRecommendations
+  six_figure_action_items: string[]
+  focus_area: string
+}> {
+  const params = new URLSearchParams()
+  params.append('focus_area', focusArea)
+  
+  if (userId) {
+    params.append('user_id', userId.toString())
+  }
+  
+  return fetchAPI(`/api/v2/analytics/service-optimization?${params.toString()}`)
 }
 
 export async function getDashboardAnalytics(
@@ -5674,6 +6017,87 @@ export const appointmentsAPI = {
     return fetchAPI(`/api/v2/appointments/slots?${params}`)
   },
 
+  // Enhanced: Get available slots with barber-specific availability
+  async getAvailableSlotsForBarber(appointmentDate: string, barberId: string, timezone?: string): Promise<SlotsResponse> {
+    const params = new URLSearchParams({ 
+      appointment_date: appointmentDate,
+      barber_id: barberId
+    })
+    if (timezone) params.append('timezone', timezone)
+    
+    console.log('🔗 Calling barber-specific slots API:', `/api/v2/appointments/slots?${params.toString()}`)
+    return fetchAPI(`/api/v2/appointments/slots?${params.toString()}`)
+  },
+
+  // Enhanced: Check if specific barber is available for a time slot
+  async checkBarberAvailability(barberId: string, checkDate: string, startTime: string, endTime: string): Promise<any> {
+    const params = new URLSearchParams({
+      check_date: checkDate,
+      start_time: startTime,
+      end_time: endTime
+    })
+    
+    return fetchAPI(`/api/v2/barber-availability/check/${barberId}?${params.toString()}`)
+  },
+
+  // Enhanced: Get comprehensive barber schedule with availability
+  async getBarberSchedule(barberId: string, startDate: string, endDate: string, timezone?: string): Promise<any> {
+    const params = new URLSearchParams({
+      start_date: startDate,
+      end_date: endDate
+    })
+    if (timezone) params.append('timezone', timezone)
+    
+    return fetchAPI(`/api/v2/barber-availability/schedule/${barberId}?${params.toString()}`)
+  },
+
+  // Enhanced: Get all available barbers for a specific time slot
+  async getAvailableBarbers(checkDate: string, startTime: string, endTime: string, serviceId?: string): Promise<AvailableBarbersResponse> {
+    const params = new URLSearchParams({
+      check_date: checkDate,
+      start_time: startTime,
+      end_time: endTime
+    })
+    if (serviceId) params.append('service_id', serviceId)
+    
+    return fetchAPI(`/api/v2/barber-availability/available-barbers?${params.toString()}`)
+  },
+
+  // Six Figure Barber Premium Pricing Integration
+  async calculateServicePrice(serviceName: string, barberId: string, clientId?: string, appointmentDateTime?: string, basePrice?: number): Promise<any> {
+    return fetchAPI('/api/v2/six-figure-pricing/calculate-price', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_name: serviceName,
+        barber_id: parseInt(barberId),
+        client_id: clientId ? parseInt(clientId) : null,
+        appointment_datetime: appointmentDateTime,
+        base_price: basePrice
+      })
+    })
+  },
+
+  async getBarberPricingRecommendations(barberId: string, analysisDays: number = 30): Promise<any> {
+    return fetchAPI(`/api/v2/six-figure-pricing/barber-recommendations/${barberId}?analysis_days=${analysisDays}`)
+  },
+
+  async getServicePricingMatrix(barberExperience: string = 'mid', clientTier: string = 'new', includeTimePremiums: boolean = true): Promise<any> {
+    const params = new URLSearchParams({
+      barber_experience: barberExperience,
+      client_tier: clientTier,
+      include_time_premiums: includeTimePremiums.toString()
+    })
+    return fetchAPI(`/api/v2/six-figure-pricing/service-pricing-matrix?${params.toString()}`)
+  },
+
+  async getRevenueOptimizationInsights(barberId: string, targetAnnualRevenue: number = 100000): Promise<any> {
+    const params = new URLSearchParams({
+      target_annual_revenue: targetAnnualRevenue.toString()
+    })
+    return fetchAPI(`/api/v2/six-figure-pricing/revenue-optimization/${barberId}?${params.toString()}`)
+  },
+
   // Create new appointment
   async create(appointmentData: AppointmentCreate): Promise<AppointmentResponse> {
     return fetchAPI('/api/v2/appointments/', {
@@ -6446,6 +6870,87 @@ export async function getPixelInstructions(pixelType: 'gtm' | 'ga4' | 'meta' | '
 // Public endpoint - Get tracking pixels for a booking page (no auth required)
 export async function getPublicTrackingPixels(organizationSlug: string): Promise<TrackingPixel> {
   return fetchAPI(`/api/v2/customer-pixels/public/${organizationSlug}`, {}, false)
+}
+
+// Client Tiers API Types
+export interface TierDashboardMetrics {
+  total_clients: number
+  tier_distribution: {
+    bronze: number
+    silver: number
+    gold: number
+    platinum: number
+  }
+  revenue_by_tier: {
+    bronze: number
+    silver: number
+    gold: number
+    platinum: number
+  }
+  tier_trends: {
+    month: string
+    bronze: number
+    silver: number
+    gold: number
+    platinum: number
+  }[]
+}
+
+export interface ClientTierAnalysis {
+  client_id: number
+  current_tier: string
+  recommended_tier: string
+  total_revenue: number
+  visit_frequency: number
+  last_visit: string
+}
+
+export interface BulkTierAnalysisResult {
+  total_processed: number
+  updated_count: number
+  errors: string[]
+  tier_changes: {
+    client_id: number
+    old_tier: string
+    new_tier: string
+  }[]
+}
+
+// Client Tiers API Functions - Updated to use new V2 endpoints
+export async function getTierDashboardMetrics(): Promise<TierDashboardMetrics> {
+  return fetchAPI('/api/v2/client-tiers/')
+}
+
+export async function getClientTierAnalysis(clientId: number): Promise<ClientTierAnalysis> {
+  return fetchAPI(`/api/v2/client-tiers/client/${clientId}`)
+}
+
+export async function updateClientTier(clientId: number): Promise<any> {
+  // This would be used to manually recalculate a single client's tier
+  return fetchAPI(`/api/v2/client-tiers/calculate-bulk`, {
+    method: 'POST',
+    body: JSON.stringify({ client_ids: [clientId] })
+  })
+}
+
+export async function bulkCalculateClientTiers(clientIds?: number[]): Promise<BulkTierAnalysisResult> {
+  const body = clientIds ? { client_ids: clientIds } : {}
+  return fetchAPI('/api/v2/client-tiers/calculate-bulk', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  })
+}
+
+export async function getRevenueOptimizationAnalytics(): Promise<any> {
+  return fetchAPI('/api/v2/client-tiers/analytics/revenue-optimization')
+}
+
+// AI Agents API Functions
+export async function toggleAgentStatus(agentId: string, status: 'active' | 'paused'): Promise<void> {
+  await fetchAPI(`/api/v2/ai-agents/${agentId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ status })
+  })
 }
 
 // Export API client objects for backwards compatibility

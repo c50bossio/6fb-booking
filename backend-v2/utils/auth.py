@@ -86,9 +86,29 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Add timeout protection and error handling for database query
+    # Add timeout protection and error handling for database query with Redis caching
     try:
-        # Query user with error handling
+        # Try to get user from Redis cache first
+        cache_key = f"user_auth:{email}"
+        try:
+            from services.redis_service import get_redis_client
+            redis_client = get_redis_client()
+            
+            if redis_client:
+                import json
+                cached_user_data = redis_client.get(cache_key)
+                if cached_user_data:
+                    user_dict = json.loads(cached_user_data)
+                    # Create a user object from cached data
+                    user = User(**user_dict)
+                    return user
+        except Exception as cache_e:
+            # If cache fails, fall back to database - don't let cache errors break auth
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Auth cache failed for {email}: {cache_e}")
+        
+        # Query user from database if not in cache
         user = db.query(User).filter(User.email == email).first()
         if user is None:
             raise HTTPException(
@@ -96,6 +116,26 @@ async def get_current_user(
                 detail="User not found",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        
+        # Cache the user data for 5 minutes (300 seconds)
+        try:
+            if redis_client:
+                import json
+                # Convert user to dict for caching (only cache safe fields)
+                user_cache_data = {
+                    "id": user.id,
+                    "email": user.email,
+                    "role": user.role,
+                    "is_active": user.is_active,
+                    "is_verified": user.is_verified,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "created_at": user.created_at.isoformat() if user.created_at else None
+                }
+                redis_client.setex(cache_key, 300, json.dumps(user_cache_data, default=str))
+        except Exception as cache_e:
+            # Don't fail auth if caching fails
+            pass
         
         return user
     except HTTPException:

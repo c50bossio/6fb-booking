@@ -97,7 +97,7 @@ const PrivacyDashboard: React.FC<PrivacyDashboardProps> = ({ className }) => {
     setIsDeleting(true)
     try {
       // Call backend API to initiate account deletion
-      const response = await fetch('/api/v1/privacy/delete-account', {
+      const response = await fetch('/api/v2/privacy/delete-account', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

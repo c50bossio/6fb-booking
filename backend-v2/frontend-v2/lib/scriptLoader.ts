@@ -18,7 +18,7 @@ export interface MetaPixelConfig {
 }
 
 // Global script loader state
-let scriptsLoaded = {
+const scriptsLoaded = {
   googleAnalytics: false,
   metaPixel: false,
   googleConsentMode: false,
@@ -30,11 +30,11 @@ export const initializeGoogleConsentMode = () => {
     return
   }
 
-  // Load Google tag manager
-  const gtmScript = document.createElement('script')
-  gtmScript.async = true
-  gtmScript.src = 'https://www.googletagmanager.com/gtag/js'
-  document.head.appendChild(gtmScript)
+  // Load Google tag manager - TEMPORARILY DISABLED
+  // const gtmScript = document.createElement('script')
+  // gtmScript.async = true
+  // gtmScript.src = 'https://www.googletagmanager.com/gtag/js'
+  // document.head.appendChild(gtmScript)
 
   // Initialize gtag function
   window.dataLayer = window.dataLayer || []

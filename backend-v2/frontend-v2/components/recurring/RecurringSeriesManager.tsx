@@ -133,7 +133,7 @@ export default function RecurringSeriesManager({
       const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
-      const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/series`, {
+      const response = await fetch(`${apiUrl}/api/v2/recurring-appointments/series`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -160,7 +160,7 @@ export default function RecurringSeriesManager({
 
       // Get series pattern to find appointments
       const seriesResponse = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/series/${seriesId}`,
+        `${apiUrl}/api/v2/recurring-appointments/series/${seriesId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -170,7 +170,7 @@ export default function RecurringSeriesManager({
 
       // Get appointments for this pattern
       const appointmentsResponse = await fetch(
-        `${apiUrl}/api/v1/appointments?recurring_pattern_id=${series.pattern_id}&limit=100`,
+        `${apiUrl}/api/v2/appointments?recurring_pattern_id=${series.pattern_id}&limit=100`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -190,20 +190,20 @@ export default function RecurringSeriesManager({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       let endpoint = '';
-      let method = 'PUT';
+      const method = 'PUT';
       let body: any = {};
 
       switch (action) {
         case 'pause':
-          endpoint = `${apiUrl}/api/v1/recurring-appointments/series/${seriesId}`;
+          endpoint = `${apiUrl}/api/v2/recurring-appointments/series/${seriesId}`;
           body = { series_status: 'paused' };
           break;
         case 'resume':
-          endpoint = `${apiUrl}/api/v1/recurring-appointments/series/${seriesId}`;
+          endpoint = `${apiUrl}/api/v2/recurring-appointments/series/${seriesId}`;
           body = { series_status: 'active' };
           break;
         case 'cancel':
-          endpoint = `${apiUrl}/api/v1/recurring-appointments/series/${seriesId}`;
+          endpoint = `${apiUrl}/api/v2/recurring-appointments/series/${seriesId}`;
           body = { series_status: 'cancelled' };
           break;
       }
@@ -244,7 +244,7 @@ export default function RecurringSeriesManager({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/appointments/manage`,
+        `${apiUrl}/api/v2/recurring-appointments/appointments/manage`,
         {
           method: 'POST',
           headers: {

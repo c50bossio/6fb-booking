@@ -9,7 +9,7 @@ import { AnalyticsFilters, FilterOption } from '@/components/analytics/shared/An
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { AnalyticsLoading, LoadingStates } from '@/components/ui/LoadingStates'
+import { AnalyticsLoading, LoadingStates } from '@/components/LoadingStates'
 import { ErrorDisplay } from '@/components/LoadingStates'
 import UsageChart from '@/components/marketing/UsageChart'
 import { 

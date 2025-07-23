@@ -16,9 +16,14 @@ import random
 import string
 
 from models import (
-    User, Client, Appointment, Service, Payment, 
+    User, Client, Appointment, Service, Payment, GiftCertificate,
     NotificationTemplate, NotificationQueue, NotificationPreference,
     BarberAvailability, ServiceBookingRule, ServicePricingRule
+)
+from models.hybrid_payment import (
+    PaymentMode, ExternalPaymentProcessor, ConnectionStatus,
+    PaymentProcessorConnection, ExternalTransaction, 
+    PlatformCollection
 )
 from schemas import (
     UserCreate, ClientCreate, AppointmentCreate, ServiceCreate
@@ -458,3 +463,249 @@ def create_full_test_scenario(db):
         'appointment': appointment,
         'availability': availability
     }
+
+
+class PaymentProcessorConnectionFactory(BaseFactory):
+    """Factory for creating PaymentProcessorConnection instances."""
+    
+    @classmethod
+    def create_stripe_connection(cls, **kwargs) -> PaymentProcessorConnection:
+        """Create a test Stripe connection."""
+        defaults = {
+            'id': cls.get_next_id(),
+            'barber_id': 1,
+            'processor_type': ExternalPaymentProcessor.STRIPE,
+            'account_id': f"acct_test_{cls.random_string(8)}",
+            'account_name': "Test Stripe Account",
+            'status': ConnectionStatus.CONNECTED,
+            'connection_data': {
+                'access_token': f"sk_test_{cls.random_string(50)}",
+                'refresh_token': f"rt_test_{cls.random_string(50)}",
+                'webhook_secret': f"whsec_{cls.random_string(30)}"
+            },
+            'supports_payments': True,
+            'supports_refunds': True,
+            'supports_recurring': True,
+            'default_currency': 'USD',
+            'created_at': datetime.now(timezone.utc)
+        }
+        defaults.update(kwargs)
+        return PaymentProcessorConnection(**defaults)
+    
+    @classmethod
+    def create_square_connection(cls, **kwargs) -> PaymentProcessorConnection:
+        """Create a test Square connection."""
+        defaults = {
+            'id': cls.get_next_id(),
+            'barber_id': 1,
+            'processor_type': ExternalPaymentProcessor.SQUARE,
+            'account_id': f"sq_test_{cls.random_string(8)}",
+            'account_name': "Test Square Location",
+            'status': ConnectionStatus.CONNECTED,
+            'connection_data': {
+                'access_token': f"EAAAE_{cls.random_string(40)}",
+                'application_id': f"sq0idp_{cls.random_string(40)}",
+                'location_id': f"L{cls.random_string(15)}",
+                'environment': 'sandbox'
+            },
+            'supports_payments': True,
+            'supports_refunds': True,
+            'supports_recurring': False,
+            'default_currency': 'USD',
+            'created_at': datetime.now(timezone.utc)
+        }
+        defaults.update(kwargs)
+        return PaymentProcessorConnection(**defaults)
+
+
+class ExternalTransactionFactory(BaseFactory):
+    """Factory for creating ExternalTransaction instances."""
+    
+    @classmethod
+    def create_external_transaction(cls, **kwargs) -> ExternalTransaction:
+        """Create an ExternalTransaction model instance with defaults."""
+        defaults = {
+            'id': cls.get_next_id(),
+            'connection_id': 1,
+            'processor_type': ExternalPaymentProcessor.STRIPE,
+            'external_transaction_id': f"stripe_test_{cls.random_string(24)}",
+            'amount': Decimal('100.00'),
+            'currency': 'USD',
+            'status': 'completed',
+            'barber_id': 1,
+            'created_at': datetime.now(timezone.utc),
+            'updated_at': datetime.now(timezone.utc)
+        }
+        defaults.update(kwargs)
+        return ExternalTransaction(**defaults)
+    
+    @classmethod
+    def create_stripe_transaction(cls, **kwargs) -> ExternalTransaction:
+        """Create a test Stripe transaction."""
+        kwargs['processor_type'] = ExternalPaymentProcessor.STRIPE
+        kwargs.setdefault('external_transaction_id', f"stripe_test_{cls.random_string(24)}")
+        return cls.create_external_transaction(**kwargs)
+    
+    @classmethod
+    def create_square_transaction(cls, **kwargs) -> ExternalTransaction:
+        """Create a test Square transaction."""
+        kwargs['processor_type'] = ExternalPaymentProcessor.SQUARE
+        kwargs.setdefault('external_transaction_id', f"square_test_{cls.random_string(24)}")
+        return cls.create_external_transaction(**kwargs)
+    
+    @classmethod
+    def create_failed_transaction(cls, **kwargs) -> ExternalTransaction:
+        """Create a failed external transaction."""
+        kwargs['status'] = 'failed'
+        return cls.create_external_transaction(**kwargs)
+
+
+class PlatformCollectionFactory(BaseFactory):
+    """Factory for creating PlatformCollection instances."""
+    
+    @classmethod
+    def create_commission_collection(cls, **kwargs) -> PlatformCollection:
+        """Create a PlatformCollection instance with defaults."""
+        defaults = {
+            'id': cls.get_next_id(),
+            'barber_id': 1,
+            'amount': Decimal('20.00'),
+            'external_transaction_ids': [f"stripe_test_{cls.random_string(24)}"],
+            'status': 'pending',
+            'commission_rate': 20.0,
+            'created_at': datetime.now(timezone.utc),
+            'updated_at': datetime.now(timezone.utc)
+        }
+        defaults.update(kwargs)
+        return PlatformCollection(**defaults)
+    
+    @classmethod
+    def create_completed_collection(cls, **kwargs) -> PlatformCollection:
+        """Create a completed commission collection."""
+        kwargs.update({
+            'status': 'completed',
+            'collected_at': datetime.now(timezone.utc)
+        })
+        return cls.create_commission_collection(**kwargs)
+    
+    @classmethod
+    def create_failed_collection(cls, **kwargs) -> PlatformCollection:
+        """Create a failed commission collection."""
+        kwargs['status'] = 'failed'
+        return cls.create_commission_collection(**kwargs)
+
+
+# Additional convenience functions for hybrid payment testing
+
+def create_test_external_transaction(**kwargs) -> ExternalTransaction:
+    """Quick function to create a test external transaction."""
+    return ExternalTransactionFactory.create_external_transaction(**kwargs)
+
+
+def create_test_commission_collection(**kwargs) -> PlatformCollection:
+    """Quick function to create a test commission collection."""
+    return PlatformCollectionFactory.create_commission_collection(**kwargs)
+
+
+def create_hybrid_payment_scenario(db):
+    """
+    Create a complete hybrid payment test scenario.
+    
+    Returns:
+        dict: Contains barber, connections, transactions, and collections
+    """
+    # Create barber with decentralized payment mode
+    barber = UserFactory.create_barber(
+        payment_mode=PaymentMode.DECENTRALIZED.value,
+        commission_rate=0.25
+    )
+    
+    # Create payment processor connections
+    stripe_connection = PaymentProcessorConnectionFactory.create_stripe_connection(
+        barber_id=barber.id
+    )
+    square_connection = PaymentProcessorConnectionFactory.create_square_connection(
+        barber_id=barber.id
+    )
+    
+    # Create external transactions
+    stripe_tx = ExternalTransactionFactory.create_stripe_transaction(
+        connection_id=stripe_connection.id,
+        barber_id=barber.id,
+        amount=Decimal('120.00')
+    )
+    square_tx = ExternalTransactionFactory.create_square_transaction(
+        connection_id=square_connection.id,
+        barber_id=barber.id,
+        amount=Decimal('80.00')
+    )
+    
+    # Create commission collection
+    total_amount = stripe_tx.amount + square_tx.amount
+    commission_amount = total_amount * Decimal(str(barber.commission_rate))
+    
+    commission_collection = PlatformCollectionFactory.create_commission_collection(
+        barber_id=barber.id,
+        amount=commission_amount,
+        external_transaction_ids=[stripe_tx.external_transaction_id, square_tx.external_transaction_id],
+        commission_rate=barber.commission_rate * 100
+    )
+    
+    # Add to database
+    db.add_all([
+        barber, stripe_connection, square_connection,
+        stripe_tx, square_tx, commission_collection
+    ])
+    db.commit()
+    
+    return {
+        'barber': barber,
+        'stripe_connection': stripe_connection,
+        'square_connection': square_connection,
+        'stripe_transaction': stripe_tx,
+        'square_transaction': square_tx,
+        'commission_collection': commission_collection
+    }
+
+
+class GiftCertificateFactory(BaseFactory):
+    """Factory for creating GiftCertificate test instances."""
+    
+    @classmethod
+    def create(cls, **kwargs) -> GiftCertificate:
+        """Create a gift certificate with sensible defaults."""
+        defaults = {
+            'code': f"GC{cls.random_string(8).upper()}",
+            'amount': 100.0,
+            'balance': 100.0,
+            'status': 'active',
+            'purchaser_name': f"Purchaser {cls.get_next_id()}",
+            'purchaser_email': cls.random_email("purchaser"),
+            'recipient_name': f"Recipient {cls.get_next_id()}",
+            'recipient_email': cls.random_email("recipient"),
+            'message': "Happy Birthday!",
+            'valid_from': datetime.now(timezone.utc),
+            'valid_until': datetime.now(timezone.utc) + timedelta(days=365),
+        }
+        defaults.update(kwargs)
+        return GiftCertificate(**defaults)
+    
+    @classmethod
+    def create_used(cls, **kwargs) -> GiftCertificate:
+        """Create a used gift certificate."""
+        defaults = {
+            'balance': 0.0,
+            'status': 'used'
+        }
+        defaults.update(kwargs)
+        return cls.create(**defaults)
+    
+    @classmethod
+    def create_expired(cls, **kwargs) -> GiftCertificate:
+        """Create an expired gift certificate."""
+        defaults = {
+            'status': 'expired',
+            'valid_until': datetime.now(timezone.utc) - timedelta(days=1)
+        }
+        defaults.update(kwargs)
+        return cls.create(**defaults)

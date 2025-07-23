@@ -32,9 +32,20 @@ from services.suspicious_login_detection import get_suspicious_login_detector
 from services.password_security import validate_password_strength, password_security_service
 from models.mfa import UserMFASecret, MFADeviceTrust
 from utils.logging_config import get_audit_logger
-import schemas
 import models
-from schemas import UserType
+# Import schemas directly from schemas.py to avoid circular import conflicts
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+from schemas import UserLogin, User, PasswordResetResponse, PasswordResetConfirm, RegistrationResponse, CompleteRegistrationResponse, ChangePasswordResponse, ClientRegistrationResponse, TimezoneUpdateRequest, EmailVerificationResponse, VerificationStatusResponse, UserType, RefreshTokenRequest, PasswordResetRequest, UserCreate, CompleteRegistrationData, ChangePasswordRequest, ClientRegistrationData, EmailVerificationRequest
+# Define Token schema directly to avoid parent_schemas import issues with Pydantic v2
+from pydantic import BaseModel
+from typing import Optional
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: Optional[str] = None
+    token_type: str = "bearer"
 from utils.input_validation import validate_string, validate_email_address, validate_phone_number, validate_slug, ValidationError as InputValidationError
 from schemas_new.validation import BusinessRegistrationRequest
 
@@ -48,9 +59,9 @@ async def test_auth_route():
     """Simple test endpoint to verify auth router is working"""
     return {"status": "ok", "message": "Auth router is responding"}
 
-@router.post("/login", response_model=schemas.Token)
+@router.post("/login", response_model=TokenResponse)
 # @login_rate_limit  # Temporarily disabled for debugging
-async def login(request: Request, user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
+async def login(request: Request, user_credentials: UserLogin, db: Session = Depends(get_db)):
     """Enhanced login endpoint with MFA support."""
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("user-agent", "Unknown")
@@ -200,7 +211,8 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
     response_data = {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "user_id": user.id
     }
     
     # If there are headers to add, we need to return a Response object
@@ -215,11 +227,11 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
     
     return response_data
 
-@router.post("/refresh", response_model=schemas.Token)
+@router.post("/refresh", response_model=TokenResponse)
 @refresh_rate_limit
 async def refresh_token(
     request: Request,
-    refresh_request: schemas.RefreshTokenRequest,
+    refresh_request: RefreshTokenRequest,
     db: Session = Depends(get_db)
 ):
     """Refresh access token using refresh token with enhanced security logging."""
@@ -283,7 +295,7 @@ async def refresh_token(
             detail="Token refresh failed"
         )
 
-@router.get("/me", response_model=schemas.User)
+@router.get("/me", response_model=User)
 async def get_me(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get current user information with organization details."""
     # Convert SQLAlchemy model to dict safely
@@ -337,11 +349,11 @@ async def get_me(current_user: models.User = Depends(get_current_user), db: Sess
     
     return user_data
 
-@router.post("/forgot-password", response_model=schemas.PasswordResetResponse)
+@router.post("/forgot-password", response_model=PasswordResetResponse)
 @password_reset_rate_limit
 async def forgot_password(
     request: Request,
-    reset_request: schemas.PasswordResetRequest,
+    reset_request: PasswordResetRequest,
     db: Session = Depends(get_db)
 ):
     """Request a password reset token via email."""
@@ -360,9 +372,9 @@ async def forgot_password(
     
     return {"message": "If the email exists, a reset link has been sent"}
 
-@router.post("/reset-password", response_model=schemas.PasswordResetResponse)
+@router.post("/reset-password", response_model=PasswordResetResponse)
 async def reset_password(
-    reset_confirm: schemas.PasswordResetConfirm,
+    reset_confirm: PasswordResetConfirm,
     db: Session = Depends(get_db)
 ):
     """Reset password using a valid reset token."""
@@ -385,11 +397,11 @@ async def reset_password(
     
     return {"message": "Password successfully reset"}
 
-@router.post("/register", response_model=schemas.RegistrationResponse)
+@router.post("/register", response_model=RegistrationResponse)
 @register_rate_limit
 async def register(
     request: Request,
-    user_data: schemas.UserCreate,
+    user_data: UserCreate,
     db: Session = Depends(get_db)
 ):
     """Register a new user."""
@@ -476,11 +488,11 @@ async def register(
         "user": new_user
     }
 
-@router.post("/register-complete", response_model=schemas.CompleteRegistrationResponse)
+@router.post("/register-complete", response_model=CompleteRegistrationResponse)
 @register_rate_limit
 async def register_complete(
     request: Request,
-    registration_data: schemas.CompleteRegistrationData,
+    registration_data: CompleteRegistrationData,
     db: Session = Depends(get_db)
 ):
     """Register a new user with complete business setup including organization creation."""
@@ -733,10 +745,10 @@ async def register_complete(
         "organization": organization
     }
 
-@router.post("/change-password", response_model=schemas.ChangePasswordResponse)
+@router.post("/change-password", response_model=ChangePasswordResponse)
 async def change_password(
     request: Request,
-    password_change: schemas.ChangePasswordRequest,
+    password_change: ChangePasswordRequest,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
@@ -844,11 +856,11 @@ async def change_password(
     
     return {"message": "Password successfully changed"}
 
-@router.post("/register-client", response_model=schemas.ClientRegistrationResponse)
+@router.post("/register-client", response_model=ClientRegistrationResponse)
 @register_rate_limit
 async def register_client(
     request: Request,
-    client_data: schemas.ClientRegistrationData,
+    client_data: ClientRegistrationData,
     db: Session = Depends(get_db)
 ):
     """Register a new client account for booking appointments."""
@@ -944,9 +956,9 @@ async def register_client(
         "token_type": "bearer"
     }
 
-@router.put("/timezone", response_model=schemas.User)
+@router.put("/timezone", response_model=User)
 async def update_user_timezone(
-    timezone_update: schemas.TimezoneUpdateRequest,
+    timezone_update: TimezoneUpdateRequest,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
@@ -967,7 +979,7 @@ async def update_user_timezone(
     
     return current_user
 
-@router.get("/verify-email", response_model=schemas.EmailVerificationResponse)
+@router.get("/verify-email", response_model=EmailVerificationResponse)
 async def verify_email(token: str, db: Session = Depends(get_db)):
     """Verify email address using verification token."""
     user = verify_email_token(db, token)
@@ -983,10 +995,10 @@ async def verify_email(token: str, db: Session = Depends(get_db)):
         "detail": f"Welcome to BookedBarber, {user.name}!"
     }
 
-@router.post("/resend-verification", response_model=schemas.EmailVerificationResponse)
+@router.post("/resend-verification", response_model=EmailVerificationResponse)
 async def resend_verification(
     request: Request,
-    verification_request: schemas.EmailVerificationRequest,
+    verification_request: EmailVerificationRequest,
     db: Session = Depends(get_db)
 ):
     """Resend verification email to user."""
@@ -1011,7 +1023,7 @@ async def resend_verification(
     else:
         return {"message": "Unable to send verification email at this time"}
 
-@router.get("/verification-status", response_model=schemas.VerificationStatusResponse)
+@router.get("/verification-status", response_model=VerificationStatusResponse)
 async def get_verification_status(
     current_user: models.User = Depends(get_current_user)
 ):

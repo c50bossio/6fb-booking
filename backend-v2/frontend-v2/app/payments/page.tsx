@@ -99,7 +99,7 @@ export default function PaymentsPage() {
         params.append('end_date', dateRange.end);
       }
 
-      const response: PaymentHistoryResponse = await fetchAPI(`/api/v1/payments/history?${params}`);
+      const response: PaymentHistoryResponse = await fetchAPI(`/api/v2/payments/history?${params}`);
       setPayments(response.payments);
       setTotalPages(response.total_pages);
     } catch (error) {
@@ -116,7 +116,7 @@ export default function PaymentsPage() {
       if (dateRange.start) params.append('start_date', dateRange.start);
       if (dateRange.end) params.append('end_date', dateRange.end);
       
-      const report = await fetchAPI(`/api/v1/payments/reports`, {
+      const report = await fetchAPI(`/api/v2/payments/reports`, {
         method: 'POST',
         body: JSON.stringify({
           start_date: dateRange.start || new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString(),
@@ -157,7 +157,7 @@ export default function PaymentsPage() {
         end_date: dateRange.end || '',
       });
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/export?${params}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v2/payments/export?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },

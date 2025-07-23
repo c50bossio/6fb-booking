@@ -480,7 +480,7 @@ export const FloatingElement = ({
   useEffect(() => {
     if (prefersReducedMotion) return
 
-    let startTime = Date.now()
+    const startTime = Date.now()
 
     const animate = () => {
       const elapsed = Date.now() - startTime

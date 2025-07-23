@@ -49,7 +49,7 @@ This guide outlines the required SendGrid upgrade for BookedBarber's production 
 
 ### Current Configuration (Working)
 ```env
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=SG.***REDACTED***
 SENDGRID_FROM_EMAIL=noreply@bookedbarber.com
 SENDGRID_FROM_NAME=BookedBarber
 ```

@@ -18,7 +18,7 @@ export default function ClientsSection({ userRole }: ClientsSectionProps) {
     async function loadClients() {
       try {
         setLoading(true)
-        const response = await fetchAPI('/api/v1/clients')
+        const response = await fetchAPI('/api/v2/clients')
         setClients(response.clients || [])
       } catch (error) {
         console.error('Error fetching clients:', error)

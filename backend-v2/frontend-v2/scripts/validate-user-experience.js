@@ -47,7 +47,7 @@ async function simulateUserJourney() {
   const todayStart = Date.now()
   
   try {
-    const todaySlots = await axios.get(`${BACKEND_URL}/api/v1/appointments/slots?appointment_date=${today}`)
+    const todaySlots = await axios.get(`${BACKEND_URL}/api/v2/appointments/slots?appointment_date=${today}`)
     const todayTime = Date.now() - todayStart
     journey.push({ step: 'today_slots', time: todayTime, success: true, slots: todaySlots.data.slots?.length || 0 })
     console.log(`✅ Today's slots loaded in ${todayTime}ms (${todaySlots.data.slots?.length || 0} slots)`)
@@ -64,7 +64,7 @@ async function simulateUserJourney() {
   const tomorrowStart = Date.now()
   
   try {
-    const tomorrowSlots = await axios.get(`${BACKEND_URL}/api/v1/appointments/slots?appointment_date=${tomorrow}`)
+    const tomorrowSlots = await axios.get(`${BACKEND_URL}/api/v2/appointments/slots?appointment_date=${tomorrow}`)
     const tomorrowTime = Date.now() - tomorrowStart
     journey.push({ step: 'tomorrow_slots', time: tomorrowTime, success: true, slots: tomorrowSlots.data.slots?.length || 0 })
     console.log(`✅ Tomorrow's slots loaded in ${tomorrowTime}ms (${tomorrowSlots.data.slots?.length || 0} slots)`)
@@ -84,7 +84,7 @@ async function simulateUserJourney() {
   const nextAvailStart = Date.now()
   
   try {
-    const nextAvail = await axios.get(`${BACKEND_URL}/api/v1/appointments/slots/next-available`)
+    const nextAvail = await axios.get(`${BACKEND_URL}/api/v2/appointments/slots/next-available`)
     const nextAvailTime = Date.now() - nextAvailStart
     journey.push({ step: 'next_available', time: nextAvailTime, success: true, data: nextAvail.data })
     console.log(`✅ Next available loaded in ${nextAvailTime}ms`)
@@ -104,7 +104,7 @@ async function simulateUserJourney() {
   const backToTodayStart = Date.now()
   
   try {
-    const todayAgain = await axios.get(`${BACKEND_URL}/api/v1/appointments/slots?appointment_date=${today}`)
+    const todayAgain = await axios.get(`${BACKEND_URL}/api/v2/appointments/slots?appointment_date=${today}`)
     const backToTodayTime = Date.now() - backToTodayStart
     journey.push({ step: 'today_cache_hit', time: backToTodayTime, success: true })
     console.log(`✅ Today's slots (cached) loaded in ${backToTodayTime}ms`)

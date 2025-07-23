@@ -4,7 +4,7 @@ import { toastError, toastInfo } from '@/hooks/use-toast'
 
 // API validation schemas for common endpoints
 const API_SCHEMAS: Record<string, any> = {
-  '/api/v1/auth/login': {
+  '/api/v2/auth/login': {
     request: {
       email: 'string',
       password: 'string'
@@ -15,7 +15,7 @@ const API_SCHEMAS: Record<string, any> = {
       refresh_token: 'string?'
     }
   },
-  '/api/v1/auth/me': {
+  '/api/v2/auth/me': {
     response: {
       id: 'number',
       email: 'string',
@@ -24,7 +24,7 @@ const API_SCHEMAS: Record<string, any> = {
       timezone: 'string?'
     }
   },
-  '/api/v1/bookings': {
+  '/api/v2/bookings': {
     request: {
       date: 'string',
       time: 'string',
@@ -37,7 +37,7 @@ const API_SCHEMAS: Record<string, any> = {
       status: 'string'
     }
   },
-  '/api/v1/appointments': {
+  '/api/v2/appointments': {
     request: {
       date: 'string',
       time: 'string',

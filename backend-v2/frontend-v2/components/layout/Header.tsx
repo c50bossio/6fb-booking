@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { 
@@ -13,7 +13,10 @@ import {
   ArrowRightOnRectangleIcon,
   LinkIcon,
   QrCodeIcon,
-  ClipboardDocumentIcon
+  ClipboardDocumentIcon,
+  PlusIcon,
+  CommandLineIcon,
+  BoltIcon
 } from '@heroicons/react/24/outline'
 import { type User, logout } from '@/lib/api'
 import { useThemeStyles } from '@/hooks/useTheme'
@@ -21,6 +24,9 @@ import { SimpleThemeToggle } from '@/components/ThemeToggle'
 import { navigation, getUserMenuItems } from '@/lib/navigation'
 import { Logo } from '@/components/ui/Logo'
 import { Portal } from '@/components/ui/Portal'
+import QRCodeShareModal, { useQRCodeShareModal } from '@/components/booking/QRCodeShareModal'
+import { useNavigationFavorites } from '@/hooks/useNavigationFavorites'
+import { useNavigationTracking } from '@/hooks/useNavigationTracking'
 
 interface HeaderProps {
   user: User | null
@@ -31,22 +37,114 @@ interface HeaderProps {
   }>
   onMenuToggle: () => void
   showMenuToggle?: boolean
+  onOpenCommandPalette?: () => void
 }
 
-export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false }: HeaderProps) {
+export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false, onOpenCommandPalette }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [showQuickCreate, setShowQuickCreate] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
   const [notificationDropdownPosition, setNotificationDropdownPosition] = useState({ top: 0, left: 0 })
   const [shareDropdownPosition, setShareDropdownPosition] = useState({ top: 0, left: 0 })
+  const [quickCreatePosition, setQuickCreatePosition] = useState({ top: 0, left: 0 })
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
   const shareMenuRef = useRef<HTMLDivElement>(null)
+  const quickCreateRef = useRef<HTMLDivElement>(null)
   const notificationButtonRef = useRef<HTMLButtonElement>(null)
   const shareButtonRef = useRef<HTMLButtonElement>(null)
+  const quickCreateButtonRef = useRef<HTMLButtonElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const { colors, isDark } = useThemeStyles()
+  
+  // Navigation intelligence hooks
+  const favorites = useNavigationFavorites()
+  const tracking = useNavigationTracking()
+  
+  // QR Code modal hook
+  const qrModal = useQRCodeShareModal()
 
+  // Get quick actions for user role
+  const quickActions = useMemo(() => {
+    return navigation.getQuickActions(user?.role).slice(0, 6) // Limit to 6 actions
+  }, [user?.role])
+  
+  // Enhanced search functionality
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+    
+    // Simple search through navigation items and favorites
+    const allItems = [...navigation.items, ...favorites.favorites]
+    const results = allItems
+      .filter(item => item.name.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 5)
+    
+    setSearchResults(results)
+  }
+  
+  // Enhanced keyboard shortcuts for header actions
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts when user is typing in inputs
+      const target = e.target as HTMLElement
+      const isInput = target.tagName === 'INPUT' || 
+                     target.tagName === 'TEXTAREA' || 
+                     target.contentEditable === 'true'
+      
+      // Cmd/Ctrl + / to focus search
+      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+      
+      // Cmd/Ctrl + Shift + N for quick create
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'N') {
+        e.preventDefault()
+        handleQuickCreateClick()
+      }
+      
+      // Cmd/Ctrl + Shift + L for booking links
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'L' && user && (user.role === 'barber' || user.role === 'admin')) {
+        e.preventDefault()
+        handleShareClick()
+      }
+      
+      // Cmd/Ctrl + Shift + B for notifications
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'B') {
+        e.preventDefault()
+        handleNotificationClick()
+      }
+      
+      // Escape to close all dropdowns
+      if (e.key === 'Escape') {
+        setShowUserMenu(false)
+        setShowNotifications(false)
+        setShowShareMenu(false)
+        setShowQuickCreate(false)
+        setSearchResults([])
+        searchInputRef.current?.blur()
+      }
+      
+      // Arrow navigation for search results
+      if (searchResults.length > 0 && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        e.preventDefault()
+        // Focus would need to be managed with a selected index state
+      }
+    }
+    
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [searchResults.length, user])
+  
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -65,6 +163,12 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
         const portalShare = document.querySelector('[data-share-menu-portal]')
         if (!portalShare || !portalShare.contains(event.target as Node)) {
           setShowShareMenu(false)
+        }
+      }
+      if (quickCreateRef.current && !quickCreateRef.current.contains(event.target as Node)) {
+        const portalQuickCreate = document.querySelector('[data-quick-create-portal]')
+        if (!portalQuickCreate || !portalQuickCreate.contains(event.target as Node)) {
+          setShowQuickCreate(false)
         }
       }
     }
@@ -159,14 +263,49 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
     navigator.clipboard.writeText(text)
     // You could show a toast notification here
   }
+  
+  const handleQuickCreateClick = () => {
+    if (!showQuickCreate && quickCreateButtonRef.current) {
+      const buttonRect = quickCreateButtonRef.current.getBoundingClientRect()
+      const dropdownWidth = 300
+      const gap = 8
+      
+      let top = buttonRect.bottom + gap
+      let left = buttonRect.right - dropdownWidth
+      
+      if (left < 8) {
+        left = 8
+      }
+      
+      const estimatedHeight = 350
+      if (top + estimatedHeight > window.innerHeight - 8) {
+        top = buttonRect.top - estimatedHeight - gap
+      }
+      
+      setQuickCreatePosition({ top, left })
+    }
+    setShowQuickCreate(!showQuickCreate)
+  }
+  
+  const handleQuickAction = (action: any) => {
+    // Track usage if available
+    if (tracking.isLoaded) {
+      tracking.trackNavigation(action.href, action.name)
+    }
+    
+    router.push(action.href)
+    setShowQuickCreate(false)
+  }
 
 
   return (
     <header className={`
-      sticky top-0 z-40 
+      sticky top-0 z-40
       ${colors.background.card} border-b ${colors.border.default}
-      backdrop-blur-ios bg-white/90 dark:bg-gray-900/90
-      transition-colors duration-200
+      backdrop-blur-navigation bg-white/95 dark:bg-gray-900/95
+      transition-all duration-300 ease-out
+      shadow-header-navigation
+      sticky-enhanced
     `}>
       <div className="flex items-center justify-between h-16 px-4 sm:px-6">
         {/* Left Section */}
@@ -212,28 +351,213 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           </nav>
         </div>
 
-        {/* Center Section - Search (Desktop) */}
+        {/* Center Section - Enhanced Search (Desktop) */}
         <div className="hidden md:flex flex-1 max-w-md mx-8">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
             </div>
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search bookings, clients..."
+              placeholder="Search pages, clients... (⌘/)"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              onFocus={() => onOpenCommandPalette?.()}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown' && searchResults.length > 0) {
+                  e.preventDefault()
+                  // Focus first result (would need state management for proper implementation)
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  setSearchQuery('')
+                  setSearchResults([])
+                  e.currentTarget.blur()
+                }
+              }}
               className={`
-                block w-full pl-10 pr-3 py-2 border ${colors.border.default} rounded-ios-lg
+                block w-full pl-10 pr-20 py-2 border ${colors.border.default} rounded-ios-lg
                 ${colors.background.primary} ${colors.text.primary}
                 placeholder-gray-500 dark:placeholder-gray-400
-                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
-                text-sm transition-colors duration-200
+                search-input-enhanced focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50
+                text-sm transition-all duration-200
               `}
+              autoComplete="off"
+              spellCheck="false"
             />
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <div className="flex items-center gap-1 text-xs text-gray-400">
+                <kbd className="kbd-shortcut">⌘K</kbd>
+              </div>
+            </div>
+            
+            {/* Quick search results */}
+            {searchResults.length > 0 && (
+              <div className="search-results-container absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                {searchResults.map((result, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      if (tracking.isLoaded) {
+                        tracking.trackNavigation(result.href, result.name)
+                      }
+                      router.push(result.href)
+                      setSearchQuery('')
+                      setSearchResults([])
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        e.currentTarget.click()
+                      }
+                    }}
+                    className="search-result-item first:rounded-t-lg last:rounded-b-lg focus:ring-2 focus:ring-primary-500 focus:ring-inset focus:outline-none"
+                    tabIndex={0}
+                  >
+                    <div className="font-medium text-gray-900 dark:text-white">{result.name}</div>
+                    {result.description && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{result.description}</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Right Section */}
         <div className="flex items-center space-x-2">
+          {/* Quick Create Button */}
+          {user && quickActions.length > 0 && (
+            <div className="relative" ref={quickCreateRef}>
+              <button
+                ref={quickCreateButtonRef}
+                onClick={handleQuickCreateClick}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleQuickCreateClick()
+                  } else if (e.key === 'ArrowDown' && !showQuickCreate) {
+                    e.preventDefault()
+                    handleQuickCreateClick()
+                  }
+                }}
+                className={`
+                  quick-create-button focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 focus:outline-none
+                  ${showQuickCreate ? 'ring-2 ring-primary-500 ring-opacity-50 quick-create-active' : ''}
+                  hover:transform hover:scale-110 active:scale-95
+                `}
+                title="Quick Create (⌘⇧N) - Press Enter or ↓ to open"
+                aria-label="Quick create actions menu"
+                aria-expanded={showQuickCreate}
+                aria-haspopup="true"
+                tabIndex={0}
+              >
+                <PlusIcon className="w-5 h-5" />
+              </button>
+
+              {/* Quick Create Dropdown */}
+              {showQuickCreate && (
+                <Portal>
+                  <div 
+                    data-quick-create-portal
+                    className="quick-create-dropdown fixed"
+                    style={{ 
+                      zIndex: 2147483647,
+                      top: `${quickCreatePosition.top}px`,
+                      left: `${quickCreatePosition.left}px`,
+                      width: '300px',
+                      maxWidth: 'calc(100vw - 40px)'
+                    }}
+                  >
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center gap-2">
+                        <BoltIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          Quick Actions
+                        </h3>
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Frequently used actions
+                      </p>
+                    </div>
+                    <div className="p-2">
+                      {quickActions.map((action, index) => {
+                        const Icon = action.icon
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleQuickAction(action)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                handleQuickAction(action)
+                              }
+                            }}
+                            className="group quick-action-item w-full text-left focus:ring-2 focus:ring-primary-500 focus:ring-inset focus:outline-none"
+                            tabIndex={0}
+                          >
+                            <div className={`
+                              quick-action-icon
+                              ${action.color === 'primary' ? 'bg-primary-100 dark:bg-primary-900/20' : ''}
+                            `}>
+                              <Icon className={`
+                                w-4 h-4
+                                ${action.color === 'primary' ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-400'}
+                              `} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {action.name}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                {action.description}
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                      
+                      {/* Command Palette Shortcut */}
+                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => {
+                            setShowQuickCreate(false)
+                            onOpenCommandPalette?.()
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              setShowQuickCreate(false)
+                              onOpenCommandPalette?.()
+                            }
+                          }}
+                          className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150 text-left focus:ring-2 focus:ring-primary-500 focus:ring-inset focus:outline-none"
+                          tabIndex={0}
+                        >
+                          <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
+                            <CommandLineIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              Command Palette
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              Search everything
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                            <kbd className="kbd-shortcut">⌘K</kbd>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Portal>
+              )}
+            </div>
+          )}
+          
           {/* Theme Toggle */}
           <SimpleThemeToggle className="hidden sm:block" />
 
@@ -243,13 +567,27 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
               <button
                 ref={shareButtonRef}
                 onClick={handleShareClick}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleShareClick()
+                  } else if (e.key === 'ArrowDown' && !showShareMenu) {
+                    e.preventDefault()
+                    handleShareClick()
+                  }
+                }}
                 className={`
                   relative p-2 rounded-ios-lg ${colors.background.hover} ${colors.text.secondary}
                   hover:${colors.background.secondary} hover:${colors.text.primary}
-                  transition-colors duration-200
+                  hover:transform hover:scale-110 active:scale-95
+                  transition-all duration-200 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 focus:outline-none
                   ${showShareMenu ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : ''}
                 `}
-                title="Booking Links"
+                title="Booking Links (⌘⇧L) - Press Enter or ↓ to open"
+                aria-label="Booking links and sharing menu"
+                aria-expanded={showShareMenu}
+                aria-haspopup="true"
+                tabIndex={0}
               >
                 <LinkIcon className="w-5 h-5" />
               </button>
@@ -304,11 +642,11 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
                           Popular Links
                         </p>
                         <div className="mt-1">
-                          <button
-                            onClick={() => window.open(`${window.location.origin}/book/summer2025`, '_blank')}
-                            className="w-full p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
-                          >
-                            <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => window.open(`${window.location.origin}/book/summer2025`, '_blank')}
+                              className="flex-1 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
+                            >
                               <div>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                   Summer Special
@@ -317,9 +655,19 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
                                   /book/summer2025 • 234 clicks
                                 </p>
                               </div>
-                              <QrCodeIcon className="w-4 h-4 text-gray-400" />
-                            </div>
-                          </button>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setShowShareMenu(false)
+                                qrModal.openModal(`${window.location.origin}/book/summer2025`, 'Summer Special')
+                              }}
+                              className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                              title="Generate QR Code"
+                            >
+                              <QrCodeIcon className="w-4 h-4 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400" />
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -347,15 +695,31 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
             <button
               ref={notificationButtonRef}
               onClick={handleNotificationClick}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleNotificationClick()
+                } else if (e.key === 'ArrowDown' && !showNotifications) {
+                  e.preventDefault()
+                  handleNotificationClick()
+                }
+              }}
               className={`
                 relative p-2 rounded-ios-lg ${colors.background.hover} ${colors.text.secondary}
                 hover:${colors.background.secondary} hover:${colors.text.primary}
-                transition-colors duration-200
+                hover:transform hover:scale-110 active:scale-95
+                transition-all duration-200 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 focus:outline-none
+                ${showNotifications ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : ''}
               `}
+              title="Notifications (⌘⇧B) - Press Enter or ↓ to open"
+              aria-label="Notifications menu"
+              aria-expanded={showNotifications}
+              aria-haspopup="true"
+              tabIndex={0}
             >
               <BellIcon className="w-5 h-5" />
               {/* Notification badge */}
-              <span className="absolute top-1 right-1 w-2 h-2 bg-error-500 rounded-full"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-error-500 rounded-full animate-pulse"></span>
             </button>
 
             {/* Notification Dropdown with Portal */}
@@ -406,17 +770,27 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setShowUserMenu(!showUserMenu)
+                } else if (e.key === 'ArrowDown' && !showUserMenu) {
+                  e.preventDefault()
+                  setShowUserMenu(true)
+                }
+              }}
               className={`
                 relative flex items-center space-x-3 p-2 rounded-lg 
                 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600
-                transition-all duration-200
+                transition-all duration-200 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 focus:outline-none
                 hover:scale-105 active:scale-95 cursor-pointer
                 ${showUserMenu ? 'ring-2 ring-primary-500 ring-opacity-50' : ''}
               `}
-              aria-label="User menu"
+              aria-label="User menu - Press Enter or ↓ to open"
               aria-expanded={showUserMenu}
               aria-haspopup="true"
               type="button"
+              tabIndex={0}
             >
               {user ? (
                 <div className="flex items-center space-x-3">
@@ -496,8 +870,16 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
                           className={`
                             flex items-center px-4 py-2 text-sm ${colors.text.primary}
                             hover:${colors.background.hover} transition-colors duration-200
+                            focus:ring-2 focus:ring-primary-500 focus:ring-inset focus:outline-none rounded-lg mx-2
                           `}
                           onClick={() => setShowUserMenu(false)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              setShowUserMenu(false)
+                            }
+                          }}
+                          tabIndex={0}
                           {...(item.isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                         >
                           <Icon className="w-4 h-4 mr-3" />
@@ -519,10 +901,19 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
                             setShowUserMenu(false)
                             handleLogout()
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              setShowUserMenu(false)
+                              handleLogout()
+                            }
+                          }}
                           className={`
                             flex items-center w-full px-4 py-2 text-sm text-error-600 dark:text-error-400
                             hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors duration-200
+                            focus:ring-2 focus:ring-error-500 focus:ring-inset focus:outline-none rounded-lg mx-2
                           `}
+                          tabIndex={0}
                         >
                           <SignOutIcon className="w-4 h-4 mr-3" />
                           Sign Out
@@ -536,6 +927,18 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           </div>
         </div>
       </div>
+      
+      {/* QR Code Modal - Using Portal for proper rendering */}
+      {qrModal.isOpen && (
+        <Portal>
+          <QRCodeShareModal
+            isOpen={qrModal.isOpen}
+            onClose={qrModal.closeModal}
+            bookingUrl={qrModal.bookingUrl}
+            serviceName={qrModal.serviceName}
+          />
+        </Portal>
+      )}
     </header>
   )
 }

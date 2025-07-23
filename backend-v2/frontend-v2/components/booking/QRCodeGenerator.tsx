@@ -20,6 +20,7 @@ interface QRCodeGeneratorProps {
   showDownloadButton?: boolean;
   showShareButton?: boolean;
   showCopyButton?: boolean;
+  showColorPicker?: boolean;
   className?: string;
 }
 
@@ -32,15 +33,20 @@ export default function QRCodeGenerator({
   showDownloadButton = true,
   showShareButton = true,
   showCopyButton = true,
+  showColorPicker = true,
   className = '',
 }: QRCodeGeneratorProps) {
   const [qrCodeData, setQrCodeData] = useState<QRCodeGenerationResult | null>(null);
   const [selectedSize, setSelectedSize] = useState<QRCodeSize>(defaultSize);
+  const [selectedColor, setSelectedColor] = useState<{ dark: string; light: string }>({
+    dark: '#059669', // Teal-600
+    light: '#FFFFFF',
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Generate QR code when URL or size changes
+  // Generate QR code when URL, size, or color changes
   useEffect(() => {
     if (!bookingUrl) {
       setError('Booking URL is required');
@@ -53,14 +59,14 @@ export default function QRCodeGenerator({
     }
 
     generateQRCode();
-  }, [bookingUrl, selectedSize]);
+  }, [bookingUrl, selectedSize, selectedColor]);
 
   const generateQRCode = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await generateBookingQRCode(bookingUrl, selectedSize);
+      const result = await generateBookingQRCode(bookingUrl, selectedSize, selectedColor);
       setQrCodeData(result);
     } catch (err) {
       console.error('Failed to generate QR code:', err);
@@ -118,6 +124,17 @@ export default function QRCodeGenerator({
     { value: 'large', label: 'Large', pixels: 512 },
   ];
 
+  const colorPresets = [
+    { name: 'Teal', dark: '#059669', light: '#FFFFFF' },
+    { name: 'Black', dark: '#000000', light: '#FFFFFF' },
+    { name: 'Blue', dark: '#2563EB', light: '#FFFFFF' },
+    { name: 'Purple', dark: '#7C3AED', light: '#FFFFFF' },
+    { name: 'Red', dark: '#DC2626', light: '#FFFFFF' },
+    { name: 'Orange', dark: '#EA580C', light: '#FFFFFF' },
+    { name: 'Green', dark: '#16A34A', light: '#FFFFFF' },
+    { name: 'Pink', dark: '#DB2777', light: '#FFFFFF' },
+  ];
+
   return (
     <div className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
       {/* Header */}
@@ -149,6 +166,47 @@ export default function QRCodeGenerator({
                 </span>
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Color Picker */}
+      {showColorPicker && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            QR Code Color
+          </label>
+          <div className="grid grid-cols-4 gap-2">
+            {colorPresets.map((preset) => (
+              <button
+                key={preset.name}
+                onClick={() => setSelectedColor({ dark: preset.dark, light: preset.light })}
+                className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md border transition-colors ${
+                  selectedColor.dark === preset.dark
+                    ? 'border-teal-300 bg-teal-50 text-teal-700'
+                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <div 
+                  className="w-4 h-4 rounded border border-gray-300"
+                  style={{ backgroundColor: preset.dark }}
+                />
+                <span>{preset.name}</span>
+              </button>
+            ))}
+          </div>
+          
+          {/* Custom Color Input */}
+          <div className="mt-3 flex items-center gap-3">
+            <label className="text-sm text-gray-600">Custom:</label>
+            <input
+              type="color"
+              value={selectedColor.dark}
+              onChange={(e) => setSelectedColor({ dark: e.target.value, light: selectedColor.light })}
+              className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
+              title="Choose custom color"
+            />
+            <span className="text-xs text-gray-500 font-mono">{selectedColor.dark}</span>
           </div>
         </div>
       )}

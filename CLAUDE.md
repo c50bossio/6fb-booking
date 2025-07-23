@@ -169,13 +169,17 @@ The project uses Claude Hooks (`.claude/hooks.json`) that automatically verify f
 # 1. Ensure clean working directory
 git status
 
-# 2. Create feature branch
+# 2. Start from staging branch
+git checkout staging
+git pull origin staging
+
+# 3. Create feature branch
 git checkout -b feature/description-YYYYMMDD
 
-# 3. Run pre-work checklist
+# 4. Run pre-work checklist
 ./scripts/pre-work-checklist.sh
 
-# 4. Create safety snapshot
+# 5. Create safety snapshot
 ./scripts/create-snapshot.sh
 ```
 
@@ -191,12 +195,78 @@ git checkout -b feature/description-YYYYMMDD
 # Quick revert uncommitted changes
 ./scripts/quick-revert.sh
 
-# Return to main branch
-./scripts/recover-branch.sh
+# Return to staging branch
+git checkout staging
 
 # Full restore from snapshot
 ./scripts/restore-snapshot.sh [snapshot-name]
 ```
+
+## 🚀 GitHub Pull Request Workflow
+
+### Branch Strategy
+```
+production branch    ←-- bookedbarber.com (Live site)
+       ↑
+staging branch       ←-- staging.bookedbarber.com (Testing)
+       ↑
+feature branches     ←-- Development work
+```
+
+### Development Workflow
+
+#### 1. Feature Development
+```bash
+# Start from staging
+git checkout staging && git pull origin staging
+
+# Create feature branch
+git checkout -b feature/payment-improvements-20250722
+
+# Develop and commit
+git add . && git commit -m "feat: improve payment error handling"
+git push origin feature/payment-improvements-20250722
+```
+
+#### 2. Deploy to Staging
+**Command to Claude**: `"Create pull request to merge this feature into staging"`
+
+**Claude will execute:**
+```bash
+gh pr create --base staging --title "Payment Improvements" \
+  --body "## Summary
+- Improved payment error handling
+- Enhanced user feedback
+
+## Test Plan
+- [ ] Test payment failures
+- [ ] Verify error messages
+
+🤖 Generated with Claude Code"
+```
+
+#### 3. Deploy to Production
+**Command to Claude**: `"Staging tests passed - deploy to production"`
+
+**Claude will execute:**
+```bash
+git checkout staging && git pull origin staging
+gh pr create --base production --title "Release: Payment Improvements" \
+  --body "✅ Staging tests completed
+✅ Ready for production deployment
+
+🤖 Generated with Claude Code"
+```
+
+### Auto-Deployment
+- **staging** branch → Auto-deploys to staging.bookedbarber.com (Render)
+- **production** branch → Auto-deploys to bookedbarber.com (Render)
+
+### Commands for Claude
+- **Start Feature**: "Create feature branch from staging for [feature-name]"
+- **Deploy to Staging**: "Create pull request to merge this feature into staging"
+- **Deploy to Production**: "Staging tests passed - deploy to production"
+- **Emergency Fix**: "Create hotfix branch and deploy to production"
 
 ## 🚀 Marketing Enhancement Features (2025-07-02)
 
@@ -361,6 +431,56 @@ get_network_requests since_minutes=5
 3. ✅ No console errors after implementing changes
 4. ✅ All network requests successful (status 200-299)
 5. ✅ JavaScript errors resolved with stack trace verification
+
+### Simplified Code Policy
+**CRITICAL: Always revert simplified code back to original features after debugging**
+
+When debugging complex issues, you may need to create simplified versions of features to isolate problems. However, once the issue is resolved, you MUST restore the original, full-featured implementation.
+
+#### Policy Requirements
+1. **Document Original**: Before simplifying, note the original implementation details
+2. **Create Simple Version**: Temporarily simplify only what's necessary for debugging
+3. **Solve Problem**: Use the simplified version to identify and fix the issue
+4. **Restore Original**: IMMEDIATELY revert to the full-featured original code
+5. **Verify Functionality**: Ensure all original features work correctly after restoration
+
+#### Common Scenarios
+- **Complex UI Components**: Simplifying to isolate rendering issues
+- **Multi-step Workflows**: Reducing steps to find specific failure points
+- **Integration Features**: Removing dependencies to test core functionality
+- **Data Processing**: Using minimal data sets for debugging algorithms
+
+#### Process Example
+```bash
+# 1. Document original feature
+# Original: Complex payment form with validation, multiple steps, animations
+
+# 2. Create simplified version for debugging
+# Simplified: Basic form with single payment field
+
+# 3. Debug and fix the issue
+# Found: Race condition in validation logic
+
+# 4. MANDATORY: Restore original implementation
+# Restored: Full payment form with all features
+
+# 5. Verify all features work
+# Tested: Validation, animations, multi-step flow all functional
+```
+
+#### ⚠️ WARNING: Production Code Policy
+- **NEVER** leave simplified debugging code in production branches
+- **NEVER** commit simplified versions without clear debugging comments
+- **ALWAYS** restore full functionality before marking tasks complete
+- **ALWAYS** run full test suite after reverting to original
+
+#### Verification Checklist
+Before closing any debugging task:
+- [ ] Original feature complexity restored
+- [ ] All original functionality verified working
+- [ ] No simplified code remains in codebase
+- [ ] Tests pass with full feature set
+- [ ] UI/UX matches original specifications
 
 ## 🔍 Browser Debugging & MCP Integration
 

@@ -28,30 +28,8 @@ import {
   MessageCircle
 } from 'lucide-react'
 import type { BarberProfile } from '@/components/barber/BarberCard'
+import { getBarberProfile, type BarberProfileData, getBarberAvailability, getNextAvailableSlot, appointmentsAPI } from '@/lib/api'
 import { Metadata } from 'next'
-
-// Mock data for now - replace with actual API calls
-const mockBarberData: BarberProfile = {
-  id: 1,
-  first_name: "Marcus",
-  last_name: "Johnson",
-  email: "marcus@example.com",
-  bio: "Master barber with over 10 years of experience specializing in classic cuts, fades, and beard styling. Passionate about the craft and committed to helping every client look and feel their best.",
-  profileImageUrl: "/api/placeholder/400/400",
-  specialties: ["Classic Haircuts", "Fade Cuts", "Beard Trimming", "Razor Shaves", "Styling & Grooming"],
-  experienceLevel: "expert",
-  hourlyRate: 85,
-  location: "Downtown Barbershop, Main St",
-  rating: 4.8,
-  totalReviews: 127,
-  isActive: true,
-  socialMedia: {
-    instagram: "https://instagram.com/marcus_barber",
-    facebook: "https://facebook.com/marcusbarber"
-  },
-  nextAvailableSlot: "Today, 2:30 PM",
-  responseTime: "1 hour"
-}
 
 const experienceLevels = {
   junior: { label: 'Junior Barber', description: 'New to the industry (0-2 years)', color: 'bg-blue-100 text-blue-800' },
@@ -70,32 +48,154 @@ export default function BarberProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [availability, setAvailability] = useState<any[]>([])
+  const [dynamicPricing, setDynamicPricing] = useState<{[serviceName: string]: any}>({})
   
   useEffect(() => {
     const fetchBarberProfile = async () => {
       try {
         setLoading(true)
-        // TODO: Replace with actual API call
-        // const response = await fetch(`/api/v1/barbers/${barberId}/profile`)
-        // const data = await response.json()
+        setError(null)
         
-        // Simulate API call
-        setTimeout(() => {
-          setBarber(mockBarberData)
-          setLoading(false)
-        }, 1000)
+        // Fetch real barber profile data and availability
+        const [profileData, availabilityData] = await Promise.all([
+          getBarberProfile(parseInt(barberId)),
+          getBarberAvailability(parseInt(barberId)).catch(() => []) // Don't fail if availability is not available
+        ])
+        
+        // Try to get next available slot
+        let nextAvailableSlot = 'Contact for availability'
+        try {
+          const nextSlot = await getNextAvailableSlot(parseInt(barberId))
+          if (nextSlot && nextSlot.slot_datetime) {
+            const date = new Date(nextSlot.slot_datetime)
+            const today = new Date()
+            const isToday = date.toDateString() === today.toDateString()
+            const isTomorrow = date.toDateString() === new Date(today.getTime() + 24 * 60 * 60 * 1000).toDateString()
+            
+            if (isToday) {
+              nextAvailableSlot = `Today, ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`
+            } else if (isTomorrow) {
+              nextAvailableSlot = `Tomorrow, ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`
+            } else {
+              nextAvailableSlot = date.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+              })
+            }
+          }
+        } catch (err) {
+          console.log('Could not fetch next available slot:', err)
+        }
+        
+        // Transform API data to match BarberProfile interface
+        const transformedBarber: BarberProfile = {
+          id: profileData.user_id,
+          first_name: profileData.user_name.split(' ')[0] || 'Unknown',
+          last_name: profileData.user_name.split(' ').slice(1).join(' ') || '',
+          email: profileData.user_email,
+          bio: profileData.bio || 'Professional barber dedicated to providing excellent service.',
+          profileImageUrl: profileData.profile_image_url || '/api/placeholder/400/400',
+          specialties: profileData.specialties || [],
+          experienceLevel: profileData.years_experience ? (
+            profileData.years_experience >= 10 ? 'expert' :
+            profileData.years_experience >= 6 ? 'senior' :
+            profileData.years_experience >= 3 ? 'mid' : 'junior'
+          ) as 'junior' | 'mid' | 'senior' | 'expert' : 'mid',
+          hourlyRate: profileData.hourly_rate || 60,
+          location: 'Professional Barbershop', // TODO: Connect to location data
+          rating: 4.5, // TODO: Calculate from reviews
+          totalReviews: 25, // TODO: Count from reviews
+          isActive: profileData.is_active,
+          socialMedia: {
+            instagram: profileData.instagram_handle ? `https://instagram.com/${profileData.instagram_handle}` : undefined
+          },
+          nextAvailableSlot,
+          responseTime: '1 hour' // TODO: Calculate from historical data
+        }
+        
+        // Store availability data for potential future use
+        setAvailability(availabilityData)
+        
+        setBarber(transformedBarber)
+        
+        // Fetch Six Figure Barber pricing for common services
+        const commonServices = ['haircut', 'haircut & beard', 'haircut & shave', 'beard trimming', 'straight razor shave']
+        const pricingPromises = commonServices.map(async (serviceName) => {
+          try {
+            const pricing = await appointmentsAPI.calculateServicePrice(serviceName, barberId)
+            return { serviceName, pricing }
+          } catch (err) {
+            console.log(`Could not fetch pricing for ${serviceName}:`, err)
+            return { serviceName, pricing: null }
+          }
+        })
+        
+        const pricingResults = await Promise.all(pricingPromises)
+        const pricingMap = pricingResults.reduce((acc, { serviceName, pricing }) => {
+          if (pricing) {
+            acc[serviceName] = pricing
+          }
+          return acc
+        }, {} as {[serviceName: string]: any})
+        
+        setDynamicPricing(pricingMap)
+        setLoading(false)
         
       } catch (err) {
-        setError('Failed to load barber profile')
+        console.error('Failed to load barber profile:', err)
+        setError('Failed to load barber profile. Please try again.')
         setLoading(false)
       }
     }
 
-    fetchBarberProfile()
+    if (barberId) {
+      fetchBarberProfile()
+    }
   }, [barberId])
 
   const handleBookNow = () => {
-    router.push(`/book?barber=${barberId}`)
+    // Build comprehensive booking URL with barber context
+    const bookingParams = new URLSearchParams({
+      barber: barberId,
+      barberName: `${barber?.first_name} ${barber?.last_name}`,
+      experience: barber?.experienceLevel || '',
+      specialties: barber?.specialties?.slice(0, 3).join(',') || '', // Include top 3 specialties
+      hourlyRate: barber?.hourlyRate?.toString() || ''
+    })
+    
+    // Add Six Figure Barber context for premium pricing
+    if (barber?.experienceLevel === 'expert' || (barber?.hourlyRate && barber.hourlyRate >= 80)) {
+      bookingParams.append('tier', 'premium')
+    }
+    
+    router.push(`/book?${bookingParams.toString()}`)
+  }
+
+  const handleServiceBooking = (service: string, suggestedPrice?: number) => {
+    // Build service-specific booking URL
+    const bookingParams = new URLSearchParams({
+      barber: barberId,
+      barberName: `${barber?.first_name} ${barber?.last_name}`,
+      service: service,
+      experience: barber?.experienceLevel || '',
+      hourlyRate: barber?.hourlyRate?.toString() || ''
+    })
+    
+    // Add suggested pricing for Six Figure Barber methodology
+    if (suggestedPrice) {
+      bookingParams.append('suggestedPrice', suggestedPrice.toString())
+    }
+    
+    // Add premium tier for expert barbers
+    if (barber?.experienceLevel === 'expert' || (barber?.hourlyRate && barber.hourlyRate >= 80)) {
+      bookingParams.append('tier', 'premium')
+    }
+    
+    router.push(`/book?${bookingParams.toString()}`)
   }
 
   const handleShare = async () => {
@@ -279,6 +379,99 @@ export default function BarberProfilePage() {
                           {specialty}
                         </Badge>
                       ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quick Service Booking */}
+                {barber.isActive && (
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-3">Quick Book Popular Services</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {/* Haircut Service */}
+                      {barber.specialties.some(s => s.toLowerCase().includes('haircut') || s.toLowerCase().includes('cut')) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleServiceBooking('Haircut', dynamicPricing['haircut']?.final_price || 30)}
+                          className="flex items-center justify-between p-4 h-auto"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Scissors className="h-4 w-4" />
+                            <span>Haircut</span>
+                          </div>
+                          <div className="text-right">
+                            {dynamicPricing['haircut'] ? (
+                              <>
+                                <span className="text-sm font-semibold">
+                                  ${dynamicPricing['haircut'].final_price}
+                                </span>
+                                {dynamicPricing['haircut'].six_figure_insights?.is_premium_positioning && (
+                                  <div className="text-xs text-purple-600">Premium</div>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-sm font-semibold">$30</span>
+                            )}
+                          </div>
+                        </Button>
+                      )}
+                      
+                      {/* Beard Trimming Service */}
+                      {barber.specialties.some(s => s.toLowerCase().includes('beard') || s.toLowerCase().includes('trim')) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleServiceBooking('Beard Trimming', dynamicPricing['beard trimming']?.final_price || 20)}
+                          className="flex items-center justify-between p-4 h-auto"
+                        >
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            <span>Beard Trim</span>
+                          </div>
+                          <div className="text-right">
+                            {dynamicPricing['beard trimming'] ? (
+                              <>
+                                <span className="text-sm font-semibold">
+                                  ${dynamicPricing['beard trimming'].final_price}
+                                </span>
+                                {dynamicPricing['beard trimming'].six_figure_insights?.is_premium_positioning && (
+                                  <div className="text-xs text-purple-600">Premium</div>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-sm font-semibold">$20</span>
+                            )}
+                          </div>
+                        </Button>
+                      )}
+                      
+                      {/* Full Service */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleServiceBooking('Haircut & Shave', dynamicPricing['haircut & shave']?.final_price || 45)}
+                        className="flex items-center justify-between p-4 h-auto"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Star className="h-4 w-4" />
+                          <span>Full Service</span>
+                        </div>
+                        <div className="text-right">
+                          {dynamicPricing['haircut & shave'] ? (
+                            <>
+                              <span className="text-sm font-semibold">
+                                ${dynamicPricing['haircut & shave'].final_price}
+                              </span>
+                              {dynamicPricing['haircut & shave'].six_figure_insights?.is_premium_positioning && (
+                                <div className="text-xs text-purple-600">Premium</div>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-sm font-semibold">$45</span>
+                          )}
+                        </div>
+                      </Button>
                     </div>
                   </div>
                 )}

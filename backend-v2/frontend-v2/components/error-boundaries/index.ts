@@ -32,3 +32,22 @@ export {
 
 // Re-export general error boundary
 export { ErrorBoundary, withErrorBoundary } from '../ErrorBoundary'
+
+// Standardized Error Boundary Factory - NEW RECOMMENDED APPROACH
+export { 
+  StandardErrorBoundary,
+  withStandardErrorBoundary,
+  useErrorBoundaryContext,
+  getErrorBoundaryType,
+  BookingBoundary,
+  PaymentBoundary,
+  AnalyticsBoundary,
+  FormBoundary,
+  GeneralBoundary
+} from './ErrorBoundaryFactory'
+
+export type { 
+  ErrorBoundaryType, 
+  ErrorBoundaryContext, 
+  StandardErrorBoundaryProps 
+} from './ErrorBoundaryFactory'

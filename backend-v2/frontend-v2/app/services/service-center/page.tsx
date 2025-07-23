@@ -149,8 +149,8 @@ function ServiceCenterContent() {
         // Load service data
         try {
           const [servicesResponse, analyticsResponse] = await Promise.all([
-            fetchAPI('/api/v1/services'),
-            fetchAPI(`/api/v1/services/analytics?start_date=${startDate}&end_date=${endDate}`)
+            fetchAPI('/api/v2/services'),
+            fetchAPI(`/api/v2/services/analytics?start_date=${startDate}&end_date=${endDate}`)
           ])
 
           setServices(servicesResponse.services || [])

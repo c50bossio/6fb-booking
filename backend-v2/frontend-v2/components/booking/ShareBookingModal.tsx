@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Modal, ModalBody } from '../ui/Modal'
 import { Card } from '@/components/ui/card'
 import LinkCustomizer from './LinkCustomizer'
+import QRCodeShareModal, { useQRCodeShareModal } from './QRCodeShareModal'
 import {
   LinkIcon,
   CodeBracketIcon,
@@ -47,16 +48,18 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
   const [isGenerating, setIsGenerating] = useState<string | null>(null)
   const [showLinkCustomizer, setShowLinkCustomizer] = useState(false)
   const [customizerMode, setCustomizerMode] = useState<'set-parameters' | 'quick'>('set-parameters')
+  
+  // QR Code modal hook
+  const qrModal = useQRCodeShareModal()
 
-  // Generate QR Code (placeholder implementation)
+  // Generate QR Code (real implementation)
   const generateQRCode = async () => {
     setIsGenerating('qr-code')
-    // In a real implementation, this would generate a QR code
     setTimeout(() => {
       setIsGenerating(null)
-      // Show QR code modal or download
-      alert('QR Code generated! (This would show the actual QR code in production)')
-    }, 1500)
+      // Open the QR Code modal with booking URL
+      qrModal.openModal(bookingUrl, businessName)
+    }, 500)
   }
 
   // Copy to clipboard utility
@@ -291,6 +294,14 @@ ${businessName}`
       services={services}
       barbers={barbers}
       mode={customizerMode}
+    />
+
+    {/* QR Code Modal */}
+    <QRCodeShareModal
+      isOpen={qrModal.isOpen}
+      onClose={qrModal.closeModal}
+      bookingUrl={qrModal.bookingUrl}
+      serviceName={qrModal.serviceName}
     />
   </>
   )

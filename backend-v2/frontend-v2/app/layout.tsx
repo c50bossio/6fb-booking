@@ -134,8 +134,8 @@ export default function RootLayout({
           }}
         />
 
-        {/* Load Google Tag Manager if analytics consent given */}
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+        {/* Load Google Tag Manager if analytics consent given - TEMPORARILY DISABLED */}
+        {false && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <script
             async
             src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
@@ -191,34 +191,63 @@ export default function RootLayout({
           </ToastProvider>
         </QueryProvider>
         
-        {/* Performance monitoring script */}
+        {/* Enhanced Performance monitoring and optimization script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Web Vitals monitoring
-              if ('PerformanceObserver' in window) {
-                const observer = new PerformanceObserver((list) => {
-                  for (const entry of list.getEntries()) {
-                    if (entry.entryType === 'largest-contentful-paint') {
-                      console.log('LCP:', entry.startTime);
-                    }
-                    if (entry.entryType === 'first-input') {
-                      console.log('FID:', entry.processingStart - entry.startTime);
-                    }
-                    if (entry.entryType === 'layout-shift') {
-                      if (!entry.hadRecentInput) {
-                        console.log('CLS:', entry.value);
-                      }
-                    }
-                  }
+              // Critical performance optimizations - runs immediately
+              (function() {
+                const startTime = performance.now();
+                
+                // Preconnect to critical resources
+                const preconnectDomains = ['fonts.googleapis.com', 'fonts.gstatic.com'];
+                preconnectDomains.forEach(function(domain) {
+                  const link = document.createElement('link');
+                  link.rel = 'preconnect';
+                  link.href = 'https://' + domain;
+                  link.crossOrigin = 'anonymous';
+                  document.head.appendChild(link);
                 });
                 
-                try {
-                  observer.observe({ entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift'] });
-                } catch (e) {
-                  // Ignore if not supported
+                // Enhanced Web Vitals monitoring with performance warnings
+                if ('PerformanceObserver' in window) {
+                  const observer = new PerformanceObserver(function(list) {
+                    for (const entry of list.getEntries()) {
+                      if (entry.entryType === 'largest-contentful-paint') {
+                        const lcp = entry.startTime;
+                        console.log('LCP:', lcp.toFixed(2) + 'ms');
+                        if (lcp > 2500) console.warn('⚠️ LCP is slow:', lcp.toFixed(2) + 'ms');
+                      }
+                      if (entry.entryType === 'first-input') {
+                        const fid = entry.processingStart - entry.startTime;
+                        console.log('FID:', fid.toFixed(2) + 'ms');
+                        if (fid > 100) console.warn('⚠️ FID is slow:', fid.toFixed(2) + 'ms');
+                      }
+                      if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
+                        const cls = entry.value;
+                        console.log('CLS:', cls);
+                        if (cls > 0.1) console.warn('⚠️ CLS is high:', cls);
+                      }
+                    }
+                  });
+                  
+                  try {
+                    observer.observe({ entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift'] });
+                  } catch (e) {
+                    // Ignore if not supported
+                  }
                 }
-              }
+                
+                // Monitor total load time and report slow loads
+                window.addEventListener('load', function() {
+                  const loadTime = performance.now() - startTime;
+                  console.log('📊 Total load time:', loadTime.toFixed(2) + 'ms');
+                  
+                  if (loadTime > 3000) {
+                    console.warn('🐌 Slow load detected:', loadTime.toFixed(2) + 'ms - consider optimizing');
+                  }
+                });
+              })();
             `,
           }}
         />

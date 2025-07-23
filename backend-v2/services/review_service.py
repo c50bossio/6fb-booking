@@ -428,36 +428,80 @@ class ReviewService:
                 
                 return response
             
-            # Enhanced fallback: Try service-specific templates if available
-            if hasattr(self, 'analyze_review_content') and hasattr(self, 'get_service_specific_template'):
-                try:
-                    review_analysis = self.analyze_review_content(review.review_text or "")
-                    service_template = self.get_service_specific_template(
-                        review_analysis.get("service_type", "general"), 
-                        category
+            # Enhanced fallback: Try Six Figure Barber templates first, then service-specific templates
+            try:
+                # Try Six Figure Barber templates as enhanced fallback
+                from services.six_figure_barber_templates import SixFigureBarberTemplates
+                six_fb_templates = SixFigureBarberTemplates()
+                
+                review_analysis = self.analyze_review_content(review.review_text or "")
+                service_type = review_analysis.get("service_type", "general")
+                
+                # Get Six Figure Barber aligned template
+                six_fb_template = six_fb_templates.get_six_figure_barber_template(
+                    service_type, category, business_context
+                )
+                
+                # Use Six Figure Barber template with business context
+                if business_context:
+                    enhanced_template = six_fb_templates.enhance_template_with_six_figure_barber_context(
+                        six_fb_template, business_context, review
                     )
+                    response = self.auto_populate_template_variables(enhanced_template, business_context, review)
                     
-                    # Use service-specific template with business context
-                    if business_context:
-                        response = self.auto_populate_template_variables(service_template, business_context, review)
-                        return response
-                    else:
-                        # Basic placeholder replacement
-                        template_text = service_template
-                        placeholders = {
-                            "reviewer_name": review.reviewer_name or "valued customer",
-                            "business_name": business_name or "our business",
-                            "rating": str(int(review.rating)) if review.rating else "5"
-                        }
+                    # Apply Six Figure Barber SEO optimization
+                    six_fb_keywords = six_fb_templates.get_six_figure_barber_seo_keywords(service_type)
+                    response = self._optimize_response_for_seo(response, six_fb_keywords[:3], business_name)
+                    
+                    logger.info(f"Used Six Figure Barber fallback template for review {review.id}")
+                    return response
+                else:
+                    # Basic Six Figure Barber template replacement
+                    placeholders = {
+                        "reviewer_name": review.reviewer_name or "valued customer",
+                        "business_name": business_name or "our business",
+                        "rating": str(int(review.rating)) if review.rating else "5"
+                    }
+                    
+                    response = six_fb_template
+                    for key, value in placeholders.items():
+                        response = response.replace(f"{{{key}}}", value)
+                    
+                    return response
                         
-                        response = template_text
-                        for key, value in placeholders.items():
-                            response = response.replace(f"{{{key}}}", value)
+            except Exception as e:
+                logger.debug(f"Six Figure Barber template fallback failed, trying service-specific: {e}")
+                
+                # Fallback to original service-specific templates
+                if hasattr(self, 'analyze_review_content') and hasattr(self, 'get_service_specific_template'):
+                    try:
+                        review_analysis = self.analyze_review_content(review.review_text or "")
+                        service_template = self.get_service_specific_template(
+                            review_analysis.get("service_type", "general"), 
+                            category
+                        )
                         
-                        return response
-                        
-                except Exception as e:
-                    logger.debug(f"Service-specific template generation failed: {e}")
+                        # Use service-specific template with business context
+                        if business_context:
+                            response = self.auto_populate_template_variables(service_template, business_context, review)
+                            return response
+                        else:
+                            # Basic placeholder replacement
+                            template_text = service_template
+                            placeholders = {
+                                "reviewer_name": review.reviewer_name or "valued customer",
+                                "business_name": business_name or "our business",
+                                "rating": str(int(review.rating)) if review.rating else "5"
+                            }
+                            
+                            response = template_text
+                            for key, value in placeholders.items():
+                                response = response.replace(f"{{{key}}}", value)
+                            
+                            return response
+                            
+                    except Exception as e:
+                        logger.debug(f"Service-specific template generation failed: {e}")
             
             # Original fallback to default templates
             import random
@@ -688,6 +732,7 @@ class ReviewService:
     def generate_contextual_response(self, review: Review, db: Session) -> str:
         """
         Generate a contextually intelligent response using BusinessContextService.
+        Enhanced with Six Figure Barber methodology alignment.
         
         Args:
             review: Review object to generate response for
@@ -701,6 +746,9 @@ class ReviewService:
             ValueError: If required context cannot be retrieved
         """
         try:
+            # Import Six Figure Barber templates
+            from services.six_figure_barber_templates import SixFigureBarberTemplates
+            
             # Validate inputs
             if not review:
                 raise ValueError("Review cannot be None")
@@ -716,45 +764,71 @@ class ReviewService:
             # Analyze review content for contextual insights
             review_analysis = self.analyze_review_content(review.review_text or "")
             
-            # Get service-specific template based on analysis
+            # Initialize Six Figure Barber templates
+            six_fb_templates = SixFigureBarberTemplates()
+            
+            # Determine response category
             template_category = self._determine_response_category(review, review_analysis)
-            service_template = self.get_service_specific_template(
-                review_analysis.get("service_type", "general"), 
-                template_category
-            )
+            service_type = review_analysis.get("service_type", "general")
             
             # Try to find matching custom template first
             applicable_templates = self.get_applicable_templates(db, review.user_id, review)
             
             if applicable_templates:
-                # Use highest priority template with contextual enhancement
+                # Use highest priority template with Six Figure Barber enhancement
                 template = applicable_templates[0]
                 response = self.generate_response_from_template(
                     db, template, review, business_context.business_name
+                )
+                # Enhance with Six Figure Barber methodology
+                response = six_fb_templates.enhance_template_with_six_figure_barber_context(
+                    response, business_context, review
                 )
                 # Further enhance with business context
                 response = self.auto_populate_template_variables(
                     response, business_context, review
                 )
             else:
-                # Use service-specific template with contextual variables
-                response = self.auto_populate_template_variables(
-                    service_template, business_context, review
+                # Use Six Figure Barber methodology-aligned template
+                six_fb_template = six_fb_templates.get_six_figure_barber_template(
+                    service_type, template_category, business_context
                 )
+                
+                # Enhance with Six Figure Barber context
+                enhanced_template = six_fb_templates.enhance_template_with_six_figure_barber_context(
+                    six_fb_template, business_context, review
+                )
+                
+                # Populate with business variables
+                response = self.auto_populate_template_variables(
+                    enhanced_template, business_context, review
+                )
+            
+            # Apply Six Figure Barber SEO optimization
+            six_fb_keywords = six_fb_templates.get_six_figure_barber_seo_keywords(service_type)
+            response = self._optimize_response_for_seo(
+                response, six_fb_keywords[:3], business_context.business_name
+            )
             
             # Apply contextual SEO optimization
             response = self._apply_contextual_seo_optimization(
                 response, business_context, review_analysis
             )
             
+            # Validate Six Figure Barber compliance
+            validation_results = six_fb_templates.validate_six_figure_barber_template(response)
+            if not validation_results["compliant"]:
+                logger.warning(f"Six Figure Barber template validation failed for review {review.id}: "
+                             f"{validation_results['issues']}")
+            
             # Log contextual response generation
-            logger.info(f"Generated contextual response for review {review.id} "
-                       f"with service type: {review_analysis.get('service_type', 'general')}")
+            logger.info(f"Generated Six Figure Barber aligned response for review {review.id} "
+                       f"with service type: {service_type}, compliance score: {validation_results['score']}")
             
             return response
             
         except Exception as e:
-            logger.error(f"Error generating contextual response for review {review.id}: {e}")
+            logger.error(f"Error generating Six Figure Barber contextual response for review {review.id}: {e}")
             # Fallback to existing auto-response system
             return self.generate_auto_response(db, review, business_context.business_name if 'business_context' in locals() else None)
     

@@ -8,9 +8,9 @@
 
 Critical security vulnerability was discovered and immediately resolved where active API credentials were hardcoded in the configuration files:
 
-- **SendGrid API Key**: `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`
-- **Twilio Account SID**: `ACe5b803b2dee8cfeffbfc19330838d25f`  
-- **Twilio Auth Token**: `f4a6b0c96d7394e3037b1c3063cf8369`
+- **SendGrid API Key**: `SG.***REDACTED***`
+- **Twilio Account SID**: `AC***REDACTED***`  
+- **Twilio Auth Token**: `***REDACTED***`
 
 **Immediate Actions Taken**:
 1. ✅ Removed all hardcoded credentials from configuration files

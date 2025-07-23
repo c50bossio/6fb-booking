@@ -44,6 +44,70 @@ def create_refresh_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+def decode_token_simple(token: str):
+    """Decode and validate a JWT token - simple version."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+def get_user_from_token_simple(token: str, db: Session):
+    """Get user information from JWT token using raw SQL."""
+    try:
+        # Decode and validate token
+        payload = decode_token_simple(token)
+        email: str = payload.get("sub")
+        
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Get user from database using raw SQL
+        result = db.execute(
+            text("SELECT id, email, role, is_active, name, created_at FROM users WHERE email = :email"),
+            {"email": email}
+        )
+        user_row = result.fetchone()
+        
+        if not user_row:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Return user data as dict, accessing by index since it's a raw SQL result
+        return {
+            "id": user_row[0],
+            "email": user_row[1],
+            "role": user_row[2],
+            "unified_role": user_row[2],  # For compatibility
+            "is_active": bool(user_row[3]),
+            "name": user_row[4] or user_row[1],
+            "email_verified": True,  # Assume verified for simple auth
+            "created_at": str(user_row[5]) if user_row[5] else None
+        }
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        import traceback
+        print(f"Token validation error: {e}")
+        print(f"Full traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token validation failed",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
 def authenticate_user_simple(db: Session, email: str, password: str):
     """Authenticate a user using raw SQL to avoid ORM schema issues."""
     try:

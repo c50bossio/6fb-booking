@@ -7,7 +7,7 @@ export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export { Switch } from './switch';
 export { Label } from './label';
 export { Calendar } from './calendar';
-export { Modal } from './Modal';
+export { Modal, ModalHeader, ModalBody, ModalFooter } from './Modal';
 export { Logo, LogoCompact, LogoFull } from './Logo';
 export { Alert, AlertTitle, AlertDescription } from './alert';
 export { Toast, ToastTitle, ToastDescription, ToastClose, ToastAction, ToastProvider, ToastViewport } from './toast';
@@ -31,7 +31,7 @@ export {
   CardLoading,
   InlineLoading,
   PageLoading 
-} from './LoadingStates';
+} from '@/components/LoadingStates';
 
 // Error States
 export { 

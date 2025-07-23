@@ -80,8 +80,9 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="focus:outline-none text-gray-400 hover:text-gray-600"
-            tabIndex={-1}
+            className="focus:outline-none text-gray-400 hover:text-gray-600 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 rounded"
+            tabIndex={0}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" />
@@ -131,6 +132,8 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
               inputClassName
             )}
             aria-invalid={!!showError}
+            aria-required={!!props.required}
+            aria-label={label || props.placeholder || props['aria-label']}
             aria-describedby={
               showError ? `${props.id}-error` : helperText ? `${props.id}-helper` : undefined
             }

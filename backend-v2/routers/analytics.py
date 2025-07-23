@@ -302,13 +302,12 @@ async def get_client_retention_analytics(
 @router.get("/client-lifetime-value")
 async def get_client_lifetime_value_analytics(
     user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
-    start_date: Optional[date] = Query(None, description="Start date for analytics range"),
-    end_date: Optional[date] = Query(None, description="End date for analytics range"),
+    analysis_period_days: int = Query(365, description="Days of history to analyze"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
     """
-    Get comprehensive client lifetime value analytics and segmentation
+    Get comprehensive client lifetime value analytics and segmentation based on Six Figure methodology
     """
     # Permission check using new system
     checker = PermissionChecker(current_user, db)
@@ -325,16 +324,360 @@ async def get_client_lifetime_value_analytics(
     # Determine target user - if no user_id specified, use current user
     target_user_id = user_id if user_id else current_user.id
     
-    # Create date range if provided
-    date_range = None
-    if start_date and end_date:
-        date_range = DateRange(
-            start_date=datetime.combine(start_date, datetime.min.time()),
-            end_date=datetime.combine(end_date, datetime.max.time())
-        )
+    try:
+        from services.client_lifetime_value_service import ClientLifetimeValueService
+        
+        clv_service = ClientLifetimeValueService(db)
+        clv_analysis = clv_service.analyze_client_base_clv(target_user_id, analysis_period_days)
+        
+        return {
+            "status": "success",
+            "user_id": target_user_id,
+            "analysis_period_days": analysis_period_days,
+            "clv_analysis": {
+                "summary": {
+                    "total_clients": clv_analysis.total_clients,
+                    "total_historical_clv": clv_analysis.total_historical_clv,
+                    "total_predicted_clv": clv_analysis.total_predicted_clv,
+                    "average_clv": clv_analysis.average_clv,
+                    "median_clv": clv_analysis.median_clv,
+                    "high_value_client_count": clv_analysis.high_value_client_count,
+                    "at_risk_client_count": clv_analysis.at_risk_client_count,
+                    "growth_opportunity_clv": clv_analysis.growth_opportunity_clv
+                },
+                "tier_breakdown": clv_analysis.clv_by_tier,
+                "percentile_analysis": {
+                    "top_20_percent_clv": clv_analysis.top_20_percent_clv,
+                    "bottom_20_percent_clv": clv_analysis.bottom_20_percent_clv
+                },
+                "recommendations": {
+                    "acquisition": clv_analysis.acquisition_recommendations,
+                    "retention": clv_analysis.retention_recommendations
+                }
+            },
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error calculating CLV analytics for user {target_user_id}: {e}")
+        return {
+            "status": "error",
+            "error": "CLV analytics temporarily unavailable",
+            "message": str(e),
+            "user_id": target_user_id
+        }
+
+@router.get("/client-lifetime-value/{client_id}")
+async def get_individual_client_clv(
+    client_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get detailed Six Figure CLV metrics for a specific client
+    """
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    if not checker.has_permission(Permission.VIEW_BASIC_ANALYTICS):
+        raise HTTPException(status_code=403, detail="You don't have permission to view client analytics")
     
-    analytics_service = AnalyticsService(db)
-    return analytics_service.get_client_lifetime_value_analytics(target_user_id, date_range)
+    try:
+        from services.client_lifetime_value_service import ClientLifetimeValueService
+        from models import Client
+        
+        # Verify client exists and user has permission to view
+        client = db.query(Client).filter(Client.id == client_id).first()
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+        
+        clv_service = ClientLifetimeValueService(db)
+        clv_metrics = clv_service.calculate_client_clv(client_id, current_user.id)
+        
+        return {
+            "status": "success",
+            "client_id": client_id,
+            "clv_metrics": {
+                "client_id": clv_metrics.client_id,
+                "historical_clv": clv_metrics.historical_clv,
+                "predicted_clv": clv_metrics.predicted_clv,
+                "remaining_clv": clv_metrics.remaining_clv,
+                "average_ticket": clv_metrics.average_ticket,
+                "visit_frequency": clv_metrics.visit_frequency,
+                "last_visit_days_ago": clv_metrics.last_visit_days_ago,
+                "total_visits": clv_metrics.total_visits,
+                "client_tier": clv_metrics.client_tier,
+                "retention_probability": clv_metrics.retention_probability,
+                "churn_risk": clv_metrics.churn_risk,
+                "value_growth_trend": clv_metrics.value_growth_trend,
+                "recommended_actions": clv_metrics.recommended_actions,
+                "months_active": clv_metrics.months_active,
+                "lifetime_value_score": clv_metrics.lifetime_value_score
+            },
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error calculating CLV for client {client_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error calculating client CLV: {str(e)}")
+
+@router.get("/client-tiers")
+async def get_client_tier_analytics(
+    user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
+    analysis_period_days: int = Query(180, description="Days of history for tier calculation"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get client tier distribution and analytics based on Six Figure methodology
+    """
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    if not checker.has_permission(Permission.VIEW_BASIC_ANALYTICS):
+        raise HTTPException(status_code=403, detail="You don't have permission to view analytics")
+    
+    # If trying to view another user's data, need system admin permission
+    if user_id and user_id != current_user.id:
+        if not checker.has_permission(Permission.SYSTEM_ADMIN):
+            raise HTTPException(status_code=403, detail="You don't have permission to view other users' analytics")
+    
+    # Determine target user
+    target_user_id = user_id if user_id else current_user.id
+    
+    try:
+        from services.client_tier_service import ClientTierService
+        from models import Client, Appointment
+        
+        # Get clients for this barber
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=analysis_period_days)
+        
+        client_ids = db.query(Appointment.client_id).filter(
+            and_(
+                Appointment.barber_id == target_user_id,
+                Appointment.client_id.isnot(None),
+                Appointment.start_time >= start_date,
+                Appointment.status.in_(['completed', 'confirmed'])
+            )
+        ).distinct().all()
+        
+        client_ids = [c[0] for c in client_ids]
+        
+        if not client_ids:
+            return {
+                "status": "success",
+                "user_id": target_user_id,
+                "tier_distribution": {},
+                "total_clients": 0,
+                "message": "No clients found for analysis period"
+            }
+        
+        tier_service = ClientTierService(db)
+        
+        # Calculate tiers for all clients
+        tier_results = tier_service.bulk_calculate_tiers(client_ids)
+        
+        # Aggregate tier distribution
+        tier_counts = {}
+        tier_metrics = {}
+        total_clients = 0
+        
+        for result in tier_results:
+            if 'error' not in result:
+                tier = result['primary_tier']
+                tier_counts[tier] = tier_counts.get(tier, 0) + 1
+                total_clients += 1
+                
+                # Aggregate tier metrics
+                if tier not in tier_metrics:
+                    tier_metrics[tier] = {
+                        'total_revenue_potential': 0,
+                        'avg_confidence_score': 0,
+                        'client_ids': []
+                    }
+                
+                metrics = result.get('metrics', {})
+                revenue_potential = result.get('revenue_potential', {})
+                
+                tier_metrics[tier]['total_revenue_potential'] += revenue_potential.get('potential_annual_value', 0)
+                tier_metrics[tier]['avg_confidence_score'] += result.get('confidence_score', 0)
+                tier_metrics[tier]['client_ids'].append(result['client_id'])
+        
+        # Calculate averages
+        for tier in tier_metrics:
+            count = tier_counts[tier]
+            if count > 0:
+                tier_metrics[tier]['avg_confidence_score'] /= count
+                tier_metrics[tier]['avg_revenue_potential'] = tier_metrics[tier]['total_revenue_potential'] / count
+        
+        return {
+            "status": "success",
+            "user_id": target_user_id,
+            "analysis_period_days": analysis_period_days,
+            "total_clients": total_clients,
+            "tier_distribution": {
+                "counts": tier_counts,
+                "percentages": {tier: (count/total_clients)*100 for tier, count in tier_counts.items()},
+                "metrics": tier_metrics
+            },
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error calculating client tier analytics for user {target_user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error calculating client tier analytics: {str(e)}")
+
+@router.get("/service-profitability")
+async def get_service_profitability_analytics(
+    user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
+    analysis_period_days: int = Query(90, description="Days of history for profitability analysis"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get comprehensive service profitability analysis based on Six Figure methodology
+    """
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    if not checker.has_permission(Permission.VIEW_BASIC_ANALYTICS):
+        raise HTTPException(status_code=403, detail="You don't have permission to view analytics")
+    
+    # If trying to view another user's data, need system admin permission
+    if user_id and user_id != current_user.id:
+        if not checker.has_permission(Permission.SYSTEM_ADMIN):
+            raise HTTPException(status_code=403, detail="You don't have permission to view other users' analytics")
+    
+    # Determine target user
+    target_user_id = user_id if user_id else current_user.id
+    
+    try:
+        from services.service_profitability_service import ServiceProfitabilityService
+        
+        profitability_service = ServiceProfitabilityService(db)
+        analysis = profitability_service.analyze_service_profitability(target_user_id, analysis_period_days)
+        
+        return {
+            "status": "success",
+            "user_id": target_user_id,
+            "analysis_period_days": analysis_period_days,
+            "profitability_analysis": {
+                "summary": {
+                    "total_services": analysis.total_services,
+                    "total_revenue": analysis.total_revenue,
+                    "analysis_period_days": analysis.analysis_period_days
+                },
+                "service_metrics": [
+                    {
+                        "service_name": m.service_name,
+                        "category": m.category,
+                        "total_revenue": m.total_revenue,
+                        "total_bookings": m.total_bookings,
+                        "average_price": m.average_price,
+                        "completion_rate": m.completion_rate,
+                        "revenue_per_hour": m.revenue_per_hour,
+                        "premium_service": m.premium_service,
+                        "six_figure_score": m.six_figure_score,
+                        "growth_trend": m.growth_trend,
+                        "recommendations": m.recommendations
+                    } for m in analysis.service_metrics
+                ],
+                "category_breakdown": analysis.category_breakdown,
+                "premium_services": analysis.premium_services,
+                "bundling_opportunities": [
+                    {
+                        "bundle_services": b.bundle_services,
+                        "frequency": b.frequency,
+                        "average_bundle_value": b.average_bundle_value,
+                        "recommended_bundle_price": b.recommended_bundle_price,
+                        "bundle_score": b.bundle_score
+                    } for b in analysis.bundling_opportunities
+                ],
+                "pricing_recommendations": analysis.pricing_recommendations,
+                "six_figure_insights": analysis.six_figure_insights,
+                "performance_benchmarks": analysis.performance_benchmarks
+            },
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error calculating service profitability for user {target_user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error calculating service profitability: {str(e)}")
+
+@router.get("/service-optimization")
+async def get_service_optimization_recommendations(
+    user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
+    focus_area: str = Query("all", description="Focus area: pricing, premium, bundling, efficiency"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get targeted service optimization recommendations based on Six Figure methodology
+    """
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    if not checker.has_permission(Permission.VIEW_BASIC_ANALYTICS):
+        raise HTTPException(status_code=403, detail="You don't have permission to view analytics")
+    
+    # If trying to view another user's data, need system admin permission
+    if user_id and user_id != current_user.id:
+        if not checker.has_permission(Permission.SYSTEM_ADMIN):
+            raise HTTPException(status_code=403, detail="You don't have permission to view other users' analytics")
+    
+    # Determine target user
+    target_user_id = user_id if user_id else current_user.id
+    
+    try:
+        from services.service_profitability_service import ServiceProfitabilityService
+        
+        profitability_service = ServiceProfitabilityService(db)
+        analysis = profitability_service.analyze_service_profitability(target_user_id, 90)
+        
+        # Filter recommendations by focus area
+        recommendations = {}
+        
+        if focus_area in ["all", "pricing"]:
+            recommendations["pricing"] = analysis.pricing_recommendations
+        
+        if focus_area in ["all", "premium"]:
+            recommendations["premium"] = {
+                "current_premium_percentage": analysis.six_figure_insights.get("premium_service_percentage", 0),
+                "target_premium_percentage": 60,
+                "upgrade_opportunities": analysis.premium_services.get("upgrade_opportunities", []),
+                "premium_services": analysis.premium_services.get("premium_services", [])
+            }
+        
+        if focus_area in ["all", "bundling"]:
+            recommendations["bundling"] = {
+                "opportunities": analysis.bundling_opportunities[:5],  # Top 5 opportunities
+                "potential_revenue": sum(b.bundle_discount_opportunity for b in analysis.bundling_opportunities)
+            }
+        
+        if focus_area in ["all", "efficiency"]:
+            efficiency_services = [m for m in analysis.service_metrics if m.revenue_per_hour < 60]
+            recommendations["efficiency"] = {
+                "low_efficiency_services": [
+                    {
+                        "service_name": m.service_name,
+                        "current_rph": m.revenue_per_hour,
+                        "target_rph": 80,
+                        "improvement_needed": 80 - m.revenue_per_hour,
+                        "recommendations": m.recommendations
+                    } for m in efficiency_services
+                ],
+                "average_revenue_per_hour": analysis.performance_benchmarks.get("average_revenue_per_hour", 0)
+            }
+        
+        return {
+            "status": "success",
+            "user_id": target_user_id,
+            "focus_area": focus_area,
+            "recommendations": recommendations,
+            "six_figure_action_items": analysis.six_figure_insights.get("six_figure_action_items", []),
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating service optimization recommendations for user {target_user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating optimization recommendations: {str(e)}")
 
 @router.get("/barber-performance")
 async def get_barber_performance_metrics(
@@ -396,67 +739,16 @@ async def get_six_figure_barber_metrics(
         # Add timeout protection and error handling
         analytics_service = AnalyticsService(db)
         
-        # For now, return mock data to prevent dashboard hanging
-        # TODO: Fix the underlying database query performance issue
-        # Updated to match SixFigureBarberMetrics interface structure
-        return {
-            "current_performance": {
-                "monthly_revenue": 6690.0,
-                "annual_revenue_projection": 80280.0,
-                "average_ticket": 33.37,
-                "utilization_rate": 72.3,
-                "average_visits_per_client": 4.2,
-                "total_active_clients": 159
-            },
-            "targets": {
-                "annual_income_target": target_annual_income,
-                "monthly_revenue_target": target_annual_income / 12,
-                "daily_revenue_target": target_annual_income / 365,
-                "daily_clients_target": int((target_annual_income / 365) / 33.37),
-                "revenue_gap": target_annual_income - 80280.0,
-                "on_track": 80280.0 >= (target_annual_income * 0.8)  # True if within 20% of goal
-            },
-            "recommendations": {
-                "price_optimization": {
-                    "current_average_ticket": 33.37,
-                    "recommended_average_ticket": 38.38,  # Added missing field
-                    "recommended_increase_percentage": 15.0,
-                    "potential_annual_increase": 12042.0,
-                    "justification": "Your current pricing is below market average"
-                },
-                "client_acquisition": {
-                    "current_monthly_clients": 12,  # Renamed to match frontend
-                    "target_monthly_clients": 18,   # Renamed to match frontend
-                    "additional_clients_needed": 6,  # Added missing field
-                    "cost_per_acquisition": 25.0,
-                    "potential_annual_increase": 6000.0
-                },
-                "retention_improvement": {
-                    "current_retention_rate": 75.0,
-                    "target_retention_rate": 85.0,
-                    "potential_annual_increase": 8500.0,
-                    "strategies": ["Follow-up system", "Loyalty program", "Service quality improvements"]
-                },
-                "efficiency_optimization": {
-                    "current_utilization_rate": 72.3,
-                    "target_utilization_rate": 80.0,
-                    "potential_annual_increase": 4500.0,
-                    "suggestions": ["Better scheduling", "Reduce no-shows", "Optimize service times"]
-                }
-            },
-            "progress_tracking": {
-                "monthly_progress": 80.28,
-                "year_to_date_performance": 65.2,
-                "quarterly_trend": "improving",
-                "efficiency_trend": "stable"
-            },
-            "generated_at": datetime.utcnow().isoformat(),
-            "status": "mock_data",
-            "note": "Using mock data while fixing database performance"
-        }
+        # Import and use the new Six Figure Analytics Service
+        from services.six_figure_analytics_service import SixFigureAnalyticsService
         
-        # Uncomment this line once database queries are optimized:
-        # return analytics_service.calculate_six_figure_barber_metrics(target_user_id, target_annual_income)
+        # Calculate real Six Figure metrics based on methodology
+        six_figure_service = SixFigureAnalyticsService(db)
+        return six_figure_service.calculate_six_figure_metrics(
+            user_id=target_user_id,
+            target_annual_income=target_annual_income,
+            analysis_period_days=30
+        )
         
     except Exception as e:
         # Log the error but don't crash the dashboard

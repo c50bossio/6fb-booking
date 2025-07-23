@@ -1,370 +1,332 @@
-'use client'
+/**
+ * Responsive design hook for detecting device type and screen size
+ * Optimized for mobile-first calendar experience
+ */
 
-import { useState, useEffect, useCallback } from 'react'
-import { breakpoints, type Breakpoint } from '@/lib/responsive'
+import { useState, useEffect, useMemo } from 'react'
 
 export interface ResponsiveState {
-  width: number
-  height: number
   isMobile: boolean
   isTablet: boolean
   isDesktop: boolean
-  isWide: boolean
-  currentBreakpoint: Breakpoint | null
+  isLargeDesktop: boolean
+  screenWidth: number
+  screenHeight: number
   orientation: 'portrait' | 'landscape'
-  isTouch: boolean
-  isMobileDevice: boolean
-  pixelRatio: number
+  devicePixelRatio: number
+  isTouchDevice: boolean
+  isHighDPI: boolean
 }
 
-export interface UseResponsiveOptions {
-  debounceMs?: number
-  enableTouch?: boolean
-  enableOrientation?: boolean
+export interface BreakpointConfig {
+  mobile: number
+  tablet: number
+  desktop: number
+  largeDesktop: number
 }
 
-const defaultOptions: UseResponsiveOptions = {
-  debounceMs: 150,
-  enableTouch: true,
-  enableOrientation: true,
+const DEFAULT_BREAKPOINTS: BreakpointConfig = {
+  mobile: 640,
+  tablet: 768,
+  desktop: 1024,
+  largeDesktop: 1280
 }
 
-/**
- * Hook for responsive design and device detection
- * Provides current breakpoint, device type, and touch capabilities
- */
-export function useResponsive(options: UseResponsiveOptions = {}): ResponsiveState {
-  const { debounceMs, enableTouch, enableOrientation } = { ...defaultOptions, ...options }
-  const [mounted, setMounted] = useState(false)
+export function useResponsive(customBreakpoints?: Partial<BreakpointConfig>) {
+  const breakpoints = { ...DEFAULT_BREAKPOINTS, ...customBreakpoints }
   
-  const getInitialState = useCallback((): ResponsiveState => {
-    if (typeof window === 'undefined' || !mounted) {
+  const [state, setState] = useState<ResponsiveState>(() => {
+    // Server-side fallback
+    if (typeof window === 'undefined') {
       return {
-        width: 1200, // Default desktop width to prevent layout shifts
-        height: 800,
         isMobile: false,
         isTablet: false,
         isDesktop: true,
-        isWide: false,
-        currentBreakpoint: 'lg',
+        isLargeDesktop: false,
+        screenWidth: 1024,
+        screenHeight: 768,
         orientation: 'landscape',
-        isTouch: false,
-        isMobileDevice: false,
-        pixelRatio: 1,
+        devicePixelRatio: 1,
+        isTouchDevice: false,
+        isHighDPI: false
       }
     }
 
     const width = window.innerWidth
     const height = window.innerHeight
-    const isMobile = width < breakpoints.md
-    const isTablet = width >= breakpoints.md && width < breakpoints.lg
-    const isDesktop = width >= breakpoints.lg
-    const isWide = width >= breakpoints['2xl']
-    const orientation = width > height ? 'landscape' : 'portrait'
-    const isTouch = enableTouch ? 'ontouchstart' in window || navigator.maxTouchPoints > 0 : false
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    const pixelRatio = window.devicePixelRatio || 1
-
-    // Determine current breakpoint
-    let currentBreakpoint: Breakpoint | null = null
-    if (width >= breakpoints['3xl']) currentBreakpoint = '3xl'
-    else if (width >= breakpoints['2xl']) currentBreakpoint = '2xl'
-    else if (width >= breakpoints.xl) currentBreakpoint = 'xl'
-    else if (width >= breakpoints.lg) currentBreakpoint = 'lg'
-    else if (width >= breakpoints.md) currentBreakpoint = 'md'
-    else if (width >= breakpoints.sm) currentBreakpoint = 'sm'
-    else if (width >= breakpoints.xs) currentBreakpoint = 'xs'
-
-    return {
-      width,
-      height,
-      isMobile,
-      isTablet,
-      isDesktop,
-      isWide,
-      currentBreakpoint,
-      orientation,
-      isTouch,
-      isMobileDevice,
-      pixelRatio,
-    }
-  }, [enableTouch, mounted])
-
-  const [state, setState] = useState<ResponsiveState>(getInitialState)
-
-  // Mount effect to prevent hydration mismatches
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (!mounted) return
+    const devicePixelRatio = window.devicePixelRatio || 1
     
+    return {
+      isMobile: width < breakpoints.tablet,
+      isTablet: width >= breakpoints.tablet && width < breakpoints.desktop,
+      isDesktop: width >= breakpoints.desktop && width < breakpoints.largeDesktop,
+      isLargeDesktop: width >= breakpoints.largeDesktop,
+      screenWidth: width,
+      screenHeight: height,
+      orientation: width > height ? 'landscape' : 'portrait',
+      devicePixelRatio,
+      isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+      isHighDPI: devicePixelRatio > 1.5
+    }
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
     let timeoutId: NodeJS.Timeout
 
+    const updateState = () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      const devicePixelRatio = window.devicePixelRatio || 1
+
+      setState({
+        isMobile: width < breakpoints.tablet,
+        isTablet: width >= breakpoints.tablet && width < breakpoints.desktop,
+        isDesktop: width >= breakpoints.desktop && width < breakpoints.largeDesktop,
+        isLargeDesktop: width >= breakpoints.largeDesktop,
+        screenWidth: width,
+        screenHeight: height,
+        orientation: width > height ? 'landscape' : 'portrait',
+        devicePixelRatio,
+        isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+        isHighDPI: devicePixelRatio > 1.5
+      })
+    }
+
+    // Throttle resize events
     const handleResize = () => {
       clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        setState(getInitialState())
-      }, debounceMs)
+      timeoutId = setTimeout(updateState, 100)
     }
 
     const handleOrientationChange = () => {
-      // Small delay to ensure dimensions are updated
-      setTimeout(() => {
-        setState(getInitialState())
-      }, 100)
+      // Small delay to allow browser to update dimensions
+      setTimeout(updateState, 150)
     }
 
-    // Initial state update after mounting
-    setState(getInitialState())
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('orientationchange', handleOrientationChange)
 
-    // Add event listeners
-    window.addEventListener('resize', handleResize, { passive: true })
-    
-    if (enableOrientation) {
-      window.addEventListener('orientationchange', handleOrientationChange, { passive: true })
-      // Also listen for resize as a fallback
-      window.addEventListener('resize', handleOrientationChange, { passive: true })
-    }
+    // Initial call
+    updateState()
 
     return () => {
-      clearTimeout(timeoutId)
       window.removeEventListener('resize', handleResize)
-      if (enableOrientation) {
-        window.removeEventListener('orientationchange', handleOrientationChange)
-        window.removeEventListener('resize', handleOrientationChange)
+      window.removeEventListener('orientationchange', handleOrientationChange)
+      clearTimeout(timeoutId)
+    }
+  }, [breakpoints.tablet, breakpoints.desktop, breakpoints.largeDesktop])
+
+  // Device-specific utilities
+  const utils = useMemo(() => ({
+    // Check if specific breakpoint
+    isBreakpoint: (breakpoint: keyof BreakpointConfig) => {
+      switch (breakpoint) {
+        case 'mobile':
+          return state.isMobile
+        case 'tablet':
+          return state.isTablet
+        case 'desktop':
+          return state.isDesktop
+        case 'largeDesktop':
+          return state.isLargeDesktop
+        default:
+          return false
+      }
+    },
+
+    // Check if at least a certain breakpoint
+    isAtLeast: (breakpoint: keyof BreakpointConfig) => {
+      const width = state.screenWidth
+      return width >= breakpoints[breakpoint]
+    },
+
+    // Check if below a certain breakpoint
+    isBelow: (breakpoint: keyof BreakpointConfig) => {
+      const width = state.screenWidth
+      return width < breakpoints[breakpoint]
+    },
+
+    // Get CSS media query string
+    getMediaQuery: (breakpoint: keyof BreakpointConfig, direction: 'min' | 'max' = 'min') => {
+      const value = breakpoints[breakpoint]
+      return direction === 'min' 
+        ? `(min-width: ${value}px)`
+        : `(max-width: ${value - 1}px)`
+    },
+
+    // Calendar-specific utilities
+    getCalendarLayout: () => {
+      if (state.isMobile) {
+        return {
+          view: 'day' as const,
+          slotsPerView: 8,
+          showSidebar: false,
+          compactMode: true,
+          touchOptimized: true
+        }
+      }
+      
+      if (state.isTablet) {
+        return {
+          view: state.orientation === 'landscape' ? 'week' : 'day' as const,
+          slotsPerView: 12,
+          showSidebar: state.orientation === 'landscape',
+          compactMode: false,
+          touchOptimized: true
+        }
+      }
+
+      return {
+        view: 'week' as const,
+        slotsPerView: 16,
+        showSidebar: true,
+        compactMode: false,
+        touchOptimized: false
+      }
+    },
+
+    // Touch target sizing
+    getTouchTargetSize: () => {
+      if (state.isMobile) {
+        return {
+          minHeight: 44, // iOS minimum
+          minWidth: 44,
+          padding: 12
+        }
+      }
+      
+      if (state.isTablet) {
+        return {
+          minHeight: 40,
+          minWidth: 40,
+          padding: 10
+        }
+      }
+
+      return {
+        minHeight: 32,
+        minWidth: 32,
+        padding: 8
+      }
+    },
+
+    // Font sizing
+    getFontScale: () => {
+      if (state.isMobile) {
+        return state.orientation === 'landscape' ? 0.9 : 1.0
+      }
+      
+      if (state.isTablet) {
+        return 1.1
+      }
+
+      return state.isLargeDesktop ? 1.2 : 1.1
+    },
+
+    // Animation preferences
+    getAnimationSettings: () => {
+      // Respect user's motion preferences
+      const prefersReducedMotion = typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+      return {
+        enableAnimations: !prefersReducedMotion && !state.isMobile,
+        duration: state.isMobile ? 200 : 300,
+        easing: state.isMobile ? 'ease-out' : 'ease-in-out'
       }
     }
-  }, [getInitialState, debounceMs, enableOrientation, mounted])
+  }), [state, breakpoints])
 
-  return state
+  return {
+    ...state,
+    ...utils,
+    breakpoints
+  }
 }
 
-/**
- * Hook for media query matching
- */
-export function useMediaQuery(query: string): boolean {
+// Hook for specific device type checks
+export function useDeviceType() {
+  const { isMobile, isTablet, isDesktop, isLargeDesktop, isTouchDevice } = useResponsive()
+
+  return useMemo(() => ({
+    isMobile,
+    isTablet,
+    isDesktop,
+    isLargeDesktop,
+    isTouchDevice,
+    
+    // Composite checks
+    isMobileOrTablet: isMobile || isTablet,
+    isDesktopOrLarger: isDesktop || isLargeDesktop,
+    
+    // Device category
+    deviceCategory: isMobile ? 'mobile' : isTablet ? 'tablet' : isDesktop ? 'desktop' : 'large-desktop'
+  }), [isMobile, isTablet, isDesktop, isLargeDesktop, isTouchDevice])
+}
+
+// Hook for media query matching
+export function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
 
     const mediaQuery = window.matchMedia(query)
-    const handler = () => setMatches(mediaQuery.matches)
-
-    // Set initial value
     setMatches(mediaQuery.matches)
 
-    // Listen for changes
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handler)
-    } else {
-      // Fallback for older browsers
-      mediaQuery.addListener(handler)
+    const handler = (event: MediaQueryListEvent) => {
+      setMatches(event.matches)
     }
 
-    return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handler)
-      } else {
-        mediaQuery.removeListener(handler)
-      }
-    }
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
   }, [query])
 
   return matches
 }
 
-/**
- * Hook for breakpoint-specific values
- */
-export function useBreakpointValue<T>(values: Partial<Record<Breakpoint, T>>, fallback: T): T {
-  const { currentBreakpoint } = useResponsive()
-
-  if (!currentBreakpoint) return fallback
-
-  // Check from largest to smallest breakpoint
-  const breakpointOrder: Breakpoint[] = ['3xl', '2xl', 'xl', 'lg', 'md', 'sm', 'xs']
-  const currentIndex = breakpointOrder.indexOf(currentBreakpoint)
-
-  for (let i = currentIndex; i < breakpointOrder.length; i++) {
-    const bp = breakpointOrder[i]
-    if (values[bp] !== undefined) {
-      return values[bp] as T
-    }
-  }
-
-  return fallback
-}
-
-/**
- * Hook for container queries (experimental)
- */
-export function useContainerQuery(containerRef: React.RefObject<HTMLElement>, query: string): boolean {
+// Hook for container queries (future-proofing)
+export function useContainerQuery(containerRef: React.RefObject<HTMLElement>, query: string) {
   const [matches, setMatches] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current || typeof window === 'undefined') return
 
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect
-        
-        // Simple query parsing (extend as needed)
-        if (query.includes('min-width:')) {
-          const minWidth = parseInt(query.match(/min-width:\s*(\d+)px/)?.[1] || '0')
-          setMatches(width >= minWidth)
-        } else if (query.includes('max-width:')) {
-          const maxWidth = parseInt(query.match(/max-width:\s*(\d+)px/)?.[1] || '0')
-          setMatches(width <= maxWidth)
-        }
+    // Polyfill for container queries (simplified)
+    const checkContainerQuery = () => {
+      if (!containerRef.current) return
+
+      const rect = containerRef.current.getBoundingClientRect()
+      
+      // Simple width-based container query parsing
+      const widthMatch = query.match(/\(min-width:\s*(\d+)px\)/)
+      if (widthMatch) {
+        const minWidth = parseInt(widthMatch[1])
+        setMatches(rect.width >= minWidth)
+        return
       }
-    })
 
-    observer.observe(containerRef.current)
+      const maxWidthMatch = query.match(/\(max-width:\s*(\d+)px\)/)
+      if (maxWidthMatch) {
+        const maxWidth = parseInt(maxWidthMatch[1])
+        setMatches(rect.width <= maxWidth)
+        return
+      }
+    }
 
-    return () => observer.disconnect()
+    checkContainerQuery()
+
+    const resizeObserver = new ResizeObserver(checkContainerQuery)
+    resizeObserver.observe(containerRef.current)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
   }, [containerRef, query])
 
   return matches
 }
 
-/**
- * Hook for touch interactions
- */
-export interface TouchState {
-  isPressed: boolean
-  isSwiping: boolean
-  swipeDirection: 'left' | 'right' | 'up' | 'down' | null
-  touchCount: number
-  lastTap: number
-  isDoubleTap: boolean
-}
-
-export function useTouch(elementRef: React.RefObject<HTMLElement>) {
-  const [touchState, setTouchState] = useState<TouchState>({
-    isPressed: false,
-    isSwiping: false,
-    swipeDirection: null,
-    touchCount: 0,
-    lastTap: 0,
-    isDoubleTap: false,
-  })
-
-  useEffect(() => {
-    const element = elementRef.current
-    if (!element) return
-
-    let startX = 0
-    let startY = 0
-    let startTime = 0
-
-    const handleTouchStart = (e: TouchEvent) => {
-      const touch = e.touches[0]
-      startX = touch.clientX
-      startY = touch.clientY
-      startTime = Date.now()
-
-      setTouchState(prev => ({
-        ...prev,
-        isPressed: true,
-        touchCount: e.touches.length,
-        isSwiping: false,
-        swipeDirection: null,
-      }))
-    }
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!touchState.isPressed) return
-
-      const touch = e.touches[0]
-      const deltaX = touch.clientX - startX
-      const deltaY = touch.clientY - startY
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
-
-      if (distance > 10) { // Minimum swipe distance
-        let direction: 'left' | 'right' | 'up' | 'down'
-        
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-          direction = deltaX > 0 ? 'right' : 'left'
-        } else {
-          direction = deltaY > 0 ? 'down' : 'up'
-        }
-
-        setTouchState(prev => ({
-          ...prev,
-          isSwiping: true,
-          swipeDirection: direction,
-        }))
-      }
-    }
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      const now = Date.now()
-      const isDoubleTap = now - touchState.lastTap < 300
-
-      setTouchState(prev => ({
-        ...prev,
-        isPressed: false,
-        isSwiping: false,
-        swipeDirection: null,
-        touchCount: 0,
-        lastTap: now,
-        isDoubleTap,
-      }))
-    }
-
-    element.addEventListener('touchstart', handleTouchStart, { passive: true })
-    element.addEventListener('touchmove', handleTouchMove, { passive: true })
-    element.addEventListener('touchend', handleTouchEnd, { passive: true })
-
-    return () => {
-      element.removeEventListener('touchstart', handleTouchStart)
-      element.removeEventListener('touchmove', handleTouchMove)
-      element.removeEventListener('touchend', handleTouchEnd)
-    }
-  }, [elementRef, touchState.isPressed, touchState.lastTap])
-
-  return touchState
-}
-
-/**
- * Hook for safe area insets (iOS devices)
- */
-export function useSafeArea() {
-  const [safeArea, setSafeArea] = useState({
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  })
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const updateSafeArea = () => {
-      const style = getComputedStyle(document.documentElement)
-      setSafeArea({
-        top: parseInt(style.getPropertyValue('env(safe-area-inset-top)') || '0'),
-        bottom: parseInt(style.getPropertyValue('env(safe-area-inset-bottom)') || '0'),
-        left: parseInt(style.getPropertyValue('env(safe-area-inset-left)') || '0'),
-        right: parseInt(style.getPropertyValue('env(safe-area-inset-right)') || '0'),
-      })
-    }
-
-    updateSafeArea()
-    window.addEventListener('resize', updateSafeArea, { passive: true })
-    window.addEventListener('orientationchange', updateSafeArea, { passive: true })
-
-    return () => {
-      window.removeEventListener('resize', updateSafeArea)
-      window.removeEventListener('orientationchange', updateSafeArea)
-    }
-  }, [])
-
-  return safeArea
-}
-
-// All hooks are exported individually above
 export default useResponsive

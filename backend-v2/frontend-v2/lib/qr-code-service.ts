@@ -113,18 +113,19 @@ export function downloadQRCode(
 }
 
 /**
- * Generate booking QR code with default styling
+ * Generate booking QR code with customizable styling
  */
 export async function generateBookingQRCode(
   bookingUrl: string,
-  size: QRCodeSize = 'medium'
+  size: QRCodeSize = 'medium',
+  customColor?: { dark: string; light: string }
 ): Promise<QRCodeGenerationResult> {
   const options: QRCodeOptions = {
     size,
     format: 'png',
     errorCorrectionLevel: 'M',
     margin: 4,
-    color: {
+    color: customColor || {
       dark: '#059669', // Teal-600 to match design system
       light: '#FFFFFF',
     },

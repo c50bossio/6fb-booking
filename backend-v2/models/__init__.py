@@ -125,6 +125,19 @@ from .six_fb_compliance import (
 from .guest_booking import (
     GuestBooking, GuestBookingNotification
 )
+# Hybrid Payment System Models
+from .hybrid_payment import (
+    PaymentMode, ExternalPaymentProcessor, CollectionType, CollectionStatus, ConnectionStatus,
+    PaymentProcessorConnection, ExternalTransaction, PlatformCollection, 
+    HybridPaymentConfig, PaymentModeHistory
+)
+# AI Models
+from .ai_models import (
+    ClientTier, ClientTierData, AIInterventionCampaign, InterventionStatus, 
+    InterventionType, InterventionOutcome, WeatherData, WeatherCondition,
+    AIInterventionLearning, MessageTemplate, AIMessageGeneration, MessagePersonalization,
+    ConversationIntent, ClientSentiment
+)
 
 __all__ = [
     # Main models from parent models.py
@@ -173,5 +186,14 @@ __all__ = [
     'SixFBComplianceScore', 'SixFBComplianceCheck', 'SixFBImprovementTask',
     'SixFBBenchmark', 'SixFBComplianceHistory',
     # Guest Booking Models
-    'GuestBooking', 'GuestBookingNotification'
+    'GuestBooking', 'GuestBookingNotification',
+    # Hybrid Payment System Models
+    'PaymentMode', 'ExternalPaymentProcessor', 'CollectionType', 'CollectionStatus', 'ConnectionStatus',
+    'PaymentProcessorConnection', 'ExternalTransaction', 'PlatformCollection', 
+    'HybridPaymentConfig', 'PaymentModeHistory',
+    # AI Models
+    'ClientTier', 'ClientTierData', 'AIInterventionCampaign', 'InterventionStatus', 
+    'InterventionType', 'InterventionOutcome', 'WeatherData', 'WeatherCondition',
+    'AIInterventionLearning', 'MessageTemplate', 'AIMessageGeneration', 'MessagePersonalization',
+    'ConversationIntent', 'ClientSentiment'
 ]

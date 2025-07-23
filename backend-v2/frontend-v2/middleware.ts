@@ -30,7 +30,7 @@ const publicRoutes = [
   '/privacy', 
   '/cookies',
   '/offline',
-  '/service-worker.js',
+  '/calendar-test', // For testing enhanced calendar components
   '/manifest.json',
 ]
 
@@ -145,11 +145,7 @@ export function middleware(request: NextRequest) {
   
   const response = NextResponse.next()
   
-  // Add service worker headers for proper caching
-  if (path === '/service-worker.js') {
-    response.headers.set('Service-Worker-Allowed', '/')
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
-  }
+  // Service worker headers removed - no longer needed
   
   // Add PWA headers for manifest
   if (path === '/manifest.json') {

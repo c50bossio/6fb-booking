@@ -5,7 +5,7 @@ import { getProfile, type User } from '@/lib/api'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AnalyticsErrorBoundary } from '@/components/error-boundaries'
-import { AnalyticsLoading, LoadingStates } from '@/components/ui/LoadingStates'
+import { AnalyticsLoading, LoadingStates } from '@/components/LoadingStates'
 import { 
   CurrencyDollarIcon,
   ArrowPathIcon,

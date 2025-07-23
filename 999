@@ -1,0 +1,85 @@
+#!/bin/bash
+# 999 - Quick workflow helper for BookedBarber
+# Just type: ./999
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+PURPLE='\033[0;35m'
+NC='\033[0m' # No Color
+
+echo -e "${PURPLE}🚀 BookedBarber Quick Workflow (999)${NC}"
+echo -e "${PURPLE}====================================${NC}\n"
+
+# Show current status first
+CURRENT_BRANCH=$(git branch --show-current)
+echo -e "${YELLOW}Current Branch:${NC} ${GREEN}$CURRENT_BRANCH${NC}"
+
+# Check for uncommitted changes
+if [[ -n $(git status -s) ]]; then
+    echo -e "${RED}⚠️  You have uncommitted changes!${NC}\n"
+fi
+
+# Show menu
+echo -e "${BLUE}What would you like to do?${NC}\n"
+
+echo -e "${GREEN}1${NC} ) 🚀 Deploy my feature to staging"
+echo -e "${GREEN}2${NC} ) 🎯 Deploy staging to production" 
+echo -e "${GREEN}3${NC} ) 🧹 Clean up after merge"
+echo -e "${GREEN}4${NC} ) 📊 Check workflow status"
+echo -e "${GREEN}5${NC} ) 🆕 Start new feature branch"
+echo -e "${GREEN}6${NC} ) 💾 Quick commit changes"
+echo -e "${GREEN}0${NC} ) ❌ Exit\n"
+
+read -p "Choose (0-6): " choice
+
+case $choice in
+    1)
+        echo -e "\n${YELLOW}Deploying feature to staging...${NC}"
+        ./scripts/deploy-feature.sh
+        ;;
+    2)
+        echo -e "\n${YELLOW}Deploying staging to production...${NC}"
+        ./scripts/promote-to-production.sh
+        ;;
+    3)
+        echo -e "\n${YELLOW}Cleaning up branches...${NC}"
+        ./scripts/cleanup-after-merge.sh
+        ;;
+    4)
+        echo -e "\n${YELLOW}Checking workflow status...${NC}"
+        ./scripts/workflow-status.sh
+        ;;
+    5)
+        echo -e "\n${YELLOW}Creating new feature branch...${NC}"
+        read -p "Feature name (e.g., user-profile): " feature_name
+        # Ensure we're on staging first
+        git checkout staging
+        git pull origin staging
+        # Create feature branch with date
+        branch_name="feature/${feature_name}-$(date +%Y%m%d)"
+        git checkout -b "$branch_name"
+        echo -e "${GREEN}✅ Created branch: $branch_name${NC}"
+        echo -e "${BLUE}Start coding! When done, run ${GREEN}./999${NC} again and choose option 1${NC}"
+        ;;
+    6)
+        echo -e "\n${YELLOW}Quick commit...${NC}"
+        git status -s
+        echo ""
+        read -p "Commit message (e.g., 'fix: resolve login issue'): " commit_msg
+        git add .
+        git commit -m "$commit_msg"
+        echo -e "${GREEN}✅ Changes committed!${NC}"
+        echo -e "${BLUE}Run ${GREEN}./999${NC} and choose option 1 to deploy${NC}"
+        ;;
+    0)
+        echo -e "\n${BLUE}Happy coding! 🚀${NC}"
+        exit 0
+        ;;
+    *)
+        echo -e "\n${RED}Invalid choice. Run ${GREEN}./999${NC} again.${NC}"
+        exit 1
+        ;;
+esac

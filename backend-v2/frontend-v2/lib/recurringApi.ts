@@ -324,7 +324,7 @@ export async function previewPatternOccurrences(
   const occurrences = []
   const startDate = new Date(pattern.start_date)
   const endDate = pattern.end_date ? new Date(pattern.end_date) : null
-  let currentDate = new Date(startDate)
+  const currentDate = new Date(startDate)
   let count = 0
 
   while (count < limit && (!endDate || currentDate <= endDate)) {

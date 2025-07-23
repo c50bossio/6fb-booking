@@ -1,48 +1,11 @@
 import { User } from './api'
+import { canAccessRoute, getUserBusinessFunction, type UserRole } from './role-utils'
 
-export type UserRole = 'user' | 'barber' | 'admin' | 'super_admin'
-
-export interface RoutePermission {
-  path: string
-  allowedRoles: UserRole[]
-  exact?: boolean
-}
-
-// Define route permissions
-export const routePermissions: RoutePermission[] = [
-  // Public routes (no authentication required)
-  { path: '/', allowedRoles: ['user', 'barber', 'admin', 'super_admin'], exact: true },
-  { path: '/login', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-  { path: '/register', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-  { path: '/forgot-password', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-  { path: '/reset-password', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-  
-  // Admin-only routes
-  { path: '/admin', allowedRoles: ['admin', 'super_admin'] },
-  { path: '/enterprise', allowedRoles: ['admin', 'super_admin'] },
-  
-  // Barber and Admin routes
-  { path: '/analytics', allowedRoles: ['barber', 'admin', 'super_admin'] },
-  { path: '/clients', allowedRoles: ['barber', 'admin', 'super_admin'] },
-  { path: '/notifications', allowedRoles: ['barber', 'admin', 'super_admin'] },
-  { path: '/payouts', allowedRoles: ['barber', 'admin', 'super_admin'] },
-  { path: '/barber-availability', allowedRoles: ['barber', 'admin', 'super_admin'] },
-  { path: '/barber', allowedRoles: ['barber', 'admin', 'super_admin'] },
-  { path: '/import', allowedRoles: ['barber', 'admin', 'super_admin'] },
-  { path: '/export', allowedRoles: ['barber', 'admin', 'super_admin'] },
-  { path: '/sms', allowedRoles: ['barber', 'admin', 'super_admin'] },
-  
-  // Authenticated user routes (all authenticated users)
-  { path: '/dashboard', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-  { path: '/bookings', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-  { path: '/book', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-  { path: '/settings', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-  { path: '/recurring', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-  { path: '/payments', allowedRoles: ['user', 'barber', 'admin', 'super_admin'] },
-]
+// Route permissions are now handled by the centralized role utilities
+// This eliminates the need for redundant permission arrays
 
 /**
- * Check if a user has permission to access a specific route
+ * Streamlined route permission checking using centralized role utilities
  */
 export function hasRoutePermission(
   pathname: string, 
@@ -63,37 +26,18 @@ export function hasRoutePermission(
     }
   }
 
-  // Find matching route permission
-  const permission = routePermissions.find(route => {
-    if (route.exact) {
-      return route.path === pathname
-    }
-    return pathname.startsWith(route.path)
-  })
-
-  // If no specific permission found, allow for authenticated users (default behavior)
-  if (!permission) {
-    return { allowed: true }
-  }
-
-  // Check if user's role is allowed
-  const userRole = user.role as UserRole
-  if (!userRole || !permission.allowedRoles.includes(userRole)) {
-    // Determine appropriate redirect based on user role
-    let redirectTo = '/dashboard'
+  // Use centralized route access control
+  const userRole = user.role || 'user'
+  const hasAccess = canAccessRoute(userRole, pathname)
+  
+  if (!hasAccess) {
+    // Get appropriate redirect based on user's business function
+    const redirectTo = getDefaultDashboard(user)
     
-    if (userRole === 'user') {
-      redirectTo = '/dashboard'
-    } else if (userRole === 'barber') {
-      redirectTo = '/dashboard'
-    } else if (userRole === 'admin' || userRole === 'super_admin') {
-      redirectTo = '/admin'
-    }
-
     return { 
       allowed: false, 
       redirectTo,
-      reason: `Access denied. Required roles: ${permission.allowedRoles.join(', ')}`
+      reason: `Access denied for role: ${userRole}`
     }
   }
 
@@ -101,86 +45,69 @@ export function hasRoutePermission(
 }
 
 /**
- * Check if user has admin privileges
+ * Simplified role checking functions using centralized utilities
  */
 export function isAdmin(user: User | null): boolean {
-  return user?.role === 'admin' || user?.role === 'super_admin'
+  if (!user?.role) return false
+  const businessFunction = getUserBusinessFunction(user.role)
+  return businessFunction === 'system' || businessFunction === 'owner' || businessFunction === 'manager'
 }
 
-/**
- * Check if user has barber or admin privileges
- */
 export function isStaff(user: User | null): boolean {
-  return user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin'
+  if (!user?.role) return false
+  const businessFunction = getUserBusinessFunction(user.role)
+  return ['system', 'owner', 'manager', 'provider'].includes(businessFunction)
 }
 
-/**
- * Check if user is a regular user (customer)
- */
 export function isUser(user: User | null): boolean {
-  return user?.role === 'user'
+  if (!user?.role) return false
+  const businessFunction = getUserBusinessFunction(user.role)
+  return businessFunction === 'client'
 }
 
 /**
- * Get user's default dashboard route based on role
+ * Get user's optimal dashboard route based on their business function
  */
 export function getDefaultDashboard(user: User | null): string {
-  if (!user) return '/login'
+  if (!user?.role) return '/login'
   
-  const role = user.role as UserRole
-  switch (role) {
-    case 'admin':
-    case 'super_admin':
-      return '/admin'
-    case 'barber':
-      return '/dashboard'
-    case 'user':
+  const businessFunction = getUserBusinessFunction(user.role)
+  
+  switch (businessFunction) {
+    case 'system':
+      return '/admin' // Super admin, platform admin
+    case 'owner':
+      return '/enterprise/dashboard' // Enterprise owner -> enterprise dashboard
+    case 'manager':
+      return '/admin' // Shop manager -> admin panel
+    case 'provider':
+      return '/dashboard' // Barbers, individual barbers, receptionists
+    case 'client':
+      return '/dashboard' // Clients use standard dashboard
+    case 'viewer':
     default:
-      return '/dashboard'
+      return '/dashboard' // Default fallback
   }
 }
 
 /**
- * Get navigation items based on user role
+ * Get navigation items based on user role (DEPRECATED)
+ * 
+ * This function is deprecated. Use the centralized navigation system from:
+ * @see /lib/navigation.ts - filterNavigationByRole()
+ * @see /lib/navigation.ts - getMobileNavigationTabs()
+ * @see /lib/navigation.ts - getQuickActionsForRole()
+ * 
+ * The new system provides better performance, caching, and consistency.
  */
 export function getNavigationItems(user: User | null) {
+  console.warn('getNavigationItems() is deprecated. Use filterNavigationByRole() from /lib/navigation.ts instead.')
+  
   if (!user) return []
-
-  const baseItems = [
+  
+  // Return minimal fallback navigation
+  return [
     { name: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
-    { name: 'Book Appointment', href: '/book', icon: 'book' },
-    { name: 'My Bookings', href: '/bookings', icon: 'bookings' },
     { name: 'Settings', href: '/settings', icon: 'settings' },
   ]
-
-  const staffItems = [
-    { name: 'Analytics', href: '/analytics', icon: 'analytics' },
-    { name: 'Clients', href: '/clients', icon: 'clients' },
-    { name: 'Notifications', href: '/notifications', icon: 'notifications' },
-    { name: 'SMS', href: '/sms', icon: 'sms' },
-    { name: 'Import/Export', href: '/import', icon: 'import' },
-  ]
-
-  const barberItems = [
-    { name: 'Availability', href: '/barber-availability', icon: 'availability' },
-    { name: 'Payouts', href: '/payouts', icon: 'payouts' },
-  ]
-
-  const adminItems = [
-    { name: 'Admin Panel', href: '/admin', icon: 'admin' },
-  ]
-
-  const enterpriseItems = [
-    { name: 'Enterprise Dashboard', href: '/enterprise/dashboard', icon: 'enterprise' },
-  ]
-
-  if (user?.role === 'super_admin') {
-    return [...baseItems, ...staffItems, ...barberItems, ...adminItems, ...enterpriseItems]
-  } else if (isAdmin(user)) {
-    return [...baseItems, ...staffItems, ...barberItems, ...adminItems]
-  } else if (isStaff(user)) {
-    return [...baseItems, ...staffItems, ...barberItems]
-  } else {
-    return baseItems
-  }
 }
