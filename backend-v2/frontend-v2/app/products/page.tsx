@@ -369,14 +369,17 @@ export default function ProductsPage() {
       {/* Pagination */}
       {(() => {
         // Pre-validate data to satisfy TypeScript strict mode
-        if (!data || typeof data.total !== 'number' || data.total <= (filters.limit || 20)) {
+        if (!data || !data.total || typeof data.total !== 'number' || data.total <= (filters.limit || 20)) {
           return null
         }
+        
+        // Type assertion to force TypeScript compliance in strict mode
+        const validatedData = data as { total: number; has_more: boolean }
         
         return (
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">
-              Showing {(filters.offset || 0) + 1} to {Math.min((filters.offset || 0) + (filters.limit || 20), data.total)} of {data.total} products
+              Showing {(filters.offset || 0) + 1} to {Math.min((filters.offset || 0) + (filters.limit || 20), validatedData.total)} of {validatedData.total} products
             </p>
             <div className="flex gap-2">
               <Button
@@ -394,7 +397,7 @@ export default function ProductsPage() {
                   ...prev,
                   offset: (prev.offset || 0) + (prev.limit || 20)
                 }))}
-                disabled={!data.has_more}
+                disabled={!validatedData.has_more}
                 variant="outline"
               >
                 Next
