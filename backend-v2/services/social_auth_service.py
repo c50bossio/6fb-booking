@@ -269,15 +269,19 @@ class SocialAuthService:
             if state:
                 params["state"] = state
             
-            # Build URL with parameters
-            param_string = "&".join([f"{k}={v}" for k, v in params.items()])
+            # Build URL with parameters (URL encode them)
+            from urllib.parse import urlencode
+            param_string = urlencode(params)
             return f"{base_url}?{param_string}"
             
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
             logger.error(f"Failed to generate {provider} OAuth URL: {str(e)}")
+            logger.error(f"Full traceback: {error_details}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to generate OAuth URL: {str(e)}"
+                detail=f"Failed to generate OAuth URL for {provider}: {str(e)}"
             )
     
     async def __aenter__(self):
