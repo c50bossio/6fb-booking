@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""  # REQUIRED: Set STRIPE_WEBHOOK_SECRET environment variable
     stripe_connect_client_id: str = ""  # REQUIRED: Set STRIPE_CONNECT_CLIENT_ID environment variable
     
-    # Google Calendar OAuth2 settings
+    # Google OAuth2 settings (for Calendar and Social Login)
     google_client_id: str = ""
     google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:8000/api/calendar/callback"
@@ -51,6 +51,10 @@ class Settings(BaseSettings):
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/calendar.events"
     ]
+    
+    # Facebook OAuth2 settings
+    facebook_app_id: str = ""
+    facebook_app_secret: str = ""
     
     # Booking Configuration
     booking_min_lead_time_minutes: int = 15  # Minimum time before appointment can be booked
@@ -358,6 +362,16 @@ class Settings(BaseSettings):
                 self.openai_api_key = get_secret('OPENAI_API_KEY', required=False) or ""
             if not self.google_ai_api_key:
                 self.google_ai_api_key = get_secret('GOOGLE_AI_API_KEY', required=False) or ""
+                
+            # Load OAuth provider credentials
+            if not self.google_client_id:
+                self.google_client_id = get_secret('GOOGLE_CLIENT_ID', required=False) or ""
+            if not self.google_client_secret:
+                self.google_client_secret = get_secret('GOOGLE_CLIENT_SECRET', required=False) or ""
+            if not self.facebook_app_id:
+                self.facebook_app_id = get_secret('FACEBOOK_APP_ID', required=False) or ""
+            if not self.facebook_app_secret:
+                self.facebook_app_secret = get_secret('FACEBOOK_APP_SECRET', required=False) or ""
                 
             logger.info("Secrets loaded securely from environment variables")
             
