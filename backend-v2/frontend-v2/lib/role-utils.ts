@@ -22,7 +22,7 @@ export const ROLE_HIERARCHY = {
 export const PERMISSION_LEVELS = {
   FULL_ACCESS: ['super_admin', 'enterprise_owner'],
   BUSINESS_ADMIN: ['admin', 'shop_owner', 'shop_manager'],
-  SERVICE_ACCESS: ['barber', 'individual_barber', 'receptionist'],
+  SERVICE_ACCESS: ['admin', 'barber', 'individual_barber', 'receptionist'],
   CLIENT_ACCESS: ['client', 'user'],
   READ_ONLY: ['viewer']
 } as const
@@ -123,6 +123,7 @@ export function getUserBusinessFunction(userRole: string): 'system' | 'owner' | 
 export function getDisplayRole(userRole: string): string {
   const roleMapping: Record<string, string> = {
     'super_admin': 'Super Admin',
+    'admin': 'Admin',
     'platform_admin': 'Platform Admin',
     'enterprise_owner': 'Enterprise Owner',
     'shop_owner': 'Shop Owner',
