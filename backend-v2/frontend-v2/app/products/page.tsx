@@ -367,7 +367,7 @@ export default function ProductsPage() {
       </Card>
       
       {/* Pagination */}
-      {data && data.total > filters.limit! && (
+      {data && data.total && data.total > filters.limit! && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600">
             Showing {filters.offset! + 1} to {Math.min(filters.offset! + filters.limit!, data.total)} of {data.total} products
