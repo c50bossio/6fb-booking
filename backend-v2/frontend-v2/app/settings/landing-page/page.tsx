@@ -428,7 +428,7 @@ export default function LandingPageSettings() {
               <Label htmlFor="testimonial-source">Testimonial Source</Label>
               <Select
                 value={settings.testimonial_source}
-                onChange={(testimonial_source) => setSettings({ ...settings, testimonial_source })}
+                onChange={(testimonial_source) => setSettings({ ...settings, testimonial_source: testimonial_source as string })}
                 options={[
                   { value: "gmb_auto", label: "Google My Business (Auto)" },
                   { value: "custom", label: "Custom Testimonials" },
