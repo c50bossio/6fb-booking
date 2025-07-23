@@ -52,10 +52,10 @@ class AIProviderManager:
                 logger.warning(f"Failed to initialize Google provider: {e}")
         
         if not self.providers:
-            # In development mode, allow initialization without providers for testing
-            if settings.environment == "development":
-                logger.warning("No AI providers configured in development mode. Agent system will use mock responses.")
-                self.providers["mock"] = None  # Mock provider for development
+            # In development/staging mode, allow initialization without providers for testing
+            if settings.environment in ["development", "staging"]:
+                logger.warning(f"No AI providers configured in {settings.environment} mode. Agent system will use mock responses.")
+                self.providers["mock"] = None  # Mock provider for development/staging
             else:
                 raise ValueError("No AI providers configured. Please set at least one API key.")
     
