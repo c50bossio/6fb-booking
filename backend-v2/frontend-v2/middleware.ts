@@ -117,7 +117,7 @@ export function middleware(request: NextRequest) {
 
   // Protected routes that require authentication
   const protectedRoutes = ['/dashboard', '/appointments', '/clients', '/analytics', '/settings', '/calendar']
-  const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
+  const isProtectedRoute = protectedRoutes.some(route => path === route || path.startsWith(route + '/'))
   
   // Simplified auth page handling - always allow access to login/register
   // Let the frontend handle auth state validation
