@@ -117,16 +117,21 @@ const nextConfig = {
       }
     }
 
-    // Bundle analyzer in development
+    // Bundle analyzer in development (only if available)
     if (!isServer && !dev) {
-      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-      config.plugins.push(
-        new BundleAnalyzerPlugin({
-          analyzerMode: 'static',
-          reportFilename: '../bundle-analyzer.html',
-          openAnalyzer: false,
-        })
-      )
+      try {
+        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+        config.plugins.push(
+          new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            reportFilename: '../bundle-analyzer.html',
+            openAnalyzer: false,
+          })
+        )
+      } catch (error) {
+        // webpack-bundle-analyzer not available in production - skip
+        console.log('webpack-bundle-analyzer not available, skipping bundle analysis')
+      }
     }
 
     // Enhanced chunk optimization
