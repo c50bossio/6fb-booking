@@ -204,7 +204,6 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
             <Select
               value={formData.category}
               onChange={(value) => setFormData({ ...formData, category: value as string })}
-              required
               options={[
                 { value: "positive", label: "Positive" },
                 { value: "negative", label: "Negative" },
