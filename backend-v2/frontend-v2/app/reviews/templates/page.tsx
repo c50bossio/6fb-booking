@@ -317,14 +317,19 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
           </div>
           <div className="flex flex-wrap gap-2">
             {formData.placeholders?.map((placeholder, index) => (
-              <Badge
+              <button
                 key={index}
-                variant="outline"
-                className="cursor-pointer hover:bg-red-50 hover:text-red-700"
+                type="button"
                 onClick={() => removePlaceholder(placeholder)}
+                className="inline-block"
               >
-                {placeholder} ×
-              </Badge>
+                <Badge
+                  variant="outline"
+                  className="cursor-pointer hover:bg-red-50 hover:text-red-700"
+                >
+                  {placeholder} ×
+                </Badge>
+              </button>
             ))}
           </div>
         </div>
@@ -345,14 +350,19 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
           </div>
           <div className="flex flex-wrap gap-2">
             {formData.seo_keywords?.map((keyword, index) => (
-              <Badge
+              <button
                 key={index}
-                variant="outline"
-                className="cursor-pointer hover:bg-red-50 hover:text-red-700"
+                type="button"
                 onClick={() => removeKeyword(keyword)}
+                className="inline-block"
               >
-                {keyword} ×
-              </Badge>
+                <Badge
+                  variant="outline"
+                  className="cursor-pointer hover:bg-red-50 hover:text-red-700"
+                >
+                  {keyword} ×
+                </Badge>
+              </button>
             ))}
           </div>
         </div>
