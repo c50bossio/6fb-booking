@@ -94,7 +94,8 @@ async def social_auth_callback(
 async def get_oauth_login_url(
     provider: str,
     redirect_uri: str,
-    state: str = None
+    state: str = None,
+    db: Session = Depends(get_db)
 ) -> Dict[str, str]:
     """
     Generate OAuth login URL for social provider
@@ -116,7 +117,7 @@ async def get_oauth_login_url(
             )
         
         # Initialize social auth service
-        social_auth_service = SocialAuthService(None)  # No DB needed for URL generation
+        social_auth_service = SocialAuthService(db)
         
         # Generate OAuth URL
         oauth_url = await social_auth_service.get_oauth_url(
