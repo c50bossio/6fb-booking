@@ -86,8 +86,10 @@ export default function LandingPageSettings() {
     try {
       // Get user profile to get organization slug
       const profile = await getProfile()
-      if (profile?.organization?.slug) {
-        setOrganizationSlug(profile.organization.slug)
+      // Type assertion for organization data that may exist in runtime but not in interface
+      const profileWithOrg = profile as any
+      if (profileWithOrg?.organization?.slug) {
+        setOrganizationSlug(profileWithOrg.organization.slug)
       }
       
       // Load landing page settings
