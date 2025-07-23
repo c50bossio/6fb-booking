@@ -42,7 +42,8 @@ test_analytics_api() {
     local encoded_start=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$start_date'))")
     local encoded_end=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$end_date'))")
     
-    local api_url="http://localhost:8000/api/v1/agents/analytics?start_date=${encoded_start}&end_date=${encoded_end}"
+    local backend_port=${BACKEND_PORT:-8000}
+    local api_url="http://localhost:${backend_port}/api/v1/agents/analytics?start_date=${encoded_start}&end_date=${encoded_end}"
     
     log "Testing URL: $api_url"
     
@@ -68,7 +69,8 @@ test_analytics_api() {
 test_analytics_page() {
     log "Testing analytics page load..."
     
-    local analytics_url="http://localhost:3000/agents/analytics"
+    local frontend_port=${FRONTEND_PORT:-3000}
+    local analytics_url="http://localhost:${frontend_port}/agents/analytics"
     
     # Basic connectivity test
     if curl -s "$analytics_url" > /dev/null; then
@@ -97,7 +99,8 @@ test_analytics_page() {
 test_date_range_handling() {
     log "Testing different date range formats..."
     
-    local base_url="http://localhost:8000/api/v1/agents/analytics"
+    local backend_port=${BACKEND_PORT:-8000}
+    local base_url="http://localhost:${backend_port}/api/v1/agents/analytics"
     local test_dates=(
         "2025-06-04T01:18:40.197Z:2025-07-04T01:18:40.197Z"
         "2025-06-04:2025-07-04"
