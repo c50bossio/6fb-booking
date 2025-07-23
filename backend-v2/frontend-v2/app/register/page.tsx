@@ -38,7 +38,11 @@ export default function RegisterPage() {
         password: data.accountInfo.password,
         user_type: (data.businessType || 'individual') === 'individual' ? 'barber' : 'barbershop',
         businessName: data.businessInfo.businessName,
-        businessType: data.businessType || 'individual',
+        businessType: (() => {
+          const type = data.businessType || 'individual'
+          // Map 'solo' to 'individual' for API compatibility
+          return type === 'solo' ? 'individual' : type
+        })() as 'enterprise' | 'individual' | 'studio' | 'salon',
         address: {
           street: data.businessInfo.address.street,
           city: data.businessInfo.address.city,
