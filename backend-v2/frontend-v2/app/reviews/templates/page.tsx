@@ -203,7 +203,7 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
             <label className="block text-sm font-medium mb-2">Category</label>
             <Select
               value={formData.category}
-              onChange={(value) => setFormData({ ...formData, category: value })}
+              onChange={(value) => setFormData({ ...formData, category: value as string })}
               required
               options={[
                 { value: "positive", label: "Positive" },
@@ -229,7 +229,7 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
             <label className="block text-sm font-medium mb-2">Platform (Optional)</label>
             <Select
               value={formData.platform || ''}
-              onChange={(value) => setFormData({ ...formData, platform: value as ReviewPlatform })}
+              onChange={(value) => setFormData({ ...formData, platform: (value as string) as ReviewPlatform })}
               placeholder="Any platform"
               options={[
                 { value: "", label: "Any Platform" },
@@ -248,7 +248,7 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
             <label className="block text-sm font-medium mb-2">Sentiment Trigger</label>
             <Select
               value={formData.sentiment_trigger || ''}
-              onChange={(value) => setFormData({ ...formData, sentiment_trigger: value as ReviewSentiment })}
+              onChange={(value) => setFormData({ ...formData, sentiment_trigger: (value as string) as ReviewSentiment })}
               placeholder="Any sentiment"
               options={[
                 { value: "", label: "Any Sentiment" },
