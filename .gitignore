@@ -197,6 +197,8 @@ backend-v2/frontend-v2/test-reports/
 *.png
 !frontend/public/**/*.png
 !frontend/src/**/*.png
+!backend-v2/frontend-v2/public/**/*.png
+!backend-v2/frontend-v2/src/**/*.png
 
 # Puppeteer artifacts
 /puppeteer-*.js
