@@ -28,12 +28,13 @@ check_service() {
 start_service() {
     local service_name=$1
     local start_script=$2
+    local service_name_lower=$(echo "$service_name" | tr '[:upper:]' '[:lower:]')
     
     echo "🚀 Starting $service_name..."
     chmod +x "$start_script"
-    nohup "$start_script" > "logs/${service_name,,}.out" 2>&1 &
+    nohup "$start_script" > "logs/${service_name_lower}.out" 2>&1 &
     local pid=$!
-    echo $pid > "pids/${service_name,,}.pid"
+    echo $pid > "pids/${service_name_lower}.pid"
     echo "✅ $service_name started with PID $pid"
 }
 

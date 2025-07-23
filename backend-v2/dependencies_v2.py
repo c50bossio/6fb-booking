@@ -1,348 +1,389 @@
 """
-Enhanced Dependencies with Multi-tenancy Support for BookedBarber V2
-Provides location-aware dependency injection for secure data access
+Enhanced database dependencies with automatic read/write routing for BookedBarber V2.
+
+This module provides FastAPI dependencies that automatically route database queries
+to appropriate read replicas or primary database based on operation type.
 """
 
-from typing import Optional, List, Union
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from db import get_db
-from models import User, Appointment, Payment, Client, Service, Barber
+from sqlalchemy import text
+import logging
+from typing import Generator, Optional, Dict, Any
+from contextlib import contextmanager
+import inspect
+import re
+
+from database.read_replica_config import (
+    get_db_manager, 
+    get_read_db, 
+    get_write_db, 
+    db_session, 
+    QueryType,
+    DatabaseManager
+)
 from utils.auth import get_current_user
-from middleware.multi_tenancy import LocationContext, LocationAccessError, location_filter
+from models.user import User
+
+logger = logging.getLogger(__name__)
 
 
-async def get_current_active_user(
-    current_user: User = Depends(get_current_user)
-) -> User:
-    """Get current active user with location validation"""
-    if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+class DatabaseDependency:
+    """Enhanced database dependency with automatic query routing."""
     
-    # Validate user has location assigned (unless admin)
-    if not current_user.location_id and current_user.role not in ["admin", "super_admin"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User not assigned to any location. Contact administrator."
-        )
+    def __init__(self, query_type: QueryType = QueryType.READ, require_auth: bool = False):
+        self.query_type = query_type
+        self.require_auth = require_auth
+        self.db_manager = get_db_manager()
     
-    return current_user
-
-
-async def get_current_admin_user(
-    current_user: User = Depends(get_current_active_user)
-) -> User:
-    """Get current admin user"""
-    if current_user.role not in ["admin", "super_admin"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required"
-        )
-    return current_user
-
-
-async def get_location_context(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-) -> LocationContext:
-    """Get location context for database operations"""
-    allowed_locations = getattr(request.state, "allowed_locations", None)
-    return LocationContext(db, current_user, allowed_locations)
-
-
-class LocationAwareService:
-    """Base class for location-aware services"""
-    
-    def __init__(self, db: Session, location_context: LocationContext):
-        self.db = db
-        self.location_context = location_context
-    
-    def filter_by_location(self, query, model_class):
-        """Apply location filter to query"""
-        return self.location_context.filter_query(query, model_class)
-
-
-# Location-aware data dependencies
-
-async def get_user_appointments(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> List[Appointment]:
-    """Get appointments accessible to current user"""
-    query = db.query(Appointment)
-    
-    if current_user.role == "barber":
-        # Barbers see their own appointments
-        query = query.filter(Appointment.barber_id == current_user.id)
-    elif current_user.role == "user":
-        # Regular users see their own appointments
-        query = query.filter(Appointment.user_id == current_user.id)
-    else:
-        # Admins see all appointments in their location(s)
-        query = location_context.filter_query(query, Appointment)
-    
-    return query.all()
-
-
-async def get_location_payments(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> List[Payment]:
-    """Get payments for user's location(s)"""
-    if current_user.role not in ["admin", "super_admin"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required for payment data"
-        )
-    
-    query = db.query(Payment)
-    query = location_context.filter_query(query, Payment)
-    return query.all()
-
-
-async def get_location_clients(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> List[Client]:
-    """Get clients for user's location(s)"""
-    query = db.query(Client)
-    
-    if current_user.role == "barber":
-        # Barbers see their own clients
-        query = query.filter(Client.barber_id == current_user.id)
-    else:
-        # Admins see all clients in their location(s)
-        query = location_context.filter_query(query, Client)
-    
-    return query.all()
-
-
-async def get_location_services(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> List[Service]:
-    """Get services for user's location(s)"""
-    query = db.query(Service)
-    
-    if current_user.role == "barber":
-        # Barbers see their own services
-        query = query.filter(Service.barber_id == current_user.id)
-    else:
-        # Others see all services in their location(s)
-        query = location_context.filter_query(query, Service)
-    
-    return query.all()
-
-
-async def get_location_barbers(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> List[User]:
-    """Get barbers for user's location(s)"""
-    query = db.query(User).filter(User.role == "barber")
-    
-    if current_user.role not in ["admin", "super_admin"]:
-        # Non-admins only see barbers in their location
-        if current_user.location_id:
-            query = query.filter(User.location_id == current_user.location_id)
+    def __call__(self, request: Request, current_user: Optional[User] = None) -> Session:
+        """
+        FastAPI dependency that provides appropriate database session.
+        
+        Args:
+            request: FastAPI request object
+            current_user: Current authenticated user (if authentication required)
+            
+        Returns:
+            Database session routed to appropriate database
+        """
+        # Check authentication if required
+        if self.require_auth and not current_user:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        
+        # Determine query type from HTTP method if not explicitly set
+        query_type = self._determine_query_type(request)
+        
+        # Get appropriate session
+        if query_type == QueryType.WRITE or query_type == QueryType.TRANSACTION:
+            session = self.db_manager.get_write_session()
         else:
-            return []
-    else:
-        # Admins see barbers in allowed locations
-        if location_context.allowed_locations != "all":
-            query = query.filter(User.location_id.in_(location_context.allowed_locations))
-    
-    return query.all()
-
-
-# Validation dependencies
-
-async def validate_appointment_access(
-    appointment_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> Appointment:
-    """Validate user can access appointment"""
-    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
-    
-    if not appointment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Appointment not found"
-        )
-    
-    # Check access based on role
-    if current_user.role in ["admin", "super_admin"]:
-        # Admins must have location access
-        if hasattr(appointment, "location_id") and appointment.location_id:
-            location_context.validate_update(appointment)
-    elif current_user.role == "barber":
-        # Barbers can only access their appointments
-        if appointment.barber_id != current_user.id:
-            raise LocationAccessError("Access denied to this appointment")
-    else:
-        # Users can only access their own appointments
-        if appointment.user_id != current_user.id:
-            raise LocationAccessError("Access denied to this appointment")
-    
-    return appointment
-
-
-async def validate_payment_access(
-    payment_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> Payment:
-    """Validate user can access payment"""
-    payment = db.query(Payment).filter(Payment.id == payment_id).first()
-    
-    if not payment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Payment not found"
-        )
-    
-    # Only admins and the payment owner can access
-    if current_user.role in ["admin", "super_admin"]:
-        if hasattr(payment, "location_id") and payment.location_id:
-            location_context.validate_update(payment)
-    elif payment.user_id != current_user.id and payment.barber_id != current_user.id:
-        raise LocationAccessError("Access denied to this payment")
-    
-    return payment
-
-
-async def validate_client_access(
-    client_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> Client:
-    """Validate user can access client"""
-    client = db.query(Client).filter(Client.id == client_id).first()
-    
-    if not client:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Client not found"
-        )
-    
-    # Check access based on role
-    if current_user.role in ["admin", "super_admin"]:
-        # Validate through barber's location
-        if client.barber_id:
-            barber = db.query(User).filter(User.id == client.barber_id).first()
-            if barber and barber.location_id:
-                if location_context.allowed_locations != "all" and \
-                   barber.location_id not in location_context.allowed_locations:
-                    raise LocationAccessError("Access denied to this client")
-    elif current_user.role == "barber":
-        # Barbers can only access their own clients
-        if client.barber_id != current_user.id:
-            raise LocationAccessError("Access denied to this client")
-    else:
-        # Regular users cannot access client data
-        raise LocationAccessError("Insufficient permissions to access client data")
-    
-    return client
-
-
-async def validate_service_access(
-    service_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> Service:
-    """Validate user can access service"""
-    service = db.query(Service).filter(Service.id == service_id).first()
-    
-    if not service:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Service not found"
-        )
-    
-    # Check access based on role
-    if current_user.role in ["admin", "super_admin"]:
-        # Validate through barber's location
-        if service.barber_id:
-            barber = db.query(User).filter(User.id == service.barber_id).first()
-            if barber and barber.location_id:
-                if location_context.allowed_locations != "all" and \
-                   barber.location_id not in location_context.allowed_locations:
-                    raise LocationAccessError("Access denied to this service")
-    elif current_user.role == "barber":
-        # Barbers can only access their own services
-        if service.barber_id != current_user.id:
-            raise LocationAccessError("Access denied to this service")
-    
-    return service
-
-
-# Creation validation dependencies
-
-async def validate_appointment_creation(
-    appointment_data: dict,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> dict:
-    """Validate appointment creation with location checks"""
-    barber_id = appointment_data.get("barber_id")
-    
-    if barber_id:
-        # Validate barber exists and is in allowed location
-        barber = db.query(User).filter(
-            User.id == barber_id,
-            User.role == "barber"
-        ).first()
+            session = self.db_manager.get_read_session()
         
-        if not barber:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Barber not found"
-            )
+        # Add request context to session for monitoring
+        if hasattr(session, 'info'):
+            session.info.update({
+                'request_method': request.method,
+                'request_path': str(request.url.path),
+                'query_type': query_type.value,
+                'user_id': current_user.id if current_user else None,
+                'start_time': request.state.__dict__.get('start_time')
+            })
         
-        # Check barber's location
-        if location_context.allowed_locations != "all":
-            if not barber.location_id or \
-               barber.location_id not in location_context.allowed_locations:
-                raise LocationAccessError(
-                    "Cannot create appointment with barber from different location"
-                )
+        try:
+            yield session
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Database error in {request.method} {request.url.path}: {e}")
+            raise
+        finally:
+            session.close()
     
-    # Add location_id to appointment if not present
-    if "location_id" not in appointment_data and current_user.location_id:
-        appointment_data["location_id"] = current_user.location_id
-    
-    return appointment_data
+    def _determine_query_type(self, request: Request) -> QueryType:
+        """Determine query type based on HTTP method and route."""
+        if self.query_type != QueryType.READ:
+            return self.query_type
+        
+        # Route write operations based on HTTP method
+        if request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+            return QueryType.WRITE
+        
+        # Check if it's a transaction-heavy endpoint
+        path = str(request.url.path).lower()
+        transaction_patterns = [
+            '/payments/', '/bookings/', '/appointments/',
+            '/bulk', '/batch', '/import', '/sync'
+        ]
+        
+        if any(pattern in path for pattern in transaction_patterns):
+            return QueryType.TRANSACTION
+        
+        return QueryType.READ
 
 
-async def validate_payment_creation(
-    payment_data: dict,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-    location_context: LocationContext = Depends(get_location_context)
-) -> dict:
-    """Validate payment creation with location checks"""
-    appointment_id = payment_data.get("appointment_id")
+class SmartDatabaseRouter:
+    """Smart database router that analyzes SQL queries to determine routing."""
     
-    if appointment_id:
-        # Validate appointment exists and user has access
-        appointment = await validate_appointment_access(
-            appointment_id, db, current_user, location_context
-        )
+    def __init__(self):
+        self.db_manager = get_db_manager()
+        self.read_keywords = {
+            'select', 'with', 'show', 'describe', 'explain', 'analyze'
+        }
+        self.write_keywords = {
+            'insert', 'update', 'delete', 'create', 'drop', 'alter',
+            'truncate', 'replace', 'merge', 'upsert', 'copy'
+        }
+    
+    def route_query(self, query: str) -> QueryType:
+        """
+        Analyze SQL query and determine appropriate routing.
         
-        # Add location context to payment
-        if hasattr(appointment, "location_id"):
-            payment_data["location_id"] = appointment.location_id
+        Args:
+            query: SQL query string
+            
+        Returns:
+            QueryType for routing decision
+        """
+        # Normalize query
+        normalized = re.sub(r'\s+', ' ', query.strip().lower())
+        first_word = normalized.split()[0] if normalized else ''
+        
+        # Detect transaction indicators
+        if any(keyword in normalized for keyword in ['begin', 'commit', 'rollback', 'savepoint']):
+            return QueryType.TRANSACTION
+        
+        # Detect write operations
+        if first_word in self.write_keywords:
+            return QueryType.WRITE
+        
+        # Complex queries that might benefit from primary
+        if any(keyword in normalized for keyword in ['join', 'group by', 'order by', 'having']):
+            # Large complex reads might be better on primary for consistency
+            if len(normalized) > 500 or normalized.count('join') > 2:
+                return QueryType.TRANSACTION
+        
+        # Default to read
+        return QueryType.READ
     
-    return payment_data
+    @contextmanager
+    def smart_session(self, query: Optional[str] = None, force_type: Optional[QueryType] = None):
+        """
+        Context manager that provides optimally routed database session.
+        
+        Args:
+            query: SQL query to analyze for routing
+            force_type: Force specific query type regardless of analysis
+        """
+        if force_type:
+            query_type = force_type
+        elif query:
+            query_type = self.route_query(query)
+        else:
+            query_type = QueryType.READ
+        
+        with db_session(query_type) as session:
+            yield session
+
+
+# Pre-configured dependency instances
+get_read_db_dep = DatabaseDependency(QueryType.READ)
+get_write_db_dep = DatabaseDependency(QueryType.WRITE)
+get_transaction_db_dep = DatabaseDependency(QueryType.TRANSACTION)
+
+# Authenticated dependencies
+get_auth_read_db_dep = DatabaseDependency(QueryType.READ, require_auth=True)
+get_auth_write_db_dep = DatabaseDependency(QueryType.WRITE, require_auth=True)
+get_auth_transaction_db_dep = DatabaseDependency(QueryType.TRANSACTION, require_auth=True)
+
+
+# FastAPI dependencies
+def get_read_db_session(request: Request) -> Generator[Session, None, None]:
+    """FastAPI dependency for read operations."""
+    return get_read_db_dep(request)
+
+
+def get_write_db_session(request: Request) -> Generator[Session, None, None]:
+    """FastAPI dependency for write operations."""
+    return get_write_db_dep(request)
+
+
+def get_transaction_db_session(request: Request) -> Generator[Session, None, None]:
+    """FastAPI dependency for transaction operations."""
+    return get_transaction_db_dep(request)
+
+
+def get_authenticated_read_db(
+    request: Request, 
+    current_user: User = Depends(get_current_user)
+) -> Generator[Session, None, None]:
+    """FastAPI dependency for authenticated read operations."""
+    return get_auth_read_db_dep(request, current_user)
+
+
+def get_authenticated_write_db(
+    request: Request, 
+    current_user: User = Depends(get_current_user)
+) -> Generator[Session, None, None]:
+    """FastAPI dependency for authenticated write operations."""
+    return get_auth_write_db_dep(request, current_user)
+
+
+def get_authenticated_transaction_db(
+    request: Request, 
+    current_user: User = Depends(get_current_user)
+) -> Generator[Session, None, None]:
+    """FastAPI dependency for authenticated transaction operations."""
+    return get_auth_transaction_db_dep(request, current_user)
+
+
+# Smart router instance
+smart_router = SmartDatabaseRouter()
+
+
+def get_smart_db_session(request: Request) -> Generator[Session, None, None]:
+    """
+    FastAPI dependency with intelligent query routing.
+    Automatically determines read/write based on HTTP method and route patterns.
+    """
+    query_type = QueryType.READ
+    
+    # Route based on HTTP method
+    if request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+        query_type = QueryType.WRITE
+    
+    # Check for transaction-heavy endpoints
+    path = str(request.url.path).lower()
+    if any(pattern in path for pattern in ['/bulk', '/batch', '/import', '/sync', '/transaction']):
+        query_type = QueryType.TRANSACTION
+    
+    # Use smart router
+    with smart_router.smart_session(force_type=query_type) as session:
+        yield session
+
+
+# Database health monitoring dependency
+def get_db_health() -> Dict[str, Any]:
+    """FastAPI dependency that provides database health status."""
+    return get_db_manager().health_check()
+
+
+def get_db_stats() -> Dict[str, Any]:
+    """FastAPI dependency that provides database statistics."""
+    return get_db_manager().get_stats()
+
+
+# Connection pool monitoring utility
+class ConnectionPoolMonitor:
+    """Monitor connection pool usage and health."""
+    
+    def __init__(self, db_manager: DatabaseManager):
+        self.db_manager = db_manager
+    
+    def get_pool_metrics(self) -> Dict[str, Any]:
+        """Get current connection pool metrics."""
+        metrics = {
+            'primary': self._get_engine_metrics(self.db_manager.primary_engine, 'primary'),
+            'replicas': []
+        }
+        
+        for i, engine in enumerate(self.db_manager.replica_engines):
+            replica_metrics = self._get_engine_metrics(engine, f'replica_{i+1}')
+            metrics['replicas'].append(replica_metrics)
+        
+        return metrics
+    
+    def _get_engine_metrics(self, engine, name: str) -> Dict[str, Any]:
+        """Get metrics for a specific database engine."""
+        try:
+            pool = engine.pool
+            return {
+                'name': name,
+                'pool_size': pool.size(),
+                'checked_in': pool.checkedin(),
+                'checked_out': pool.checkedout(),
+                'overflow': pool.overflow(),
+                'total_available': pool.checkedin(),
+                'utilization_percent': round((pool.checkedout() / (pool.size() + pool.overflow())) * 100, 2)
+            }
+        except Exception as e:
+            return {'name': name, 'error': str(e)}
+    
+    def check_pool_health(self) -> Dict[str, Any]:
+        """Check if connection pools are healthy."""
+        metrics = self.get_pool_metrics()
+        health_status = {
+            'healthy': True,
+            'warnings': [],
+            'metrics': metrics
+        }
+        
+        # Check primary pool
+        primary_metrics = metrics['primary']
+        if 'error' not in primary_metrics:
+            if primary_metrics['utilization_percent'] > 80:
+                health_status['warnings'].append('Primary pool utilization high')
+            if primary_metrics['overflow'] > primary_metrics['pool_size'] * 0.5:
+                health_status['warnings'].append('Primary pool overflow high')
+        
+        # Check replica pools
+        for replica_metrics in metrics['replicas']:
+            if 'error' not in replica_metrics:
+                if replica_metrics['utilization_percent'] > 90:
+                    health_status['warnings'].append(f"{replica_metrics['name']} utilization critical")
+        
+        if health_status['warnings']:
+            health_status['healthy'] = False
+        
+        return health_status
+
+
+# Global instances
+pool_monitor = ConnectionPoolMonitor(get_db_manager())
+
+
+def get_pool_health() -> Dict[str, Any]:
+    """FastAPI dependency for connection pool health."""
+    return pool_monitor.check_pool_health()
+
+
+# Backward compatibility
+def get_db() -> Generator[Session, None, None]:
+    """
+    Backward compatibility function.
+    Now intelligently routes to read replica for read operations.
+    """
+    # For backward compatibility, default to read operations
+    # Write operations should use explicit write dependencies
+    session = get_db_manager().get_read_session()
+    try:
+        yield session
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+# Usage examples in FastAPI routes:
+"""
+from dependencies_v2 import (
+    get_read_db_session, 
+    get_write_db_session, 
+    get_authenticated_write_db,
+    get_smart_db_session
+)
+
+# Read operation (automatically routed to replica)
+@app.get("/users")
+async def get_users(db: Session = Depends(get_read_db_session)):
+    return db.query(User).all()
+
+# Write operation (automatically routed to primary)
+@app.post("/users")
+async def create_user(
+    user_data: UserCreate,
+    db: Session = Depends(get_authenticated_write_db)
+):
+    user = User(**user_data.dict())
+    db.add(user)
+    db.commit()
+    return user
+
+# Smart routing (automatically determines read/write)
+@app.get("/complex-report")
+async def complex_report(db: Session = Depends(get_smart_db_session)):
+    # Complex read operation - might be routed to primary for consistency
+    return db.execute(text("SELECT * FROM complex_view")).fetchall()
+
+# Transaction operation (always uses primary)
+@app.post("/bulk-import")
+async def bulk_import(
+    data: List[dict],
+    db: Session = Depends(get_transaction_db_session)
+):
+    # Bulk operations that require consistency
+    for item in data:
+        db.add(SomeModel(**item))
+    db.commit()
+    return {"imported": len(data)}
+"""
