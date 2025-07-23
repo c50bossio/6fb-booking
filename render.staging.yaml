@@ -91,7 +91,7 @@ services:
       - key: SENTRY_ENVIRONMENT
         value: staging
     healthCheckPath: /health
-    autoDeploy: false  # Manual deploy for staging
+    autoDeploy: true  # Auto-deploy on staging branch changes
     branch: staging  # Deploy from staging branch
     numInstances: 1
     
@@ -132,7 +132,7 @@ services:
       - key: NEXT_PUBLIC_SHOW_TEST_DATA
         value: "true"
     healthCheckPath: /
-    autoDeploy: false  # Manual deploy for staging
+    autoDeploy: true  # Auto-deploy on staging branch changes
     branch: staging  # Deploy from staging branch
     numInstances: 1
 
