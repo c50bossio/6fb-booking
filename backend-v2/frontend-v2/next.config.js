@@ -333,7 +333,7 @@ const nextConfig = {
   poweredByHeader: false,
 
   // Output configuration
-  output: 'standalone',
+  // output: 'standalone', // Disabled for staging - causes static asset serving issues
 
   // Enhanced error handling
   onDemandEntries: {
