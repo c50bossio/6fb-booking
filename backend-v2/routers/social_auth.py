@@ -11,6 +11,7 @@ import logging
 
 from database import get_db
 from services.social_auth_service import SocialAuthService
+from config import settings
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -138,3 +139,15 @@ async def get_oauth_login_url(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate OAuth URL: {str(e)}"
         )
+
+@router.get("/config-test")
+async def test_oauth_config():
+    """Test endpoint to check OAuth configuration"""
+    return {
+        "google_client_id_configured": bool(settings.google_client_id),
+        "google_client_secret_configured": bool(settings.google_client_secret),
+        "facebook_app_id_configured": bool(settings.facebook_app_id),
+        "facebook_app_secret_configured": bool(settings.facebook_app_secret),
+        "google_client_id_length": len(settings.google_client_id) if settings.google_client_id else 0,
+        "facebook_app_id_length": len(settings.facebook_app_id) if settings.facebook_app_id else 0
+    }
