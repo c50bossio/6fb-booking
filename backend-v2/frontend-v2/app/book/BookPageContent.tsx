@@ -412,19 +412,21 @@ export default function BookPage() {
         
         return {
           id: -1000 - index, // Negative IDs to distinguish from real appointments
+          barber_id: 1, // Dummy barber ID
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
-          service_name: 'Available Slot',
-          client_name: `Click to book ${selectedService}`,
-          status: 'available',
-          duration_minutes: 30,
-          price: SERVICES.find(s => s.id === selectedService)?.amount || 0,
-          // Custom properties
+          status: 'pending' as const,
+          total_price: SERVICES.find(s => s.id === selectedService)?.amount || 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          // Custom properties for display
           isAvailableSlot: true,
           originalTime: slot.time,
-          // Style as available
-          barber_id: 1, // Dummy barber ID
-          barber_name: 'Available'
+          barber: {
+            id: 1,
+            name: 'Available',
+            email: 'available@example.com'
+          }
         }
       })
     
@@ -441,15 +443,20 @@ export default function BookPage() {
         
         return {
           id: -2000 - index,
+          barber_id: 1,
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
-          service_name: 'Booked',
-          client_name: 'Not Available',
-          status: 'confirmed',
-          duration_minutes: 30,
-          barber_id: 1,
-          barber_name: 'Booked',
-          isAvailableSlot: false
+          status: 'confirmed' as const,
+          total_price: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          // Custom properties for display
+          isAvailableSlot: false,
+          barber: {
+            id: 1,
+            name: 'Booked',
+            email: 'booked@example.com'
+          }
         }
       })
     
