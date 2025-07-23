@@ -167,9 +167,9 @@ else:
     
     # Add webhook security middleware for signature validation
     webhook_secrets = {
-        "/api/v1/webhooks/stripe": os.getenv("STRIPE_WEBHOOK_SECRET", ""),
-        "/api/v1/webhooks/sendgrid": os.getenv("SENDGRID_WEBHOOK_SECRET", ""),
-        "/api/v1/webhooks/twilio": os.getenv("TWILIO_WEBHOOK_SECRET", "")
+        "/api/v2/webhooks/stripe": os.getenv("STRIPE_WEBHOOK_SECRET", ""),
+        "/api/v2/webhooks/sendgrid": os.getenv("SENDGRID_WEBHOOK_SECRET", ""),
+        "/api/v2/webhooks/twilio": os.getenv("TWILIO_WEBHOOK_SECRET", "")
     }
     app.add_middleware(WebhookSecurityMiddleware, webhook_secrets=webhook_secrets)
 
@@ -294,58 +294,58 @@ app.add_middleware(CORSMiddleware, **cors_config)
 app.include_router(health.router)
 
 # Include routers with API versioning
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(auth_simple.router, prefix="/api/v1")  # Simplified auth for schema compatibility
-app.include_router(social_auth.router, prefix="/api/v1")  # Social authentication (Google/Facebook OAuth)
+app.include_router(auth.router, prefix="/api/v2")
+app.include_router(auth_simple.router, prefix="/api/v2")  # Simplified auth for schema compatibility
+app.include_router(social_auth.router, prefix="/api/v2")  # Social authentication (Google/Facebook OAuth)
 
 # Removed auth bypass - using real authentication only
-app.include_router(mfa.router, prefix="/api/v1")  # Multi-Factor Authentication endpoints
-app.include_router(bookings.router, prefix="/api/v1")
-app.include_router(appointments.router, prefix="/api/v1")  # Standardized appointment endpoints
-app.include_router(payments.router, prefix="/api/v1")
-app.include_router(clients.router, prefix="/api/v1")
-app.include_router(users.router, prefix="/api/v1")
-app.include_router(timezones.router, prefix="/api/v1")
-app.include_router(calendar.router, prefix="/api/v1")
-app.include_router(google_calendar.router, prefix="/api/v1")  # Enhanced Google Calendar integration with V1 feature parity
-app.include_router(services.router, prefix="/api/v1")
-# app.include_router(service_templates.router, prefix="/api/v1/service-templates")  # Temporarily disabled due to schema issues
-app.include_router(pricing_validation.router, prefix="/api/v1")
-app.include_router(six_fb_compliance.router, prefix="/api/v1")
-app.include_router(barbers.router, prefix="/api/v1")
-app.include_router(barber_availability.router, prefix="/api/v1")
-app.include_router(recurring_appointments.router, prefix="/api/v1")
-app.include_router(webhooks.router, prefix="/api/v1")
-app.include_router(analytics.router, prefix="/api/v1")
-app.include_router(dashboard.router, prefix="/api/v1")
-app.include_router(booking_rules.router, prefix="/api/v1")
-app.include_router(notifications.router, prefix="/api/v1")
-app.include_router(imports.router, prefix="/api/v1")
-app.include_router(exports.router, prefix="/api/v1")  # Data export functionality
-app.include_router(sms_conversations.router, prefix="/api/v1")
-app.include_router(sms_webhooks.router, prefix="/api/v1")
-app.include_router(webhook_management.router, prefix="/api/v1")  # Re-enabled with webhook models
-app.include_router(enterprise.router, prefix="/api/v1")
-app.include_router(marketing.router, prefix="/api/v1")
-app.include_router(marketing_analytics.router, prefix="/api/v1")  # Marketing analytics and attribution
+app.include_router(mfa.router, prefix="/api/v2")  # Multi-Factor Authentication endpoints
+app.include_router(bookings.router, prefix="/api/v2")
+app.include_router(appointments.router, prefix="/api/v2")  # Standardized appointment endpoints
+app.include_router(payments.router, prefix="/api/v2")
+app.include_router(clients.router, prefix="/api/v2")
+app.include_router(users.router, prefix="/api/v2")
+app.include_router(timezones.router, prefix="/api/v2")
+app.include_router(calendar.router, prefix="/api/v2")
+app.include_router(google_calendar.router, prefix="/api/v2")  # Enhanced Google Calendar integration with V1 feature parity
+app.include_router(services.router, prefix="/api/v2")
+# app.include_router(service_templates.router, prefix="/api/v2/service-templates")  # Temporarily disabled due to schema issues
+app.include_router(pricing_validation.router, prefix="/api/v2")
+app.include_router(six_fb_compliance.router, prefix="/api/v2")
+app.include_router(barbers.router, prefix="/api/v2")
+app.include_router(barber_availability.router, prefix="/api/v2")
+app.include_router(recurring_appointments.router, prefix="/api/v2")
+app.include_router(webhooks.router, prefix="/api/v2")
+app.include_router(analytics.router, prefix="/api/v2")
+app.include_router(dashboard.router, prefix="/api/v2")
+app.include_router(booking_rules.router, prefix="/api/v2")
+app.include_router(notifications.router, prefix="/api/v2")
+app.include_router(imports.router, prefix="/api/v2")
+app.include_router(exports.router, prefix="/api/v2")  # Data export functionality
+app.include_router(sms_conversations.router, prefix="/api/v2")
+app.include_router(sms_webhooks.router, prefix="/api/v2")
+app.include_router(webhook_management.router, prefix="/api/v2")  # Re-enabled with webhook models
+app.include_router(enterprise.router, prefix="/api/v2")
+app.include_router(marketing.router, prefix="/api/v2")
+app.include_router(marketing_analytics.router, prefix="/api/v2")  # Marketing analytics and attribution
 app.include_router(short_urls.router, prefix="/s")  # Prefix for branded short URLs to avoid conflicts
-app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v1
-# app.include_router(email_analytics.router, prefix="/api/v1")  # Disabled - service archived
-app.include_router(test_data.router, prefix="/api/v1")
-app.include_router(reviews.router, prefix="/api/v1")  # Re-enabled for testing
-app.include_router(locations.router, prefix="/api/v1")  # Re-enabled - schema implementation verified
+app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v2
+# app.include_router(email_analytics.router, prefix="/api/v2")  # Disabled - service archived
+app.include_router(test_data.router, prefix="/api/v2")
+app.include_router(reviews.router, prefix="/api/v2")  # Re-enabled for testing
+app.include_router(locations.router, prefix="/api/v2")  # Re-enabled - schema implementation verified
 app.include_router(integrations.router)  # Integration management endpoints - re-enabled for testing
-app.include_router(api_keys.router, prefix="/api/v1")  # API key management
-app.include_router(commissions.router, prefix="/api/v1")  # Commission management
-app.include_router(commission_rates.router, prefix="/api/v1")  # Commission rate management
-app.include_router(billing.router, prefix="/api/v1")  # Chair-based billing and subscription management
+app.include_router(api_keys.router, prefix="/api/v2")  # API key management
+app.include_router(commissions.router, prefix="/api/v2")  # Commission management
+app.include_router(commission_rates.router, prefix="/api/v2")  # Commission rate management
+app.include_router(billing.router, prefix="/api/v2")  # Chair-based billing and subscription management
 app.include_router(invitations.router)  # Staff invitation management
-app.include_router(organizations.router, prefix="/api/v1")  # Organization management
-app.include_router(trial_monitoring.router, prefix="/api/v1")  # Trial expiration monitoring and notifications
+app.include_router(organizations.router, prefix="/api/v2")  # Organization management
+app.include_router(trial_monitoring.router, prefix="/api/v2")  # Trial expiration monitoring and notifications
 app.include_router(privacy.router)  # GDPR compliance and privacy management
 # app.include_router(cache.router)  # Redis cache management and monitoring - disabled due to archived services
-app.include_router(ai_analytics.router, prefix="/api/v1")  # Revolutionary AI-powered cross-user analytics
-app.include_router(agents.router, prefix="/api/v1")  # AI Agent management - enabled with mock provider
+app.include_router(ai_analytics.router, prefix="/api/v2")  # Revolutionary AI-powered cross-user analytics
+app.include_router(agents.router, prefix="/api/v2")  # AI Agent management - enabled with mock provider
 app.include_router(tracking.router)  # Conversion tracking and attribution
 app.include_router(customer_pixels.router)  # Customer tracking pixel management
 app.include_router(public_booking.router)  # Public booking endpoints for organization-specific pages
@@ -353,7 +353,7 @@ app.include_router(products.router)  # Product management and Shopify integratio
 # app.include_router(shopify_webhooks.router)  # Shopify webhook handlers for real-time sync - disabled due to bleach dependency
 
 # Include public routes (no authentication required)
-app.include_router(services_public_router, prefix="/api/v1")
+app.include_router(services_public_router, prefix="/api/v2")
 
 @app.get("/")
 def root():
