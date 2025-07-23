@@ -41,7 +41,7 @@ jobs:
         python-version: '3.11'
         
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
@@ -227,7 +227,7 @@ jobs:
         python-version: '3.11'
 
     - name: Cache Python dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('backend-v2/requirements.txt') }}
@@ -325,7 +325,7 @@ jobs:
           -x
 
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: backend-test-results
@@ -388,7 +388,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
@@ -466,7 +466,7 @@ jobs:
         GENERATE_SOURCEMAP: false
 
     - name: Upload frontend test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: frontend-test-results
@@ -490,7 +490,7 @@ jobs:
         GENERATE_SOURCEMAP: false
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: frontend-build
         path: |
@@ -861,7 +861,7 @@ jobs:
         cat hook-status-report.md >> $GITHUB_STEP_SUMMARY
     
     - name: Upload hook status report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: hook-status-report
         path: hook-status-report.md
@@ -890,7 +890,7 @@ jobs:
         echo "- ✅ Emergency bypass mechanisms available" >> $GITHUB_STEP_SUMMARY
         
     - name: Upload optimization report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: hook-optimization-report
