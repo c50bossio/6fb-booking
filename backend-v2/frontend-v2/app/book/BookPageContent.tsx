@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { LoadingButton, TimeSlotsLoadingSkeleton, ErrorDisplay } from '@/components/LoadingStates'
 import { appointmentsAPI, getMyBookings, getProfile, getNextAvailableSlot, quickBooking as quickBookingAPI, type SlotsResponse, type TimeSlot, type NextAvailableSlot, createGuestBooking, createGuestQuickBooking, type GuestInformation, type GuestBookingCreate, type GuestQuickBookingCreate, type GuestBookingResponse, type AppointmentCreate } from '@/lib/api'
+import BarberSelection from '@/components/booking/BarberSelection'
 import { toastError, toastSuccess } from '@/hooks/use-toast'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { 
@@ -38,6 +39,7 @@ export default function BookPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [selectedService, setSelectedService] = useState<string | null>(null)
+  const [selectedBarber, setSelectedBarber] = useState<{id: number, name: string} | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   // Use cached time slots for better performance
@@ -54,6 +56,7 @@ export default function BookPage() {
     isDataStale
   } = useTimeSlotsCache({
     service: selectedService || undefined,
+    barberId: selectedBarber?.id,
     preloadNearbyDates: true,
     backgroundRefresh: true,
     onCacheUpdate: () => {
@@ -100,7 +103,7 @@ export default function BookPage() {
     
     if (urlService && SERVICES.find(s => s.id === urlService)) {
       setSelectedService(urlService)
-      setStep(2)
+      setStep(2) // Will go to barber selection
     }
     
     if (urlDate) {
@@ -112,8 +115,8 @@ export default function BookPage() {
     
     if (urlTime && /^\d{1,2}:\d{2}$/.test(urlTime)) {
       setSelectedTime(urlTime)
-      if (selectedDate && selectedService) {
-        setStep(3)
+      if (selectedDate && selectedService && selectedBarber) {
+        setStep(5) // Skip to confirmation if all data is present
       }
     }
   }, [searchParams])
@@ -221,7 +224,7 @@ export default function BookPage() {
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time)
-    setStep(3)
+    setStep(4) // Move to confirmation 
   }
 
   const handleBack = () => {
@@ -230,9 +233,16 @@ export default function BookPage() {
       if (step === 2) {
         setSelectedService(null)
       } else if (step === 3) {
+        setSelectedBarber(null)
+      } else if (step === 4) {
         setSelectedTime(null)
       }
     }
+  }
+
+  const handleBarberSelect = (barberId: number, barberName: string) => {
+    setSelectedBarber({ id: barberId, name: barberName })
+    setStep(3) // Move to date/time selection
   }
 
   const handleQuickBooking = async () => {
@@ -246,14 +256,14 @@ export default function BookPage() {
         // Authenticated user quick booking
         const booking = await quickBookingAPI({ service: selectedService })
         setBookingId(booking.id)
-        setStep(4)
+        setStep(5) // Go to payment
         
         // Invalidate cache since a booking was made
         invalidateCache()
       } else {
         // Guest user quick booking - need guest info first
         if (!guestInfo.first_name || !guestInfo.last_name || !guestInfo.email || !guestInfo.phone) {
-          setStep(3.5) // Guest info step
+          setStep(4.5) // Guest info step
           return
         }
         
@@ -264,7 +274,7 @@ export default function BookPage() {
         
         setGuestBookingResponse(guestBooking)
         setBookingId(guestBooking.id)
-        setStep(4)
+        setStep(5) // Go to payment
         
         // Invalidate cache since a booking was made
         invalidateCache()
@@ -301,7 +311,7 @@ export default function BookPage() {
         }
         const booking = await appointmentsAPI.create(appointmentData)
         setBookingId(booking.id)
-        setStep(4)
+        setStep(5) // Go to payment
         
         // Invalidate cache for the booked date since availability changed
         invalidateCache(dateStr)
@@ -314,7 +324,7 @@ export default function BookPage() {
       } else {
         // Guest user booking
         if (!guestInfo.first_name || !guestInfo.last_name || !guestInfo.email || !guestInfo.phone) {
-          setStep(3.5) // Guest info step
+          setStep(4.5) // Guest info step
           return
         }
         
@@ -328,7 +338,7 @@ export default function BookPage() {
         
         setGuestBookingResponse(guestBooking)
         setBookingId(guestBooking.id)
-        setStep(4)
+        setStep(5) // Go to payment
         
         // Invalidate cache for the booked date since availability changed
         invalidateCache(dateStr)
@@ -373,7 +383,7 @@ export default function BookPage() {
       router.push('/dashboard?booking=success&payment=complete')
     } else {
       // For guest users, show confirmation and option to create account
-      setStep(5) // Success step for guests
+      setStep(6) // Success step for guests
     }
   }
 
@@ -510,7 +520,7 @@ export default function BookPage() {
                 }`}>
                   2
                 </div>
-                <span className="ml-2 font-medium hidden sm:inline">Date & Time</span>
+                <span className="ml-2 font-medium hidden sm:inline">Barber</span>
               </div>
               
               <div className={`h-px w-8 md:w-16 ${step >= 3 ? 'bg-primary-600' : 'bg-gray-300'}`} />
@@ -521,24 +531,8 @@ export default function BookPage() {
                 }`}>
                   3
                 </div>
-                <span className="ml-2 font-medium hidden sm:inline">{isAuthenticated === false ? 'Info' : 'Confirm'}</span>
+                <span className="ml-2 font-medium hidden sm:inline">Date & Time</span>
               </div>
-              
-              {/* Show additional steps for guests */}
-              {isAuthenticated === false && (
-                <>
-                  <div className={`h-px w-8 md:w-16 ${step >= 3.5 ? 'bg-primary-600' : 'bg-gray-300'}`} />
-                  
-                  <div className={`flex items-center ${step >= 3.5 ? 'text-primary-600' : 'text-gray-400'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      step >= 3.5 ? 'bg-primary-600 text-white' : 'bg-gray-200'
-                    }`}>
-                      4
-                    </div>
-                    <span className="ml-2 font-medium hidden sm:inline">Confirm</span>
-                  </div>
-                </>
-              )}
               
               <div className={`h-px w-8 md:w-16 ${step >= 4 ? 'bg-primary-600' : 'bg-gray-300'}`} />
               
@@ -546,7 +540,34 @@ export default function BookPage() {
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                   step >= 4 ? 'bg-primary-600 text-white' : 'bg-gray-200'
                 }`}>
-                  {isAuthenticated === false ? '5' : '4'}
+                  4
+                </div>
+                <span className="ml-2 font-medium hidden sm:inline">{isAuthenticated === false ? 'Info' : 'Confirm'}</span>
+              </div>
+              
+              {/* Show additional steps for guests */}
+              {isAuthenticated === false && (
+                <>
+                  <div className={`h-px w-8 md:w-16 ${step >= 4.5 ? 'bg-primary-600' : 'bg-gray-300'}`} />
+                  
+                  <div className={`flex items-center ${step >= 4.5 ? 'text-primary-600' : 'text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      step >= 4.5 ? 'bg-primary-600 text-white' : 'bg-gray-200'
+                    }`}>
+                      5
+                    </div>
+                    <span className="ml-2 font-medium hidden sm:inline">Confirm</span>
+                  </div>
+                </>
+              )}
+              
+              <div className={`h-px w-8 md:w-16 ${step >= 5 ? 'bg-primary-600' : 'bg-gray-300'}`} />
+              
+              <div className={`flex items-center ${step >= 5 ? 'text-primary-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  step >= 5 ? 'bg-primary-600 text-white' : 'bg-gray-200'
+                }`}>
+                  {isAuthenticated === false ? '6' : '5'}
                 </div>
                 <span className="ml-2 font-medium hidden sm:inline">Payment</span>
               </div>
@@ -648,8 +669,18 @@ export default function BookPage() {
           </div>
         )}
 
-        {/* Step 2: Select Date & Time */}
-        {step === 2 && (
+        {/* Step 2: Select Barber */}
+        {step === 2 && selectedService && (
+          <BarberSelection
+            selectedService={selectedService}
+            onBarberSelect={handleBarberSelect}
+            onBack={handleBack}
+            organizationSlug={organizationSlug}
+          />
+        )}
+
+        {/* Step 3: Select Date & Time */}
+        {step === 3 && (
           <div>
             <div className="flex items-center justify-between mb-8">
               <Button
@@ -843,8 +874,8 @@ export default function BookPage() {
           </div>
         )}
 
-        {/* Step 3: Confirm Booking */}
-        {step === 3 && (
+        {/* Step 4: Confirm Booking */}
+        {step === 4 && (
           <div className="max-w-md mx-auto">
             <div className="flex items-center justify-between mb-8">
               <Button
@@ -955,12 +986,12 @@ export default function BookPage() {
           </div>
         )}
 
-        {/* Step 3.5: Guest Information (for non-authenticated users) */}
-        {step === 3.5 && isAuthenticated === false && (
+        {/* Step 4.5: Guest Information (for non-authenticated users) */}
+        {step === 4.5 && isAuthenticated === false && (
           <div className="max-w-md mx-auto">
             <div className="flex items-center justify-between mb-8">
               <Button
-                onClick={() => setStep(3)}
+                onClick={() => setStep(4)}
                 variant="ghost"
                 size="sm"
                 leftIcon={
@@ -1072,8 +1103,8 @@ export default function BookPage() {
           </div>
         )}
 
-        {/* Step 4: Payment */}
-        {step === 4 && bookingId && (
+        {/* Step 5: Payment */}
+        {step === 5 && bookingId && (
           <div className="max-w-md mx-auto">
             <h1 className="text-2xl font-bold text-center mb-8">Complete Payment</h1>
             
@@ -1086,8 +1117,8 @@ export default function BookPage() {
           </div>
         )}
 
-        {/* Step 5: Success (for guest users) */}
-        {step === 5 && isAuthenticated === false && guestBookingResponse && (
+        {/* Step 6: Success (for guest users) */}
+        {step === 6 && isAuthenticated === false && guestBookingResponse && (
           <div className="max-w-md mx-auto">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">

@@ -42,8 +42,23 @@ class MultiTenancyMiddleware:
         "/api/v1/auth/refresh",
         "/api/v1/auth/forgot-password",
         "/api/v1/auth/reset-password",
+        "/api/v2/auth/login",
+        "/api/v2/auth/register", 
+        "/api/v2/auth/refresh",
+        "/api/v2/auth/forgot-password",
+        "/api/v2/auth/reset-password",
         "/api/v2/health",
+        "/health",
         "/api/v1/webhooks",  # Webhooks need special handling
+        "/api/v2/barbers/directory",  # Public barber directory
+        "/api/v2/barbers/search",     # Public barber search
+        "/api/v2/barbers/public/",    # Public barber profiles
+        "/api/v2/barbers/featured",   # Featured barbers
+        "/api/v2/barbers/stats",      # Directory stats
+        "/api/v2/barbers/by-specialty/",  # Barbers by specialty
+        "/api/v2/barbers/by-location/",   # Barbers by location
+        "/api/v2/barbers/similar/",       # Similar barbers
+        "/api/v2/barbers/exists/",        # Barber existence check
     }
     
     # Endpoints that require special handling

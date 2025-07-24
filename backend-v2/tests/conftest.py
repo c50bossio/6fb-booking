@@ -112,6 +112,24 @@ def test_admin(db: Session) -> User:
 
 
 @pytest.fixture(scope="function")
+def test_barber(db: Session) -> User:
+    """Create a test barber user"""
+    barber = User(
+        email="barber@example.com",
+        name="Test Barber",
+        hashed_password=get_password_hash("barberpass123"),
+        role="barber",
+        bio="Professional barber with 5 years experience",
+        years_experience=5,
+        profile_image_url="https://example.com/barber.jpg"
+    )
+    db.add(barber)
+    db.commit()
+    db.refresh(barber)
+    return barber
+
+
+@pytest.fixture(scope="function")
 def auth_headers(test_user: User) -> dict:
     """Get authentication headers for test user"""
     access_token = create_access_token(data={"sub": test_user.email, "role": test_user.role})
@@ -122,6 +140,13 @@ def auth_headers(test_user: User) -> dict:
 def admin_auth_headers(test_admin: User) -> dict:
     """Get authentication headers for admin user"""
     access_token = create_access_token(data={"sub": test_admin.email, "role": test_admin.role})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture(scope="function")
+def barber_auth_headers(test_barber: User) -> dict:
+    """Get authentication headers for barber user"""
+    access_token = create_access_token(data={"sub": test_barber.email, "role": test_barber.role})
     return {"Authorization": f"Bearer {access_token}"}
 
 
