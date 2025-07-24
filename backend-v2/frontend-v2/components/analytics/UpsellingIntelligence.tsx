@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowTrendingUpIcon, CurrencyDollarIcon, UserIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
+import ClientDetailsModal from './ClientDetailsModal'
 
 interface UpsellOpportunity {
   id: string
@@ -90,6 +91,8 @@ export function UpsellingIntelligence({
 }: UpsellingIntelligenceProps) {
   const [displayedOpportunities, setDisplayedOpportunities] = useState<UpsellOpportunity[]>([])
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
+  const [selectedOpportunity, setSelectedOpportunity] = useState<UpsellOpportunity | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const { success, info } = useToast()
 
   // Filter and sort opportunities by confidence and potential revenue
@@ -124,8 +127,8 @@ export function UpsellingIntelligence({
           action: {
             label: 'View Details',
             onClick: () => {
-              // In a real app, this would open the client profile or upselling modal
-              console.log('View upselling details for:', opportunity.clientName)
+              setSelectedOpportunity(opportunity)
+              setIsModalOpen(true)
             }
           }
         })
@@ -323,6 +326,17 @@ export function UpsellingIntelligence({
           })}
         </div>
       )}
+      
+      {/* Client Details Modal */}
+      <ClientDetailsModal
+        opportunity={selectedOpportunity}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedOpportunity(null)
+        }}
+        onImplement={handleImplementUpsell}
+      />
     </div>
   )
 }
