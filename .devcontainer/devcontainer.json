@@ -1,11 +1,6 @@
 {
   "name": "BookedBarber V2 Development Environment",
-  "dockerComposeFile": "../backend-v2/docker-compose.dev.yml",
-  "service": "backend",
-  "workspaceFolder": "/app",
-  
-  // Use the Codespaces default container to preserve performance
-  "shutdownAction": "stopCompose",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
   
   // Configure port forwarding for multi-service architecture
   "forwardPorts": [
@@ -42,21 +37,13 @@
   // Development environment configuration
   "features": {
     "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11",
-      "installTools": true,
-      "optimize": true
+      "version": "3.11"
     },
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "18",
-      "nodeGypDependencies": true
-    },
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest"
+      "version": "18"
     },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest",
-      "moby": true,
-      "dockerDashComposeVersion": "v2"
+      "version": "latest"
     }
   },
   
@@ -68,121 +55,49 @@
         "ms-python.python",
         "ms-python.pylint",
         "ms-python.black-formatter",
-        "ms-python.isort",
-        "ms-toolsai.jupyter",
         
         // JavaScript/TypeScript/Next.js Development
         "bradlc.vscode-tailwindcss",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
-        "ms-vscode.vscode-typescript-next",
-        
-        // API Development & Testing
-        "humao.rest-client",
-        "42Crunch.vscode-openapi",
-        
-        // Database Tools
-        "ms-mssql.mssql",
-        "cweijan.vscode-postgresql-client2",
         
         // Docker & DevOps
-        "ms-azuretools.vscode-docker",
-        "ms-vscode-remote.remote-containers",
-        
-        // General Development
-        "streetsidesoftware.code-spell-checker",
-        "christian-kohler.path-intellisense",
-        "ms-vscode.hexeditor",
-        "redhat.vscode-yaml",
-        "ms-edgedevtools.vscode-edge-devtools"
+        "ms-azuretools.vscode-docker"
       ],
       
       "settings": {
         // Python configuration
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.defaultInterpreterPath": "/usr/local/python/current/bin/python",
         "python.linting.enabled": true,
         "python.linting.pylintEnabled": true,
         "python.formatting.provider": "black",
-        "python.sortImports.args": ["--profile", "black"],
         
         // TypeScript/JavaScript configuration
-        "typescript.preferences.quoteStyle": "double",
-        "javascript.preferences.quoteStyle": "double",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
           "source.organizeImports": true,
           "source.fixAll.eslint": true
-        },
-        
-        // File associations for BookedBarber V2
-        "files.associations": {
-          "docker-compose*.yml": "dockercompose",
-          "*.env*": "dotenv",
-          "Dockerfile*": "dockerfile"
-        },
-        
-        // Terminal configuration
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "terminal.integrated.profiles.linux": {
-          "bash": {
-            "path": "/bin/bash"
-          }
         }
       }
     }
   },
   
   // Lifecycle scripts for BookedBarber V2 setup
-  "initializeCommand": "echo 'Initializing BookedBarber V2 development environment...'",
-  "onCreateCommand": "echo 'BookedBarber V2 container created successfully'",
-  "updateContentCommand": [
-    "echo 'Updating BookedBarber V2 dependencies...'",
-    "cd /app && pip install -r requirements.txt",
-    "cd /app/frontend-v2 && npm install"
-  ],
   "postCreateCommand": [
     "echo 'Setting up BookedBarber V2 development environment...'",
-    "cd /app && python -m pip install --upgrade pip",
-    "cd /app && pip install -r requirements.txt",
-    "echo 'BookedBarber V2 backend dependencies installed'",
-    "cd /app/frontend-v2 && npm install",
-    "echo 'BookedBarber V2 frontend dependencies installed'",
-    "echo 'Running database migrations...'",
-    "cd /app && python -c 'from db import init_db; init_db()'",
+    "cd /workspaces/6fb-booking/backend-v2 && pip install -r requirements.txt",
+    "cd /workspaces/6fb-booking/backend-v2/frontend-v2 && npm install",
     "echo 'BookedBarber V2 development environment ready!'",
-    "echo 'Frontend: http://localhost:3000'",
-    "echo 'Backend API: http://localhost:8000'",
-    "echo 'API Docs: http://localhost:8000/docs'"
-  ],
-  
-  // Container user configuration
-  "remoteUser": "root",
-  "containerUser": "root",
-  
-  // Mount options for better performance
-  "mounts": [
-    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
-    "source=${localWorkspaceFolder}/.devcontainer/startup.sh,target=/usr/local/bin/startup.sh,type=bind"
+    "echo 'Run: ./backend-v2/docker-dev-start.sh to start development servers'"
   ],
   
   // Environment variables for development
   "containerEnv": {
-    "PYTHONPATH": "/app",
+    "PYTHONPATH": "/workspaces/6fb-booking/backend-v2",
     "NODE_ENV": "development",
     "ENVIRONMENT": "development",
-    "DATABASE_URL": "sqlite:///./6fb_booking.db",
     "DEBUG": "true"
   },
-  
-  // Enable GPU support if available (for AI features)
-  "hostRequirements": {
-    "cpus": 4,
-    "memory": "8gb",
-    "storage": "32gb"
-  },
-  
-  // Wait for services to be ready
-  "waitFor": "postCreateCommand",
   
   // Enable automatic port forwarding
   "otherPortsAttributes": {
