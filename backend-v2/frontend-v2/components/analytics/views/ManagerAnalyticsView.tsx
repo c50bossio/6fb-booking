@@ -49,13 +49,13 @@ export function ManagerAnalyticsView({ data, loading = false }: ManagerAnalytics
       value: `$${data.location.revenue.toLocaleString()}`,
       icon: <CurrencyDollarIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />,
       change: data.location.revenueGrowth,
-      trend: data.location.revenueGrowth > 0 ? 'up' : 'down'
+      trend: (data.location.revenueGrowth > 0 ? 'up' : 'down') as 'up' | 'down'
     },
     {
       title: 'Chair Utilization',
       value: `${data.location.utilization}%`,
       icon: <BuildingStorefrontIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
-      trend: data.location.utilization > 75 ? 'up' : 'down'
+      trend: (data.location.utilization > 75 ? 'up' : 'down') as 'up' | 'down'
     },
     {
       title: 'Active Team',
@@ -63,20 +63,20 @@ export function ManagerAnalyticsView({ data, loading = false }: ManagerAnalytics
       icon: <UserGroupIcon className="w-5 h-5 text-green-600 dark:text-green-400" />,
       change: data.team.averagePerformance,
       changeLabel: 'avg performance',
-      trend: 'neutral'
+      trend: 'neutral' as const
     },
     {
       title: 'Customer Satisfaction',
       value: `${data.clients.satisfaction}%`,
       icon: <ChartBarIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
-      trend: data.clients.satisfaction > 90 ? 'up' : 'neutral'
+      trend: (data.clients.satisfaction > 90 ? 'up' : 'neutral') as 'up' | 'neutral'
     }
   ]
 
   return (
     <div className="space-y-6">
       {/* Location Header */}
-      <Card variant="accent">
+      <Card variant="elevated">
         <CardContent className="p-6">
           <h2 className="text-xl font-bold text-primary-900 dark:text-primary-100 mb-2">
             {data.location.name}
@@ -95,7 +95,7 @@ export function ManagerAnalyticsView({ data, loading = false }: ManagerAnalytics
           {data.alerts.map((alert, index) => (
             <Card
               key={index}
-              variant={alert.type === 'warning' ? 'warning' : 'default'}
+              variant={alert.type === 'warning' ? 'outlined' : 'default'}
               className="border-l-4"
             >
               <CardContent className="flex items-center space-x-3 py-3">

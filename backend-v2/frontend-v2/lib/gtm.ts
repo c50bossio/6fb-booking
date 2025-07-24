@@ -139,8 +139,8 @@ export interface GTMEvent {
 // DataLayer Type Declaration
 declare global {
   interface Window {
-    dataLayer: any[];
-    gtag: (...args: any[]) => void;
+    dataLayer?: any[];
+    gtag?: (...args: any[]) => void;
     gtm: {
       start: number;
       uniqueEventId: number;

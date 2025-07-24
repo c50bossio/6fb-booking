@@ -104,8 +104,8 @@ async function savePushSubscription(userId: string, subscription: PushSubscripti
   const subscriptionData: PushSubscriptionData = {
     endpoint: subscription.endpoint,
     keys: {
-      p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')!))),
-      auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')!)))
+      p256dh: btoa(String.fromCharCode(...Array.from(new Uint8Array(subscription.getKey('p256dh')!)))),
+      auth: btoa(String.fromCharCode(...Array.from(new Uint8Array(subscription.getKey('auth')!))))
     }
   }
 
@@ -214,7 +214,7 @@ export function showLocalNotification(options: NotificationOptions): void {
       tag: options.tag,
       data: options.data,
       requireInteraction: options.requireInteraction || false,
-      actions: options.actions || []
+      // actions: options.actions || [] // Commented out - not supported in NotificationOptions
     })
   })
 }

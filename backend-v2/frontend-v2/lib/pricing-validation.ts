@@ -469,7 +469,7 @@ export const DEFAULT_6FB_BENCHMARKS: SixFBPricingBenchmark[] = [
     minimumViablePrice: 20.0
   },
   {
-    category: ServiceCategoryEnum.SHAVE,
+    category: ServiceCategoryEnum.STYLING,
     tier: SixFBTier.PREMIUM,
     suggestedBasePrice: 75.0,
     suggestedMinPrice: 55.0,

@@ -239,7 +239,7 @@ class CacheRefreshScheduler {
    * Stop all scheduled refreshes
    */
   stopAll(): void {
-    for (const interval of this.intervals.values()) {
+    for (const interval of Array.from(this.intervals.values())) {
       clearInterval(interval)
     }
     this.intervals.clear()

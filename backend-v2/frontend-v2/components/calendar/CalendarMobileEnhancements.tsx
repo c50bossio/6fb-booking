@@ -46,7 +46,7 @@ export function CalendarMobileEnhancements({
   const [lastGesture, setLastGesture] = useState<TouchGesture | null>(null)
 
   // Haptic feedback helper
-  const triggerHaptic = useCallback(async (style: ImpactStyle = ImpactStyle.Light) => {
+  const triggerHaptic = useCallback(async (style: typeof ImpactStyle.Light = ImpactStyle.Light) => {
     if (!enableHaptics || !isMobile) return
     
     try {
@@ -127,10 +127,7 @@ export function CalendarMobileEnhancements({
       {/* Gesture hint overlay */}
       <AnimatePresence>
         {showGestureHint && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+          <div
             className="absolute bottom-4 left-4 right-4 bg-blue-500 text-white rounded-lg p-4 shadow-lg z-50"
           >
             <h4 className="font-semibold mb-2">📱 Calendar Gestures</h4>
@@ -140,7 +137,7 @@ export function CalendarMobileEnhancements({
               <li>• Long-press to move appointments</li>
               <li>• Pinch to zoom in/out</li>
             </ul>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
@@ -252,11 +249,9 @@ export function MobileAppointmentCard({
   }
 
   return (
-    <motion.div
+    <div
       ref={cardRef}
       className={`relative overflow-hidden rounded-lg ${className}`}
-      animate={{ x: swipeOffset }}
-      transition={{ type: 'spring', damping: 30, stiffness: 300 }}
     >
       {/* Main appointment content */}
       <div className={`
@@ -272,7 +267,7 @@ export function MobileAppointmentCard({
               <ClockIcon className="w-4 h-4" />
               <span>{format(new Date(appointment.start_time), 'h:mm a')}</span>
               <span className="text-gray-400">•</span>
-              <span>{appointment.duration} min</span>
+              <span>{appointment.duration_minutes} min</span>
             </div>
           </div>
           <div className="text-right">
@@ -290,10 +285,7 @@ export function MobileAppointmentCard({
       {/* Swipe actions */}
       <AnimatePresence>
         {showActions && (
-          <motion.div
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
+          <div
             className="absolute inset-y-0 right-0 flex items-stretch"
           >
             {onReschedule && (
@@ -312,10 +304,10 @@ export function MobileAppointmentCard({
                 <span>Cancel</span>
               </button>
             )}
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   )
 }
 
@@ -353,7 +345,7 @@ export function MobileQuickAction({
       onTouchStart={() => setIsPressed(true)}
       onTouchEnd={() => setIsPressed(false)}
       className={`
-        ${getMobileTouchClass('large', variant)}
+        ${getMobileTouchClass('large', variant === 'danger' ? 'secondary' : variant)}
         ${variantStyles[variant]}
         ${isPressed ? 'scale-95' : 'scale-100'}
         flex flex-col items-center justify-center gap-2
@@ -379,11 +371,10 @@ export function MobileFAB({ onClick, className = '' }: MobileFABProps) {
   const [isPressed, setIsPressed] = useState(false)
 
   return (
-    <motion.button
+    <button
       onClick={onClick}
       onTouchStart={() => setIsPressed(true)}
       onTouchEnd={() => setIsPressed(false)}
-      whileTap={{ scale: 0.9 }}
       className={`
         fixed bottom-6 right-6 z-40
         w-14 h-14 rounded-full
@@ -398,6 +389,6 @@ export function MobileFAB({ onClick, className = '' }: MobileFABProps) {
       }}
     >
       <PlusIcon className="w-6 h-6" />
-    </motion.button>
+    </button>
   )
 }

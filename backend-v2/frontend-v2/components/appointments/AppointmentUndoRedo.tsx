@@ -5,7 +5,6 @@ import { useUndoRedo } from '@/hooks/useUndoRedo'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 import { Undo2, Redo2 } from 'lucide-react'
-import { apiRequest } from '@/lib/api'
 
 export interface AppointmentAction {
   id: string
@@ -83,7 +82,7 @@ export function AppointmentUndoRedoProvider({
       case 'create':
         if (isUndoRedo && action.appointmentId) {
           // Undo create = delete
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}`, {
+          await fetch(`/api/v1/appointments/${action.appointmentId}`, {
             method: 'DELETE'
           })
           toast({
@@ -92,12 +91,16 @@ export function AppointmentUndoRedoProvider({
           })
         } else if (action.newData) {
           // Redo create = recreate
-          const response = await apiRequest('/api/v1/appointments', {
+          const response = await fetch('/api/v1/appointments', {
             method: 'POST',
-            data: action.newData
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(action.newData)
           })
+          const data = await response.json()
           // Update the action with the new appointment ID
-          action.appointmentId = response.data.id
+          action.appointmentId = data.id
           toast({
             title: 'Appointment created',
             description: 'The appointment has been restored'
@@ -108,9 +111,12 @@ export function AppointmentUndoRedoProvider({
       case 'update':
         if (action.appointmentId) {
           const dataToApply = isUndoRedo ? action.previousData : action.newData
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}`, {
+          await fetch(`/api/v1/appointments/${action.appointmentId}`, {
             method: 'PUT',
-            data: dataToApply
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToApply)
           })
           toast({
             title: 'Appointment updated',
@@ -122,18 +128,22 @@ export function AppointmentUndoRedoProvider({
       case 'delete':
         if (isUndoRedo && action.previousData) {
           // Undo delete = recreate
-          const response = await apiRequest('/api/v1/appointments', {
+          const response = await fetch('/api/v1/appointments', {
             method: 'POST',
-            data: action.previousData
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(action.previousData)
           })
-          action.appointmentId = response.data.id
+          const data = await response.json()
+          action.appointmentId = data.id
           toast({
             title: 'Appointment restored',
             description: 'The deleted appointment has been restored'
           })
         } else if (action.appointmentId) {
           // Redo delete = delete again
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}`, {
+          await fetch(`/api/v1/appointments/${action.appointmentId}`, {
             method: 'DELETE'
           })
           toast({
@@ -146,12 +156,15 @@ export function AppointmentUndoRedoProvider({
       case 'reschedule':
         if (action.appointmentId) {
           const dataToApply = isUndoRedo ? action.previousData : action.newData
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}`, {
+          await fetch(`/api/v1/appointments/${action.appointmentId}`, {
             method: 'PUT',
-            data: {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
               appointment_time: dataToApply.appointment_time,
               end_time: dataToApply.end_time
-            }
+            })
           })
           toast({
             title: 'Appointment rescheduled',
@@ -163,9 +176,12 @@ export function AppointmentUndoRedoProvider({
       case 'cancel':
         if (action.appointmentId) {
           const newStatus = isUndoRedo ? 'confirmed' : 'cancelled'
-          await apiRequest(`/api/v1/appointments/${action.appointmentId}/status`, {
+          await fetch(`/api/v1/appointments/${action.appointmentId}/status`, {
             method: 'PUT',
-            data: { status: newStatus }
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: newStatus })
           })
           toast({
             title: isUndoRedo ? 'Appointment restored' : 'Appointment cancelled',

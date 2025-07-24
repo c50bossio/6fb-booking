@@ -78,7 +78,7 @@ export class FormErrorBoundary extends Component<Props, State> {
     }
     
     // Enhanced error reporting for form-specific issues
-    const sentryEventId = reportApiError(error, {
+    reportApiError(error, {
       component: 'FormErrorBoundary',
       formName: this.props.contextInfo?.formName,
       formStep: this.props.contextInfo?.formStep,
@@ -88,6 +88,7 @@ export class FormErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack,
       errorBoundary: true
     })
+    const sentryEventId = undefined
     
     addUserActionBreadcrumb(
       'Form error caught by boundary',
@@ -314,7 +315,7 @@ export class FormErrorBoundary extends Component<Props, State> {
           addUserActionBreadcrumb('Sign in again clicked from form error', 'interaction')
           window.location.href = '/login'
         },
-        variant: 'default' as const,
+        variant: 'primary' as const,
         icon: RefreshCw
       })
     }
@@ -328,7 +329,7 @@ export class FormErrorBoundary extends Component<Props, State> {
         })
         window.location.reload()
       },
-      variant: 'default' as const,
+      variant: 'primary' as const,
       icon: RefreshCw
     })
 

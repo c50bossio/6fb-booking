@@ -25,6 +25,7 @@ import { format } from 'date-fns';
 
 interface Appointment {
   id: number;
+  service_id?: number;
   service_name: string;
   start_time: string;
   duration_minutes: number;
@@ -373,7 +374,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
                 <Checkbox 
                   id="emergency" 
                   checked={isEmergency}
-                  onCheckedChange={setIsEmergency}
+                  onCheckedChange={(checked) => setIsEmergency(checked === true)}
                 />
                 <Label htmlFor="emergency" className="text-sm">
                   This is a genuine emergency (may qualify for additional refund)
@@ -396,7 +397,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
               <Checkbox 
                 id="waitlist" 
                 checked={joinWaitlist}
-                onCheckedChange={setJoinWaitlist}
+                onCheckedChange={(checked) => setJoinWaitlist(checked === true)}
               />
               <Label htmlFor="waitlist" className="text-sm">
                 Add me to the waitlist for similar appointments

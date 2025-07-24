@@ -485,3 +485,6 @@ export function Calendar(props: CalendarProps) {
     </CalendarA11yProvider>
   );
 }
+
+// Default export for lazy loading compatibility
+export default Calendar;

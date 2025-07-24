@@ -170,7 +170,7 @@ export const removeMetaPixel = () => {
 
   // Remove fbq function
   if (window.fbq) {
-    delete window.fbq
+    delete (window as any).fbq
   }
 
   scriptsLoaded.metaPixel = false
@@ -246,10 +246,10 @@ export const getScriptStatus = () => ({
 // Type declarations for global objects
 declare global {
   interface Window {
-    dataLayer: any[]
-    gtag: (...args: any[]) => void
-    fbq: (...args: any[]) => void
-    _fbq: any
+    dataLayer?: any[]
+    gtag?: (...args: any[]) => void
+    fbq?: (...args: any[]) => void
+    _fbq?: any
   }
 }
 

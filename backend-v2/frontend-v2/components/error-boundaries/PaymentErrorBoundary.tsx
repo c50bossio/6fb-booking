@@ -69,7 +69,7 @@ export class PaymentErrorBoundary extends Component<Props, State> {
     console.error('PaymentErrorBoundary caught an error:', error, errorInfo)
     
     // Enhanced error reporting for payment-specific issues
-    const sentryEventId = reportApiError(error, {
+    reportApiError(error, {
       component: 'PaymentErrorBoundary',
       bookingId: this.props.contextInfo?.bookingId,
       amount: this.props.contextInfo?.amount,
@@ -81,6 +81,7 @@ export class PaymentErrorBoundary extends Component<Props, State> {
       errorBoundary: true,
       criticalError: true // Mark payment errors as critical
     })
+    const sentryEventId = undefined
     
     addUserActionBreadcrumb(
       'Payment error caught by boundary',
@@ -314,7 +315,7 @@ Thank you!
     options.push({
       label: 'Contact Support',
       action: this.handleContactSupport,
-      variant: 'default' as const,
+      variant: 'primary' as const,
       icon: Shield
     })
 

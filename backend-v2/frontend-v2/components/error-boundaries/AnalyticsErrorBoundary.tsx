@@ -64,7 +64,7 @@ export class AnalyticsErrorBoundary extends Component<Props, State> {
     console.error('AnalyticsErrorBoundary caught an error:', error, errorInfo)
     
     // Enhanced error reporting for analytics-specific issues
-    const sentryEventId = reportApiError(error, {
+    reportApiError(error, {
       component: 'AnalyticsErrorBoundary',
       analyticsType: this.props.contextInfo?.analyticsType || 'unknown',
       dateRange: this.props.contextInfo?.dateRange,
@@ -72,6 +72,7 @@ export class AnalyticsErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack,
       errorBoundary: true
     })
+    const sentryEventId = undefined
     
     addUserActionBreadcrumb(
       'Analytics error caught by boundary',
@@ -302,7 +303,7 @@ export class AnalyticsErrorBoundary extends Component<Props, State> {
                     <Button
                       key={index}
                       onClick={option.action}
-                      variant={option.variant}
+                      variant={option.variant === 'default' ? 'primary' : option.variant}
                       size="sm"
                       className="flex items-center gap-2"
                     >

@@ -10,8 +10,8 @@ import { nanoid } from 'nanoid'
 // TypeScript declarations for fbq
 declare global {
   interface Window {
-    fbq: any
-    _fbq: any
+    fbq?: (...args: any[]) => void
+    _fbq?: any
   }
 }
 
@@ -98,6 +98,7 @@ interface EventParameters {
   search_string?: string
   status?: boolean
   custom_data?: Record<string, any>
+  eventId?: string
   
   // E-commerce specific
   predicted_ltv?: number
@@ -189,7 +190,7 @@ class MetaPixelService {
       }
 
       // Create the fbq function
-      const fbq = function(...args: any[]) {
+      const fbq: any = function(...args: any[]) {
         if (fbq.callMethod) {
           fbq.callMethod.apply(fbq, args)
         } else {
@@ -204,7 +205,7 @@ class MetaPixelService {
       fbq.push = fbq
       fbq.loaded = true
       fbq.version = '2.0'
-      fbq.queue = []
+      fbq.queue = [] as any[]
 
       // Load the script
       const script = document.createElement('script')

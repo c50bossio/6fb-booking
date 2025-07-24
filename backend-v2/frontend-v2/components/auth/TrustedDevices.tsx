@@ -43,7 +43,7 @@ export function TrustedDevices({ onDeviceRemoved }: TrustedDevicesProps) {
     if (!user) return
     
     try {
-      const deviceList = await getTrustedDevicesList(user.id)
+      const deviceList = await getTrustedDevicesList(String(user.id))
       setDevices(deviceList)
     } catch (error) {
       toast({
@@ -70,7 +70,7 @@ export function TrustedDevices({ onDeviceRemoved }: TrustedDevicesProps) {
     
     setRemovingDevice(deviceId)
     try {
-      await untrustDevice(user.id, deviceId)
+      await untrustDevice(String(user.id), deviceId)
       setDevices(devices.filter(d => d.id !== deviceId))
       
       toast({

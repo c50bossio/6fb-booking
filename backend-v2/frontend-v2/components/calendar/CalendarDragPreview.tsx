@@ -459,7 +459,7 @@ export const CalendarDragPreview: React.FC<CalendarDragPreviewProps> = (props) =
 }
 
 // Export individual components for flexibility
-export { PremiumDragPreview, DragAccessibilityAnnouncer, useDragPreview }
+export { PremiumDragPreview, DragAccessibilityAnnouncer }
 
 // Default export
 export default CalendarDragPreview

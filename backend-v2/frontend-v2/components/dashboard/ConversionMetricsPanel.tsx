@@ -291,7 +291,7 @@ export default function ConversionMetricsPanel({
           ].map(metric => (
             <Button
               key={metric.key}
-              variant={selectedMetric === metric.key ? 'default' : 'outline'}
+              variant={selectedMetric === metric.key ? 'primary' : 'outline'}
               size="sm"
               onClick={() => setSelectedMetric(metric.key as any)}
             >

@@ -5,7 +5,7 @@ import { format, addMinutes, differenceInMinutes } from 'date-fns'
 import { ClockIcon, UserIcon, ScissorsIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid'
 import { touchTargets, mobileSpacing } from '@/hooks/useResponsiveCalendar'
-import { useReducedMotion, useHighContrastMode } from '../CalendarAccessibility'
+import { useReducedMotion, useHighContrastMode } from './CalendarAccessibility'
 
 interface Appointment {
   id: number

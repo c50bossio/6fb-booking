@@ -63,7 +63,7 @@ export function generateMetadata({
   const canonicalUrl = canonical || fullUrl
 
   // Combine default and custom keywords
-  const allKeywords = [...new Set([...keywords, ...DEFAULT_KEYWORDS])]
+  const allKeywords = Array.from(new Set([...keywords, ...DEFAULT_KEYWORDS]))
 
   return {
     title: fullTitle,

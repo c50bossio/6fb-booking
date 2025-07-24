@@ -336,14 +336,14 @@ export default function TrackingAnalyticsDashboard({
       title: 'Total Revenue',
       value: formatCurrency(analytics.overview.total_revenue),
       change: analytics.overview.revenue_growth,
-      trend: analytics.overview.revenue_growth > 0 ? 'up' : analytics.overview.revenue_growth < 0 ? 'down' : 'neutral',
+      trend: (analytics.overview.revenue_growth > 0 ? 'up' : analytics.overview.revenue_growth < 0 ? 'down' : 'neutral') as 'up' | 'down' | 'neutral',
       icon: <CurrencyDollarIcon className="w-6 h-6 text-green-600" />
     },
     {
       title: 'Conversions',
       value: analytics.overview.total_bookings,
       change: analytics.overview.booking_growth,
-      trend: analytics.overview.booking_growth > 0 ? 'up' : analytics.overview.booking_growth < 0 ? 'down' : 'neutral',
+      trend: (analytics.overview.booking_growth > 0 ? 'up' : analytics.overview.booking_growth < 0 ? 'down' : 'neutral') as 'up' | 'down' | 'neutral',
       icon: <CheckCircleIcon className="w-6 h-6 text-blue-600" />
     },
     {

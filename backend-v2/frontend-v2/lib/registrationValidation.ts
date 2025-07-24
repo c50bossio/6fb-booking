@@ -212,7 +212,7 @@ export function validateBusinessInfo(businessInfo: BusinessInfo, businessType: B
   }
 
   // Chair count validation
-  if (businessType !== 'individual') {
+  if (businessType !== 'solo') {
     if (businessInfo.chairCount < 1) {
       errors.push({
         field: 'chairCount',

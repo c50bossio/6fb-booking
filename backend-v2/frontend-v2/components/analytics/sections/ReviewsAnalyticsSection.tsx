@@ -93,14 +93,14 @@ export default function ReviewsAnalyticsSection({ userRole, dateRange }: Reviews
       title: 'Average Rating',
       value: reviewData.summary.averageRating.toFixed(1),
       icon: <StarIcon className="w-5 h-5 text-yellow-600" />,
-      trend: 'up',
+      trend: 'up' as const,
       change: 2.1
     },
     {
       title: 'Total Reviews',
       value: reviewData.summary.totalReviews,
       icon: <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-blue-600" />,
-      trend: 'up',
+      trend: 'up' as const,
       change: 15.3,
       changeLabel: 'vs last period'
     },
@@ -108,13 +108,13 @@ export default function ReviewsAnalyticsSection({ userRole, dateRange }: Reviews
       title: 'Response Rate',
       value: `${reviewData.summary.responseRate}%`,
       icon: <CheckCircleIcon className="w-5 h-5 text-green-600" />,
-      trend: reviewData.summary.responseRate > 80 ? 'up' : 'down'
+      trend: (reviewData.summary.responseRate > 80 ? 'up' : 'down') as 'up' | 'down'
     },
     {
       title: 'Response Time',
       value: reviewData.summary.averageResponseTime,
       icon: <ExclamationCircleIcon className="w-5 h-5 text-orange-600" />,
-      trend: 'neutral'
+      trend: 'neutral' as const
     }
   ]
 
