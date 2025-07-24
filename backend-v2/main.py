@@ -8,7 +8,7 @@ import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
 import models.upselling
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, social_auth
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, social_auth
 
 # Import V2 API endpoints for Six Figure Barber enhancements
 from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling
@@ -310,8 +310,7 @@ app.include_router(payments.router, prefix="/api/v2")
 app.include_router(clients.router, prefix="/api/v2")
 app.include_router(users.router, prefix="/api/v2")
 app.include_router(timezones.router, prefix="/api/v2")
-app.include_router(calendar.router, prefix="/api/v2")
-app.include_router(google_calendar.router, prefix="/api/v2")  # Enhanced Google Calendar integration with V1 feature parity
+app.include_router(google_calendar.router, prefix="/api/v2")  # Unified Google Calendar integration
 app.include_router(services.router, prefix="/api/v2")
 # app.include_router(service_templates.router, prefix="/api/v2/service-templates")  # Temporarily disabled due to schema issues
 app.include_router(pricing_validation.router, prefix="/api/v2")
@@ -331,7 +330,7 @@ app.include_router(sms_webhooks.router, prefix="/api/v2")
 app.include_router(webhook_management.router, prefix="/api/v2")  # Re-enabled with webhook models
 app.include_router(enterprise.router, prefix="/api/v2")
 app.include_router(marketing.router, prefix="/api/v2")
-app.include_router(marketing_analytics.router, prefix="/api/v2")  # Marketing analytics and attribution
+# app.include_router(marketing_analytics.router, prefix="/api/v2")  # Marketing analytics and attribution - temporarily disabled due to PermissionChecker issues
 app.include_router(short_urls.router, prefix="/s")  # Prefix for branded short URLs to avoid conflicts
 app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v2
 # app.include_router(email_analytics.router, prefix="/api/v2")  # Disabled - service archived
@@ -341,9 +340,9 @@ app.include_router(locations.router, prefix="/api/v2")  # Re-enabled - schema im
 app.include_router(integrations.router)  # Integration management endpoints - re-enabled for testing
 app.include_router(api_keys.router, prefix="/api/v2")  # API key management
 app.include_router(commissions.router, prefix="/api/v2")  # Commission management
-app.include_router(commission_rates.router, prefix="/api/v2")  # Commission rate management
-app.include_router(billing.router, prefix="/api/v2")  # Chair-based billing and subscription management
-app.include_router(invitations.router)  # Staff invitation management
+# app.include_router(commission_rates.router, prefix="/api/v2")  # Commission rate management - temporarily disabled due to PermissionChecker issues
+# app.include_router(billing.router, prefix="/api/v2")  # Chair-based billing and subscription management - temporarily disabled due to PermissionChecker issues
+# app.include_router(invitations.router)  # Staff invitation management - temporarily disabled due to PermissionChecker issues
 app.include_router(organizations.router, prefix="/api/v2")  # Organization management
 app.include_router(trial_monitoring.router, prefix="/api/v2")  # Trial expiration monitoring and notifications
 app.include_router(privacy.router)  # GDPR compliance and privacy management

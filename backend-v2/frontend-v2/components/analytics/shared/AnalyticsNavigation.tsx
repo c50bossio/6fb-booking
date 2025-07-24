@@ -9,7 +9,8 @@ import {
   EnvelopeOpenIcon,
   StarIcon,
   BuildingStorefrontIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 
 export interface AnalyticsSection {
@@ -49,6 +50,13 @@ const defaultSections: AnalyticsSection[] = [
     href: '/analytics/performance',
     icon: <TrophyIcon className="w-5 h-5" />,
     description: 'Operational efficiency metrics'
+  },
+  {
+    id: 'upselling',
+    label: 'Upselling',
+    href: '/analytics/upselling',
+    icon: <SparklesIcon className="w-5 h-5" />,
+    description: 'Revenue optimization and conversion tracking'
   },
   {
     id: 'marketing',

@@ -15,9 +15,13 @@ from db import get_db
 from utils.auth import get_current_user
 from models import User, Appointment
 from models.upselling import UpsellAttempt, UpsellConversion, UpsellAnalytics, UpsellStatus, UpsellChannel
+from services.upselling_automation_service import UpsellAutomationService
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Initialize automation service
+automation_service = UpsellAutomationService()
 
 router = APIRouter(prefix="/upselling", tags=["Upselling Tracking"])
 
@@ -145,9 +149,14 @@ async def record_upsell_attempt(
         db.commit()
         db.refresh(attempt)
         
-        # TODO: Trigger automation (email/SMS) based on channel
-        # This would integrate with existing notification services
-        logger.info(f"Upsell attempt recorded: {attempt.id} for client {client.email}")
+        # Trigger automation (email/SMS/follow-up) based on channel
+        try:
+            automation_result = await automation_service.trigger_upsell_automation(attempt, db)
+            logger.info(f"Upsell attempt recorded: {attempt.id} for client {client.email}")
+            logger.info(f"Automation result: {automation_result}")
+        except Exception as automation_error:
+            # Don't fail the main request if automation fails
+            logger.error(f"Automation failed for attempt {attempt.id}: {str(automation_error)}")
         
         return attempt
         
@@ -436,4 +445,85 @@ async def update_attempt_status(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update attempt status"
+        )
+
+@router.post("/attempt/{attempt_id}/trigger-automation")
+async def trigger_manual_automation(
+    attempt_id: int,
+    channel_override: Optional[UpsellChannel] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Manually trigger automation for an existing upselling attempt.
+    Useful for re-sending notifications or trying different channels.
+    """
+    try:
+        # Validate attempt exists and belongs to current user
+        attempt = db.query(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.id == attempt_id,
+                UpsellAttempt.barber_id == current_user.id
+            )
+        ).first()
+        
+        if not attempt:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Upsell attempt not found"
+            )
+        
+        # Trigger automation
+        automation_result = await automation_service.trigger_upsell_automation(
+            attempt, db, channel_override
+        )
+        
+        return {
+            "message": "Automation triggered successfully",
+            "attempt_id": attempt_id,
+            "automation_result": automation_result
+        }
+        
+    except Exception as e:
+        logger.error(f"Error triggering manual automation: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to trigger automation"
+        )
+
+@router.get("/attempt/{attempt_id}/automation-status")
+async def get_automation_status(
+    attempt_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get the automation status for a specific upselling attempt.
+    Shows whether automation was triggered and its results.
+    """
+    try:
+        # Validate attempt exists and belongs to current user
+        attempt = db.query(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.id == attempt_id,
+                UpsellAttempt.barber_id == current_user.id
+            )
+        ).first()
+        
+        if not attempt:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Upsell attempt not found"
+            )
+        
+        # Get automation status
+        status_result = await automation_service.get_automation_status(attempt_id, db)
+        
+        return status_result
+        
+    except Exception as e:
+        logger.error(f"Error getting automation status: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get automation status"
         )

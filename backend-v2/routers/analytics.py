@@ -22,10 +22,10 @@ from utils.error_handling import AppError, ValidationError, AuthenticationError,
 from models import User
 from schemas import DateRange
 from services.analytics_service import AnalyticsService
+from services.upselling_conversion_detector import UpsellConversionDetector
 from utils.role_permissions import (
     Permission,
-    PermissionChecker,
-    get_permission_checker
+    PermissionChecker
 )
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
@@ -973,10 +973,11 @@ async def get_commission_analytics(
     start_date: Optional[date] = Query(None, description="Start date for analytics"),
     end_date: Optional[date] = Query(None, description="End date for analytics"),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-    permission_checker: PermissionChecker = Depends(get_permission_checker)
+    db: Session = Depends(get_db)
 ):
     """Get comprehensive commission analytics for barbers"""
+    # Check permissions inline
+    permission_checker = PermissionChecker(current_user, db)
     permission_checker.check_permission(Permission.VIEW_OWN_ANALYTICS)
     
     # Set default date range if not provided
@@ -1155,10 +1156,11 @@ async def get_commission_trends(
     start_date: Optional[date] = Query(None, description="Start date for trends"),
     end_date: Optional[date] = Query(None, description="End date for trends"),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-    permission_checker: PermissionChecker = Depends(get_permission_checker)
+    db: Session = Depends(get_db)
 ):
     """Get commission trends over time with configurable period grouping"""
+    # Check permissions inline
+    permission_checker = PermissionChecker(current_user, db)
     permission_checker.check_permission(Permission.VIEW_OWN_ANALYTICS)
     
     # Set default date range
@@ -1240,3 +1242,688 @@ async def get_commission_trends(
     except Exception as e:
         logger.error(f"Error generating commission trends: {str(e)}")
         raise HTTPException(status_code=500, detail="Error generating commission trends")
+
+
+# =============================================================================
+# UPSELLING ANALYTICS ENDPOINTS
+# =============================================================================
+
+@router.get("/upselling/overview")
+async def get_upselling_overview(
+    start_date: Optional[date] = Query(None, description="Start date for analytics range"),
+    end_date: Optional[date] = Query(None, description="End date for analytics range"),
+    barber_id: Optional[int] = Query(None, description="Filter by specific barber"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get comprehensive upselling overview metrics"""
+    
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    org_user_ids = get_organization_user_ids(current_user, db)
+    
+    # If specific barber requested, check permissions
+    if barber_id and barber_id != current_user.id:
+        if barber_id not in org_user_ids and not checker.has_permission(Permission.VIEW_FINANCIAL_ANALYTICS):
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    # Set default date range if not provided
+    if not start_date:
+        start_date = date.today() - timedelta(days=30)
+    if not end_date:
+        end_date = date.today()
+    
+    try:
+        from models.upselling import UpsellAttempt, UpsellConversion, UpsellStatus
+        from sqlalchemy import func, and_
+        
+        # Base query filters
+        base_filters = [
+            UpsellAttempt.created_at >= datetime.combine(start_date, datetime.min.time()),
+            UpsellAttempt.created_at <= datetime.combine(end_date, datetime.max.time())
+        ]
+        
+        if barber_id:
+            base_filters.append(UpsellAttempt.barber_id == barber_id)
+        else:
+            # Filter to organization users
+            base_filters.append(UpsellAttempt.barber_id.in_(org_user_ids))
+        
+        # Total attempts
+        total_attempts = db.query(UpsellAttempt).filter(and_(*base_filters)).count()
+        
+        # Implemented attempts (status = IMPLEMENTED or CONVERTED)
+        implemented_attempts = db.query(UpsellAttempt).filter(
+            and_(*base_filters),
+            UpsellAttempt.status.in_([UpsellStatus.IMPLEMENTED, UpsellStatus.CONVERTED])
+        ).count()
+        
+        # Successful conversions
+        conversion_query = db.query(UpsellConversion).join(UpsellAttempt).filter(and_(*base_filters))
+        total_conversions = conversion_query.count()
+        
+        # Revenue metrics
+        potential_revenue = db.query(func.sum(UpsellAttempt.potential_revenue)).filter(
+            and_(*base_filters),
+            UpsellAttempt.status.in_([UpsellStatus.IMPLEMENTED, UpsellStatus.CONVERTED])
+        ).scalar() or 0
+        
+        actual_revenue = db.query(func.sum(UpsellConversion.actual_revenue)).join(UpsellAttempt).filter(
+            and_(*base_filters)
+        ).scalar() or 0
+        
+        # Success rates
+        implementation_rate = (implemented_attempts / total_attempts * 100) if total_attempts > 0 else 0
+        conversion_rate = (total_conversions / implemented_attempts * 100) if implemented_attempts > 0 else 0
+        overall_success_rate = (total_conversions / total_attempts * 100) if total_attempts > 0 else 0
+        
+        # Average metrics
+        avg_potential_revenue = potential_revenue / implemented_attempts if implemented_attempts > 0 else 0
+        avg_actual_revenue = actual_revenue / total_conversions if total_conversions > 0 else 0
+        
+        # Time to conversion analysis
+        time_to_conversion_data = db.query(UpsellConversion.time_to_conversion_hours).join(UpsellAttempt).filter(
+            and_(*base_filters),
+            UpsellConversion.time_to_conversion_hours.isnot(None)
+        ).all()
+        
+        avg_time_to_conversion = sum(t[0] for t in time_to_conversion_data) / len(time_to_conversion_data) if time_to_conversion_data else 0
+        
+        # Top performing services
+        top_services = db.query(
+            UpsellAttempt.suggested_service,
+            func.count(UpsellConversion.id).label('conversions'),
+            func.sum(UpsellConversion.actual_revenue).label('revenue')
+        ).join(UpsellConversion, isouter=True).filter(
+            and_(*base_filters)
+        ).group_by(UpsellAttempt.suggested_service).order_by(
+            func.count(UpsellConversion.id).desc()
+        ).limit(5).all()
+        
+        return {
+            "date_range": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat()
+            },
+            "summary": {
+                "total_attempts": total_attempts,
+                "implemented_attempts": implemented_attempts,
+                "total_conversions": total_conversions,
+                "implementation_rate": round(implementation_rate, 1),
+                "conversion_rate": round(conversion_rate, 1),
+                "overall_success_rate": round(overall_success_rate, 1)
+            },
+            "revenue": {
+                "potential_revenue": float(potential_revenue),
+                "actual_revenue": float(actual_revenue),
+                "revenue_realization_rate": (actual_revenue / potential_revenue * 100) if potential_revenue > 0 else 0,
+                "avg_potential_revenue": float(avg_potential_revenue),
+                "avg_actual_revenue": float(avg_actual_revenue)
+            },
+            "performance": {
+                "avg_time_to_conversion_hours": round(avg_time_to_conversion, 1),
+                "top_services": [
+                    {
+                        "service": service,
+                        "conversions": conversions or 0,
+                        "revenue": float(revenue or 0)
+                    }
+                    for service, conversions, revenue in top_services
+                ]
+            },
+            "barber_id": barber_id,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating upselling overview: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generating upselling overview")
+
+
+@router.get("/upselling/performance")
+async def get_upselling_performance(
+    start_date: Optional[date] = Query(None, description="Start date for analytics range"),
+    end_date: Optional[date] = Query(None, description="End date for analytics range"),
+    group_by: str = Query("barber", description="Group performance by: barber, service, channel"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get upselling performance metrics grouped by different dimensions"""
+    
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    org_user_ids = get_organization_user_ids(current_user, db)
+    
+    # Set default date range
+    if not start_date:
+        start_date = date.today() - timedelta(days=30)
+    if not end_date:
+        end_date = date.today()
+    
+    try:
+        from models.upselling import UpsellAttempt, UpsellConversion, UpsellStatus
+        from sqlalchemy import func, and_
+        
+        # Use the conversion detector for statistics
+        conversion_detector = UpsellConversionDetector()
+        statistics = conversion_detector.get_conversion_statistics(
+            db, 
+            days=(end_date - start_date).days,
+            barber_id=None if group_by != "barber" else None
+        )
+        
+        # Base filters
+        base_filters = [
+            UpsellAttempt.created_at >= datetime.combine(start_date, datetime.min.time()),
+            UpsellAttempt.created_at <= datetime.combine(end_date, datetime.max.time()),
+            UpsellAttempt.barber_id.in_(org_user_ids)
+        ]
+        
+        if group_by == "barber":
+            # Performance by barber
+            results = db.query(
+                User.name.label('group_name'),
+                UpsellAttempt.barber_id.label('group_id'),
+                func.count(UpsellAttempt.id).label('total_attempts'),
+                func.count(
+                    func.case(
+                        [(UpsellAttempt.status.in_([UpsellStatus.IMPLEMENTED, UpsellStatus.CONVERTED]), 1)]
+                    )
+                ).label('implemented_attempts'),
+                func.count(UpsellConversion.id).label('conversions'),
+                func.sum(UpsellAttempt.potential_revenue).label('potential_revenue'),
+                func.sum(UpsellConversion.actual_revenue).label('actual_revenue')
+            ).join(User, UpsellAttempt.barber_id == User.id).outerjoin(UpsellConversion).filter(
+                and_(*base_filters)
+            ).group_by(User.name, UpsellAttempt.barber_id).all()
+            
+        elif group_by == "service":
+            # Performance by suggested service
+            results = db.query(
+                UpsellAttempt.suggested_service.label('group_name'),
+                UpsellAttempt.suggested_service.label('group_id'),
+                func.count(UpsellAttempt.id).label('total_attempts'),
+                func.count(
+                    func.case(
+                        [(UpsellAttempt.status.in_([UpsellStatus.IMPLEMENTED, UpsellStatus.CONVERTED]), 1)]
+                    )
+                ).label('implemented_attempts'),
+                func.count(UpsellConversion.id).label('conversions'),
+                func.sum(UpsellAttempt.potential_revenue).label('potential_revenue'),
+                func.sum(UpsellConversion.actual_revenue).label('actual_revenue')
+            ).outerjoin(UpsellConversion).filter(
+                and_(*base_filters)
+            ).group_by(UpsellAttempt.suggested_service).all()
+            
+        elif group_by == "channel":
+            # Performance by channel
+            results = db.query(
+                UpsellAttempt.channel.label('group_name'),
+                UpsellAttempt.channel.label('group_id'),
+                func.count(UpsellAttempt.id).label('total_attempts'),
+                func.count(
+                    func.case(
+                        [(UpsellAttempt.status.in_([UpsellStatus.IMPLEMENTED, UpsellStatus.CONVERTED]), 1)]
+                    )
+                ).label('implemented_attempts'),
+                func.count(UpsellConversion.id).label('conversions'),
+                func.sum(UpsellAttempt.potential_revenue).label('potential_revenue'),
+                func.sum(UpsellConversion.actual_revenue).label('actual_revenue')
+            ).outerjoin(UpsellConversion).filter(
+                and_(*base_filters)
+            ).group_by(UpsellAttempt.channel).all()
+        else:
+            raise HTTPException(status_code=400, detail="Invalid group_by parameter. Use: barber, service, or channel")
+        
+        # Format performance data
+        performance_data = []
+        for result in results:
+            group_name = result.group_name
+            if group_by == "channel" and hasattr(result.group_name, 'value'):
+                group_name = result.group_name.value
+                
+            total_attempts = result.total_attempts or 0
+            implemented_attempts = result.implemented_attempts or 0
+            conversions = result.conversions or 0
+            potential_revenue = float(result.potential_revenue or 0)
+            actual_revenue = float(result.actual_revenue or 0)
+            
+            # Calculate rates
+            implementation_rate = (implemented_attempts / total_attempts * 100) if total_attempts > 0 else 0
+            conversion_rate = (conversions / implemented_attempts * 100) if implemented_attempts > 0 else 0
+            overall_success_rate = (conversions / total_attempts * 100) if total_attempts > 0 else 0
+            revenue_realization = (actual_revenue / potential_revenue * 100) if potential_revenue > 0 else 0
+            
+            performance_data.append({
+                "group_name": group_name,
+                "group_id": str(result.group_id),
+                "metrics": {
+                    "total_attempts": total_attempts,
+                    "implemented_attempts": implemented_attempts,
+                    "conversions": conversions,
+                    "implementation_rate": round(implementation_rate, 1),
+                    "conversion_rate": round(conversion_rate, 1),
+                    "overall_success_rate": round(overall_success_rate, 1)
+                },
+                "revenue": {
+                    "potential_revenue": potential_revenue,
+                    "actual_revenue": actual_revenue,
+                    "revenue_realization_rate": round(revenue_realization, 1),
+                    "avg_potential": potential_revenue / implemented_attempts if implemented_attempts > 0 else 0,
+                    "avg_actual": actual_revenue / conversions if conversions > 0 else 0
+                }
+            })
+        
+        # Sort by overall success rate
+        performance_data.sort(key=lambda x: x["metrics"]["overall_success_rate"], reverse=True)
+        
+        return {
+            "date_range": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat()
+            },
+            "group_by": group_by,
+            "performance_data": performance_data,
+            "overall_statistics": statistics,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting upselling performance: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error getting upselling performance")
+
+
+@router.get("/upselling/trends")
+async def get_upselling_trends(
+    period: str = Query("week", description="Period grouping: day, week, month"),
+    start_date: Optional[date] = Query(None, description="Start date for trends"),
+    end_date: Optional[date] = Query(None, description="End date for trends"),
+    barber_id: Optional[int] = Query(None, description="Filter by specific barber"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get upselling performance trends over time"""
+    
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    org_user_ids = get_organization_user_ids(current_user, db)
+    
+    # Check barber access permissions
+    if barber_id and barber_id != current_user.id:
+        if barber_id not in org_user_ids and not checker.has_permission(Permission.VIEW_FINANCIAL_ANALYTICS):
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    # Set default date range
+    if not end_date:
+        end_date = date.today()
+    if not start_date:
+        if period == "day":
+            start_date = end_date - timedelta(days=30)
+        elif period == "week":
+            start_date = end_date - timedelta(days=90)
+        else:  # month
+            start_date = end_date - timedelta(days=365)
+    
+    try:
+        from models.upselling import UpsellAttempt, UpsellConversion, UpsellStatus
+        from sqlalchemy import func, and_
+        
+        trends = []
+        current = start_date
+        
+        while current <= end_date:
+            # Calculate period end
+            if period == "day":
+                period_end = current
+            elif period == "week":
+                period_end = min(current + timedelta(days=6), end_date)
+            else:  # month
+                if current.month == 12:
+                    period_end = date(current.year + 1, 1, 1) - timedelta(days=1)
+                else:
+                    period_end = date(current.year, current.month + 1, 1) - timedelta(days=1)
+                period_end = min(period_end, end_date)
+            
+            # Base filters for period
+            period_filters = [
+                UpsellAttempt.created_at >= datetime.combine(current, datetime.min.time()),
+                UpsellAttempt.created_at <= datetime.combine(period_end, datetime.max.time())
+            ]
+            
+            if barber_id:
+                period_filters.append(UpsellAttempt.barber_id == barber_id)
+            else:
+                period_filters.append(UpsellAttempt.barber_id.in_(org_user_ids))
+            
+            # Get period statistics
+            total_attempts = db.query(UpsellAttempt).filter(and_(*period_filters)).count()
+            
+            implemented_attempts = db.query(UpsellAttempt).filter(
+                and_(*period_filters),
+                UpsellAttempt.status.in_([UpsellStatus.IMPLEMENTED, UpsellStatus.CONVERTED])
+            ).count()
+            
+            conversions = db.query(UpsellConversion).join(UpsellAttempt).filter(
+                and_(*period_filters)
+            ).count()
+            
+            potential_revenue = db.query(func.sum(UpsellAttempt.potential_revenue)).filter(
+                and_(*period_filters),
+                UpsellAttempt.status.in_([UpsellStatus.IMPLEMENTED, UpsellStatus.CONVERTED])
+            ).scalar() or 0
+            
+            actual_revenue = db.query(func.sum(UpsellConversion.actual_revenue)).join(UpsellAttempt).filter(
+                and_(*period_filters)
+            ).scalar() or 0
+            
+            # Calculate rates
+            implementation_rate = (implemented_attempts / total_attempts * 100) if total_attempts > 0 else 0
+            conversion_rate = (conversions / implemented_attempts * 100) if implemented_attempts > 0 else 0
+            overall_success_rate = (conversions / total_attempts * 100) if total_attempts > 0 else 0
+            
+            trends.append({
+                "period_start": current.isoformat(),
+                "period_end": period_end.isoformat(),
+                "metrics": {
+                    "total_attempts": total_attempts,
+                    "implemented_attempts": implemented_attempts,
+                    "conversions": conversions,
+                    "implementation_rate": round(implementation_rate, 1),
+                    "conversion_rate": round(conversion_rate, 1),
+                    "overall_success_rate": round(overall_success_rate, 1)
+                },
+                "revenue": {
+                    "potential_revenue": float(potential_revenue),
+                    "actual_revenue": float(actual_revenue),
+                    "avg_potential": float(potential_revenue / implemented_attempts) if implemented_attempts > 0 else 0,
+                    "avg_actual": float(actual_revenue / conversions) if conversions > 0 else 0
+                }
+            })
+            
+            # Move to next period
+            if period == "day":
+                current = current + timedelta(days=1)
+            elif period == "week":
+                current = period_end + timedelta(days=1)
+            else:  # month
+                current = period_end + timedelta(days=1)
+        
+        # Calculate growth metrics
+        growth_metrics = {}
+        if len(trends) >= 2:
+            latest = trends[-1]["metrics"]
+            previous = trends[-2]["metrics"]
+            
+            growth_metrics = {
+                "attempts_growth": calculate_growth(previous["total_attempts"], latest["total_attempts"]),
+                "conversions_growth": calculate_growth(previous["conversions"], latest["conversions"]),
+                "success_rate_growth": calculate_growth(previous["overall_success_rate"], latest["overall_success_rate"]),
+                "revenue_growth": calculate_growth(trends[-2]["revenue"]["actual_revenue"], trends[-1]["revenue"]["actual_revenue"])
+            }
+        
+        return {
+            "date_range": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat()
+            },
+            "period_type": period,
+            "trends": trends,
+            "growth_metrics": growth_metrics,
+            "barber_id": barber_id,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating upselling trends: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generating upselling trends")
+
+
+@router.get("/upselling/insights")
+async def get_upselling_insights(
+    start_date: Optional[date] = Query(None, description="Start date for insights"),
+    end_date: Optional[date] = Query(None, description="End date for insights"),
+    barber_id: Optional[int] = Query(None, description="Filter by specific barber"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get AI-powered upselling insights and recommendations"""
+    
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    org_user_ids = get_organization_user_ids(current_user, db)
+    
+    # Check barber access permissions
+    if barber_id and barber_id != current_user.id:
+        if barber_id not in org_user_ids and not checker.has_permission(Permission.VIEW_FINANCIAL_ANALYTICS):
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    # Set default date range
+    if not end_date:
+        end_date = date.today()
+    if not start_date:
+        start_date = end_date - timedelta(days=30)
+    
+    try:
+        from models.upselling import UpsellAttempt, UpsellConversion, UpsellStatus
+        from sqlalchemy import func, and_
+        
+        # Base filters
+        base_filters = [
+            UpsellAttempt.created_at >= datetime.combine(start_date, datetime.min.time()),
+            UpsellAttempt.created_at <= datetime.combine(end_date, datetime.max.time())
+        ]
+        
+        if barber_id:
+            base_filters.append(UpsellAttempt.barber_id == barber_id)
+        else:
+            base_filters.append(UpsellAttempt.barber_id.in_(org_user_ids))
+        
+        # Get overall metrics
+        total_attempts = db.query(UpsellAttempt).filter(and_(*base_filters)).count()
+        implemented_attempts = db.query(UpsellAttempt).filter(
+            and_(*base_filters),
+            UpsellAttempt.status.in_([UpsellStatus.IMPLEMENTED, UpsellStatus.CONVERTED])
+        ).count()
+        conversions = db.query(UpsellConversion).join(UpsellAttempt).filter(and_(*base_filters)).count()
+        
+        # Calculate success rates
+        implementation_rate = (implemented_attempts / total_attempts * 100) if total_attempts > 0 else 0
+        conversion_rate = (conversions / implemented_attempts * 100) if implemented_attempts > 0 else 0
+        overall_success_rate = (conversions / total_attempts * 100) if total_attempts > 0 else 0
+        
+        # Generate insights based on performance
+        insights = []
+        recommendations = []
+        
+        # Implementation rate insights
+        if implementation_rate < 50:
+            insights.append({
+                "type": "warning",
+                "category": "Implementation",
+                "title": "Low Implementation Rate",
+                "message": f"Only {implementation_rate:.1f}% of upselling opportunities are being acted upon.",
+                "impact": "Missing significant revenue opportunities"
+            })
+            recommendations.append({
+                "priority": "high",
+                "category": "Process Improvement",
+                "title": "Improve Upselling Implementation",
+                "description": "Focus on training staff to better identify and act on upselling opportunities",
+                "expected_impact": "20-30% increase in revenue",
+                "action_steps": [
+                    "Review upselling training materials",
+                    "Set implementation targets for staff",
+                    "Create upselling reminder systems"
+                ]
+            })
+        elif implementation_rate > 80:
+            insights.append({
+                "type": "success",
+                "category": "Implementation",
+                "title": "Excellent Implementation Rate",
+                "message": f"Strong performance with {implementation_rate:.1f}% implementation rate.",
+                "impact": "Maximizing opportunity capture"
+            })
+        
+        # Conversion rate insights
+        if conversion_rate < 30:
+            insights.append({
+                "type": "warning",
+                "category": "Conversion",
+                "title": "Low Conversion Rate",
+                "message": f"Only {conversion_rate:.1f}% of upselling attempts result in conversions.",
+                "impact": "Poor client acceptance of upselling offers"
+            })
+            recommendations.append({
+                "priority": "high",
+                "category": "Sales Technique",
+                "title": "Improve Upselling Approach",
+                "description": "Refine upselling techniques to better match client needs and preferences",
+                "expected_impact": "15-25% improvement in conversion rate",
+                "action_steps": [
+                    "Analyze successful upselling patterns",
+                    "Personalize upselling offers",
+                    "Improve timing of upselling attempts"
+                ]
+            })
+        elif conversion_rate > 60:
+            insights.append({
+                "type": "success",
+                "category": "Conversion",
+                "title": "High Conversion Rate",
+                "message": f"Excellent conversion performance at {conversion_rate:.1f}%.",
+                "impact": "Strong client acceptance of offers"
+            })
+        
+        # Channel performance analysis
+        channel_performance = db.query(
+            UpsellAttempt.channel,
+            func.count(UpsellAttempt.id).label('attempts'),
+            func.count(UpsellConversion.id).label('conversions')
+        ).outerjoin(UpsellConversion).filter(
+            and_(*base_filters)
+        ).group_by(UpsellAttempt.channel).all()
+        
+        best_channel = None
+        worst_channel = None
+        best_rate = 0
+        worst_rate = 100
+        
+        for channel, attempts, conversions in channel_performance:
+            if attempts > 0:
+                rate = (conversions / attempts * 100)
+                if rate > best_rate:
+                    best_rate = rate
+                    best_channel = channel.value if channel else 'unknown'
+                if rate < worst_rate:
+                    worst_rate = rate
+                    worst_channel = channel.value if channel else 'unknown'
+        
+        if best_channel and worst_channel and best_channel != worst_channel:
+            insights.append({
+                "type": "info",
+                "category": "Channel Performance",
+                "title": "Channel Performance Variation",
+                "message": f"{best_channel} performs best ({best_rate:.1f}% conversion) vs {worst_channel} ({worst_rate:.1f}%)",
+                "impact": "Opportunity to optimize channel strategy"
+            })
+            
+            recommendations.append({
+                "priority": "medium",
+                "category": "Channel Optimization",
+                "title": "Focus on High-Performing Channels",
+                "description": f"Increase focus on {best_channel} channel while improving {worst_channel} approach",
+                "expected_impact": "10-15% overall improvement",
+                "action_steps": [
+                    f"Analyze what makes {best_channel} successful",
+                    f"Apply best practices to {worst_channel}",
+                    "Consider reallocating resources to better channels"
+                ]
+            })
+        
+        # Revenue opportunity analysis
+        potential_revenue = db.query(func.sum(UpsellAttempt.potential_revenue)).filter(
+            and_(*base_filters),
+            UpsellAttempt.status == UpsellStatus.PENDING
+        ).scalar() or 0
+        
+        if potential_revenue > 0:
+            insights.append({
+                "type": "opportunity",
+                "category": "Revenue",
+                "title": "Untapped Revenue Potential",
+                "message": f"${potential_revenue:.0f} in pending upselling opportunities",
+                "impact": "Immediate revenue opportunity available"
+            })
+            
+            recommendations.append({
+                "priority": "high",
+                "category": "Revenue Recovery",
+                "title": "Follow Up on Pending Opportunities",
+                "description": "Implement systematic follow-up on pending upselling attempts",
+                "expected_impact": f"Up to ${potential_revenue * 0.3:.0f} additional revenue",
+                "action_steps": [
+                    "Review all pending upselling attempts",
+                    "Create follow-up schedule",
+                    "Personalize follow-up approaches"
+                ]
+            })
+        
+        # Success score calculation
+        success_score = (implementation_rate * 0.3 + conversion_rate * 0.4 + overall_success_rate * 0.3)
+        
+        if success_score >= 70:
+            grade = "A"
+            performance_level = "Excellent"
+        elif success_score >= 60:
+            grade = "B"
+            performance_level = "Good"
+        elif success_score >= 50:
+            grade = "C"
+            performance_level = "Average"
+        elif success_score >= 40:
+            grade = "D"
+            performance_level = "Below Average"
+        else:
+            grade = "F"
+            performance_level = "Poor"
+        
+        return {
+            "date_range": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat()
+            },
+            "performance_summary": {
+                "success_score": round(success_score, 1),
+                "grade": grade,
+                "performance_level": performance_level,
+                "implementation_rate": round(implementation_rate, 1),
+                "conversion_rate": round(conversion_rate, 1),
+                "overall_success_rate": round(overall_success_rate, 1)
+            },
+            "insights": insights,
+            "recommendations": recommendations,
+            "barber_id": barber_id,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating upselling insights: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generating upselling insights")
+
+
+def calculate_growth(previous_value: float, current_value: float) -> Dict[str, float]:
+    """Calculate growth metrics between two values"""
+    if previous_value == 0:
+        if current_value > 0:
+            return {"percentage": 100.0, "absolute": current_value}
+        else:
+            return {"percentage": 0.0, "absolute": 0.0}
+    
+    absolute_change = current_value - previous_value
+    percentage_change = (absolute_change / previous_value) * 100
+    
+    return {
+        "percentage": round(percentage_change, 2),
+        "absolute": round(absolute_change, 2)
+    }

@@ -253,6 +253,9 @@ def safe_endpoint(func):
     Decorator to wrap endpoint functions with safe error handling.
     Catches all exceptions and returns safe error responses.
     """
+    import functools
+    
+    @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         try:
             return await func(*args, **kwargs)
@@ -261,9 +264,6 @@ def safe_endpoint(func):
             request = kwargs.get('request') or kwargs.get('req')
             return safe_error_response(e, request)
     
-    # Preserve function metadata
-    wrapper.__name__ = func.__name__
-    wrapper.__doc__ = func.__doc__
     return wrapper
 
 # Utility function to sanitize error messages

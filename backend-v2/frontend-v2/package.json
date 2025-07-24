@@ -46,7 +46,17 @@
     "optimize": "npm run lint:fix && npm run build:analyze",
     "size": "npx size-limit",
     "lighthouse": "npx lighthouse http://localhost:3000 --output-path=./lighthouse-report.html",
+    "lighthouse:ci": "npx lhci autorun",
+    "lighthouse:calendar": "npx lighthouse http://localhost:3000/calendar --output-path=./lighthouse-calendar.html",
     "bundle:stats": "npx webpack-bundle-analyzer .next/analyze/client.json",
+    "performance:test": "node scripts/performance-test.js",
+    "performance:quick": "npm run build && npm run lighthouse:calendar",
+    "accessibility:test": "node scripts/accessibility-test.js",
+    "accessibility:audit": "npx pa11y http://localhost:3000/calendar --reporter html > accessibility-audit.html",
+    "cross-browser:test": "node scripts/cross-browser-test.js",
+    "integration:test": "node scripts/integration-test.js",
+    "test:comprehensive": "node scripts/test-orchestrator.js",
+    "test:validate": "npm run performance:test && npm run accessibility:test && npm run cross-browser:test && npm run integration:test",
     "precommit": "npm run lint && npm run test",
     "env": "node scripts/show-environment.js",
     "env:check": "node scripts/check-ports.js",
@@ -127,6 +137,11 @@
     "node-fetch": "^2.7.0",
     "puppeteer": "^24.11.2",
     "ts-node": "^10.9.2",
-    "whatwg-fetch": "^3.6.20"
+    "whatwg-fetch": "^3.6.20",
+    "@lhci/cli": "^0.13.0",
+    "axe-core": "^4.8.3",
+    "axe-playwright": "^2.0.1",
+    "pa11y": "^8.0.0",
+    "lighthouse": "^11.0.0"
   }
 }
