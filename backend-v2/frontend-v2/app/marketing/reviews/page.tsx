@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Star, 
@@ -411,49 +411,46 @@ export default function ReviewsManagementPage() {
 
             <div className="min-w-[120px]">
               <Label>Platform</Label>
-              <Select value={platformFilter} onValueChange={setPlatformFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Platforms</SelectItem>
-                  <SelectItem value="google">Google</SelectItem>
-                  <SelectItem value="yelp">Yelp</SelectItem>
-                  <SelectItem value="facebook">Facebook</SelectItem>
-                  <SelectItem value="booking">Booking</SelectItem>
-                </SelectContent>
-              </Select>
+              <Select 
+                value={platformFilter} 
+                onChange={setPlatformFilter}
+                options={[
+                  { value: 'all', label: 'All Platforms' },
+                  { value: 'google', label: 'Google' },
+                  { value: 'yelp', label: 'Yelp' },
+                  { value: 'facebook', label: 'Facebook' },
+                  { value: 'booking', label: 'Booking' }
+                ]}
+              />
             </div>
 
             <div className="min-w-[120px]">
               <Label>Sentiment</Label>
-              <Select value={sentimentFilter} onValueChange={setSentimentFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sentiments</SelectItem>
-                  <SelectItem value="positive">Positive</SelectItem>
-                  <SelectItem value="neutral">Neutral</SelectItem>
-                  <SelectItem value="negative">Negative</SelectItem>
-                </SelectContent>
-              </Select>
+              <Select 
+                value={sentimentFilter} 
+                onChange={setSentimentFilter}
+                options={[
+                  { value: 'all', label: 'All Sentiments' },
+                  { value: 'positive', label: 'Positive' },
+                  { value: 'neutral', label: 'Neutral' },
+                  { value: 'negative', label: 'Negative' }
+                ]}
+              />
             </div>
 
             <div className="min-w-[120px]">
               <Label>Rating</Label>
-              <Select value={ratingFilter} onValueChange={setRatingFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Ratings</SelectItem>
-                  <SelectItem value="5">5 Stars</SelectItem>
-                  <SelectItem value="4">4 Stars</SelectItem>
-                  <SelectItem value="3">3 Stars</SelectItem>
-                  <SelectItem value="1-2">1-2 Stars</SelectItem>
-                </SelectContent>
-              </Select>
+              <Select 
+                value={ratingFilter} 
+                onChange={setRatingFilter}
+                options={[
+                  { value: 'all', label: 'All Ratings' },
+                  { value: '5', label: '5 Stars' },
+                  { value: '4', label: '4 Stars' },
+                  { value: '3', label: '3 Stars' },
+                  { value: '1-2', label: '1-2 Stars' }
+                ]}
+              />
             </div>
 
             <Button variant="outline">
@@ -471,18 +468,18 @@ export default function ReviewsManagementPage() {
             <h2 className="text-xl font-semibold">
               Reviews ({filteredReviews.length})
             </h2>
-            <Select value="newest" onValueChange={() => {}}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="rating-high">Highest Rating</SelectItem>
-                <SelectItem value="rating-low">Lowest Rating</SelectItem>
-                <SelectItem value="no-response">Needs Response</SelectItem>
-              </SelectContent>
-            </Select>
+            <Select 
+              value="newest" 
+              onChange={() => {}}
+              className="w-[180px]"
+              options={[
+                { value: 'newest', label: 'Newest First' },
+                { value: 'oldest', label: 'Oldest First' },
+                { value: 'rating-high', label: 'Highest Rating' },
+                { value: 'rating-low', label: 'Lowest Rating' },
+                { value: 'no-response', label: 'Needs Response' }
+              ]}
+            />
           </div>
 
           <div className="space-y-4 max-h-[800px] overflow-y-auto">

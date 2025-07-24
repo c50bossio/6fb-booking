@@ -379,9 +379,9 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
                 Start Date
               </label>
               <Calendar
-                selectedDate={startDate}
-                onDateSelect={setStartDate}
-                bookingDates={[]}
+                selected={startDate}
+                onSelect={setStartDate}
+                mode="single"
               />
             </div>
 
@@ -415,9 +415,9 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
                 {endDate !== null && (
                   <div className="ml-6">
                     <Calendar
-                      selectedDate={endDate}
-                      onDateSelect={setEndDate}
-                      bookingDates={[]}
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      mode="single"
                     />
                   </div>
                 )}

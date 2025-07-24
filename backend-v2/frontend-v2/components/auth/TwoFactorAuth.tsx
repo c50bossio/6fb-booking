@@ -221,7 +221,7 @@ export function TwoFactorAuth({
           {onResend && (
             <div className="text-center">
               <Button
-                variant="link"
+                variant="ghost"
                 onClick={handleResend}
                 disabled={resendCooldown > 0}
                 className="text-sm"

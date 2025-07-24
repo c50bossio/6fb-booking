@@ -494,7 +494,7 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
   if (!isOpen) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="large">
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <div className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

@@ -106,16 +106,16 @@ function DashboardContent() {
         }
         setUser(userData)
         
-        // FIXED: Onboarding redirect logic disabled to prevent infinite loops
-        // Check if user needs onboarding - removed to fix redirect loop
+        // Check if user needs onboarding
+        // Temporarily disabled to prevent redirect loops
         // if (!userData.onboarding_completed && userData.is_new_user !== false) {
         //   console.log('Dashboard: Redirecting new user to welcome page')
         //   router.push('/dashboard/welcome')
         //   return
         // }
         
-        // FIXED: Role-specific dashboard redirect disabled to allow admin access
-        // Check if user should be redirected to role-specific dashboard - disabled to fix loops
+        // Check if user should be redirected to role-specific dashboard
+        // Temporarily disabled to allow admin users to see the dashboard
         // const defaultDashboard = getDefaultDashboard(userData)
         // if (defaultDashboard !== '/dashboard' && window.location.pathname === '/dashboard') {
         //   router.push(defaultDashboard)
@@ -453,6 +453,30 @@ function DashboardContent() {
             </Button>
           </div>
         </div>
+
+        {/* Trial Warning System */}
+        {user && (user.subscription_status === 'trial' || user.is_trial_active) && (
+          <TrialWarningSystem
+            trialStatus={{
+              is_trial_active: user.is_trial_active || false,
+              trial_days_remaining: user.trial_days_remaining || 0,
+              trial_started_at: user.trial_started_at || null,
+              trial_expires_at: user.trial_expires_at || null,
+              subscription_status: user.subscription_status || 'trial',
+              user_type: user.user_type || user.role || 'barber'
+            }}
+            onUpgrade={() => router.push('/billing/plans')}
+            onDismiss={(warningId) => console.log('Dismissed warning:', warningId)}
+          />
+        )}
+
+        {/* Trial Status Banner */}
+        {user && user.primary_organization_id && (user.subscription_status === 'trial' || user.is_trial_active || user.primary_organization?.subscription_status === 'trial') && (
+          <TrialStatusBanner
+            organizationId={user.primary_organization_id}
+            className="mb-6"
+          />
+        )}
 
         {/* Success Message */}
         {showSuccess && (

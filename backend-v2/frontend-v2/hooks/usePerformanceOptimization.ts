@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useRef, useEffect, DependencyList } from 'react'
+import { useMemo, useCallback, useRef, useEffect, useState, DependencyList } from 'react'
 import { debounce, throttle } from 'lodash'
 
 /**
@@ -24,9 +24,12 @@ export function useMemoWithCache<T>(
     if (cacheKey) {
       cacheRef.current.set(cacheKey, { value, deps })
       // Limit cache size
-      if (cacheRef.current.size > 100) {
-        const firstKey = cacheRef.current.keys().next().value
-        cacheRef.current.delete(firstKey)
+      if (cacheRef.current && cacheRef.current.size > 100) {
+        const keysIterator = cacheRef.current.keys()
+        const firstKey = keysIterator.next().value
+        if (firstKey !== undefined) {
+          cacheRef.current.delete(firstKey)
+        }
       }
     }
     
@@ -327,4 +330,3 @@ export function useBatchedState<T extends Record<string, any>>(
   return [state, batchUpdate, flushUpdates]
 }
 
-import { useState } from 'react'

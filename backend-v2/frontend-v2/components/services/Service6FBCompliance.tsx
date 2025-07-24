@@ -269,7 +269,7 @@ export default function Service6FBCompliance({
                   <div className="flex-1">
                     <p className="font-medium">{opportunity}</p>
                     <Button
-                      variant="link"
+                      variant="ghost"
                       size="sm"
                       className="text-purple-600 p-0 h-auto mt-1"
                       onClick={(e) => {

@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * ShareBookingModal - Comprehensive booking link sharing interface
+ * 
+ * MODAL BEHAVIOR:
+ * ✅ Click outside modal → closes automatically (global default)
+ * ✅ Press ESC key → closes automatically (global default)
+ * ✅ All 8 sharing options visible with scroll support
+ * ✅ Responsive grid layout: 1 col mobile, 2 col tablet, 4 col desktop
+ */
+
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Modal, ModalBody } from '../ui/Modal'
@@ -241,6 +251,7 @@ ${businessName}`
 
   return (
     <>
+    {/* Global modal with click-outside-to-exit enabled by default */}
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -249,8 +260,10 @@ ${businessName}`
       position="center"
       variant="default"
       overflow="auto"
+      className="max-h-[90vh]"
+      // closeOnOverlayClick={true} // ← Default behavior, click outside to close
     >
-      <ModalBody className="pb-8">
+      <ModalBody className="pb-8 max-h-[70vh] overflow-y-auto">
         {/* Description */}
         <div className="mb-8">
           <p className="text-ios-body text-ios-gray-600 dark:text-ios-gray-400 leading-relaxed">

@@ -3,6 +3,18 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
+/**
+ * Global Modal Component with Universal Click-Outside-to-Exit
+ * 
+ * GLOBAL BEHAVIORS (enabled by default for ALL modals):
+ * - Click outside modal overlay → closes modal
+ * - Press ESC key → closes modal  
+ * - Focus trapping within modal
+ * - Body scroll prevention when open
+ * 
+ * To disable click-outside behavior, explicitly set closeOnOverlayClick={false}
+ */
+
 const modalVariants = cva(
   'relative bg-white dark:bg-dark-elevated-100 rounded-t-ios-2xl shadow-ios-2xl transform transition-all duration-300 ease-out',
   {
@@ -46,7 +58,7 @@ const modalVariants = cva(
 )
 
 const overlayVariants = cva(
-  'fixed inset-0 z-50 flex items-end justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm transition-all duration-300',
+  'fixed inset-0 flex items-end justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm transition-all duration-300',
   {
     variants: {
       position: {
@@ -68,7 +80,9 @@ export interface ModalProps extends VariantProps<typeof modalVariants> {
   title?: string
   description?: string
   showCloseButton?: boolean
+  /** Enable click outside modal to close. Defaults to true for all modals. */
   closeOnOverlayClick?: boolean
+  /** Enable ESC key to close modal. Defaults to true. */
   closeOnEscape?: boolean
   preventScroll?: boolean
   trapFocus?: boolean
@@ -89,7 +103,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     position,
     overflow,
     showCloseButton = true,
-    closeOnOverlayClick = true,
+    closeOnOverlayClick = true, // Global default: clicking outside closes modal
     closeOnEscape = true,
     preventScroll = true,
     trapFocus = true,
@@ -200,6 +214,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           position, 
           className: `${isAnimating ? 'opacity-0' : 'opacity-100'} ${overlayClassName || ''}` 
         })}
+        style={{ zIndex: 2147483647 }} // Maximum z-index to ensure modal appears on top
         onClick={closeOnOverlayClick ? onClose : undefined}
         onKeyDown={handleKeyDown}
         role="dialog"

@@ -276,6 +276,18 @@ export async function login(email: string, password: string) {
     // Also set as httpOnly:false cookie so middleware can detect auth
     // Note: httpOnly:false is needed because we're setting from client-side
     document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+    
+    // CRITICAL FIX: Extract user role from JWT token and set user_role cookie
+    // This fixes the infinite redirect loop in middleware
+    try {
+      const tokenPayload = JSON.parse(atob(response.access_token.split('.')[1]))
+      const userRole = tokenPayload.role || 'user'
+      console.log('🔑 Setting user_role cookie:', userRole)
+      document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+    } catch (error) {
+      console.warn('⚠️ Failed to extract role from token, setting default role:', error)
+      document.cookie = `user_role=user; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+    }
   }
   if (response.refresh_token) {
     localStorage.setItem('refresh_token', response.refresh_token)
@@ -287,8 +299,9 @@ export async function login(email: string, password: string) {
 export async function logout() {
   localStorage.removeItem('token')
   localStorage.removeItem('refresh_token')
-  // Remove the cookie by setting it with an expired date
+  // Remove the cookies by setting them with an expired date
   document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+  document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
 }
 
 // @deprecated - Use registerComplete() instead. This old function uses a single "name" field.
