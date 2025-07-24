@@ -18,7 +18,8 @@ COPY . .
 
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED 1
-RUN npm run build
+ENV NODE_ENV production
+RUN npm run build && ls -la .next/
 
 # Stage 3: Runner
 FROM node:18-alpine AS runner
@@ -33,8 +34,13 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files
 COPY --from=builder /app/public ./public
+
+# Copy the Next.js build files
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+
+# Verify files exist
+RUN ls -la && ls -la .next/
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
