@@ -8,7 +8,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   TrophyIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  StarIcon
 } from '@heroicons/react/24/outline'
 
 interface ProductivityAnalyticsSectionProps {
