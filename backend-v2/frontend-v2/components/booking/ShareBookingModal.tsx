@@ -211,38 +211,40 @@ ${businessName}`
     return (
       <div
         key={option.id}
-        className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200 min-h-[120px] flex flex-col justify-center hover:bg-gray-50 dark:hover:bg-gray-700"
+        className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-5 cursor-pointer hover:shadow-xl hover:scale-[1.03] hover:-translate-y-1 transition-all duration-300 min-h-[140px] flex flex-col justify-center hover:bg-gradient-to-br hover:from-gray-50 hover:to-white dark:hover:from-gray-700 dark:hover:to-gray-800 hover:border-primary-300 dark:hover:border-primary-400"
         onClick={option.action}
       >
-        <div className="flex flex-col items-center text-center space-y-3">
-          {/* Icon */}
+        <div className="flex flex-col items-center text-center space-y-4">
+          {/* Enhanced Icon with better visual hierarchy */}
           <div className="relative">
-            <div className="w-12 h-12 rounded-lg bg-primary-100 dark:bg-primary-500/20 flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-500/30 transition-colors duration-200">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-500/20 dark:to-primary-600/30 flex items-center justify-center group-hover:from-primary-200 group-hover:to-primary-300 dark:group-hover:from-primary-500/30 dark:group-hover:to-primary-600/40 transition-all duration-300 shadow-sm group-hover:shadow-md">
               {isLoading ? (
-                <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-7 h-7 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
               ) : isCopied ? (
-                <CheckIcon className="w-6 h-6 text-green-500" />
+                <CheckIcon className="w-7 h-7 text-green-500" />
               ) : (
-                <Icon className="w-6 h-6 text-primary-600 dark:text-primary-300" />
+                <Icon className="w-7 h-7 text-primary-600 dark:text-primary-300 group-hover:scale-110 transition-transform duration-300" />
               )}
             </div>
+            {/* Subtle glow effect on hover */}
+            <div className="absolute inset-0 rounded-xl bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
           </div>
 
-          {/* Content */}
-          <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          {/* Enhanced Content with better typography */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary-700 dark:group-hover:text-primary-300 transition-colors duration-300">
               {option.title}
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-2">
               {option.description}
             </p>
           </div>
 
-          {/* Copy indicator */}
+          {/* Enhanced Copy indicator with animation */}
           {isCopied && (
-            <div className="flex items-center space-x-1 text-green-600 dark:text-green-400">
+            <div className="flex items-center space-x-1 text-green-600 dark:text-green-400 animate-bounce">
               <DocumentDuplicateIcon className="w-4 h-4" />
-              <span className="text-xs font-medium">Copied!</span>
+              <span className="text-xs font-semibold">Copied!</span>
             </div>
           )}
         </div>
@@ -252,81 +254,64 @@ ${businessName}`
 
   return (
     <>
-    {/* Custom positioned modal with working click-outside-to-close */}
-    {isOpen && (
-      <div 
-        className="fixed inset-0 flex items-start justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm z-[2147483647] p-4 pt-24"
-        onClick={onClose}
-      >
-        <div 
-          className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Share Booking
-            </h2>
+    {/* Standardized Modal with improved UI and reliable click-outside behavior */}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Share Booking"
+      size="4xl"
+      position="center"
+      variant="default"
+      className="max-w-5xl"
+      closeOnOverlayClick={true}
+      closeOnEscape={true}
+    >
+      <ModalBody className="max-h-[75vh] overflow-y-auto">
+        {/* Enhanced Description with better typography */}
+        <div className="mb-8">
+          <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+            Choose how you want to share your availability with customers using one of the options below.
+          </p>
+        </div>
+
+        {/* Improved Share Options Grid with better spacing and responsiveness */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {shareOptions.map(renderOptionCard)}
+        </div>
+
+        {/* Enhanced Current booking URL display with premium styling */}
+        <div className="mt-10 p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2 uppercase tracking-wide">
+                Current Booking URL
+              </p>
+              <a
+                href={bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary-600 dark:text-primary-300 font-mono hover:text-primary-700 dark:hover:text-primary-200 hover:underline transition-all duration-200 cursor-pointer flex items-center gap-2 group bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400"
+                title="Click to open booking page in new tab"
+              >
+                <span className="truncate flex-1">{bookingUrl}</span>
+                <ArrowTopRightOnSquareIcon className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
+              </a>
+            </div>
             <button
-              onClick={onClose}
-              className="p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
-              aria-label="Close modal"
+              onClick={() => copyToClipboard(bookingUrl, 'url-display')}
+              className="ml-4 p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-white dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400 transition-all duration-200 shadow-sm hover:shadow-md"
+              title="Copy URL to clipboard"
             >
-              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
+              {copiedOption === 'url-display' ? (
+                <CheckIcon className="w-5 h-5 text-green-500" />
+              ) : (
+                <DocumentDuplicateIcon className="w-5 h-5" />
+              )}
             </button>
           </div>
-
-          {/* Body */}
-          <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
-            {/* Description */}
-            <div className="mb-8">
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                Choose a way in which you want to share your availability with the customers using one of the options below.
-              </p>
-            </div>
-
-            {/* Share Options Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {shareOptions.map(renderOptionCard)}
-            </div>
-
-            {/* Current booking URL display */}
-            <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Current Booking URL
-                  </p>
-                  <a
-                    href={bookingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary-600 dark:text-primary-300 font-mono hover:text-primary-700 dark:hover:text-primary-200 hover:underline transition-colors duration-200 cursor-pointer flex items-center gap-2 group"
-                    title="Click to open booking page in new tab"
-                  >
-                    <span className="truncate flex-1">{bookingUrl}</span>
-                    <ArrowTopRightOnSquareIcon className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
-                  </a>
-                </div>
-                <button
-                  onClick={() => copyToClipboard(bookingUrl, 'url-display')}
-                  className="ml-3 p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                  title="Copy URL"
-                >
-                  {copiedOption === 'url-display' ? (
-                    <CheckIcon className="w-4 h-4 text-success-500" />
-                  ) : (
-                    <DocumentDuplicateIcon className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-    )}
+      </ModalBody>
+    </Modal>
 
     {/* Link Customizer Modal */}
     <LinkCustomizer

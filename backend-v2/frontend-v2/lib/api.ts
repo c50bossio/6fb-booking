@@ -6670,6 +6670,120 @@ export const api = {
   createBooking
 }
 
+// Upselling API Types
+export interface UpsellAttemptRequest {
+  client_id: number
+  current_service: string
+  suggested_service: string
+  potential_revenue: number
+  confidence_score: number
+  channel: 'in_person' | 'email' | 'sms' | 'phone_call' | 'booking_page' | 'app_notification'
+  client_tier?: string
+  relationship_score?: number
+  reasons?: string[]
+  methodology_alignment?: string
+  implementation_notes?: string
+  opportunity_id?: string
+  source_analysis?: Record<string, any>
+  expires_in_hours?: number
+}
+
+export interface UpsellAttemptResponse {
+  id: number
+  barber_id: number
+  client_id: number
+  current_service: string
+  suggested_service: string
+  potential_revenue: number
+  confidence_score: number
+  client_tier?: string
+  relationship_score?: number
+  status: string
+  channel: string
+  opportunity_id?: string
+  implemented_at: string
+  expires_at?: string
+  automation_triggered: boolean
+}
+
+export interface UpsellConversionRequest {
+  attempt_id: number
+  converted: boolean
+  conversion_channel?: string
+  actual_service_booked?: string
+  actual_revenue?: number
+  appointment_id?: number
+  client_satisfaction_score?: number
+  client_feedback?: string
+  conversion_notes?: string
+}
+
+export interface UpsellAnalyticsResponse {
+  period_start: string
+  period_end: string
+  total_attempts: number
+  total_conversions: number
+  conversion_rate: number
+  total_potential_revenue: number
+  total_actual_revenue: number
+  revenue_realization_rate: number
+  average_upsell_value: number
+  average_time_to_conversion: number
+  best_performing_channel?: string
+  methodology_compliance_score: number
+}
+
+// Upselling API Functions
+export async function recordUpsellAttempt(attemptData: UpsellAttemptRequest): Promise<UpsellAttemptResponse> {
+  return fetchAPI('/api/v2/upselling/attempt', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(attemptData),
+  })
+}
+
+export async function recordUpsellConversion(conversionData: UpsellConversionRequest) {
+  return fetchAPI('/api/v2/upselling/conversion', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(conversionData),
+  })
+}
+
+export async function getUpsellAttempts(filters?: {
+  client_id?: number
+  status?: string
+  days_back?: number
+  limit?: number
+}): Promise<UpsellAttemptResponse[]> {
+  const params = new URLSearchParams()
+  if (filters?.client_id) params.append('client_id', filters.client_id.toString())
+  if (filters?.status) params.append('status', filters.status)
+  if (filters?.days_back) params.append('days_back', filters.days_back.toString())
+  if (filters?.limit) params.append('limit', filters.limit.toString())
+  
+  const queryString = params.toString()
+  return fetchAPI(`/api/v2/upselling/attempts${queryString ? `?${queryString}` : ''}`)
+}
+
+export async function getUpsellAnalytics(periodDays: number = 30): Promise<UpsellAnalyticsResponse> {
+  return fetchAPI(`/api/v2/upselling/analytics?period_days=${periodDays}`)
+}
+
+export async function updateAttemptStatus(attemptId: number, status: string, notes?: string) {
+  return fetchAPI(`/api/v2/upselling/attempt/${attemptId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status, notes }),
+  })
+}
+
 export const apiClient = {
   // Core API functions
   fetchAPI,
@@ -6687,7 +6801,13 @@ export const apiClient = {
   forgotPassword,
   resetPassword,
   verifyEmail,
-  refreshToken
+  refreshToken,
+  // Upselling functions
+  recordUpsellAttempt,
+  recordUpsellConversion,
+  getUpsellAttempts,
+  getUpsellAnalytics,
+  updateAttemptStatus
 }
 
 

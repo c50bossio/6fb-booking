@@ -1,0 +1,439 @@
+"""
+Upselling Tracking API Endpoints V2
+Provides comprehensive upselling attempt and conversion tracking following Six Figure Barber methodology.
+"""
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import desc, func, and_, or_
+from typing import List, Optional, Dict, Any
+from datetime import date, datetime, timedelta
+from pydantic import BaseModel, Field
+
+from db import get_db
+from utils.auth import get_current_user
+from models import User, Appointment
+from models.upselling import UpsellAttempt, UpsellConversion, UpsellAnalytics, UpsellStatus, UpsellChannel
+import logging
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/upselling", tags=["Upselling Tracking"])
+
+# Pydantic models for API requests/responses
+class UpsellAttemptRequest(BaseModel):
+    client_id: int
+    current_service: str
+    suggested_service: str
+    potential_revenue: float
+    confidence_score: float
+    channel: UpsellChannel
+    client_tier: Optional[str] = None
+    relationship_score: Optional[float] = None
+    reasons: Optional[List[str]] = None
+    methodology_alignment: Optional[str] = None
+    implementation_notes: Optional[str] = None
+    opportunity_id: Optional[str] = None
+    source_analysis: Optional[Dict[str, Any]] = None
+    expires_in_hours: Optional[int] = 72  # Default 3 days
+
+class UpsellAttemptResponse(BaseModel):
+    id: int
+    barber_id: int
+    client_id: int
+    current_service: str
+    suggested_service: str
+    potential_revenue: float
+    confidence_score: float
+    client_tier: Optional[str]
+    relationship_score: Optional[float]
+    status: UpsellStatus
+    channel: UpsellChannel
+    opportunity_id: Optional[str]
+    implemented_at: datetime
+    expires_at: Optional[datetime]
+    automation_triggered: bool
+    
+    class Config:
+        from_attributes = True
+
+class UpsellConversionRequest(BaseModel):
+    attempt_id: int
+    converted: bool
+    conversion_channel: Optional[UpsellChannel] = None
+    actual_service_booked: Optional[str] = None
+    actual_revenue: Optional[float] = None
+    appointment_id: Optional[int] = None
+    client_satisfaction_score: Optional[float] = None
+    client_feedback: Optional[str] = None
+    conversion_notes: Optional[str] = None
+
+class UpsellConversionResponse(BaseModel):
+    id: int
+    attempt_id: int
+    converted: bool
+    conversion_channel: Optional[UpsellChannel]
+    actual_service_booked: Optional[str]
+    actual_revenue: Optional[float]
+    revenue_difference: Optional[float]
+    appointment_id: Optional[int]
+    time_to_conversion: Optional[int]
+    converted_at: Optional[datetime]
+    
+    class Config:
+        from_attributes = True
+
+class UpsellAnalyticsResponse(BaseModel):
+    period_start: datetime
+    period_end: datetime
+    total_attempts: int
+    total_conversions: int
+    conversion_rate: float
+    total_potential_revenue: float
+    total_actual_revenue: float
+    revenue_realization_rate: float
+    average_upsell_value: float
+    average_time_to_conversion: float
+    best_performing_channel: Optional[UpsellChannel]
+    methodology_compliance_score: float
+
+@router.post("/attempt", response_model=UpsellAttemptResponse)
+async def record_upsell_attempt(
+    attempt_data: UpsellAttemptRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Record a new upselling attempt when barber clicks 'Implement'.
+    Triggers automation and tracking for the upselling opportunity.
+    """
+    try:
+        # Validate client exists
+        client = db.query(User).filter(User.id == attempt_data.client_id).first()
+        if not client:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Client not found"
+            )
+        
+        # Calculate expiration time
+        expires_at = datetime.utcnow() + timedelta(hours=attempt_data.expires_in_hours)
+        
+        # Create upsell attempt record
+        attempt = UpsellAttempt(
+            barber_id=current_user.id,
+            client_id=attempt_data.client_id,
+            current_service=attempt_data.current_service,
+            suggested_service=attempt_data.suggested_service,
+            potential_revenue=attempt_data.potential_revenue,
+            confidence_score=attempt_data.confidence_score,
+            client_tier=attempt_data.client_tier,
+            relationship_score=attempt_data.relationship_score,
+            reasons=attempt_data.reasons or [],
+            methodology_alignment=attempt_data.methodology_alignment,
+            status=UpsellStatus.IMPLEMENTED,
+            channel=attempt_data.channel,
+            implementation_notes=attempt_data.implementation_notes,
+            opportunity_id=attempt_data.opportunity_id,
+            source_analysis=attempt_data.source_analysis or {},
+            expires_at=expires_at,
+            automation_triggered=False  # Will be updated when automation runs
+        )
+        
+        db.add(attempt)
+        db.commit()
+        db.refresh(attempt)
+        
+        # TODO: Trigger automation (email/SMS) based on channel
+        # This would integrate with existing notification services
+        logger.info(f"Upsell attempt recorded: {attempt.id} for client {client.email}")
+        
+        return attempt
+        
+    except Exception as e:
+        logger.error(f"Error recording upsell attempt: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to record upsell attempt"
+        )
+
+@router.post("/conversion", response_model=UpsellConversionResponse)
+async def record_upsell_conversion(
+    conversion_data: UpsellConversionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Record the outcome of an upselling attempt.
+    Called when client responds to upselling offer (accepts or declines).
+    """
+    try:
+        # Validate attempt exists and belongs to current user
+        attempt = db.query(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.id == conversion_data.attempt_id,
+                UpsellAttempt.barber_id == current_user.id
+            )
+        ).first()
+        
+        if not attempt:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Upsell attempt not found"
+            )
+        
+        # Calculate metrics
+        revenue_difference = None
+        time_to_conversion = None
+        converted_at = None
+        
+        if conversion_data.converted:
+            converted_at = datetime.utcnow()
+            time_to_conversion = int((converted_at - attempt.implemented_at).total_seconds() / 3600)  # Hours
+            
+            if conversion_data.actual_revenue:
+                revenue_difference = conversion_data.actual_revenue - float(attempt.potential_revenue)
+        
+        # Create conversion record
+        conversion = UpsellConversion(
+            attempt_id=conversion_data.attempt_id,
+            converted=conversion_data.converted,
+            conversion_channel=conversion_data.conversion_channel,
+            actual_service_booked=conversion_data.actual_service_booked,
+            actual_revenue=conversion_data.actual_revenue,
+            revenue_difference=revenue_difference,
+            appointment_id=conversion_data.appointment_id,
+            time_to_conversion=time_to_conversion,
+            client_satisfaction_score=conversion_data.client_satisfaction_score,
+            client_feedback=conversion_data.client_feedback,
+            conversion_notes=conversion_data.conversion_notes,
+            converted_at=converted_at
+        )
+        
+        db.add(conversion)
+        
+        # Update attempt status
+        if conversion_data.converted:
+            attempt.status = UpsellStatus.CONVERTED
+        else:
+            attempt.status = UpsellStatus.DECLINED
+            
+        db.commit()
+        db.refresh(conversion)
+        
+        logger.info(f"Upsell conversion recorded: {conversion.id} - {'SUCCESS' if conversion_data.converted else 'DECLINED'}")
+        
+        return conversion
+        
+    except Exception as e:
+        logger.error(f"Error recording upsell conversion: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to record upsell conversion"
+        )
+
+@router.get("/attempts", response_model=List[UpsellAttemptResponse])
+async def get_upsell_attempts(
+    client_id: Optional[int] = Query(None, description="Filter by client ID"),
+    status: Optional[UpsellStatus] = Query(None, description="Filter by status"),
+    days_back: int = Query(30, description="Number of days to look back"),
+    limit: int = Query(50, description="Maximum number of results"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get upselling attempts for the current barber.
+    Supports filtering by client, status, and date range.
+    """
+    try:
+        query = db.query(UpsellAttempt).filter(UpsellAttempt.barber_id == current_user.id)
+        
+        # Apply filters
+        if client_id:
+            query = query.filter(UpsellAttempt.client_id == client_id)
+        
+        if status:
+            query = query.filter(UpsellAttempt.status == status)
+        
+        # Date filter
+        cutoff_date = datetime.utcnow() - timedelta(days=days_back)
+        query = query.filter(UpsellAttempt.implemented_at >= cutoff_date)
+        
+        # Order and limit
+        attempts = query.order_by(desc(UpsellAttempt.implemented_at)).limit(limit).all()
+        
+        return attempts
+        
+    except Exception as e:
+        logger.error(f"Error fetching upsell attempts: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch upsell attempts"
+        )
+
+@router.get("/analytics", response_model=UpsellAnalyticsResponse)
+async def get_upsell_analytics(
+    period_days: int = Query(30, description="Analysis period in days"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get comprehensive upselling analytics for the current barber.
+    Calculates conversion rates, revenue metrics, and performance insights.
+    """
+    try:
+        period_start = datetime.utcnow() - timedelta(days=period_days)
+        period_end = datetime.utcnow()
+        
+        # Get attempts in period
+        attempts_query = db.query(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.barber_id == current_user.id,
+                UpsellAttempt.implemented_at >= period_start,
+                UpsellAttempt.implemented_at <= period_end
+            )
+        )
+        
+        attempts = attempts_query.all()
+        total_attempts = len(attempts)
+        
+        if total_attempts == 0:
+            return UpsellAnalyticsResponse(
+                period_start=period_start,
+                period_end=period_end,
+                total_attempts=0,
+                total_conversions=0,
+                conversion_rate=0.0,
+                total_potential_revenue=0.0,
+                total_actual_revenue=0.0,
+                revenue_realization_rate=0.0,
+                average_upsell_value=0.0,
+                average_time_to_conversion=0.0,
+                best_performing_channel=None,
+                methodology_compliance_score=0.0
+            )
+        
+        # Get conversions
+        conversion_query = db.query(UpsellConversion).join(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.barber_id == current_user.id,
+                UpsellAttempt.implemented_at >= period_start,
+                UpsellAttempt.implemented_at <= period_end
+            )
+        )
+        
+        conversions = conversion_query.all()
+        successful_conversions = [c for c in conversions if c.converted]
+        total_conversions = len(successful_conversions)
+        
+        # Calculate metrics
+        conversion_rate = (total_conversions / total_attempts) * 100 if total_attempts > 0 else 0.0
+        
+        total_potential = sum(float(a.potential_revenue) for a in attempts)
+        total_actual = sum(float(c.actual_revenue or 0) for c in successful_conversions)
+        
+        revenue_realization_rate = (total_actual / total_potential) * 100 if total_potential > 0 else 0.0
+        average_upsell_value = total_actual / total_conversions if total_conversions > 0 else 0.0
+        
+        # Average time to conversion
+        conversion_times = [c.time_to_conversion for c in successful_conversions if c.time_to_conversion]
+        average_time_to_conversion = sum(conversion_times) / len(conversion_times) if conversion_times else 0.0
+        
+        # Best performing channel
+        channel_stats = {}
+        for attempt in attempts:
+            channel = attempt.channel
+            if channel not in channel_stats:
+                channel_stats[channel] = {'attempts': 0, 'conversions': 0}
+            channel_stats[channel]['attempts'] += 1
+        
+        for conversion in successful_conversions:
+            channel = conversion.attempt.channel
+            if channel in channel_stats:
+                channel_stats[channel]['conversions'] += 1
+        
+        best_channel = None
+        best_rate = 0.0
+        for channel, stats in channel_stats.items():
+            rate = stats['conversions'] / stats['attempts'] if stats['attempts'] > 0 else 0.0
+            if rate > best_rate:
+                best_rate = rate
+                best_channel = channel
+        
+        # Six Figure Barber methodology compliance score
+        # This is a simplified calculation - could be expanded with more criteria
+        methodology_score = min(100.0, (conversion_rate * 0.6) + (revenue_realization_rate * 0.4))
+        
+        return UpsellAnalyticsResponse(
+            period_start=period_start,
+            period_end=period_end,
+            total_attempts=total_attempts,
+            total_conversions=total_conversions,
+            conversion_rate=conversion_rate,
+            total_potential_revenue=total_potential,
+            total_actual_revenue=total_actual,
+            revenue_realization_rate=revenue_realization_rate,
+            average_upsell_value=average_upsell_value,
+            average_time_to_conversion=average_time_to_conversion,
+            best_performing_channel=best_channel,
+            methodology_compliance_score=methodology_score
+        )
+        
+    except Exception as e:
+        logger.error(f"Error calculating upsell analytics: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to calculate upsell analytics"
+        )
+
+@router.patch("/attempt/{attempt_id}/status")
+async def update_attempt_status(
+    attempt_id: int,
+    status: UpsellStatus,
+    notes: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update the status of an upselling attempt.
+    Used for tracking automation progress and manual updates.
+    """
+    try:
+        attempt = db.query(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.id == attempt_id,
+                UpsellAttempt.barber_id == current_user.id
+            )
+        ).first()
+        
+        if not attempt:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Upsell attempt not found"
+            )
+        
+        attempt.status = status
+        if notes:
+            attempt.implementation_notes = notes
+        
+        # Update automation status based on status
+        if status == UpsellStatus.AUTOMATION_SENT:
+            attempt.automation_triggered = True
+            attempt.automation_sent_at = datetime.utcnow()
+        elif status == UpsellStatus.CLIENT_CONTACTED:
+            attempt.follow_up_completed_at = datetime.utcnow()
+        
+        db.commit()
+        
+        return {"message": "Attempt status updated successfully", "status": status}
+        
+    except Exception as e:
+        logger.error(f"Error updating attempt status: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update attempt status"
+        )

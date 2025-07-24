@@ -227,8 +227,8 @@ function LoginContent() {
         <div className="text-center space-y-6">
           <div className="relative">
             <Logo variant="mono" size="lg" className="mx-auto drop-shadow-sm" href="/" />
-            {/* Subtle glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-teal-500/5 to-transparent rounded-full blur-xl" />
+            {/* Subtle glow effect - positioned behind logo with pointer-events-none */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-teal-500/5 to-transparent rounded-full blur-xl pointer-events-none -z-10" />
           </div>
           
           <div className="space-y-3">
