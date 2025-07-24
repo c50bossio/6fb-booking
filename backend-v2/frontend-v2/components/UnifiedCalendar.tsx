@@ -28,7 +28,7 @@ import { CalendarHeader } from './calendar/CalendarHeader'
 // This component now handles all view types internally
 
 // Import missing date-fns functions
-import { endOfMonth, endOfWeek } from 'date-fns'
+import { endOfMonth } from 'date-fns'
 import { useCalendarState } from '@/hooks/useCalendarState'
 import { useCalendarDragAndDrop } from '@/hooks/useCalendarDragAndDrop'
 
@@ -148,7 +148,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
   const isTouchDevice = TouchDragManager.isTouchDevice()
   const { showIndicator } = useKeyboardShortcutIndicator()
   const helpDialog = useKeyboardShortcutsHelp()
-  const { announce, AnnouncementRegion } = useScreenReaderAnnouncement()
+  const { announce: screenReaderAnnounce, AnnouncementRegion } = useScreenReaderAnnouncement()
   
   // Swipe navigation for mobile
   const swipeContainerRef = useSwipeNavigation(
