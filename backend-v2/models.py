@@ -99,6 +99,16 @@ class User(Base):
     onboarding_status = Column(JSON, nullable=True)  # Stores completed_steps, current_step, skipped
     is_new_user = Column(Boolean, default=True)  # Track if user is new for welcome flow
     
+    # Barber Profile fields
+    bio = Column(Text, nullable=True)  # Professional bio/description
+    specialties = Column(JSON, nullable=True)  # Array of specialties/skills
+    years_experience = Column(Integer, nullable=True)  # Years of experience
+    profile_image_url = Column(String(255), nullable=True)  # Profile photo URL
+    portfolio_images = Column(JSON, nullable=True)  # Array of portfolio image URLs
+    social_links = Column(JSON, nullable=True)  # Social media links (Instagram, etc.)
+    # profile_slug removed - BookedBarber V2 is NOT a marketplace
+    profile_completed = Column(Boolean, default=False)  # Track if profile is completed
+    
     # Relationships
     appointments = relationship("Appointment", back_populates="user", foreign_keys="Appointment.user_id")
     payments = relationship("Payment", back_populates="user", foreign_keys="Payment.user_id")
@@ -121,6 +131,10 @@ class User(Base):
     
     # Organization relationships
     user_organizations = relationship("UserOrganization", back_populates="user", cascade="all, delete-orphan")
+    
+    # Barber Profile relationships
+    portfolio_images = relationship("BarberPortfolioImage", back_populates="barber", cascade="all, delete-orphan")
+    specialties_rel = relationship("BarberSpecialty", back_populates="barber", cascade="all, delete-orphan")
     
     # Location relationships
     # Note: need to use string reference since BarbershopLocation is defined in location_models.py
@@ -275,6 +289,41 @@ class User(Base):
         
         self.role_migrated = True
         return True
+
+
+# Barber Profile Models
+class BarberPortfolioImage(Base):
+    """Model for storing barber portfolio images."""
+    __tablename__ = "barber_portfolio_images"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    barber_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    image_url = Column(String(255), nullable=False)
+    title = Column(String(100), nullable=True)
+    description = Column(Text, nullable=True)
+    display_order = Column(Integer, nullable=False, default=0, index=True)
+    is_featured = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    barber = relationship("User", back_populates="portfolio_images", foreign_keys=[barber_id])
+
+
+class BarberSpecialty(Base):
+    """Model for storing barber specialties and skills."""
+    __tablename__ = "barber_specialties"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    barber_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    specialty_name = Column(String(100), nullable=False, index=True)
+    category = Column(String(50), nullable=True, index=True)  # e.g., "cuts", "styling", "coloring"
+    experience_level = Column(String(20), nullable=True)  # e.g., "beginner", "intermediate", "expert"
+    is_primary = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    
+    # Relationships
+    barber = relationship("User", back_populates="specialties_rel", foreign_keys=[barber_id])
 
 
 class Appointment(Base):

@@ -68,6 +68,8 @@ EmailDeliverabilityTest = models_file.EmailDeliverabilityTest
 EmailPreview = models_file.EmailPreview
 BlackoutDate = models_file.BlackoutDate
 RecurringAppointmentSeries = models_file.RecurringAppointmentSeries
+BarberPortfolioImage = models_file.BarberPortfolioImage
+BarberSpecialty = models_file.BarberSpecialty
 
 # Tables
 barber_services = models_file.barber_services
@@ -140,6 +142,7 @@ __all__ = [
     'NotificationPreferenceAudit', 'UnsubscribeRequest', 'NotificationChannel',
     'EmailAnalyticsEvent', 'EmailCampaign', 'EmailAnalyticsSummary', 'EmailABTest',
     'EmailDeliverabilityTest', 'EmailPreview', 'BlackoutDate', 'RecurringAppointmentSeries',
+    'BarberPortfolioImage', 'BarberSpecialty',
     # Tables
     'barber_services', 'service_package_items',
     # Aliases

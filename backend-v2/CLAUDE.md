@@ -1,6 +1,52 @@
-# CLAUDE.md - Backend V2 Specific Guidelines
+# CLAUDE.md - BookedBarber V2 Project Guide
 
-This file provides guidance to Claude Code when working with the backend-v2 implementation.
+This file provides comprehensive guidance to Claude Code when working with the BookedBarber V2 codebase.
+
+## 🎯 Project Overview & Business Model
+
+**BookedBarber V2** - Individual Barbershop Booking Platform
+
+### 🚨 CRITICAL: NOT A MARKETPLACE
+**BookedBarber V2 is NOT a marketplace or directory service.**
+
+**What it IS:**
+- Individual barbershop booking platform
+- Each shop manages their own bookings independently
+- Clients book directly with specific barbershops
+- Shop owners manage their own barbers and services
+
+**What it is NOT:**
+- ❌ Cross-shop barber discovery
+- ❌ Public barber directories
+- ❌ Marketplace functionality
+- ❌ Search across multiple barbershops
+- ❌ Public API endpoints for barber discovery
+
+### Business Model Architecture
+```
+CLIENT → Books with → SPECIFIC BARBERSHOP
+                   ↳ Chooses → BARBER (within that shop)
+                            ↳ Selects → SERVICES (offered by that barber)
+```
+
+### User Role Hierarchy
+- **CLIENT**: Books appointments at specific barbershops
+- **BARBER**: Individual barber (employee of a shop)
+- **SHOP_OWNER**: Owns single barbershop, manages barbers
+- **ENTERPRISE_OWNER**: Owns multiple barbershops
+
+### Barber Profile Purpose
+Barber profiles are used **within the context of a specific barbershop** for:
+1. **Client Selection**: Clients choose which barber to book with at that shop
+2. **Service Specialization**: Show which services each barber offers
+3. **Professional Presentation**: Build trust and showcase expertise
+4. **Internal Management**: Shop owners manage their barbers' profiles
+
+**Barber profiles are NEVER used for:**
+- Cross-shop discovery
+- Public directories
+- Marketplace functionality
+- Search across different barbershops
 
 ## 🧪 Testing Requirements (CRITICAL)
 
