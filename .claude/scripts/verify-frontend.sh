@@ -35,9 +35,10 @@ warning() {
 
 # Check if frontend server is running
 check_frontend_server() {
-    log "Checking if frontend server is running on port 3000..."
-    if ! curl -s http://localhost:3000 > /dev/null; then
-        error "Frontend server is not running on port 3000"
+    local port=${FRONTEND_PORT:-3000}
+    log "Checking if frontend server is running on port $port..."
+    if ! curl -s http://localhost:$port > /dev/null; then
+        error "Frontend server is not running on port $port"
         return 1
     fi
     success "Frontend server is running"
@@ -46,9 +47,10 @@ check_frontend_server() {
 
 # Check if backend server is running
 check_backend_server() {
-    log "Checking if backend server is running on port 8000..."
-    if ! curl -s http://localhost:8000/api/v1/auth/test > /dev/null; then
-        warning "Backend server may not be running on port 8000"
+    local port=${BACKEND_PORT:-8000}
+    log "Checking if backend server is running on port $port..."
+    if ! curl -s http://localhost:$port/api/v1/auth/test > /dev/null; then
+        warning "Backend server may not be running on port $port"
         return 1
     fi
     success "Backend server is running"
@@ -106,10 +108,11 @@ verify_frontend_pages() {
     check_backend_server
     
     # Key pages to verify
+    local frontend_port=${FRONTEND_PORT:-3000}
     local pages=(
-        "http://localhost:3000:Home"
-        "http://localhost:3000/register:Register"
-        "http://localhost:3000/agents/analytics:Analytics"
+        "http://localhost:$frontend_port:Home"
+        "http://localhost:$frontend_port/register:Register"
+        "http://localhost:$frontend_port/agents/analytics:Analytics"
     )
     
     for page_info in "${pages[@]}"; do

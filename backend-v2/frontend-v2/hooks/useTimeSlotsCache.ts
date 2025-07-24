@@ -297,7 +297,21 @@ export function useBookingCacheManager() {
 /**
  * Performance monitoring hook for cache effectiveness
  */
-export function useCachePerformance() {
+type CacheEfficiency = 'good' | 'moderate' | 'poor'
+
+interface CachePerformanceReturn {
+  currentMetrics: ReturnType<typeof getCacheMetrics>
+  performanceLog: Array<{
+    timestamp: number
+    hitRate: number
+    avgAge: number
+    size: number
+  }>
+  averageHitRate: number
+  cacheEfficiency: CacheEfficiency
+}
+
+export function useCachePerformance(): CachePerformanceReturn {
   const [metrics, setMetrics] = useState(getCacheMetrics())
   const [performanceLog, setPerformanceLog] = useState<Array<{
     timestamp: number
@@ -336,6 +350,6 @@ export function useCachePerformance() {
     currentMetrics: metrics,
     performanceLog,
     averageHitRate: Math.round(averageHitRate * 100), // As percentage
-    cacheEfficiency: averageHitRate > 0.7 ? 'good' : averageHitRate > 0.4 ? 'moderate' : 'poor'
+    cacheEfficiency: (averageHitRate > 0.7 ? 'good' : averageHitRate > 0.4 ? 'moderate' : 'poor') as CacheEfficiency
   }
 }

@@ -90,7 +90,7 @@ export default function CachePerformanceIndicator({
           {/* Hit Rate - Always visible */}
           <div className="flex justify-between items-center">
             <span className="text-gray-600 dark:text-gray-400">Hit Rate:</span>
-            <span className={`px-1 rounded text-xs font-semibold ${efficiencyColors[cacheEfficiency as keyof typeof efficiencyColors]}`}>
+            <span className={`px-1 rounded text-xs font-semibold ${efficiencyColors[cacheEfficiency as keyof typeof efficiencyColors] || efficiencyColors.moderate}`}>
               {Math.round(currentMetrics.hitRate * 100)}%
             </span>
           </div>
@@ -148,7 +148,7 @@ export default function CachePerformanceIndicator({
               <div className="pt-1 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">Status:</span>
-                  <span className={`px-1 rounded text-xs capitalize ${efficiencyColors[cacheEfficiency as keyof typeof efficiencyColors]}`}>
+                  <span className={`px-1 rounded text-xs capitalize ${efficiencyColors[cacheEfficiency as keyof typeof efficiencyColors] || efficiencyColors.moderate}`}>
                     {cacheEfficiency}
                   </span>
                 </div>

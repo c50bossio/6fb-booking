@@ -1,0 +1,11 @@
+# Merge Timing Demo
+
+This file demonstrates that commits in worktrees do NOT automatically merge to staging.
+
+## Key Points:
+1. This commit happens in feature/merge-demo-20250723 branch
+2. It does NOT automatically appear in staging branch
+3. You must explicitly merge to get it into staging
+
+Created: 2025-07-23
+Branch: feature/merge-demo-20250723

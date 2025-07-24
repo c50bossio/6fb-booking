@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'bookedbarber-backend',
       script: 'uvicorn',
-      args: 'main:app --host 0.0.0.0 --port 8000 --reload',
+      args: `main:app --host 0.0.0.0 --port ${process.env.BACKEND_PORT || 8000} --reload`,
       cwd: './backend-v2',
       interpreter: 'python3',
       instances: 1,
@@ -30,7 +30,7 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'development',
-        PORT: 3000
+        PORT: process.env.FRONTEND_PORT || 3000
       },
       error_file: '../logs/frontend-error.log',
       out_file: '../logs/frontend-out.log',

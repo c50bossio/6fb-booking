@@ -453,28 +453,40 @@ export default function ReviewsPage() {
                   placeholder="Platform"
                   value={filters.platform || ''}
                   onChange={(value) => setFilters({ ...filters, platform: value as ReviewPlatform })}
-                  options={filterOptions.platforms}
+                  options={filterOptions.platforms.map((platform) => ({
+                    value: platform.value,
+                    label: platform.label
+                  }))}
                 />
                 
                 <Select
                   placeholder="Sentiment"
                   value={filters.sentiment || ''}
                   onChange={(value) => setFilters({ ...filters, sentiment: value as ReviewSentiment })}
-                  options={filterOptions.sentiments}
+                  options={filterOptions.sentiments.map((sentiment) => ({
+                    value: sentiment.value,
+                    label: sentiment.label
+                  }))}
                 />
                 
                 <Select
                   placeholder="Response Status"
                   value={filters.response_status || ''}
                   onChange={(value) => setFilters({ ...filters, response_status: value as ReviewResponseStatus })}
-                  options={filterOptions.responseStatuses}
+                  options={filterOptions.responseStatuses.map((status) => ({
+                    value: status.value,
+                    label: status.label
+                  }))}
                 />
                 
                 <Select
                   placeholder="Min Rating"
                   value={filters.min_rating?.toString() || ''}
                   onChange={(value) => setFilters({ ...filters, min_rating: value ? Number(value) : undefined })}
-                  options={filterOptions.ratings}
+                  options={filterOptions.ratings.map((rating) => ({
+                    value: rating.value.toString(),
+                    label: rating.label
+                  }))}
                 />
               </div>
               
@@ -497,7 +509,7 @@ export default function ReviewsPage() {
       </Card>
 
       {/* Review Tabs */}
-      <Tabs value={currentTab} defaultValue="all" onValueChange={applyTabFilter}>
+      <Tabs value={currentTab} onValueChange={applyTabFilter} defaultValue="all">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="all">All Reviews</TabsTrigger>
           <TabsTrigger value="needs_response">Needs Response</TabsTrigger>

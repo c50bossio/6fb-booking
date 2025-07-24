@@ -36,8 +36,9 @@ warning() {
 check_backend_server() {
     log "Checking if backend server is running..."
     
-    if ! curl -s http://localhost:8000/api/v1/auth/test > /dev/null; then
-        error "Backend server is not running on port 8000"
+    local backend_port=${BACKEND_PORT:-8000}
+    if ! curl -s http://localhost:${backend_port}/api/v1/auth/test > /dev/null; then
+        error "Backend server is not running on port ${backend_port}"
         return 1
     fi
     
@@ -49,10 +50,11 @@ check_backend_server() {
 test_basic_endpoints() {
     log "Testing basic API endpoints..."
     
+    local backend_port=${BACKEND_PORT:-8000}
     local endpoints=(
-        "http://localhost:8000:Root"
-        "http://localhost:8000/docs:API Docs"
-        "http://localhost:8000/api/v1/auth/test:Auth Test"
+        "http://localhost:${backend_port}:Root"
+        "http://localhost:${backend_port}/docs:API Docs"
+        "http://localhost:${backend_port}/api/v1/auth/test:Auth Test"
     )
     
     local errors=0
@@ -77,8 +79,9 @@ test_basic_endpoints() {
 test_auth_endpoints() {
     log "Testing authentication endpoints..."
     
+    local backend_port=${BACKEND_PORT:-8000}
     local auth_endpoints=(
-        "http://localhost:8000/api/v1/auth/test:Auth Test"
+        "http://localhost:${backend_port}/api/v1/auth/test:Auth Test"
     )
     
     local errors=0
@@ -111,7 +114,8 @@ test_agents_endpoints() {
     local encoded_start=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$start_date'))")
     local encoded_end=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$end_date'))")
     
-    local analytics_url="http://localhost:8000/api/v1/agents/analytics?start_date=${encoded_start}&end_date=${encoded_end}"
+    local backend_port=${BACKEND_PORT:-8000}
+    local analytics_url="http://localhost:${backend_port}/api/v1/agents/analytics?start_date=${encoded_start}&end_date=${encoded_end}"
     
     local response=$(curl -s -w "%{http_code}" "$analytics_url" -o /dev/null)
     
@@ -134,11 +138,13 @@ test_api_health() {
     log "Testing API health and common issues..."
     
     # Check for CORS headers
-    local cors_response=$(curl -s -H "Origin: http://localhost:3000" \
+    local frontend_port=${FRONTEND_PORT:-3000}
+    local backend_port=${BACKEND_PORT:-8000}
+    local cors_response=$(curl -s -H "Origin: http://localhost:${frontend_port}" \
                           -H "Access-Control-Request-Method: GET" \
                           -H "Access-Control-Request-Headers: X-Requested-With" \
                           -X OPTIONS \
-                          http://localhost:8000/api/v1/auth/test)
+                          http://localhost:${backend_port}/api/v1/auth/test)
     
     if [ $? -eq 0 ]; then
         success "CORS preflight requests work"
@@ -147,7 +153,8 @@ test_api_health() {
     fi
     
     # Check API documentation is accessible
-    local docs_response=$(curl -s -w "%{http_code}" http://localhost:8000/docs -o /dev/null)
+    local backend_port=${BACKEND_PORT:-8000}
+    local docs_response=$(curl -s -w "%{http_code}" http://localhost:${backend_port}/docs -o /dev/null)
     
     if [ "$docs_response" = "200" ]; then
         success "API documentation is accessible"
@@ -162,7 +169,8 @@ test_api_health() {
 test_parameter_parsing() {
     log "Testing parameter parsing with various formats..."
     
-    local base_url="http://localhost:8000/api/v1/agents/analytics"
+    local backend_port=${BACKEND_PORT:-8000}
+    local base_url="http://localhost:${backend_port}/api/v1/agents/analytics"
     
     # Test different parameter formats that commonly cause issues
     local test_params=(

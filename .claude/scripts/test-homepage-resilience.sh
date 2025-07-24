@@ -35,7 +35,8 @@ warning() {
 
 # Check if frontend server is running
 check_frontend_server() {
-    if curl -s http://localhost:3000 > /dev/null; then
+    local frontend_port=${FRONTEND_PORT:-3000}
+    if curl -s http://localhost:${frontend_port} > /dev/null; then
         return 0
     else
         return 1
@@ -44,7 +45,8 @@ check_frontend_server() {
 
 # Check if backend server is running
 check_backend_server() {
-    if curl -s http://localhost:8000/api/v1/auth/test > /dev/null 2>&1; then
+    local backend_port=${BACKEND_PORT:-8000}
+    if curl -s http://localhost:${backend_port}/api/v1/auth/test > /dev/null 2>&1; then
         return 0
     else
         return 1
@@ -62,7 +64,8 @@ block_backend() {
     # iptables -A OUTPUT -p tcp --dport 8000 -j DROP
     
     # Method 3: Kill backend process temporarily
-    local backend_pid=$(lsof -ti:8000 2>/dev/null || echo "")
+    local backend_port=${BACKEND_PORT:-8000}
+    local backend_pid=$(lsof -ti:${backend_port} 2>/dev/null || echo "")
     if [[ -n "$backend_pid" ]]; then
         log "Stopping backend server (PID: $backend_pid) temporarily..."
         kill -STOP "$backend_pid" 2>/dev/null || true
@@ -102,14 +105,16 @@ test_homepage_offline() {
     fi
     
     # Test basic page load
-    local response_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)
+    local frontend_port=${FRONTEND_PORT:-3000}
+    local response_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${frontend_port})
     if [[ "$response_code" != "200" ]]; then
         error "Homepage returned HTTP $response_code instead of 200"
         return 1
     fi
     
     # Test that page contains essential content
-    local page_content=$(curl -s http://localhost:3000)
+    local frontend_port=${FRONTEND_PORT:-3000}
+    local page_content=$(curl -s http://localhost:${frontend_port})
     
     # Check for key elements that should always be present
     if [[ ! "$page_content" =~ "BookedBarber" ]]; then
@@ -151,7 +156,8 @@ test_homepage_online() {
     fi
     
     # Test enhanced functionality when backend is available
-    local response_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)
+    local frontend_port=${FRONTEND_PORT:-3000}
+    local response_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${frontend_port})
     if [[ "$response_code" != "200" ]]; then
         error "Homepage returned HTTP $response_code with backend online"
         return 1
@@ -172,7 +178,8 @@ test_auth_state_resilience() {
     # In a full implementation, we'd use a headless browser
     # to manipulate localStorage and test auth state handling
     
-    local page_content=$(curl -s http://localhost:3000)
+    local frontend_port=${FRONTEND_PORT:-3000}
+    local page_content=$(curl -s http://localhost:${frontend_port})
     
     # Check that auth-dependent components have fallbacks
     if [[ "$page_content" =~ "auth.*undefined\|user.*undefined" ]]; then

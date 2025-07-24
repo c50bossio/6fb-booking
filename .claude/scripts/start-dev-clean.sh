@@ -154,17 +154,17 @@ start_backend() {
     
     # Start backend server in background
     source venv/bin/activate
-    nohup uvicorn main:app --reload --host 0.0.0.0 --port 8000 > "$PROJECT_ROOT/.claude/logs/backend.log" 2>&1 &
+    nohup uvicorn main:app --reload --host 0.0.0.0 --port ${BACKEND_PORT:-8000} > "$PROJECT_ROOT/.claude/logs/backend.log" 2>&1 &
     local backend_pid=$!
     
     # Wait for backend to start
     local count=0
-    while ! curl -s http://localhost:8000/health >/dev/null 2>&1 && [ $count -lt 30 ]; do
+    while ! curl -s http://localhost:${BACKEND_PORT:-8000}/health >/dev/null 2>&1 && [ $count -lt 30 ]; do
         sleep 1
         count=$((count + 1))
     done
     
-    if curl -s http://localhost:8000/health >/dev/null 2>&1; then
+    if curl -s http://localhost:${BACKEND_PORT:-8000}/health >/dev/null 2>&1; then
         log "✅ Backend server started successfully (PID: $backend_pid)"
         echo "$backend_pid" > "$PROJECT_ROOT/.claude/backend.pid"
     else
@@ -185,12 +185,12 @@ start_frontend() {
     
     # Wait for frontend to start
     local count=0
-    while ! curl -s http://localhost:3000 >/dev/null 2>&1 && [ $count -lt 60 ]; do
+    while ! curl -s http://localhost:${FRONTEND_PORT:-3000} >/dev/null 2>&1 && [ $count -lt 60 ]; do
         sleep 1
         count=$((count + 1))
     done
     
-    if curl -s http://localhost:3000 >/dev/null 2>&1; then
+    if curl -s http://localhost:${FRONTEND_PORT:-3000} >/dev/null 2>&1; then
         log "✅ Frontend server started successfully (PID: $frontend_pid)"
         echo "$frontend_pid" > "$PROJECT_ROOT/.claude/frontend.pid"
     else
@@ -204,9 +204,9 @@ display_summary() {
     log "🎉 Development environment started successfully!"
     log ""
     log "📋 Server URLs:"
-    log "   Frontend: http://localhost:3000"
-    log "   Backend:  http://localhost:8000"
-    log "   API Docs: http://localhost:8000/docs"
+    log "   Frontend: http://localhost:${FRONTEND_PORT:-3000}"
+    log "   Backend:  http://localhost:${BACKEND_PORT:-8000}"
+    log "   API Docs: http://localhost:${BACKEND_PORT:-8000}/docs"
     log ""
     log "📁 Log Files:"
     log "   Backend:  $PROJECT_ROOT/.claude/logs/backend.log"
