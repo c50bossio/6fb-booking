@@ -464,33 +464,84 @@ pytest --cov=[module] --cov-report=term-missing
 python utils/registry_manager.py add [feature] [details]
 ```
 
-### 🐳 Docker Development Workflow:
+## 🐳 MANDATORY DOCKER DEVELOPMENT WORKFLOW
+
+**CRITICAL**: BookedBarber V2 development MUST use Docker containers. Local development mode is prohibited.
+
+### 🚨 DOCKER-FIRST POLICY (MANDATORY)
+
+**ALWAYS use Docker containers for development. NEVER run local uvicorn/npm servers.**
+
+#### Required Docker Commands:
 ```bash
-# Quick start (recommended for new developers)
-cd backend-v2
-./docker-dev-start.sh           # SQLite + lightweight setup
+# 1. ALWAYS start development with Docker
+docker-compose up -d
 
-# Full production setup
-./docker-start.sh               # PostgreSQL + Redis + Nginx
+# 2. Check containers are running
+docker ps
 
-# Stop all Docker services
-./docker-stop.sh
-
-# View Docker logs
+# 3. View logs
 docker-compose logs backend     # Backend logs
 docker-compose logs frontend   # Frontend logs
 docker-compose logs --follow   # Live log streaming
 
-# Container management
-docker-compose ps               # View running containers
+# 4. Development workflow
 docker-compose exec backend bash # Shell into backend container
-docker-compose down             # Stop and remove containers
-docker-compose up --build      # Rebuild and start containers
+docker-compose exec frontend bash # Shell into frontend container
 
-# Testing within Docker
+# 5. Testing within Docker
 docker-compose exec backend pytest                    # Run backend tests
 docker-compose exec frontend npm test                 # Run frontend tests
 docker-compose exec backend python utils/registry_manager.py check [feature]
+
+# 6. Stop services
+docker-compose down             # Stop and remove containers
+
+# 7. Rebuild if needed
+docker-compose up --build      # Rebuild and start containers
+```
+
+#### Forbidden Commands (DO NOT USE):
+```bash
+# ❌ NEVER use these local development commands
+uvicorn main:app --reload
+npm run dev
+python main.py
+./start-dev-clean.sh
+
+# ❌ NEVER start servers on localhost directly
+```
+
+#### Docker Service URLs:
+- **Frontend**: http://localhost:3000 (via Docker container)
+- **Backend**: http://localhost:8000 (via Docker container)
+- **Database**: PostgreSQL in Docker container
+- **Redis**: Redis in Docker container
+
+#### Quick Docker Health Check:
+```bash
+# Verify all containers are running
+docker-compose ps
+
+# Should show:
+# - backend container (port 8000)
+# - frontend container (port 3000)
+# - database container (PostgreSQL)
+# - redis container (Redis)
+```
+
+#### Docker-Specific Debugging:
+```bash
+# Container logs
+docker-compose logs [service-name]
+
+# Execute commands in containers
+docker-compose exec backend curl http://localhost:8000/health
+docker-compose exec frontend npm run build
+
+# Restart specific service
+docker-compose restart backend
+docker-compose restart frontend
 ```
 
 ### Emergency Recovery:

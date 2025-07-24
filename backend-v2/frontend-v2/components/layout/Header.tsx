@@ -217,8 +217,8 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           {/* Theme Toggle */}
           <SimpleThemeToggle className="hidden sm:block" />
 
-          {/* Share Booking Link Button - Only show for barbers and admins */}
-          {user && (user.role === 'barber' || user.role === 'admin' || user.role === 'Platform Admin' || user.unified_role === 'barber' || user.unified_role === 'admin') && (
+          {/* Share Booking Link Button - Available to all authenticated users */}
+          {user && (
             <button
               onClick={() => setShowShareModal(true)}
               className={`

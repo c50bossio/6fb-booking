@@ -35,6 +35,7 @@ def require_admin_or_enterprise_owner(current_user: schemas.User = Depends(get_c
 from services import booking_service
 from services.appointment_enhancement import enhance_appointments_list
 from services.cache_invalidation import cache_invalidator
+from services.upselling_conversion_detector import UpsellConversionDetector
 from utils.rate_limit import (
     booking_create_rate_limit,
     guest_booking_rate_limit,
@@ -142,7 +143,7 @@ def get_available_appointment_slots(
 
 @router.post("/", response_model=schemas.AppointmentResponse)
 @booking_create_rate_limit  # RE-ENABLED AFTER FIXING RATE LIMITING TIMEOUT
-def create_appointment(
+async def create_appointment(
     request: Request,
     appointment: schemas.AppointmentCreate,
     current_user: schemas.User = Depends(get_current_user),
@@ -233,6 +234,23 @@ def create_appointment(
         # Clear timeout
         signal.alarm(0)
         signal.signal(signal.SIGALRM, old_handler)
+        
+        # Check for upselling conversions after successful appointment creation
+        if db_appointment:
+            try:
+                conversion_detector = UpsellConversionDetector()
+                conversions = await conversion_detector.check_for_conversions(db_appointment, db)
+                
+                if conversions:
+                    logger.info(f"UPSELLING: Detected {len(conversions)} conversions for appointment {db_appointment.id}")
+                    for conversion in conversions:
+                        logger.info(f"   Conversion ID {conversion['conversion_id']}: {conversion['detection_method']}")
+                else:
+                    logger.debug(f"UPSELLING: No conversions detected for appointment {db_appointment.id}")
+                    
+            except Exception as e:
+                # Don't fail appointment creation if conversion detection fails
+                logger.error(f"UPSELLING: Conversion detection failed for appointment {db_appointment.id}: {str(e)}")
         
         # Invalidate related cache after successful creation
         if db_appointment:
@@ -730,6 +748,19 @@ async def create_guest_appointment(
         # Clear failed attempts on successful booking
         captcha_service.clear_failed_attempts(guest_identifier)
         
+        # Check for upselling conversions for guest bookings too
+        if result and hasattr(result, 'id'):
+            try:
+                conversion_detector = UpsellConversionDetector()
+                conversions = await conversion_detector.check_for_conversions(result, db)
+                
+                if conversions:
+                    logger.info(f"UPSELLING: Detected {len(conversions)} conversions for guest appointment {result.id}")
+                    
+            except Exception as e:
+                # Don't fail guest booking if conversion detection fails
+                logger.error(f"UPSELLING: Conversion detection failed for guest appointment {result.id}: {str(e)}")
+        
         return result
     except HTTPException:
         raise
@@ -839,6 +870,19 @@ async def create_guest_quick_appointment(
         
         # Clear failed attempts on successful booking
         captcha_service.clear_failed_attempts(guest_identifier)
+        
+        # Check for upselling conversions for guest quick bookings too
+        if result and hasattr(result, 'id'):
+            try:
+                conversion_detector = UpsellConversionDetector()
+                conversions = await conversion_detector.check_for_conversions(result, db)
+                
+                if conversions:
+                    logger.info(f"UPSELLING: Detected {len(conversions)} conversions for guest quick appointment {result.id}")
+                    
+            except Exception as e:
+                # Don't fail guest booking if conversion detection fails
+                logger.error(f"UPSELLING: Conversion detection failed for guest quick appointment {result.id}: {str(e)}")
         
         return result
     except HTTPException:

@@ -133,20 +133,20 @@ services:
     build:
       context: ./frontend-v2
       dockerfile: Dockerfile
-      target: production
+      target: runner
       args:
-        # Build-time environment variables
-        NEXT_PUBLIC_API_URL: http://backend:8000
-        NEXT_PUBLIC_API_BASE_URL: http://backend:8000/api/v2
-        NEXT_PUBLIC_ENVIRONMENT: production
-        NODE_ENV: production
+        # Build-time environment variables (browser-accessible URLs)
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+        NEXT_PUBLIC_ENVIRONMENT: development
+        NODE_ENV: development
     container_name: bookedbarber-frontend
     environment:
-      # Runtime environment variables
-      NEXT_PUBLIC_API_URL: http://backend:8000
-      NEXT_PUBLIC_API_BASE_URL: http://backend:8000/api/v2
-      NEXT_PUBLIC_ENVIRONMENT: production
-      NODE_ENV: production
+      # Runtime environment variables (browser-accessible URLs)
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+      NEXT_PUBLIC_ENVIRONMENT: development
+      NODE_ENV: development
       PORT: 3000
       
       # External Services (Frontend Safe Keys Only)

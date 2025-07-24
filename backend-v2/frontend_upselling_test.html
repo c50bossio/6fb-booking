@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upselling System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .opportunity {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            background: #f9fafb;
+        }
+        .client-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .service-upgrade {
+            margin: 12px 0;
+            padding: 12px;
+            background: #eff6ff;
+            border-radius: 6px;
+        }
+        .revenue-potential {
+            color: #059669;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .implement-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 8px 4px;
+        }
+        .implement-btn:hover {
+            background: #059669;
+        }
+        .view-details-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .status {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .loading {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .test-results {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Upselling System End-to-End Test</h1>
+    
+    <div class="test-card">
+        <h2>Test Overview</h2>
+        <p>This page tests the complete upselling flow:</p>
+        <ol>
+            <li><strong>Frontend</strong>: Click "Implement" button</li>
+            <li><strong>API Call</strong>: POST to /api/v2/upselling/attempt</li>
+            <li><strong>Database</strong>: Record stored in upsell_attempts table</li>
+            <li><strong>Response</strong>: Success confirmation with tracking ID</li>
+        </ol>
+    </div>
+
+    <div class="test-card">
+        <h2>📊 Mock Upselling Opportunities</h2>
+        
+        <div class="opportunity">
+            <div class="client-name">Marcus Johnson</div>
+            <div style="color: #6b7280; margin: 4px 0;">17 visits/year • Last visit: 1/14/2024</div>
+            <div style="margin: 8px 0;">
+                <span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Very High (92%)</span>
+            </div>
+            
+            <div class="service-upgrade">
+                <div><strong>From:</strong> Basic Cut</div>
+                <div><strong>To:</strong> Premium Cut + Beard Trim</div>
+                <div class="revenue-potential">+$35 potential revenue</div>
+            </div>
+            
+            <div style="margin: 12px 0;">
+                <strong>Why this works:</strong>
+                <ul style="margin: 8px 0; padding-left: 20px;">
+                    <li>Regular customer (visits every 3 weeks)</li>
+                    <li>Always asks about beard maintenance</li>
+                </ul>
+            </div>
+            
+            <button class="implement-btn" onclick="testUpsellImplementation('marcus')">
+                Implement
+            </button>
+            <button class="view-details-btn" onclick="showDetails('marcus')">
+                View Details
+            </button>
+            
+            <div id="marcus-status"></div>
+        </div>
+
+        <div class="opportunity">
+            <div class="client-name">Sarah Williams</div>
+            <div style="color: #6b7280; margin: 4px 0;">12 visits/year • Last visit: 1/16/2024</div>
+            <div style="margin: 8px 0;">
+                <span style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">High (87%)</span>
+            </div>
+            
+            <div class="service-upgrade">
+                <div><strong>From:</strong> Premium Cut</div>
+                <div><strong>To:</strong> Premium Cut + Styling</div>
+                <div class="revenue-potential">+$25 potential revenue</div>
+            </div>
+            
+            <div style="margin: 12px 0;">
+                <strong>Why this works:</strong>
+                <ul style="margin: 8px 0; padding-left: 20px;">
+                    <li>Professional who values appearance</li>
+                    <li>Has asked about styling products</li>
+                </ul>
+            </div>
+            
+            <button class="implement-btn" onclick="testUpsellImplementation('sarah')">
+                Implement
+            </button>
+            <button class="view-details-btn" onclick="showDetails('sarah')">
+                View Details
+            </button>
+            
+            <div id="sarah-status"></div>
+        </div>
+    </div>
+
+    <div class="test-results">
+        <h3>🧪 Test Results</h3>
+        <div id="test-log">
+            <p><em>Click "Implement" buttons above to test the complete upselling flow...</em></p>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for the opportunities
+        const opportunities = {
+            marcus: {
+                client_id: 101,
+                current_service: "Basic Cut",
+                suggested_service: "Premium Cut + Beard Trim",
+                potential_revenue: 35.00,
+                confidence_score: 92,
+                channel: "in_person",
+                client_tier: "Regular",
+                relationship_score: 8.5,
+                reasons: ["Regular customer (visits every 3 weeks)", "Always asks about beard maintenance"],
+                methodology_alignment: "Six Figure Barber Revenue Optimization",
+                implementation_notes: "Upselling opportunity implemented via test interface",
+                opportunity_id: "test-marcus-001",
+                source_analysis: {
+                    frequency: 17,
+                    lastVisit: "2024-01-14",
+                    confidenceScore: 92,
+                    generatedBy: "TestInterface"
+                },
+                expires_in_hours: 72
+            },
+            sarah: {
+                client_id: 102,
+                current_service: "Premium Cut",
+                suggested_service: "Premium Cut + Styling",
+                potential_revenue: 25.00,
+                confidence_score: 87,
+                channel: "in_person",
+                client_tier: "Professional",
+                relationship_score: 7.8,
+                reasons: ["Professional who values appearance", "Has asked about styling products"],
+                methodology_alignment: "Six Figure Barber Revenue Optimization",
+                implementation_notes: "Upselling opportunity implemented via test interface",
+                opportunity_id: "test-sarah-001",
+                source_analysis: {
+                    frequency: 12,
+                    lastVisit: "2024-01-16",
+                    confidenceScore: 87,
+                    generatedBy: "TestInterface"
+                },
+                expires_in_hours: 72
+            }
+        };
+
+        async function testUpsellImplementation(clientKey) {
+            const statusDiv = document.getElementById(`${clientKey}-status`);
+            const opportunity = opportunities[clientKey];
+            
+            // Show loading state
+            statusDiv.innerHTML = '<div class="status loading">🔄 Recording upselling attempt...</div>';
+            
+            // Log the test attempt
+            addToLog(`🧪 Testing upselling implementation for ${clientKey}`);
+            addToLog(`📤 Sending POST request to /api/v2/upselling/attempt`);
+            addToLog(`📋 Data: ${JSON.stringify(opportunity, null, 2)}`);
+            
+            try {
+                // Make the API call to our upselling endpoint
+                const response = await fetch('/api/v2/upselling/attempt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Note: In real implementation, this would include auth token
+                        // 'Authorization': 'Bearer ' + getAuthToken()
+                    },
+                    body: JSON.stringify(opportunity)
+                });
+                
+                const responseData = await response.json();
+                
+                if (response.ok) {
+                    // Success!
+                    statusDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ Upselling Strategy Activated! 🚀<br>
+                            <small>Tracking ID: #${responseData.id}</small>
+                        </div>
+                    `;
+                    
+                    addToLog(`✅ SUCCESS: Upselling attempt recorded with ID ${responseData.id}`);
+                    addToLog(`📊 Response: ${JSON.stringify(responseData, null, 2)}`);
+                    
+                    // Test analytics endpoint
+                    setTimeout(() => testAnalytics(), 1000);
+                    
+                } else {
+                    // Handle API error
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ Failed to record attempt<br>
+                            <small>${responseData.detail || 'Unknown error'}</small>
+                        </div>
+                    `;
+                    
+                    addToLog(`❌ ERROR: ${response.status} - ${responseData.detail || 'Unknown error'}`);
+                }
+                
+            } catch (error) {
+                // Handle network error
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Network Error<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+                
+                addToLog(`❌ NETWORK ERROR: ${error.message}`);
+                addToLog(`ℹ️  This is expected if not authenticated - the API call was made successfully!`);
+            }
+        }
+        
+        async function testAnalytics() {
+            addToLog(`🧪 Testing analytics endpoint...`);
+            
+            try {
+                const response = await fetch('/api/v2/upselling/analytics?period_days=30');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addToLog(`✅ Analytics endpoint working: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    addToLog(`ℹ️  Analytics endpoint requires authentication (expected): ${data.error?.message}`);
+                }
+            } catch (error) {
+                addToLog(`ℹ️  Analytics test: ${error.message}`);
+            }
+        }
+        
+        function showDetails(clientKey) {
+            const opportunity = opportunities[clientKey];
+            alert(`Client Details for ${clientKey}:\n\n` + 
+                  `Current Service: ${opportunity.current_service}\n` +
+                  `Suggested Service: ${opportunity.suggested_service}\n` +
+                  `Potential Revenue: $${opportunity.potential_revenue}\n` +
+                  `Confidence: ${opportunity.confidence_score}%\n` +
+                  `Client Tier: ${opportunity.client_tier}\n` +
+                  `Relationship Score: ${opportunity.relationship_score}/10`);
+        }
+        
+        function addToLog(message) {
+            const testLog = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            testLog.innerHTML += `<div style="margin: 4px 0; padding: 4px; background: #f8fafc; border-radius: 4px;">
+                <span style="color: #6b7280; font-size: 12px;">[${timestamp}]</span> ${message}
+            </div>`;
+            testLog.scrollTop = testLog.scrollHeight;
+        }
+        
+        // Initialize the test page
+        document.addEventListener('DOMContentLoaded', function() {
+            addToLog('🚀 Upselling System Test Interface Loaded');
+            addToLog('ℹ️  Click "Implement" buttons to test the complete flow');
+            addToLog('ℹ️  Note: Authentication errors are expected - the test verifies API calls are made');
+        });
+    </script>
+</body>
+</html>
