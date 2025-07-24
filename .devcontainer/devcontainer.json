@@ -2,105 +2,41 @@
   "name": "BookedBarber V2 Development Environment",
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   
-  // Configure port forwarding for multi-service architecture
-  "forwardPorts": [
-    3000,  // Next.js Frontend
-    8000,  // FastAPI Backend
-    5432,  // PostgreSQL Database
-    6379   // Redis Cache
-  ],
+  // Configure port forwarding
+  "forwardPorts": [3000, 8000, 5432, 6379],
   
-  // Port attributes for better development experience
+  // Port labels
   "portsAttributes": {
-    "3000": {
-      "label": "Frontend (Next.js)",
-      "protocol": "http",
-      "onAutoForward": "notify"
-    },
-    "8000": {
-      "label": "Backend API (FastAPI)",
-      "protocol": "http",
-      "onAutoForward": "notify"
-    },
-    "5432": {
-      "label": "PostgreSQL Database",
-      "protocol": "tcp",
-      "onAutoForward": "silent"
-    },
-    "6379": {
-      "label": "Redis Cache",
-      "protocol": "tcp", 
-      "onAutoForward": "silent"
-    }
+    "3000": {"label": "Frontend"},
+    "8000": {"label": "Backend API"},
+    "5432": {"label": "PostgreSQL"},
+    "6379": {"label": "Redis"}
   },
   
-  // Development environment configuration
+  // Essential features only
   "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11"
-    },
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "18"
-    },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest"
-    }
+    "ghcr.io/devcontainers/features/python:1": {"version": "3.11"},
+    "ghcr.io/devcontainers/features/node:1": {"version": "18"},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
   
-  // VS Code extensions for BookedBarber V2 development
+  // Basic VS Code setup
   "customizations": {
     "vscode": {
       "extensions": [
-        // Python/FastAPI Development
         "ms-python.python",
-        "ms-python.pylint",
-        "ms-python.black-formatter",
-        
-        // JavaScript/TypeScript/Next.js Development
-        "bradlc.vscode-tailwindcss",
         "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint",
-        
-        // Docker & DevOps
         "ms-azuretools.vscode-docker"
-      ],
-      
-      "settings": {
-        // Python configuration
-        "python.defaultInterpreterPath": "/usr/local/python/current/bin/python",
-        "python.linting.enabled": true,
-        "python.linting.pylintEnabled": true,
-        "python.formatting.provider": "black",
-        
-        // TypeScript/JavaScript configuration
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-          "source.organizeImports": true,
-          "source.fixAll.eslint": true
-        }
-      }
+      ]
     }
   },
   
-  // Lifecycle scripts for BookedBarber V2 setup
-  "postCreateCommand": [
-    "echo 'Setting up BookedBarber V2 development environment...'",
-    "cd /workspaces/6fb-booking/backend-v2 && pip install -r requirements.txt",
-    "cd /workspaces/6fb-booking/backend-v2/frontend-v2 && npm install",
-    "echo 'BookedBarber V2 development environment ready!'",
-    "echo 'Run: ./backend-v2/docker-dev-start.sh to start development servers'"
-  ],
+  // Simple post-create setup
+  "postCreateCommand": "echo 'BookedBarber V2 Codespace Ready!'",
   
-  // Environment variables for development
+  // Environment variables
   "containerEnv": {
-    "PYTHONPATH": "/workspaces/6fb-booking/backend-v2",
     "NODE_ENV": "development",
-    "ENVIRONMENT": "development",
-    "DEBUG": "true"
-  },
-  
-  // Enable automatic port forwarding
-  "otherPortsAttributes": {
-    "onAutoForward": "silent"
+    "ENVIRONMENT": "development"
   }
 }
