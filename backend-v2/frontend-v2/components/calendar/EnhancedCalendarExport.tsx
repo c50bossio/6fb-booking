@@ -63,7 +63,7 @@ import {
 } from '@/lib/calendar-export-enhanced'
 import { exportCalendar } from '@/lib/calendar-export'
 import { Appointment } from '@/types/appointment'
-import { format } from 'date-fns'
+import { format as formatDate } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
@@ -247,7 +247,7 @@ export function EnhancedCalendarExport({
         const url = URL.createObjectURL(pdfBlob)
         const link = document.createElement('a')
         link.href = url
-        link.download = `bookedbarber-export-${format(new Date(), 'yyyy-MM-dd')}.pdf`
+        link.download = `bookedbarber-export-${formatDate(new Date(), 'yyyy-MM-dd')}.pdf`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -258,7 +258,7 @@ export function EnhancedCalendarExport({
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
-        link.download = `bookedbarber-export-${format(new Date(), 'yyyy-MM-dd')}.json`
+        link.download = `bookedbarber-export-${formatDate(new Date(), 'yyyy-MM-dd')}.json`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -276,7 +276,7 @@ export function EnhancedCalendarExport({
         config: { format, includeOptions },
         appointmentCount: appointmentsToExport.length,
         totalRevenue: appointmentsToExport.reduce((sum, apt) => sum + apt.total_price, 0),
-        fileName: `export-${format}-${format(new Date(), 'yyyy-MM-dd-HHmmss')}`,
+        fileName: `export-${format}-${formatDate(new Date(), 'yyyy-MM-dd-HHmmss')}`,
         status: 'success'
       })
       
@@ -293,7 +293,7 @@ export function EnhancedCalendarExport({
         config: { format, includeOptions },
         appointmentCount: appointmentsToExport.length,
         totalRevenue: 0,
-        fileName: `export-${format}-${format(new Date(), 'yyyy-MM-dd-HHmmss')}`,
+        fileName: `export-${format}-${formatDate(new Date(), 'yyyy-MM-dd-HHmmss')}`,
         status: 'failed',
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
       })
@@ -320,7 +320,7 @@ export function EnhancedCalendarExport({
 
     try {
       let exportBlob: Blob | null = null
-      let fileName = `bookedbarber-export-${format(new Date(), 'yyyy-MM-dd')}`
+      let fileName = `bookedbarber-export-${formatDate(new Date(), 'yyyy-MM-dd')}`
 
       if (exportFormat === 'pdf') {
         exportBlob = await generatePDF(appointmentsToExport, exportTemplate, includeOptions)
@@ -532,7 +532,7 @@ export function EnhancedCalendarExport({
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="export" className="mt-4">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="export">Export</TabsTrigger>
               <TabsTrigger value="filters">Filters</TabsTrigger>
@@ -715,7 +715,7 @@ export function EnhancedCalendarExport({
                           <div>
                             <div className="font-medium text-sm">{name}</div>
                             <div className="text-xs text-muted-foreground">
-                              {config.format.toUpperCase()} • Saved {format(new Date(config.savedAt), 'MMM d, yyyy')}
+                              {config.format.toUpperCase()} • Saved {formatDate(new Date(config.savedAt), 'MMM d, yyyy')}
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -998,7 +998,7 @@ export function EnhancedCalendarExport({
                               )}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              {format(new Date(entry.timestamp), 'MMM d, yyyy at h:mm a')}
+                              {formatDate(new Date(entry.timestamp), 'MMM d, yyyy at h:mm a')}
                             </div>
                             <div className="text-xs mt-1">
                               {entry.appointmentCount} appointments • ${entry.totalRevenue.toFixed(2)}

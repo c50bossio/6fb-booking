@@ -86,10 +86,9 @@ export default function LandingPageSettings() {
     try {
       // Get user profile to get organization slug
       const profile = await getProfile()
-      // Type assertion for organization data that may exist in runtime but not in interface
-      const profileWithOrg = profile as any
-      if (profileWithOrg?.organization?.slug) {
-        setOrganizationSlug(profileWithOrg.organization.slug)
+      if (profile?.primary_organization?.id) {
+        // Use organization ID or name as slug (since organization object doesn't have slug)
+        setOrganizationSlug(profile.primary_organization.id.toString())
       }
       
       // Load landing page settings
@@ -430,9 +429,9 @@ export default function LandingPageSettings() {
                 value={settings.testimonial_source}
                 onChange={(testimonial_source) => setSettings({ ...settings, testimonial_source: testimonial_source as string })}
                 options={[
-                  { value: "gmb_auto", label: "Google My Business (Auto)" },
-                  { value: "custom", label: "Custom Testimonials" },
-                  { value: "generic", label: "Generic Testimonials" }
+                  { value: 'gmb_auto', label: 'Google My Business (Auto)' },
+                  { value: 'custom', label: 'Custom Testimonials' },
+                  { value: 'generic', label: 'Generic Testimonials' }
                 ]}
               />
               <p className="text-xs text-gray-500 mt-1">

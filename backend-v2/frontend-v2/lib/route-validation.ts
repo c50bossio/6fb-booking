@@ -75,7 +75,7 @@ export const FORBIDDEN_ROUTES = {
 export function isValidRoute(route: string): boolean {
   // Check if route is in valid routes
   const validRoutes = Object.values(VALID_ROUTES)
-  if (validRoutes.includes(route)) {
+  if (validRoutes.includes(route as any)) {
     return true
   }
   

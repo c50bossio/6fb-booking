@@ -28,7 +28,7 @@ export interface FeedbackAction {
   id: string
   label: string
   action: () => void | Promise<void>
-  variant?: 'default' | 'outline' | 'destructive'
+  variant?: 'primary' | 'outline' | 'destructive'
   icon?: React.ReactNode
   loading?: boolean
 }

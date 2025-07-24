@@ -306,7 +306,7 @@ export class PricingAnalyticsService {
     return {
       serviceId,
       serviceName: firstEvent.context.serviceName || 'Unknown Service',
-      category: firstEvent.context.category || ServiceCategoryEnum.OTHER,
+      category: firstEvent.context.category || ServiceCategoryEnum.ADDON,
       period,
       priceHistory,
       metrics,

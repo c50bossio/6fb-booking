@@ -8,7 +8,7 @@
 import { format, addMinutes, addHours, startOfDay, endOfDay, isWithinInterval, parseISO } from 'date-fns'
 import type { BookingResponse } from '@/lib/api'
 
-interface TimeSlot {
+export interface TimeSlot {
   time: string
   date: Date
   confidence: number

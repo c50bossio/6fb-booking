@@ -27,6 +27,8 @@ interface CalendarWithUndoRedoProps {
   onCreateAppointment?: (data: any) => void
   onUpdateAppointment?: (id: number, data: any) => void
   onDeleteAppointment?: (id: number) => void
+  onTimeSlotClick?: (date: Date, barberId?: number) => void
+  onAppointmentClick?: (appointment: any) => void
   showCreateButton?: boolean
   hideControls?: boolean
 }
@@ -48,21 +50,48 @@ function CalendarWithUndoRedoInner(props: CalendarWithUndoRedoProps) {
     }
   }
 
-  const handleUpdateAppointment = (id: number, data: any) => {
+  const handleAppointmentUpdate = (appointmentId: number, newStartTime: string, isDragDrop?: boolean) => {
     if (props.onUpdateAppointment) {
       // Find the appointment to get previous data
-      const previousAppointment = props.appointments?.find(apt => apt.id === id)
+      const previousAppointment = props.appointments?.find(apt => apt.id === appointmentId)
       
-      props.onUpdateAppointment(id, data)
+      // Convert to the expected format
+      const updateData = { start_time: newStartTime }
+      props.onUpdateAppointment(appointmentId, updateData)
       
       // Add to undo history
       addAction({
-        type: 'update',
-        appointmentId: id,
+        type: isDragDrop ? 'reschedule' : 'update',
+        appointmentId: appointmentId,
         previousData: previousAppointment,
-        newData: { ...previousAppointment, ...data },
-        description: `Updated appointment #${id}`
+        newData: { ...previousAppointment, ...updateData },
+        description: isDragDrop ? 
+          `Moved appointment to ${new Date(newStartTime).toLocaleTimeString()}` :
+          `Updated appointment #${appointmentId}`
       })
+    }
+  }
+
+  const handleTimeSlotClick = (date: Date, barberId?: number) => {
+    if (props.onCreateAppointment) {
+      // Create appointment data from time slot click
+      const appointmentData = {
+        start_time: date.toISOString(),
+        barber_id: barberId,
+        // Add other default fields as needed
+      }
+      
+      props.onCreateAppointment(appointmentData)
+      
+      // Add to undo history (this will be updated after the appointment is actually created)
+      addAction({
+        type: 'create',
+        newData: appointmentData,
+        description: `Created appointment at ${date.toLocaleTimeString()}`
+      })
+    } else if (props.onTimeSlotClick) {
+      // Fall back to the original time slot click handler
+      props.onTimeSlotClick(date, barberId)
     }
   }
 
@@ -85,31 +114,6 @@ function CalendarWithUndoRedoInner(props: CalendarWithUndoRedoProps) {
     }
   }
 
-  const handleDragDrop = (appointmentId: number, newTime: Date, newBarberId?: number) => {
-    const appointment = props.appointments?.find(apt => apt.id === appointmentId)
-    if (!appointment) return
-
-    const previousData = {
-      appointment_time: appointment.appointment_time,
-      barber_id: appointment.barber_id
-    }
-
-    const newData = {
-      appointment_time: newTime.toISOString(),
-      barber_id: newBarberId || appointment.barber_id
-    }
-
-    handleUpdateAppointment(appointmentId, newData)
-
-    // Add specific action for drag and drop
-    addAction({
-      type: 'reschedule',
-      appointmentId: appointmentId,
-      previousData,
-      newData,
-      description: `Moved appointment to ${newTime.toLocaleTimeString()}`
-    })
-  }
 
   return (
     <div className="space-y-4">
@@ -136,11 +140,15 @@ function CalendarWithUndoRedoInner(props: CalendarWithUndoRedoProps) {
       )}
       
       <UnifiedCalendar
-        {...props}
-        onCreateAppointment={handleCreateAppointment}
-        onUpdateAppointment={handleUpdateAppointment}
-        onDeleteAppointment={handleDeleteAppointment}
-        onDragDrop={handleDragDrop}
+        view={props.view || 'week'}
+        onViewChange={props.onViewChange}
+        currentDate={props.currentDate}
+        onDateChange={props.onDateChange}
+        appointments={props.appointments || []}
+        barbers={props.barbers}
+        onTimeSlotClick={handleTimeSlotClick}
+        onAppointmentClick={props.onAppointmentClick}
+        onAppointmentUpdate={handleAppointmentUpdate}
       />
     </div>
   )

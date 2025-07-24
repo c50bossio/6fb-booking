@@ -67,7 +67,7 @@ export class BookingErrorBoundary extends Component<Props, State> {
     console.error('BookingErrorBoundary caught an error:', error, errorInfo)
     
     // Enhanced error reporting for booking-specific issues
-    const sentryEventId = reportApiError(error, {
+    reportApiError(error, {
       component: 'BookingErrorBoundary',
       bookingStep: this.props.contextInfo?.bookingStep,
       selectedService: this.props.contextInfo?.selectedService,
@@ -78,6 +78,7 @@ export class BookingErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack,
       errorBoundary: true
     })
+    const sentryEventId = undefined
     
     addUserActionBreadcrumb(
       'Booking error caught by boundary',
@@ -366,7 +367,7 @@ export class BookingErrorBoundary extends Component<Props, State> {
                     <Button
                       key={index}
                       onClick={option.action}
-                      variant={option.variant}
+                      variant={option.variant === 'default' ? 'primary' : option.variant}
                       size="sm"
                       className="flex items-center gap-2"
                     >

@@ -152,7 +152,7 @@ class IntelligentCache {
 
     const keysToDelete: string[] = []
     
-    for (const key of this.cache.keys()) {
+    for (const key of Array.from(this.cache.keys())) {
       const matches = typeof pattern === 'string' 
         ? key.includes(pattern)
         : pattern.test(key)
@@ -312,7 +312,7 @@ class IntelligentCache {
     const now = Date.now()
     const toDelete: string[] = []
 
-    for (const [key, entry] of this.cache.entries()) {
+    for (const [key, entry] of Array.from(this.cache.entries())) {
       // Remove entries that are beyond max stale time
       const maxStale = this.getDefaultConfig(key).maxStale || 10 * 60 * 1000
       if (now > entry.expiresAt + maxStale) {

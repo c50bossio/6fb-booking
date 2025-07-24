@@ -3,6 +3,8 @@
  * Real-time performance tracking for BookedBarber V2
  */
 
+import React from 'react';
+
 interface PerformanceConfig {
   enableLogging: boolean;
   enableMetrics: boolean;

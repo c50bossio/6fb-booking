@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import { useInView } from 'react-intersection-observer'
+import { useIntersectionObserver } from '@/hooks/useIntersectionObserver'
 
 interface AnimatedCardProps extends React.ComponentPropsWithoutRef<typeof Card> {
   animation?: 'fadeIn' | 'slideUp' | 'slideDown' | 'slideLeft' | 'slideRight' | 'scaleIn'
@@ -28,20 +28,13 @@ export const AnimatedCard = forwardRef<HTMLDivElement, AnimatedCardProps>(
     children,
     ...props 
   }, ref) => {
-    const { ref: inViewRef, inView } = useInView({
+    const { ref: inViewRef, isIntersecting: inView } = useIntersectionObserver({
       threshold: 0.1,
       triggerOnce: true,
     })
 
-    // Combine refs
-    const setRefs = React.useCallback(
-      (node: HTMLDivElement) => {
-        // @ts-ignore
-        ref && (ref.current = node)
-        inViewRef(node)
-      },
-      [inViewRef, ref]
-    )
+    // Use the intersection observer ref directly
+    const cardRef = inViewRef
 
     const animationClass = inView ? `animate-${animation}` : 'opacity-0'
     const hoverClass = hover !== 'none' ? `hover-${hover}` : ''
@@ -56,7 +49,7 @@ export const AnimatedCard = forwardRef<HTMLDivElement, AnimatedCardProps>(
 
     return (
       <Card
-        ref={setRefs}
+        ref={cardRef}
         className={cn(
           'transition-all',
           animationClass,

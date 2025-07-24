@@ -8,8 +8,8 @@ import { ChevronDown, Menu, X } from 'lucide-react'
 
 // Skip to content link
 export function SkipToContent({ contentId = 'main-content' }) {
-  const { SkipLink } = useSkipNavigation()
-  return <SkipLink href={`#${contentId}`}>Skip to main content</SkipLink>
+  const { getSkipLink } = useSkipNavigation()
+  return getSkipLink({ href: `#${contentId}`, children: 'Skip to main content' })
 }
 
 // Accessible breadcrumb navigation
@@ -286,7 +286,7 @@ interface AccessibleMobileNavProps {
 export function AccessibleMobileNav({ items, className }: AccessibleMobileNavProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
-  const { announce, announceElement } = useAnnouncement()
+  const { announce, getAnnouncementElement } = useAnnouncement()
   
   const toggleExpanded = (label: string) => {
     setExpandedItems(prev =>
@@ -303,7 +303,7 @@ export function AccessibleMobileNav({ items, className }: AccessibleMobileNavPro
   
   return (
     <>
-      {announceElement}
+      {getAnnouncementElement()}
       
       <div className={className}>
         <button

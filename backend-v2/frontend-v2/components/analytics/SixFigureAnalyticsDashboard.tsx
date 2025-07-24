@@ -172,7 +172,7 @@ export default function SixFigureAnalyticsDashboard({
       }
       
       // Check for required fields
-      const requiredFields = ['current_performance', 'targets', 'recommendations']
+      const requiredFields: (keyof SixFigureBarberMetrics)[] = ['current_performance', 'targets', 'recommendations']
       const missingFields = requiredFields.filter(field => !metricsData[field])
       if (missingFields.length > 0) {
         throw new Error(`Missing required fields: ${missingFields.join(', ')}`)

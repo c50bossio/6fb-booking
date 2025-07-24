@@ -205,9 +205,9 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
               value={formData.category}
               onChange={(value) => setFormData({ ...formData, category: value as string })}
               options={[
-                { value: "positive", label: "Positive" },
-                { value: "negative", label: "Negative" },
-                { value: "neutral", label: "Neutral" }
+                { value: 'positive', label: 'Positive' },
+                { value: 'negative', label: 'Negative' },
+                { value: 'neutral', label: 'Neutral' }
               ]}
             />
           </div>
@@ -228,17 +228,17 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
             <label className="block text-sm font-medium mb-2">Platform (Optional)</label>
             <Select
               value={formData.platform || ''}
-              onChange={(value) => setFormData({ ...formData, platform: (value as string) as ReviewPlatform })}
+              onChange={(value) => setFormData({ ...formData, platform: value as ReviewPlatform })}
               placeholder="Any platform"
               options={[
-                { value: "", label: "Any Platform" },
-                { value: ReviewPlatform.GOOGLE, label: "Google" },
-                { value: ReviewPlatform.YELP, label: "Yelp" },
-                { value: ReviewPlatform.FACEBOOK, label: "Facebook" },
-                { value: ReviewPlatform.INSTAGRAM, label: "Instagram" },
-                { value: ReviewPlatform.BOOKSY, label: "Booksy" },
-                { value: ReviewPlatform.FRESHA, label: "Fresha" },
-                { value: ReviewPlatform.STYLESEAT, label: "StyleSeat" }
+                { value: '', label: 'Any Platform' },
+                { value: 'google', label: 'Google' },
+                { value: 'yelp', label: 'Yelp' },
+                { value: 'facebook', label: 'Facebook' },
+                { value: 'instagram', label: 'Instagram' },
+                { value: 'booksy', label: 'Booksy' },
+                { value: 'fresha', label: 'Fresha' },
+                { value: 'styleseat', label: 'StyleSeat' }
               ]}
             />
           </div>
@@ -247,13 +247,13 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
             <label className="block text-sm font-medium mb-2">Sentiment Trigger</label>
             <Select
               value={formData.sentiment_trigger || ''}
-              onChange={(value) => setFormData({ ...formData, sentiment_trigger: (value as string) as ReviewSentiment })}
+              onChange={(value) => setFormData({ ...formData, sentiment_trigger: value as ReviewSentiment })}
               placeholder="Any sentiment"
               options={[
-                { value: "", label: "Any Sentiment" },
-                { value: ReviewSentiment.POSITIVE, label: "Positive" },
-                { value: ReviewSentiment.NEUTRAL, label: "Neutral" },
-                { value: ReviewSentiment.NEGATIVE, label: "Negative" }
+                { value: '', label: 'Any Sentiment' },
+                { value: ReviewSentiment.POSITIVE, label: 'Positive' },
+                { value: ReviewSentiment.NEUTRAL, label: 'Neutral' },
+                { value: ReviewSentiment.NEGATIVE, label: 'Negative' }
               ]}
             />
           </div>
@@ -321,12 +321,9 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
                 key={index}
                 type="button"
                 onClick={() => removePlaceholder(placeholder)}
-                className="inline-block"
+                className="cursor-pointer hover:bg-red-50 hover:text-red-700"
               >
-                <Badge
-                  variant="outline"
-                  className="cursor-pointer hover:bg-red-50 hover:text-red-700"
-                >
+                <Badge variant="outline">
                   {placeholder} ×
                 </Badge>
               </button>
@@ -354,12 +351,9 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
                 key={index}
                 type="button"
                 onClick={() => removeKeyword(keyword)}
-                className="inline-block"
+                className="cursor-pointer hover:bg-red-50 hover:text-red-700"
               >
-                <Badge
-                  variant="outline"
-                  className="cursor-pointer hover:bg-red-50 hover:text-red-700"
-                >
+                <Badge variant="outline">
                   {keyword} ×
                 </Badge>
               </button>
@@ -638,23 +632,13 @@ export default function ReviewTemplatesPage() {
     }
   })
 
-  const handleCreateTemplate = (templateData: ReviewTemplateCreate) => {
-    createMutation.mutate(templateData)
+  const handleCreateTemplate = (templateData: ReviewTemplateCreate | ReviewTemplateUpdate) => {
+    createMutation.mutate(templateData as ReviewTemplateCreate)
   }
 
-  const handleUpdateTemplate = (templateData: ReviewTemplateUpdate) => {
+  const handleUpdateTemplate = (templateData: ReviewTemplateCreate | ReviewTemplateUpdate) => {
     if (editingTemplate) {
-      updateMutation.mutate({ id: editingTemplate.id, data: templateData })
-    }
-  }
-
-  const handleSaveTemplate = (templateData: ReviewTemplateCreate | ReviewTemplateUpdate) => {
-    if (editingTemplate) {
-      // Cast to ReviewTemplateUpdate for update operation
-      handleUpdateTemplate(templateData as ReviewTemplateUpdate)
-    } else {
-      // Cast to ReviewTemplateCreate for create operation  
-      handleCreateTemplate(templateData as ReviewTemplateCreate)
+      updateMutation.mutate({ id: editingTemplate.id, data: templateData as ReviewTemplateUpdate })
     }
   }
 
@@ -721,10 +705,10 @@ export default function ReviewTemplatesPage() {
               onChange={(value) => setFilterCategory(value as string)}
               placeholder="All Categories"
               options={[
-                { value: "", label: "All Categories" },
-                { value: "positive", label: "Positive" },
-                { value: "negative", label: "Negative" },
-                { value: "neutral", label: "Neutral" }
+                { value: '', label: 'All Categories' },
+                { value: 'positive', label: 'Positive' },
+                { value: 'negative', label: 'Negative' },
+                { value: 'neutral', label: 'Neutral' }
               ]}
             />
             
@@ -733,14 +717,14 @@ export default function ReviewTemplatesPage() {
               onChange={(value) => setFilterPlatform(value as string)}
               placeholder="All Platforms"
               options={[
-                { value: "", label: "All Platforms" },
-                { value: "google", label: "Google" },
-                { value: "yelp", label: "Yelp" },
-                { value: "facebook", label: "Facebook" },
-                { value: "instagram", label: "Instagram" },
-                { value: "booksy", label: "Booksy" },
-                { value: "fresha", label: "Fresha" },
-                { value: "styleseat", label: "StyleSeat" }
+                { value: '', label: 'All Platforms' },
+                { value: 'google', label: 'Google' },
+                { value: 'yelp', label: 'Yelp' },
+                { value: 'facebook', label: 'Facebook' },
+                { value: 'instagram', label: 'Instagram' },
+                { value: 'booksy', label: 'Booksy' },
+                { value: 'fresha', label: 'Fresha' },
+                { value: 'styleseat', label: 'StyleSeat' }
               ]}
             />
             
@@ -820,7 +804,7 @@ export default function ReviewTemplatesPage() {
           setIsCreateModalOpen(false)
           setEditingTemplate(null)
         }}
-        onSave={handleSaveTemplate}
+        onSave={editingTemplate ? handleUpdateTemplate : handleCreateTemplate}
         isLoading={createMutation.isPending || updateMutation.isPending}
       />
     </div>

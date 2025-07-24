@@ -73,7 +73,7 @@ export function SocialAccountsManager() {
 
   const handleUnlinkAccount = async (provider: SocialProvider) => {
     // Check if this is the only auth method
-    if (linkedAccounts.length === 1 && !user?.has_password) {
+    if (linkedAccounts.length === 1 && !(user as any)?.has_password) {
       toast({
         variant: 'destructive',
         title: 'Cannot unlink',
@@ -169,7 +169,7 @@ export function SocialAccountsManager() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!user?.has_password && linkedAccounts.length === 1 && (
+        {!(user as any)?.has_password && linkedAccounts.length === 1 && (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>

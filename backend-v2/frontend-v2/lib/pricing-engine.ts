@@ -576,7 +576,7 @@ export class SixFBPricingEngine {
     // Strategic adjustment based on business goals
     let adjustment = 1.0;
     if (this.config.competitivePositioning === 'premium') adjustment = 1.1;
-    if (this.config.competitivePositioning === 'value') adjustment = 0.9;
+    if (this.config.competitivePositioning === 'leader') adjustment = 0.9;
     
     return { value: request.basePrice * adjustment, weight: 0.1 };
   }
@@ -610,19 +610,19 @@ export class SixFBPricingEngine {
       competitorPricing: {
         [ServiceCategoryEnum.HAIRCUT]: [25, 35, 45, 55, 65],
         [ServiceCategoryEnum.BEARD]: [15, 25, 35, 45],
-        [ServiceCategoryEnum.SHAVE]: [35, 45, 55, 75],
+        [ServiceCategoryEnum.STYLING]: [35, 45, 55, 75],
         [ServiceCategoryEnum.PACKAGE]: [60, 80, 100, 120]
       },
       demandTrends: {
         [ServiceCategoryEnum.HAIRCUT]: 0.05,
         [ServiceCategoryEnum.BEARD]: 0.08,
-        [ServiceCategoryEnum.SHAVE]: 0.03,
+        [ServiceCategoryEnum.STYLING]: 0.03,
         [ServiceCategoryEnum.PACKAGE]: 0.12
       },
       priceElasticity: {
         [ServiceCategoryEnum.HAIRCUT]: 0.8,
         [ServiceCategoryEnum.BEARD]: 0.7,
-        [ServiceCategoryEnum.SHAVE]: 0.6,
+        [ServiceCategoryEnum.STYLING]: 0.6,
         [ServiceCategoryEnum.PACKAGE]: 0.5
       },
       customerSegments: [

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
-import { useInView } from 'react-intersection-observer'
+import { useIntersectionObserver } from '@/hooks/useIntersectionObserver'
 
 interface AnimatedListProps {
   children: React.ReactNode[]
@@ -11,6 +11,7 @@ interface AnimatedListProps {
   staggerDelay?: number
   duration?: number
   as?: keyof JSX.IntrinsicElements
+  style?: React.CSSProperties
 }
 
 export function AnimatedList({
@@ -20,25 +21,46 @@ export function AnimatedList({
   staggerDelay = 50,
   duration = 400,
   as: Component = 'div',
+  style,
 }: AnimatedListProps) {
-  const { ref, inView } = useInView({
+  const { ref, isIntersecting: inView } = useIntersectionObserver({
     threshold: 0.1,
     triggerOnce: true,
   })
 
+  if (Component === 'div') {
+    return (
+      <div ref={ref} className={className} style={style}>
+        {React.Children.map(children, (child, index) => (
+          <AnimatedListItem
+            index={index}
+            animation={animation}
+            staggerDelay={staggerDelay}
+            duration={duration}
+            inView={inView}
+          >
+            {child}
+          </AnimatedListItem>
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <Component ref={ref} className={className}>
-      {React.Children.map(children, (child, index) => (
-        <AnimatedListItem
-          index={index}
-          animation={animation}
-          staggerDelay={staggerDelay}
-          duration={duration}
-          inView={inView}
-        >
-          {child}
-        </AnimatedListItem>
-      ))}
+    <Component className={className} style={style}>
+      <div ref={ref}>
+        {React.Children.map(children, (child, index) => (
+          <AnimatedListItem
+            index={index}
+            animation={animation}
+            staggerDelay={staggerDelay}
+            duration={duration}
+            inView={inView}
+          >
+            {child}
+          </AnimatedListItem>
+        ))}
+      </div>
     </Component>
   )
 }

@@ -11,8 +11,8 @@ import {
 
 interface SocialLoginButtonProps {
   provider: SocialProvider
-  variant?: 'default' | 'outline' | 'ghost'
-  size?: 'default' | 'sm' | 'lg'
+  variant?: 'primary' | 'outline' | 'ghost'
+  size?: 'md' | 'sm' | 'lg'
   fullWidth?: boolean
   text?: string
   disabled?: boolean
@@ -22,7 +22,7 @@ interface SocialLoginButtonProps {
 export function SocialLoginButton({
   provider,
   variant = 'outline',
-  size = 'default',
+  size = 'md',
   fullWidth = false,
   text,
   disabled = false,
@@ -141,7 +141,7 @@ export function SocialLoginGroup({
             key={provider}
             provider={provider}
             variant="outline"
-            size={configuredProviders.length === 3 ? 'default' : 'lg'}
+            size={configuredProviders.length === 3 ? 'md' : 'lg'}
             fullWidth={fullWidth}
             text={configuredProviders.length === 3 ? '' : undefined}
             onError={onError}

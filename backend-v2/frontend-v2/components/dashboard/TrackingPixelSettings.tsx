@@ -365,7 +365,7 @@ export default function TrackingPixelSettings() {
       ]
     }
 
-    const fieldExamples = examples[field] || ['']
+    const fieldExamples = (examples as any)[field] || ['']
     const index = (placeholderIndex[field] || 0) % fieldExamples.length
     return fieldExamples[index]
   }
@@ -439,7 +439,7 @@ export default function TrackingPixelSettings() {
         if (success) {
           resolve({ success: true })
         } else {
-          const errors = {
+          const errors: Record<string, string> = {
             gtm_container_id: 'GTM container not found or not publicly accessible',
             ga4_measurement_id: 'GA4 property not found or no permissions',
             meta_pixel_id: 'Meta pixel not found or not active',
@@ -447,7 +447,7 @@ export default function TrackingPixelSettings() {
           }
           resolve({ 
             success: false, 
-            error: errors[field] || 'Unknown testing error'
+            error: errors[field as string] || 'Unknown testing error'
           })
         }
       }, 1000 + Math.random() * 2000) // Random delay 1-3 seconds
@@ -486,20 +486,19 @@ export default function TrackingPixelSettings() {
     const getStatusIcon = () => {
       switch (testStatus) {
         case 'testing':
-          return <Loader2 className="h-3 w-3 animate-spin text-blue-500" title="Testing connection..." />
+          return <Loader2 className="h-3 w-3 animate-spin text-blue-500" />
         case 'success':
           const timeAgo = lastTest ? Math.floor((Date.now() - lastTest.getTime()) / 60000) : 0
           const timeText = timeAgo < 1 ? 'just now' : `${timeAgo}m ago`
           return (
             <div className="flex items-center">
-              <CheckCircle2 className="h-3 w-3 text-green-500" title={`Test passed ${timeText}`} />
+              <CheckCircle2 className="h-3 w-3 text-green-500" />
             </div>
           )
         case 'error':
           return (
             <AlertTriangle 
-              className="h-3 w-3 text-orange-500 cursor-help" 
-              title={error || 'Test failed'}
+              className="h-3 w-3 text-orange-500 cursor-help"
             />
           )
         default:

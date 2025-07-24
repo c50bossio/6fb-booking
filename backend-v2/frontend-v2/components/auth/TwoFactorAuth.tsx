@@ -192,7 +192,7 @@ export function TwoFactorAuth({
             {code.map((digit, index) => (
               <Input
                 key={index}
-                ref={el => inputRefs.current[index] = el}
+                ref={el => { inputRefs.current[index] = el }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
@@ -221,7 +221,7 @@ export function TwoFactorAuth({
           {onResend && (
             <div className="text-center">
               <Button
-                variant="link"
+                variant="ghost"
                 onClick={handleResend}
                 disabled={resendCooldown > 0}
                 className="text-sm"
@@ -342,7 +342,7 @@ export function TwoFactorSetup({
         </p>
       </div>
 
-      <Tabs value={selectedMethod} onValueChange={setSelectedMethod}>
+      <Tabs value={selectedMethod} onValueChange={setSelectedMethod} defaultValue={selectedMethod}>
         <TabsList className="grid w-full grid-cols-3">
           {availableMethods.includes('sms') && (
             <TabsTrigger value="sms">

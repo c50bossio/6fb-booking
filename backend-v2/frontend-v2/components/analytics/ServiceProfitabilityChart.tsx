@@ -256,7 +256,7 @@ export default function ServiceProfitabilityChart({ services, dateRange }: Servi
             name="Bookings" 
             label={{ value: 'Number of Bookings', angle: -90, position: 'insideLeft' }}
           />
-          <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => {
+          <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }: { active?: boolean; payload?: any[] }) => {
             if (active && payload && payload.length) {
               const data = payload[0].payload
               return (
