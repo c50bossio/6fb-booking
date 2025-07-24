@@ -483,8 +483,8 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
       <div 
         className="calendar-content flex-1 overflow-hidden relative" 
         ref={swipeContainerRef}
-        role="region"
-        aria-label={`Calendar ${view} view`}
+        role="main"
+        aria-label={`Calendar ${view} view for ${format(state.currentDate, 'MMMM d, yyyy')}`}
         aria-live="polite">
         <CalendarLoadingManager
           isLoading={isLoading}
@@ -511,7 +511,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
             <>
               {/* Swipe hint for mobile */}
               {isMobile && !isLoading && (
-                <div className="absolute top-1/2 left-0 right-0 flex justify-between px-2 pointer-events-none opacity-30 z-10">
+                <div className="absolute top-1/2 left-0 right-0 flex justify-between px-2 pointer-events-none opacity-30 z-10" aria-hidden="true">
                   <ChevronLeftIcon className="w-6 h-6 text-gray-400 animate-bounce-left" />
                   <ChevronRightIcon className="w-6 h-6 text-gray-400 animate-bounce-right" />
                 </div>
@@ -596,6 +596,16 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
         }))}
         enabled={!isLoading && !state.isDragging}
       />
+      
+      {/* Screen reader announcements for calendar updates */}
+      <div 
+        className="sr-only" 
+        aria-live="polite" 
+        aria-atomic="true"
+        id="calendar-status-announcements"
+      >
+        {/* Status announcements will be populated here */}
+      </div>
     </div>
   )
 })

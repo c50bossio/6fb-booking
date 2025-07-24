@@ -157,6 +157,25 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
           localStorage.setItem('token', data.access_token)
           // Also update the cookie
           document.cookie = `token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+          
+          // Extract and update user role from refreshed token
+          try {
+            const tokenPayload = JSON.parse(atob(data.access_token.split('.')[1]))
+            const userRole = tokenPayload.role || 
+                            tokenPayload.user_role || 
+                            tokenPayload.unified_role ||
+                            tokenPayload.sub_role ||
+                            'barber'
+            document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+            localStorage.setItem('user_role', userRole)
+            console.log('🔄 Refreshed token with role:', userRole)
+          } catch (error) {
+            console.warn('⚠️ Failed to extract role from refreshed token:', error)
+            const defaultRole = 'barber'
+            document.cookie = `user_role=${defaultRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+            localStorage.setItem('user_role', defaultRole)
+          }
+          
           if (data.refresh_token) {
             localStorage.setItem('refresh_token', data.refresh_token)
           }
@@ -168,8 +187,11 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // If refresh fails, redirect to login
       localStorage.removeItem('token')
       localStorage.removeItem('refresh_token')
-      // Remove the cookie
+      localStorage.removeItem('user_role')
+      // Remove the cookies
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+      document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+      console.log('🔄 Token refresh failed: Cleared all auth data')
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }
@@ -228,7 +250,10 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // If refresh already failed, redirect to login
       localStorage.removeItem('token')
       localStorage.removeItem('refresh_token')
+      localStorage.removeItem('user_role')
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+      document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+      console.log('🚫 401 Unauthorized: Cleared all auth data')
       if (typeof window !== 'undefined') {
         setTimeout(() => {
           window.location.href = '/login'
@@ -281,12 +306,34 @@ export async function login(email: string, password: string) {
     // This fixes the infinite redirect loop in middleware
     try {
       const tokenPayload = JSON.parse(atob(response.access_token.split('.')[1]))
-      const userRole = tokenPayload.role || 'user'
+      
+      // Try multiple possible role field names from JWT payload
+      const userRole = tokenPayload.role || 
+                      tokenPayload.user_role || 
+                      tokenPayload.unified_role ||
+                      tokenPayload.sub_role ||
+                      'barber' // Default to barber instead of user for calendar access
+      
+      console.log('🔑 JWT Token Payload:', {
+        sub: tokenPayload.sub,
+        role: tokenPayload.role,
+        user_role: tokenPayload.user_role,
+        unified_role: tokenPayload.unified_role,
+        extractedRole: userRole
+      })
+      
       console.log('🔑 Setting user_role cookie:', userRole)
       document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+      
+      // Also store role in localStorage for consistency
+      localStorage.setItem('user_role', userRole)
+      
     } catch (error) {
       console.warn('⚠️ Failed to extract role from token, setting default role:', error)
-      document.cookie = `user_role=user; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+      console.warn('⚠️ Token payload base64:', response.access_token.split('.')[1])
+      const defaultRole = 'barber' // Default to barber for calendar access
+      document.cookie = `user_role=${defaultRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+      localStorage.setItem('user_role', defaultRole)
     }
   }
   if (response.refresh_token) {
@@ -299,9 +346,11 @@ export async function login(email: string, password: string) {
 export async function logout() {
   localStorage.removeItem('token')
   localStorage.removeItem('refresh_token')
+  localStorage.removeItem('user_role')
   // Remove the cookies by setting them with an expired date
   document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
   document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+  console.log('🚪 Logout: Cleared all tokens and role information')
 }
 
 // @deprecated - Use registerComplete() instead. This old function uses a single "name" field.

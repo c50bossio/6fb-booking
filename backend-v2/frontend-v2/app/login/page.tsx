@@ -242,16 +242,9 @@ function LoginContent() {
         </div>
 
         {/* Enhanced Glassmorphism Card */}
-        <div className="relative group">
-          {/* Card Background with Multiple Layers */}
-          <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/40 backdrop-blur-xl rounded-3xl border border-white/30 dark:border-gray-700/30 shadow-2xl shadow-black/5 dark:shadow-black/20" />
-          <div className="absolute inset-[1px] bg-white/40 dark:bg-gray-700/20 backdrop-blur-sm rounded-3xl" />
-          
-          {/* Premium Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-blue-600/5 dark:from-teal-400/10 dark:to-blue-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          
-          {/* Floating Highlight Effect */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 dark:via-gray-300/30 to-transparent rounded-t-3xl" />
+        <div className="relative">
+          {/* Simplified Card Background */}
+          <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-white/20 dark:border-gray-700/20 shadow-lg shadow-black/5 dark:shadow-black/10" />
           
           <Card className="relative bg-transparent border-0 shadow-none rounded-3xl">
           <CardContent>
@@ -375,10 +368,8 @@ function LoginContent() {
                     fullWidth
                     size="lg"
                     disabled={!isFormValid || loginState.loading || rateLimit.isLocked}
-                    className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-600 via-teal-600 to-teal-700 dark:from-teal-500 dark:via-teal-500 dark:to-teal-600 hover:from-teal-700 hover:via-teal-700 hover:to-teal-800 dark:hover:from-teal-600 dark:hover:via-teal-600 dark:hover:to-teal-700 text-white font-semibold py-4 px-6 shadow-lg shadow-teal-500/25 dark:shadow-teal-400/20 hover:shadow-xl hover:shadow-teal-500/30 dark:hover:shadow-teal-400/25 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-lg"
+                    className="relative rounded-2xl bg-gradient-to-r from-teal-600 to-teal-700 dark:from-teal-500 dark:to-teal-600 hover:from-teal-700 hover:to-teal-800 dark:hover:from-teal-600 dark:hover:to-teal-700 text-white font-semibold py-4 px-6 shadow-md shadow-teal-500/20 dark:shadow-teal-400/15 transition-all duration-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {/* Button shimmer effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                     
                     <span className="relative z-10 flex items-center justify-center">
                       {rateLimit.isLocked ? (

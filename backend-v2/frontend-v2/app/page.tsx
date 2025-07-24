@@ -10,6 +10,7 @@ import {
   BellIcon,
   CreditCardIcon,
   ArrowPathIcon,
+  ArrowRightIcon,
   CheckIcon,
   PlayIcon,
   StarIcon,
@@ -508,14 +509,17 @@ export default function LandingPage() {
                         variant="outline" 
                         size="lg" 
                         className={`w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-2 border-white/40 dark:border-gray-700/40 hover:border-white/60 dark:hover:border-gray-600/60 hover:bg-gradient-to-r hover:from-white/90 hover:to-slate-50/90 dark:hover:from-gray-700/90 dark:hover:to-gray-600/90 hover:shadow-2xl hover:shadow-black/10 dark:hover:shadow-black/30 text-slate-700 dark:text-slate-200 font-bold transition-all duration-300 hover:scale-105 relative overflow-hidden`}
-                        onClick={() => track(ConversionEventType.FEATURE_INTEREST, { feature: feature.title })}
+                        onClick={() => {
+                          track(ConversionEventType.FEATURE_INTEREST, { feature: feature.title })
+                          window.location.href = `/register?feature=${encodeURIComponent(feature.title.toLowerCase())}`
+                        }}
                       >
                         {/* Premium Button Background Effect */}
                         <div className={`absolute inset-0 bg-gradient-to-r ${feature.color} opacity-0 hover:opacity-10 transition-opacity duration-300`} />
                         
                         <span className="relative z-10 flex items-center justify-center">
-                          Learn More
-                          <SparklesIcon className="w-5 h-5 ml-2 group-hover:rotate-12 transition-transform duration-300" />
+                          Get Started
+                          <ArrowRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                         </span>
                       </Button>
                     </div>
@@ -629,34 +633,27 @@ export default function LandingPage() {
               }
             ].map((metric, index) => (
               <div key={index} className="group text-center">
-                {/* Enhanced Glassmorphism Card with Sophisticated Interactions */}
-                <div className="relative p-8 rounded-3xl backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-500 hover:scale-105 cursor-pointer overflow-hidden">
-                  {/* Animated Background Shimmer Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                  
-                  {/* Enhanced Background Gradient with Pulse Effect */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${metric.bgGradient} opacity-0 group-hover:opacity-100 transition-all duration-500 rounded-3xl scale-95 group-hover:scale-100`} />
+                {/* Simplified Metrics Card */}
+                <div className="relative p-8 rounded-3xl backdrop-blur-sm bg-white/10 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-200 cursor-pointer overflow-hidden">
+                  {/* Subtle Background Gradient */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${metric.bgGradient} opacity-0 group-hover:opacity-30 transition-opacity duration-200 rounded-3xl`} />
                   
                   <div className="relative">
-                    {/* Enhanced Icon with Multi-Layer Effects */}
-                    <div className={`bg-gradient-to-br ${metric.gradient} w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl shadow-black/20 group-hover:shadow-3xl relative overflow-hidden`}>
-                      {/* Icon Glow Effect */}
-                      <div className={`absolute inset-0 bg-gradient-to-br ${metric.gradient} opacity-0 group-hover:opacity-50 transition-opacity duration-500 blur-lg scale-150`} />
-                      <metric.icon className="w-10 h-10 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
+                    {/* Simplified Icon */}
+                    <div className={`bg-gradient-to-br ${metric.gradient} w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all duration-200 shadow-lg shadow-black/10 relative overflow-hidden`}>
+                      <metric.icon className="w-10 h-10 text-white transition-transform duration-200" />
                     </div>
                     
-                    {/* Enhanced Typography with Professional Consistency */}
-                    <div className={`text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-3 bg-gradient-to-r ${metric.gradient} bg-clip-text group-hover:text-transparent transition-all duration-500 transform group-hover:scale-105 leading-[1.1] tracking-tight`}>
-                      <span className="inline-block transition-all duration-300 group-hover:animate-pulse">
-                        {metric.value}
-                      </span>
+                    {/* Simplified Typography */}
+                    <div className={`text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-3 bg-gradient-to-r ${metric.gradient} bg-clip-text group-hover:text-transparent transition-colors duration-200 leading-[1.1] tracking-tight`}>
+                      {metric.value}
                     </div>
                     
-                    <div className="text-slate-300 font-bold text-lg lg:text-xl mb-2 transition-all duration-300 group-hover:text-white group-hover:scale-105 leading-[1.3] tracking-wide">
+                    <div className="text-slate-300 font-bold text-lg lg:text-xl mb-2 transition-colors duration-200 group-hover:text-white leading-[1.3] tracking-wide">
                       {metric.label}
                     </div>
                     
-                    <div className="text-slate-400 text-sm lg:text-base font-medium opacity-80 transition-all duration-300 group-hover:opacity-100 group-hover:text-slate-300 leading-[1.4]">
+                    <div className="text-slate-400 text-sm lg:text-base font-medium opacity-80 transition-all duration-200 group-hover:opacity-100 group-hover:text-slate-300 leading-[1.4]">
                       {metric.subtext}
                     </div>
                   </div>
@@ -769,32 +766,9 @@ export default function LandingPage() {
       </section>
 
       {/* Enhanced Social Proof Section */}
-      <section id="testimonials">
-        <ABTestingWrapper
-          testId="social_proof_2025"
-          variants={[
-            {
-              id: 'combined',
-              name: 'Combined Stats & Testimonials',
-              weight: 40,
-              component: <EnhancedSocialProof variant="combined" />
-            },
-            {
-              id: 'testimonials_focus',
-              name: 'Testimonials Focus',
-              weight: 30,
-              component: <EnhancedSocialProof variant="testimonials_focus" />
-            },
-            {
-              id: 'stats_focus',
-              name: 'Stats Focus',
-              weight: 30,
-              component: <EnhancedSocialProof variant="stats_focus" />
-            }
-          ]}
-          fallbackVariant="combined"
-        />
-      </section>
+      <div id="testimonials">
+        <EnhancedSocialProof variant="combined" />
+      </div>
 
       {/* Enhanced Pricing Section - 2025 Premium Design */}
       <section id="pricing" className="py-20 lg:py-28 xl:py-32 relative overflow-hidden">
@@ -895,8 +869,8 @@ export default function LandingPage() {
               return (
                 <div
                   key={key}
-                  className={`pricing-card-container group relative rounded-3xl transition-all duration-700 ease-out cursor-pointer hover:scale-[1.02] ${
-                    isPopular ? 'scale-105 md:scale-110' : ''
+                  className={`pricing-card-container group relative rounded-3xl transition-all duration-300 ease-out cursor-pointer hover:scale-[1.01] ${
+                    isPopular ? 'scale-[1.02]' : ''
                   } ${
                     isSelected ? 'scale-105 ring-4 ring-blue-500/20' : ''
                   } ${
@@ -905,26 +879,22 @@ export default function LandingPage() {
                   style={{ transitionDelay: `${Object.keys(plans).indexOf(key) * 150}ms` }}
                   onClick={() => handlePlanSelection(key as any)}
                 >
-                  {/* Enhanced Glassmorphism Card Background with Micro-Interactions */}
-                  <div className={`absolute inset-0 backdrop-blur-xl rounded-3xl border transition-all duration-500 group-hover:backdrop-blur-2xl ${
+                  {/* Simplified Card Background */}
+                  <div className={`absolute inset-0 backdrop-blur-sm rounded-3xl border transition-all duration-200 ${
                     isPopular 
-                      ? 'bg-gradient-to-br from-blue-500/10 to-purple-600/10 border-blue-500/30 shadow-2xl shadow-blue-500/20 group-hover:from-blue-500/15 group-hover:to-purple-600/15 group-hover:border-blue-500/40 group-hover:shadow-blue-500/30' 
-                      : 'bg-white/70 dark:bg-gray-800/70 border-slate-200/60 dark:border-gray-700/30 hover:border-slate-300/80 dark:hover:border-gray-600/50 group-hover:bg-white/80 dark:group-hover:bg-gray-800/80'
+                      ? 'bg-gradient-to-br from-blue-500/5 to-purple-600/5 border-blue-500/20 shadow-lg shadow-blue-500/10 group-hover:shadow-blue-500/15' 
+                      : 'bg-white/80 dark:bg-gray-800/80 border-slate-200/60 dark:border-gray-700/30 group-hover:border-slate-300/70 dark:group-hover:border-gray-600/40'
                   }`} />
                   
-                  {/* Animated Background Shimmer Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   
                   {/* Enhanced Premium Popular Badge - Fixed Text Cutoff */}
                   {isPopular && (
                     <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20">
-                      <div className="popular-badge bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-2xl border border-white/20 backdrop-blur-sm group-hover:scale-105 group-hover:shadow-3xl transition-all duration-300 relative overflow-visible whitespace-nowrap">
-                        {/* Badge Shimmer Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <div className="popular-badge bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md border border-white/20 backdrop-blur-sm transition-all duration-200 relative overflow-visible whitespace-nowrap">
                         
                         <span className="flex items-center relative z-10">
-                          <TrophyIcon className="w-4 h-4 mr-2 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
-                          <span className="group-hover:scale-105 transition-transform duration-300 font-bold tracking-wide">Most Popular</span>
+                          <TrophyIcon className="w-4 h-4 mr-2 transition-all duration-200 flex-shrink-0" />
+                          <span className="font-bold tracking-wide">Most Popular</span>
                         </span>
                       </div>
                     </div>

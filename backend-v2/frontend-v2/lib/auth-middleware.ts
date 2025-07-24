@@ -24,12 +24,35 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
   const authHeader = request.headers.get('authorization')
   const hasToken = !!(tokenFromCookie || authHeader?.startsWith('Bearer '))
 
-  // Try to extract user role from token (if available)
-  // Note: In a real implementation, you'd decode the JWT token
-  // For now, we'll assume the role is passed via a header or cookie
-  const userRole = request.cookies.get('user_role')?.value || 
-                  request.headers.get('x-user-role') || 
-                  null
+  // Enhanced user role extraction with multiple sources and JWT fallback
+  let userRole = request.cookies.get('user_role')?.value || 
+                 request.headers.get('x-user-role') || 
+                 null
+
+  // If no role found in cookie/header, try to extract from JWT token
+  if (!userRole && tokenFromCookie) {
+    try {
+      const tokenPayload = JSON.parse(Buffer.from(tokenFromCookie.split('.')[1], 'base64').toString())
+      userRole = tokenPayload.role || 
+                 tokenPayload.user_role || 
+                 tokenPayload.unified_role ||
+                 tokenPayload.sub_role ||
+                 'barber' // Default to barber for calendar access
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Extracted role from JWT token:', {
+          sub: tokenPayload.sub,
+          extractedRole: userRole,
+          allFields: Object.keys(tokenPayload)
+        })
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ Failed to extract role from JWT token:', error)
+      }
+      userRole = 'barber' // Default fallback for calendar access
+    }
+  }
 
   // Check route access
   const accessCheck = checkRouteAccess(path, userRole, hasToken)
@@ -78,15 +101,43 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
 
 /**
  * Extract user role from JWT token
- * This is a simplified version - in production, you'd properly decode the JWT
+ * Enhanced implementation with proper JWT decoding and multiple field support
  */
 export function extractUserRoleFromToken(token: string): string | null {
   try {
-    // In a real implementation, you'd decode the JWT token
-    // For now, we'll return null and rely on API calls to get user role
-    return null
+    // Decode JWT token payload (base64 encoded second part)
+    const parts = token.split('.')
+    if (parts.length !== 3) {
+      throw new Error('Invalid JWT token format')
+    }
+    
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString())
+    
+    // Try multiple possible role field names
+    const userRole = payload.role || 
+                     payload.user_role || 
+                     payload.unified_role ||
+                     payload.sub_role ||
+                     'barber' // Default to barber for calendar access
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 JWT Token Analysis:', {
+        sub: payload.sub,
+        role: payload.role,
+        user_role: payload.user_role,
+        unified_role: payload.unified_role,
+        extractedRole: userRole,
+        exp: payload.exp,
+        iat: payload.iat
+      })
+    }
+    
+    return userRole
   } catch (error) {
-    return null
+    if (process.env.NODE_ENV === 'development') {
+      console.log('⚠️ Failed to extract role from JWT token:', error)
+    }
+    return 'barber' // Default fallback for calendar access
   }
 }
 
