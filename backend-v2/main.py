@@ -11,7 +11,7 @@ import models.upselling
 from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, social_auth
 
 # Import V2 API endpoints for Six Figure Barber enhancements
-from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling
+from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling
 # service_templates temporarily disabled due to FastAPI error
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
@@ -364,6 +364,7 @@ app.include_router(services_public_router, prefix="/api/v2")
 app.include_router(client_lifecycle.router, prefix="/api/v2")  # Client lifecycle management
 app.include_router(booking_intelligence.router, prefix="/api/v2")  # AI-powered booking intelligence
 app.include_router(upselling.router, prefix="/api/v2")  # Upselling tracking and conversion analytics
+app.include_router(ai_upselling.router, prefix="/api/v2")  # AI Agent for autonomous upselling
 
 @app.get("/")
 def root():

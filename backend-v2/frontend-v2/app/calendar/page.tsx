@@ -22,6 +22,7 @@ interface CalendarView {
 }
 
 export default function CleanCalendarPage() {
+  console.log('🔥 CALENDAR PAGE LOADED - THIS IS THE CORRECT FILE')
   // Simple, stable state management
   const [view, setView] = useState<CalendarView>({
     view: 'week',
@@ -38,8 +39,9 @@ export default function CleanCalendarPage() {
         setLoading(true)
         setError(null)
         const response = await getMyBookings()
-        // Extract bookings array from the response object
-        setBookings(response?.bookings || [])
+        // Extract bookings array from the response object, ensure it's always an array
+        const bookingsArray = response?.bookings || []
+        setBookings(Array.isArray(bookingsArray) ? bookingsArray : [])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load bookings')
         setBookings([])
@@ -152,7 +154,7 @@ export default function CleanCalendarPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">
-              Your Appointments ({bookings.length})
+              Your Appointments ({Array.isArray(bookings) ? bookings.length : 0})
             </h2>
             <Button size="sm">
               + New Appointment
@@ -160,14 +162,14 @@ export default function CleanCalendarPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {bookings.length === 0 ? (
+          {!Array.isArray(bookings) || bookings.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <div className="text-lg mb-2">No appointments scheduled</div>
               <div>Book your first appointment to get started</div>
             </div>
           ) : (
             <div className="space-y-3">
-              {bookings.slice(0, 10).map((booking) => (
+              {(Array.isArray(bookings) ? bookings : []).slice(0, 10).map((booking) => (
                 <div 
                   key={booking.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
@@ -198,7 +200,7 @@ export default function CleanCalendarPage() {
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{bookings.length}</div>
+            <div className="text-2xl font-bold">{Array.isArray(bookings) ? bookings.length : 0}</div>
             <div className="text-sm text-gray-600">Total Appointments</div>
           </CardContent>
         </Card>
@@ -206,7 +208,7 @@ export default function CleanCalendarPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold">
-              {bookings.filter(b => b.status === 'confirmed').length}
+              {Array.isArray(bookings) ? bookings.filter(b => b.status === 'confirmed').length : 0}
             </div>
             <div className="text-sm text-gray-600">Confirmed</div>
           </CardContent>
@@ -215,7 +217,7 @@ export default function CleanCalendarPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold">
-              {bookings.filter(b => b.status === 'pending').length}
+              {Array.isArray(bookings) ? bookings.filter(b => b.status === 'pending').length : 0}
             </div>
             <div className="text-sm text-gray-600">Pending</div>
           </CardContent>

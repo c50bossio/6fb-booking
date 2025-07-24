@@ -265,6 +265,7 @@ ${businessName}`
       className="max-w-5xl"
       closeOnOverlayClick={true}
       closeOnEscape={true}
+      adaptivePositioning={true}
     >
       <ModalBody className="max-h-[75vh] overflow-y-auto">
         {/* Enhanced Description with better typography */}

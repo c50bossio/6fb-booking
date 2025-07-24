@@ -69,7 +69,7 @@ const overlayVariants = cva(
       },
     },
     defaultVariants: {
-      position: 'bottom',
+      position: 'center',
     },
   }
 )
@@ -248,13 +248,32 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       ? isAnimating ? '-translate-y-full' : 'translate-y-0'
       : isAnimating ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
 
+    // Debug logging for modal positioning
+    console.log('🔍 Modal rendering:', {
+      isOpen,
+      effectivePosition,
+      size,
+      variant,
+      isAnimating,
+      isVisible,
+      adaptivePositioning,
+      zIndex: 2147483647
+    })
+
     return (
       <div
         className={overlayVariants({ 
           position: effectivePosition, 
           className: `${isAnimating ? 'opacity-0' : 'opacity-100'} ${overlayClassName || ''}` 
         })}
-        style={{ zIndex: 2147483647 }} // Maximum z-index to ensure modal appears on top
+        style={{ 
+          zIndex: 2147483647, // Maximum z-index to ensure modal appears on top
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0
+        }}
         onClick={closeOnOverlayClick ? onClose : undefined}
         onKeyDown={handleKeyDown}
         role="dialog"
@@ -280,7 +299,11 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
             overflow,
             className: `${slideTransform} ${className || ''}` 
           })}
-          style={{ maxHeight: adaptivePositioning ? maxHeight : undefined }}
+          style={{ 
+            maxHeight: adaptivePositioning ? maxHeight : undefined,
+            maxWidth: '90vw',
+            width: 'auto'
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modal Handle (iOS-style) */}
