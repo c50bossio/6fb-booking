@@ -255,6 +255,12 @@ export const routeAccessControl: RouteAccess[] = [
     allowedRoles: [],
     requiresAuth: false,
     description: 'Calendar demo page'
+  },
+  {
+    path: '/calendar-demo',
+    allowedRoles: [],
+    requiresAuth: false,
+    description: 'Calendar system demo and showcase'
   }
 ]
 
