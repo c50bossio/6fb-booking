@@ -136,20 +136,8 @@ export function EnhancedHeroSection({ variant = 'default' }: EnhancedHeroSection
             {currentVariant.headline.subtitle}
           </p>
           
-          {/* Enhanced CTA Section */}
+          {/* Enhanced CTA Section - Removed duplicate "Start Free Trial" button */}
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
-            <Link href="/register">
-              <Button 
-                size="lg"
-                className={`bg-gradient-to-r ${currentVariant.badge.gradient} hover:shadow-2xl hover:scale-105 text-white font-bold text-lg px-12 py-6 rounded-2xl border-0 transition-all duration-300 shadow-lg`}
-                onClick={() => track('hero_cta_primary', { variant, cta: currentVariant.cta.primary })}
-              >
-                <BoltIcon className="w-6 h-6 mr-3" />
-                {currentVariant.cta.primary}
-                <ArrowRightIcon className="w-6 h-6 ml-3" />
-              </Button>
-            </Link>
-            
             <Button 
               variant="outline"
               size="lg"

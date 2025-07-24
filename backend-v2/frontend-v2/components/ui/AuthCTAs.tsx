@@ -4,6 +4,7 @@ import { CTAButton, CTAGroup } from './CTASystem'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { ErrorBoundary } from 'react-error-boundary'
+import { ChartBarIcon } from '@heroicons/react/24/outline'
 
 /**
  * Static fallback CTAs for header when auth fails
@@ -19,13 +20,11 @@ function StaticHeaderCTAs({ className = '' }: { className?: string }) {
 
 /**
  * Static fallback CTAs for hero when auth fails
+ * Updated to prevent duplicate "Start Free Trial" buttons
  */
 function StaticHeroCTAs({ className = '' }: { className?: string }) {
-  return (
-    <div className={`flex justify-center ${className}`}>
-      <CTAButton ctaId="register" size="xl" showIcon={true} />
-    </div>
-  )
+  // Don't show duplicate register button - it's already in the header
+  return null
 }
 
 /**
@@ -128,28 +127,50 @@ function AuthHeroCTAsInternal({ className = '' }: { className?: string }) {
   // Show different CTAs based on authentication state
   if (isAuthenticated && user) {
     console.log('🎯 AuthHeroCTAs: Showing authenticated user dashboard link for:', user.name)
-    // Authenticated users see personalized message and dashboard link
+    // Authenticated users see personalized message and dashboard link with premium styling
     return (
-      <div className={`text-center ${className}`}>
-        <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
-          Welcome back, {user.name}!
-        </p>
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-        >
-          Go to Dashboard
-        </button>
-      </div>
+      <section className={`py-12 lg:py-16 relative ${className}`}>
+        {/* Premium Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" />
+        
+        <div className="relative max-w-4xl mx-auto px-6 text-center">
+          {/* Welcome Message */}
+          <div className="mb-8">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+              Welcome back, {user.name}!
+            </h2>
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+              Ready to manage your business and grow your revenue?
+            </p>
+          </div>
+
+          {/* Premium Dashboard Button */}
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-lg rounded-xl transition-all duration-500 ease-out hover:scale-105 hover:shadow-xl hover:shadow-blue-500/25 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <ChartBarIcon className="w-6 h-6 mr-3" />
+            Enter Dashboard
+          </button>
+          
+          {/* Subtle separator */}
+          <div className="mt-12 mb-8">
+            <div className="max-w-md mx-auto">
+              <div className="flex items-center">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-600 to-transparent" />
+                <span className="px-4 text-sm text-slate-500 dark:text-slate-400 font-medium">or explore below</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-600 to-transparent" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     )
   } else {
-    console.log('🎯 AuthHeroCTAs: Showing unauthenticated user register button')
-    // Unauthenticated users see the regular register button
-    return (
-      <div className={`flex justify-center ${className}`}>
-        <CTAButton ctaId="register" size="xl" showIcon={true} />
-      </div>
-    )
+    console.log('🎯 AuthHeroCTAs: Not showing duplicate register button for unauthenticated users (removed to prevent duplicate CTAs)')
+    // Unauthenticated users don't need a duplicate register button here
+    // The main register CTA is already available in the header navigation
+    return null
   }
 }
 
