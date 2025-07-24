@@ -36,9 +36,9 @@ export default function RegisterPage() {
         lastName: data.accountInfo.lastName,
         email: data.accountInfo.email,
         password: data.accountInfo.password,
-        user_type: data.businessType === 'individual' ? 'barber' : 'barbershop',
+        user_type: (data.businessType === 'individual' || data.businessType === 'solo') ? 'barber' : 'barbershop',
         businessName: data.businessInfo.businessName,
-        businessType: data.businessType || 'individual',
+        businessType: (data.businessType || 'individual') as 'individual' | 'studio' | 'salon' | 'enterprise',
         address: {
           street: data.businessInfo.address.street,
           city: data.businessInfo.address.city,
@@ -75,12 +75,10 @@ export default function RegisterPage() {
           for (const template of data.serviceTemplates) {
             await applyServiceTemplate({
               template_id: template.id,
-              customizations: {
-                // Use suggested pricing as default
-                price: template.suggested_base_price,
-                duration: template.estimated_duration,
-                description: template.description || ''
-              }
+              // Use suggested pricing as default
+              price: template.suggested_base_price,
+              duration: template.duration_minutes,
+              description: template.description || ''
             })
           }
           
@@ -97,7 +95,7 @@ export default function RegisterPage() {
     } catch (err: any) {
       // Generate enhanced error message for registration
       const enhancedError = getBusinessContextError('registration', err, {
-        userType: data.businessType === 'individual' ? 'barber' : 'barbershop',
+        userType: (data.businessType === 'individual' || data.businessType === 'solo') ? 'barber' : 'barbershop',
         feature: 'account_creation'
       })
       

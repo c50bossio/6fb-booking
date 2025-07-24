@@ -1,15 +1,35 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { BusinessTypeSelection, BusinessType } from './BusinessTypeSelection'
 import { AccountSetup, AccountInfo } from './AccountSetup'
 import { BusinessInformation, BusinessInfo } from './BusinessInformation'
 import { ServiceTemplateSelection } from './ServiceTemplateSelection'
 import { PricingConfirmation } from './PricingConfirmation'
 import { PaymentSetup } from './PaymentSetup'
+import { DataRecoveryPrompt } from './DataRecoveryPrompt'
+import { AutoSaveIndicator } from './AutoSaveIndicator'
+import { RegistrationErrorBoundary } from '../ErrorBoundary'
 import { validateStep, ValidationError, getFieldError } from '@/lib/registrationValidation'
-import { toast } from '@/hooks/use-toast'
+import { 
+  toast, 
+  toastRegistrationError, 
+  toastDataRecovery 
+} from '@/hooks/use-toast'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
+import { ValidationSummary, useValidation } from '@/components/ui/ValidationDisplay'
 import { ServiceTemplate } from '@/lib/types/service-templates'
+import { useRegistrationPersistence } from '@/hooks/useRegistrationPersistence'
+import { 
+  setUserContext, 
+  captureError,
+  ErrorCategory 
+} from '@/lib/error-monitoring'
+// import { 
+//   announceStepChange, 
+//   announceFormSubmission,
+//   detectAccessibilityPreferences
+// } from '@/lib/accessibility'
 
 export type RegistrationStep = 1 | 2 | 3 | 4 | 5 | 6
 
@@ -44,19 +64,105 @@ const steps = [
 ]
 
 export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistrationProps) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[MultiStepRegistration] Component mounting/rendering')
+  }
   const [currentStep, setCurrentStep] = useState<RegistrationStep>(1)
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false)
+  const [isRecoveryLoading, setIsRecoveryLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
-  // Check for reduced motion preference
+  // Enhanced error handling
+  const errorHandler = useErrorHandler({
+    toastType: 'registration',
+    enableProgressTracking: true,
+    enableOfflineDetection: true,
+    gracefulDegradation: true,
+    onReportError: (error, errorId) => {
+      captureError(error, `Registration Step ${currentStep}`, {
+        category: ErrorCategory.USER_INPUT,
+        metadata: {
+          step: currentStep,
+          errorId,
+          formData: registrationData
+        }
+      })
+    }
+  })
+  
+  // Validation management
+  const validation = useValidation()
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[MultiStepRegistration] Current step:', currentStep)
+  }
+  
+  // Initialize persistence hook
+  const persistence = useRegistrationPersistence({
+    enableAutoSave: true,
+    autoSaveDelay: 2500,
+    onDataRecovered: async (data, step) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[MultiStepRegistration] Data recovered:', { data, step })
+      }
+      
+      try {
+        setRegistrationData(data)
+        setCurrentStep(step)
+        
+        // Update user context for error monitoring
+        setUserContext({
+          registrationStep: step,
+          businessType: data.businessType || undefined
+        })
+        
+        // Announce step change
+        // Announce step change for accessibility
+        if (typeof window !== 'undefined') {
+          import('@/lib/accessibility').then(({ announceStepChange }) => {
+            announceStepChange(step, steps.length, steps[step - 1].title)
+          }).catch(() => {})
+        }
+        
+        toast({
+          title: 'Progress Restored',
+          description: `Welcome back! Continuing from step ${step}.`,
+          variant: 'default'
+        })
+
+        // Clear any existing validation errors
+        validation.clearAllErrors()
+      } catch (error) {
+        errorHandler.handleError(error, 'Data Recovery')
+      }
+    }
+  })
+  
+  // Accessibility preferences state
+  const [preferences, setPreferences] = useState({
+    prefersReducedMotion: false,
+    prefersHighContrast: false,
+    prefersDarkMode: false
+  })
+
+  // Initialize accessibility preferences
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setPrefersReducedMotion(mediaQuery.matches)
-    
-    const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
-    mediaQuery.addEventListener('change', handleChange)
-    
-    return () => mediaQuery.removeEventListener('change', handleChange)
+    if (typeof window !== 'undefined') {
+      import('@/lib/accessibility').then(({ detectAccessibilityPreferences }) => {
+        const prefs = detectAccessibilityPreferences()
+        setPreferences(prefs)
+        setPrefersReducedMotion(prefs.prefersReducedMotion)
+      }).catch(() => {})
+      
+      // Set up listener for preference changes
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+      const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
+      mediaQuery.addEventListener('change', handleChange)
+      
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
   }, [])
   
   const [registrationData, setRegistrationData] = useState<RegistrationData>({
@@ -93,63 +199,192 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
     paymentInfo: null
   })
 
-  const updateBusinessType = (businessType: BusinessType) => {
-    setRegistrationData(prev => ({ ...prev, businessType }))
-  }
-
-  const updateAccountInfo = (accountInfo: AccountInfo) => {
-    setRegistrationData(prev => ({ ...prev, accountInfo }))
-  }
-
-  const updateBusinessInfo = (businessInfo: BusinessInfo) => {
-    setRegistrationData(prev => ({ ...prev, businessInfo }))
-  }
-
-  const updatePricingInfo = (chairs: number, monthlyTotal: number, tier: string) => {
-    setRegistrationData(prev => ({
-      ...prev,
-      pricingInfo: { chairs, monthlyTotal, tier }
-    }))
-  }
-
-  const updateServiceTemplates = (serviceTemplates: ServiceTemplate[]) => {
-    setRegistrationData(prev => ({ ...prev, serviceTemplates }))
-  }
-
-  const updatePaymentInfo = (paymentInfo: { trialStarted: boolean; paymentMethodAdded: boolean }) => {
-    setRegistrationData(prev => ({ ...prev, paymentInfo }))
-  }
-
-  const nextStep = () => {
-    console.log('[MultiStepRegistration] nextStep called, currentStep:', currentStep)
-    console.log('[MultiStepRegistration] registrationData:', registrationData)
+  // Initialize recovery prompt check with error handling
+  useEffect(() => {
+    let isMounted = true
     
-    // Validate current step before proceeding
-    const validation = validateStep(currentStep, registrationData)
-    console.log('[MultiStepRegistration] validation result:', validation)
-    
-    if (!validation.isValid) {
-      setValidationErrors(validation.errors)
-      
-      // Show first error in toast
-      if (validation.errors.length > 0) {
-        toast({
-          title: 'Validation Error',
-          description: validation.errors[0].message,
-          variant: 'destructive'
-        })
+    const checkRecovery = async () => {
+      try {
+        const recoveryData = await persistence.checkForStoredData()
+        if (!isMounted) return
+        
+        if (recoveryData && recoveryData.hasData) {
+          setShowRecoveryPrompt(true)
+          
+          // Show data recovery toast
+          toastDataRecovery(
+            recoveryData.businessName,
+            async () => {
+              setIsRecoveryLoading(true)
+              try {
+                const recovered = await persistence.acceptRecovery()
+                if (recovered) {
+                  setShowRecoveryPrompt(false)
+                }
+              } catch (error) {
+                errorHandler.handleError(error, 'Progress Recovery')
+              } finally {
+                setIsRecoveryLoading(false)
+              }
+            },
+            async () => {
+              try {
+                await persistence.declineRecovery()
+                setShowRecoveryPrompt(false)
+              } catch (error) {
+                errorHandler.handleError(error, 'Decline Recovery')
+              }
+            }
+          )
+        }
+      } catch (error) {
+        errorHandler.handleError(error, 'Check Recovery Data')
       }
-      return
     }
     
-    // Clear validation errors if validation passed
-    setValidationErrors([])
+    checkRecovery()
     
-    if (currentStep < 6) {
-      console.log('[MultiStepRegistration] Moving to next step')
-      setCurrentStep((prev) => (prev + 1) as RegistrationStep)
+    return () => {
+      isMounted = false
     }
-  }
+  }, [])
+
+  // Update handlers with auto-save integration - optimized to prevent loops
+  const updateBusinessType = useCallback((businessType: BusinessType) => {
+    setRegistrationData(prev => {
+      const updated = { ...prev, businessType }
+      // Debounced auto-save to prevent loops
+      setTimeout(() => {
+        persistence.enableAutoSave(updated, currentStep)
+      }, 0)
+      return updated
+    })
+  }, [currentStep])
+
+  const updateAccountInfo = useCallback((accountInfo: AccountInfo) => {
+    setRegistrationData(prev => {
+      const updated = { ...prev, accountInfo }
+      // Debounced auto-save to prevent loops
+      setTimeout(() => {
+        persistence.enableAutoSave(updated, currentStep)
+      }, 0)
+      return updated
+    })
+  }, [currentStep])
+
+  const updateBusinessInfo = useCallback((businessInfo: BusinessInfo) => {
+    setRegistrationData(prev => {
+      const updated = { ...prev, businessInfo }
+      // Debounced auto-save to prevent loops
+      setTimeout(() => {
+        persistence.enableAutoSave(updated, currentStep)
+      }, 0)
+      return updated
+    })
+  }, [currentStep])
+
+  const updatePricingInfo = useCallback((chairs: number, monthlyTotal: number, tier: string) => {
+    setRegistrationData(prev => {
+      const updated = {
+        ...prev,
+        pricingInfo: { chairs, monthlyTotal, tier }
+      }
+      // Debounced auto-save to prevent loops
+      setTimeout(() => {
+        persistence.enableAutoSave(updated, currentStep)
+      }, 0)
+      return updated
+    })
+  }, [currentStep])
+
+  const updateServiceTemplates = useCallback((serviceTemplates: ServiceTemplate[]) => {
+    setRegistrationData(prev => {
+      const updated = { ...prev, serviceTemplates }
+      // Debounced auto-save to prevent loops
+      setTimeout(() => {
+        persistence.enableAutoSave(updated, currentStep)
+      }, 0)
+      return updated
+    })
+  }, [currentStep])
+
+  const updatePaymentInfo = useCallback((paymentInfo: { trialStarted: boolean; paymentMethodAdded: boolean }) => {
+    setRegistrationData(prev => {
+      const updated = { ...prev, paymentInfo }
+      // Debounced auto-save to prevent loops
+      setTimeout(() => {
+        persistence.enableAutoSave(updated, currentStep)
+      }, 0)
+      return updated
+    })
+  }, [currentStep])
+
+  const nextStep = useCallback(async () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[MultiStepRegistration] nextStep called, currentStep:', currentStep)
+      console.log('[MultiStepRegistration] registrationData:', registrationData)
+    }
+    
+    try {
+      // Validate current step before proceeding
+      const stepValidation = validateStep(currentStep, registrationData)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[MultiStepRegistration] validation result:', stepValidation)
+      }
+      
+      if (!stepValidation.isValid) {
+        // Clear existing validation errors
+        validation.clearAllErrors()
+        
+        // Set new validation errors
+        stepValidation.errors.forEach(error => {
+          validation.setFieldError(error.field, error.message)
+        })
+        
+        // Show registration-specific error toast
+        if (stepValidation.errors.length > 0) {
+          const error = new Error(stepValidation.errors[0].message)
+          toastRegistrationError(error, `Step ${currentStep} Validation`, {
+            showDetails: false
+          })
+        }
+        return
+      }
+      
+      // Clear validation errors if validation passed
+      validation.clearAllErrors()
+      setValidationErrors([])
+      
+      if (currentStep < 6) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[MultiStepRegistration] Moving to next step')
+        }
+        const nextStepNumber = (currentStep + 1) as RegistrationStep
+        
+        // Update user context
+        setUserContext({
+          registrationStep: nextStepNumber,
+          businessType: registrationData.businessType || undefined
+        })
+        
+        // Announce step change
+        if (typeof window !== 'undefined') {
+          import('@/lib/accessibility').then(({ announceStepChange }) => {
+            announceStepChange(nextStepNumber, steps.length, steps[nextStepNumber - 1].title)
+          }).catch(() => {})
+        }
+        
+        setCurrentStep(nextStepNumber)
+        
+        // Auto-save progress when moving to next step (debounced)
+        setTimeout(() => {
+          persistence.enableAutoSave(registrationData, nextStepNumber)
+        }, 100)
+      }
+    } catch (error) {
+      errorHandler.handleError(error, `Step ${currentStep} Navigation`)
+    }
+  }, [currentStep, registrationData, validation])
 
   const prevStep = () => {
     if (currentStep > 1) {
@@ -164,9 +399,107 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
     }
   }
 
-  const handleComplete = () => {
-    onComplete?.(registrationData)
-  }
+  const handleComplete = useCallback(async () => {
+    try {
+      setIsSubmitting(true)
+      if (typeof window !== 'undefined') {
+        import('@/lib/accessibility').then(({ announceFormSubmission }) => {
+          announceFormSubmission(true, 'Registration')
+        }).catch(() => {})
+      }
+      
+      // Final validation
+      const finalValidation = validateStep(currentStep, registrationData)
+      if (!finalValidation.isValid) {
+        finalValidation.errors.forEach(error => {
+          validation.setFieldError(error.field, error.message)
+        })
+        return
+      }
+
+      // Clear saved progress on successful completion
+      await errorHandler.withErrorHandling(
+        async () => {
+          await persistence.clearProgress()
+          onComplete?.(registrationData)
+        },
+        'Complete Registration',
+        { 
+          showProgress: true, 
+          progressMessage: 'Completing registration...' 
+        }
+      )
+      
+      if (typeof window !== 'undefined') {
+        import('@/lib/accessibility').then(({ announceFormSubmission }) => {
+          announceFormSubmission(false, 'Registration')
+        }).catch(() => {})
+      }
+    } catch (error) {
+      errorHandler.handleError(error, 'Registration Completion')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [registrationData, persistence, onComplete, currentStep, validation, errorHandler])
+
+  // Recovery prompt handlers
+  const handleAcceptRecovery = useCallback(async () => {
+    setIsRecoveryLoading(true)
+    try {
+      await persistence.acceptRecovery()
+      setShowRecoveryPrompt(false)
+    } catch (error) {
+      console.error('[MultiStepRegistration] Recovery accept failed:', error)
+      toast({
+        title: 'Recovery Failed',
+        description: 'Unable to restore your progress. Starting fresh.',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsRecoveryLoading(false)
+    }
+  }, [persistence])
+
+  const handleDeclineRecovery = useCallback(async () => {
+    setIsRecoveryLoading(true)
+    try {
+      await persistence.declineRecovery()
+      setShowRecoveryPrompt(false)
+    } catch (error) {
+      console.error('[MultiStepRegistration] Recovery decline failed:', error)
+    } finally {
+      setIsRecoveryLoading(false)
+    }
+  }, [persistence])
+
+  // Manual save and clear handlers
+  const handleManualSave = useCallback(async () => {
+    const success = await persistence.saveProgress(registrationData, currentStep)
+    if (success) {
+      toast({
+        title: 'Progress Saved',
+        description: 'Your registration progress has been saved.',
+        variant: 'default'
+      })
+    } else {
+      toast({
+        title: 'Save Failed',
+        description: 'Unable to save your progress. Please try again.',
+        variant: 'destructive'
+      })
+    }
+  }, [registrationData, currentStep, persistence])
+
+  const handleClearProgress = useCallback(async () => {
+    const success = await persistence.clearProgress()
+    if (success) {
+      toast({
+        title: 'Progress Cleared',
+        description: 'Your saved registration progress has been cleared.',
+        variant: 'default'
+      })
+    }
+  }, [persistence])
 
   const getStepStatus = (stepNumber: number) => {
     if (stepNumber < currentStep) return 'completed'
@@ -174,35 +507,94 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
     return 'upcoming'
   }
 
-  return (
-    <div className="py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  // Handle progress recovery
+  const handleProgressRecovery = useCallback(async () => {
+    try {
+      setIsRecoveryLoading(true)
+      const recovered = await persistence.acceptRecovery()
+      if (recovered) {
+        setShowRecoveryPrompt(false)
+      }
+    } catch (error) {
+      errorHandler.handleError(error, 'Progress Recovery')
+    } finally {
+      setIsRecoveryLoading(false)
+    }
+  }, [persistence, errorHandler])
+
+  const content = (
+    <>
+      {/* Data Recovery Prompt */}
+      {persistence.recoveryPrompt && (
+        <DataRecoveryPrompt
+          isOpen={showRecoveryPrompt}
+          recoveryData={persistence.recoveryPrompt}
+          onAccept={handleAcceptRecovery}
+          onDecline={handleDeclineRecovery}
+          onClose={() => setShowRecoveryPrompt(false)}
+          isLoading={isRecoveryLoading}
+        />
+      )}
+
+      {/* Validation Summary */}
+      {validation.hasAnyErrors && (
+        <div className="mb-6">
+          <ValidationSummary 
+            errors={validation.errors} 
+            onErrorClick={(field) => {
+              // Scroll to field (could be enhanced)
+              const element = document.getElementById(field)
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                element.focus()
+              }
+            }}
+          />
+        </div>
+      )}
+
+      <div className="py-4 sm:py-6 md:py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Premium Progress Indicator */}
         <div className="mb-12">
-          {/* Mobile Progress Bar */}
+          {/* Enhanced Mobile Progress Bar */}
           <div className="sm:hidden mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Step {currentStep} of {steps.length}
               </span>
-              <div className="flex items-center space-x-3">
-                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                  ~{Math.max(1, 4 - currentStep)} min remaining
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">
+                  ~{Math.max(1, 4 - currentStep)} min
                 </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {Math.round((currentStep / steps.length) * 100)}% Complete
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  {Math.round((currentStep / steps.length) * 100)}%
                 </span>
               </div>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-3 overflow-hidden">
               <div 
-                className={`bg-gradient-to-r from-primary-500 to-blue-500 h-2 rounded-full ${prefersReducedMotion ? '' : 'transition-all duration-200 ease-out'}`}
+                className={`bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 h-3 rounded-full shadow-sm ${prefersReducedMotion ? '' : 'transition-all duration-300 ease-out'}`}
                 style={{ width: `${(currentStep / steps.length) * 100}%` }}
               />
             </div>
-            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-              {steps[currentStep - 1].title}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-base font-semibold text-gray-900 dark:text-white">
+                {steps[currentStep - 1].title}
+              </p>
+              <div className="flex space-x-1">
+                {steps.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-2 h-2 rounded-full ${
+                      index + 1 <= currentStep
+                        ? 'bg-blue-500'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Desktop Progress Steps */}
@@ -278,11 +670,11 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
         {/* Step Content Container - Simplified */}
         <div className="relative">
           {/* Content Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
             {/* Step Content */}
             <div className="relative">
               {currentStep === 1 && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
+                <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                   <BusinessTypeSelection
                     selectedType={registrationData.businessType}
                     onSelect={updateBusinessType}
@@ -293,7 +685,7 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
               )}
 
               {currentStep === 2 && registrationData.businessType && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
+                <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                   <AccountSetup
                     businessType={registrationData.businessType}
                     accountInfo={registrationData.accountInfo}
@@ -306,7 +698,7 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
               )}
 
               {currentStep === 3 && registrationData.businessType && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
+                <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                   <BusinessInformation
                     businessType={registrationData.businessType}
                     businessInfo={registrationData.businessInfo}
@@ -319,7 +711,7 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
               )}
 
               {currentStep === 4 && registrationData.businessType && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
+                <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                   <ServiceTemplateSelection
                     businessType={registrationData.businessType}
                     businessName={registrationData.businessInfo.businessName}
@@ -332,7 +724,7 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
               )}
 
               {currentStep === 5 && registrationData.businessType && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
+                <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                   <PricingConfirmation
                 businessType={registrationData.businessType}
                 chairCount={registrationData.businessInfo.chairCount}
@@ -345,7 +737,7 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
               )}
 
               {currentStep === 6 && registrationData.pricingInfo && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
+                <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                   <PaymentSetup
                     businessName={registrationData.businessInfo.businessName}
                     pricingInfo={registrationData.pricingInfo}
@@ -360,7 +752,7 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
         </div>
 
         {/* Premium Footer */}
-        <div className="mt-8 text-center">
+        <div className="mt-6 sm:mt-8 text-center">
           <div className="flex items-center justify-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
             <span className="flex items-center">
               <svg className="w-4 h-4 mr-1 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -381,6 +773,17 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
         </div>
       </div>
     </div>
+    </>
+  )
+
+  return (
+    <RegistrationErrorBoundary
+      registrationStep={currentStep}
+      businessType={registrationData.businessType || undefined}
+      onProgressRecovery={handleProgressRecovery}
+    >
+      {content}
+    </RegistrationErrorBoundary>
   )
 }
 

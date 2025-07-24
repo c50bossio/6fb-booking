@@ -128,14 +128,14 @@ export const trackConversion = (
   // Track via scriptLoader (handles consent internally)
   trackScriptEvent(eventType, params)
   
-  // Log to console in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🎯 Conversion Event:', {
-      type: eventType,
-      params,
-      timestamp: new Date().toISOString(),
-    })
-  }
+  // Log to console in development (disabled for performance)
+  // if (process.env.NODE_ENV === 'development') {
+  //   console.log('🎯 Conversion Event:', {
+  //     type: eventType,
+  //     params,
+  //     timestamp: new Date().toISOString(),
+  //   })
+  // }
 }
 
 // Track page view with enhanced parameters

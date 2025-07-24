@@ -41,12 +41,12 @@ const CTA_CONFIGS: Record<string, CTAConfig> = {
   // Primary registration CTA
   register: {
     id: 'register',
-    label: 'Start **Free** Trial',
+    label: '14 Day Free Trial - Sign Up Now',
     href: '/register',
     variant: 'primary',
     size: 'lg',
     elevated: true,
-    description: 'Begin your 14-day free trial with demo data',
+    description: 'Start your 14-day free trial and build your six-figure barber business',
     analytics: 'register_primary',
     enabled: true,
     priority: 1

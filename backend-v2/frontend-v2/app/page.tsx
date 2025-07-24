@@ -14,65 +14,66 @@ import {
   PlayIcon,
   StarIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AuthHeaderCTAs, AuthHeroCTAs } from '@/components/ui/AuthCTAs'
+import { useConversionTracking, ConversionEventType } from '@/components/tracking/ConversionTracker'
+import { ABTestingWrapper, ABTestDebugPanel } from '@/components/conversion/ABTestingWrapper'
+import { EnhancedHeroSection } from '@/components/conversion/EnhancedHeroSection'
+import { EnhancedSocialProof } from '@/components/conversion/EnhancedSocialProof'
+import { EnhancedCTASection } from '@/components/conversion/EnhancedCTASection'
+import { EnhancedMobileCTA } from '@/components/conversion/EnhancedMobileCTA'
 
 export default function LandingPage() {
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'professional' | 'enterprise'>('professional')
+  const { track, trackPageView } = useConversionTracking()
+  
+  // Track page view on load
+  useEffect(() => {
+    trackPageView({
+      page_title: 'BookedBarber - Six Figure Barber Platform',
+      page_path: '/'
+    })
+  }, [trackPageView])
 
   const features = [
     {
       icon: CalendarDaysIcon,
-      title: 'Smart Calendar Management',
-      description: 'Intuitive scheduling with day, week, and month views. Never double-book again.'
-    },
-    {
-      icon: BellIcon,
-      title: 'Automated Client Communications',
-      description: 'SMS and email reminders that reduce no-shows by up to 80%.'
+      title: 'Never Lose Money to No-Shows Again',
+      description: 'Smart booking system with automated reminders reduces no-shows by 80%. Every missed appointment costs you $50-150 in lost revenue.',
+      metric: '80% fewer no-shows'
     },
     {
       icon: ChartBarIcon,
-      title: 'Revenue Analytics & Insights',
-      description: 'Track your growth with Six Figure Barber methodology metrics.'
-    },
-    {
-      icon: ArrowPathIcon,
-      title: 'Recurring Appointments',
-      description: 'Set it and forget it. Perfect for your regular clients.'
+      title: 'See Exactly Where Your Money Goes',
+      description: 'Built-in Six Figure Barber analytics show you which services make the most profit and which clients are worth keeping.',
+      metric: '$2,847 avg monthly increase'
     },
     {
       icon: CreditCardIcon,
-      title: 'Integrated Payment Processing',
-      description: 'Accept payments and manage payouts with Stripe integration.'
+      title: 'Get Paid Faster, Stress Less',
+      description: 'Automated payment processing and instant payouts mean you never chase clients for money again. Focus on cutting hair, not collecting cash.',
+      metric: '24hr automatic payouts'
+    },
+    {
+      icon: ArrowPathIcon,
+      title: 'Build Recurring Revenue Like Netflix',
+      description: 'Lock in your best clients with automated recurring appointments. Predictable income means predictable growth.',
+      metric: '67% client retention boost'
+    },
+    {
+      icon: BellIcon,
+      title: 'Marketing That Actually Works',
+      description: 'Automated SMS campaigns and email marketing bring back old clients and attract new ones. No more empty chairs.',
+      metric: '34% more bookings'
     },
     {
       icon: UserGroupIcon,
-      title: 'Multi-Location Support',
-      description: 'Manage multiple shops and barbers from one dashboard.'
+      title: 'Scale Beyond One Chair',
+      description: 'Manage multiple locations and barbers from one dashboard. Build the empire you deserve, not just another job.',
+      metric: 'Up to 10 locations'
     }
   ]
 
-  const testimonials = [
-    {
-      quote: "Booked Barber increased my monthly revenue by 40% in just 3 months. The analytics showed me exactly where I was losing money.",
-      author: "Marcus Johnson",
-      role: "Owner, Downtown Barbershop",
-      rating: 5
-    },
-    {
-      quote: "The recurring appointments feature is a game-changer. My regular clients love it and I save hours every week.",
-      author: "David Chen",
-      role: "Master Barber",
-      rating: 5
-    },
-    {
-      quote: "Finally, a booking system that understands barbers. The Six Figure methodology built-in makes all the difference.",
-      author: "Tyrell Washington",
-      role: "Shop Owner",
-      rating: 5
-    }
-  ]
 
   const plans = {
     starter: {
@@ -144,41 +145,37 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="text-center space-y-8">
-            <div className="mx-auto">
-              <h1 className="text-6xl md:text-8xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">
-                BOOKEDBARBER
-              </h1>
-              <div className="w-32 h-1 bg-primary-600 mx-auto mb-8"></div>
-            </div>
-            
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white">
-              The #1 Booking Platform for
-              <span className="text-primary-600 dark:text-primary-400"> Six Figure Barbers</span>
-            </h2>
-            
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Turn your chair into a thriving business with our all-in-one booking and management platform. 
-              Built on proven Six Figure Barber methodology.
-            </p>
-
-            <div className="pt-8">
-              <AuthHeroCTAs />
-            </div>
-
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              No credit card required • Setup in 2 minutes • Cancel anytime
-            </p>
-          </div>
-        </div>
-
-        {/* Decorative gradient orbs */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-      </section>
+      {/* A/B Tested Hero Section */}
+      <ABTestingWrapper
+        testId="homepage_hero_2025"
+        variants={[
+          {
+            id: 'default',
+            name: 'Original Hero',
+            weight: 25,
+            component: <EnhancedHeroSection variant="default" />
+          },
+          {
+            id: 'urgency',
+            name: 'Urgency Focused',
+            weight: 25,
+            component: <EnhancedHeroSection variant="urgency" />
+          },
+          {
+            id: 'social_proof',
+            name: 'Social Proof',
+            weight: 25,
+            component: <EnhancedHeroSection variant="social_proof" />
+          },
+          {
+            id: 'value_focused',
+            name: 'Value Focused',
+            weight: 25,
+            component: <EnhancedHeroSection variant="value_focused" />
+          }
+        ]}
+        fallbackVariant="default"
+      />
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-gray-50 dark:bg-gray-800">
@@ -196,12 +193,19 @@ export default function LandingPage() {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border-l-4 border-primary-500"
               >
-                <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+                    <feature.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                      {feature.metric}
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
@@ -213,64 +217,31 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Social Proof Section */}
-      <section id="testimonials" className="py-20 bg-white dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Trusted by Top Barbers Nationwide
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
-              Join thousands of barbers growing their business with Booked Barber
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={index}
-                className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl"
-              >
-                <div className="flex mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <StarIcon key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <blockquote className="text-gray-700 dark:text-gray-300 mb-6">
-                  "{testimonial.quote}"
-                </blockquote>
-                <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    {testimonial.author}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {testimonial.role}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-16 text-center">
-            <div className="inline-flex items-center space-x-8 text-gray-600 dark:text-gray-400">
-              <div>
-                <div className="text-4xl font-bold text-gray-900 dark:text-white">10K+</div>
-                <div className="text-sm">Active Barbers</div>
-              </div>
-              <div className="w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
-              <div>
-                <div className="text-4xl font-bold text-gray-900 dark:text-white">500K+</div>
-                <div className="text-sm">Appointments Booked</div>
-              </div>
-              <div className="w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
-              <div>
-                <div className="text-4xl font-bold text-gray-900 dark:text-white">$5M+</div>
-                <div className="text-sm">Revenue Processed</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Enhanced Social Proof Section */}
+      <ABTestingWrapper
+        testId="social_proof_2025"
+        variants={[
+          {
+            id: 'combined',
+            name: 'Combined Stats & Testimonials',
+            weight: 40,
+            component: <EnhancedSocialProof variant="combined" />
+          },
+          {
+            id: 'testimonials_focus',
+            name: 'Testimonials Focus',
+            weight: 30,
+            component: <EnhancedSocialProof variant="testimonials_focus" />
+          },
+          {
+            id: 'stats_focus',
+            name: 'Stats Focus',
+            weight: 30,
+            component: <EnhancedSocialProof variant="stats_focus" />
+          }
+        ]}
+        fallbackVariant="combined"
+      />
 
       {/* Pricing Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-800">
@@ -295,7 +266,7 @@ export default function LandingPage() {
               >
                 {'popular' in plan && plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    <span className="bg-primary-800 text-white px-3 py-1 rounded-full text-sm font-medium">
                       Most Popular
                     </span>
                   </div>
@@ -350,18 +321,37 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-primary-600 dark:bg-primary-700">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Grow Your Business?
-          </h2>
-          <p className="text-xl text-primary-100 mb-8">
-            Join thousands of successful barbers using Booked Barber to build their six-figure business.
-          </p>
-          <AuthHeroCTAs />
-        </div>
-      </section>
+      {/* Enhanced CTA Section */}
+      <ABTestingWrapper
+        testId="final_cta_2025"
+        variants={[
+          {
+            id: 'urgency',
+            name: 'Urgency Focused',
+            weight: 30,
+            component: <EnhancedCTASection variant="urgency" size="standard" />
+          },
+          {
+            id: 'value',
+            name: 'Value Proposition',
+            weight: 25,
+            component: <EnhancedCTASection variant="value" size="standard" />
+          },
+          {
+            id: 'social_proof',
+            name: 'Social Proof',
+            weight: 25,
+            component: <EnhancedCTASection variant="social_proof" size="standard" />
+          },
+          {
+            id: 'risk_reversal',
+            name: 'Risk Reversal',
+            weight: 20,
+            component: <EnhancedCTASection variant="risk_reversal" size="standard" />
+          }
+        ]}
+        fallbackVariant="urgency"
+      />
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 py-12">
@@ -405,6 +395,41 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Enhanced Mobile CTA */}
+      <ABTestingWrapper
+        testId="mobile_cta_2025"
+        variants={[
+          {
+            id: 'standard',
+            name: 'Standard Mobile CTA',
+            weight: 30,
+            component: <EnhancedMobileCTA variant="standard" showOnScroll={true} scrollThreshold={0.3} />
+          },
+          {
+            id: 'urgency',
+            name: 'Urgency Mobile CTA',
+            weight: 30,
+            component: <EnhancedMobileCTA variant="urgency" showOnScroll={true} scrollThreshold={0.3} />
+          },
+          {
+            id: 'value',
+            name: 'Value Mobile CTA',
+            weight: 25,
+            component: <EnhancedMobileCTA variant="value" showOnScroll={true} scrollThreshold={0.3} />
+          },
+          {
+            id: 'minimal',
+            name: 'Minimal Mobile CTA',
+            weight: 15,
+            component: <EnhancedMobileCTA variant="minimal" showOnScroll={true} scrollThreshold={0.4} />
+          }
+        ]}
+        fallbackVariant="standard"
+      />
+      
+      {/* A/B Testing Debug Panel (Development Only) */}
+      <ABTestDebugPanel />
       
     </main>
   )

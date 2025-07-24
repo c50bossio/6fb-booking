@@ -6,8 +6,11 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import CookieConsent from '@/components/CookieConsent'
-import { DevHealthMonitor } from '@/components/DevHealthMonitor'
-import { ToastProvider } from '@/hooks/useToast'
+// Development-only imports
+const DevHealthMonitor = process.env.NODE_ENV === 'development' 
+  ? require('@/components/DevHealthMonitor').DevHealthMonitor 
+  : () => null
+// ToastProvider is handled internally by Toaster component
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
 import { ServiceWorkerUpdate } from '@/components/ServiceWorkerUpdate'
 
@@ -177,22 +180,20 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueryProvider>
-          <ToastProvider>
-            <ErrorBoundary>
-              <AppLayout>
-                {children}
-              </AppLayout>
-              <Toaster />
-              <CookieConsent />
-              <DevHealthMonitor />
-              {process.env.NODE_ENV === 'production' && (
-                <>
-                  <PWAInstallPrompt />
-                  <ServiceWorkerUpdate />
-                </>
-              )}
-            </ErrorBoundary>
-          </ToastProvider>
+          <ErrorBoundary>
+            <AppLayout>
+              {children}
+            </AppLayout>
+            <Toaster />
+            <CookieConsent />
+            {process.env.NODE_ENV === 'development' && <DevHealthMonitor />}
+            {process.env.NODE_ENV === 'production' && (
+              <>
+                <PWAInstallPrompt />
+                <ServiceWorkerUpdate />
+              </>
+            )}
+          </ErrorBoundary>
         </QueryProvider>
         
         {/* Performance monitoring script */}

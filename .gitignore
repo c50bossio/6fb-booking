@@ -210,3 +210,18 @@ aws_credentials*
 backend-v2/aws_credentials*
 backend-v2/production_keys*
 
+
+# Test files with credentials
+*.test.js
+*_test.js
+test_*.js
+*test*.py
+simple_calendar_demo.py
+final_registration_test.js
+simple_onboarding_test.js
+simple_persistence_test.js
+test_cors_fix.js
+test_pre_signup_onboarding_e2e.js
+test_registration_flow.js
+test_registration_persistence.js
+

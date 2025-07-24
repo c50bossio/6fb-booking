@@ -31,6 +31,9 @@ const publicRoutes = [
   '/cookies',
   '/offline',
   '/calendar-showcase',
+  '/pricing',           // Added: Pricing page should be public
+  '/features',          // Added: Features page should be public
+  '/testimonials',      // Added: Testimonials page should be public
   '/service-worker.js',
   '/manifest.json',
 ]

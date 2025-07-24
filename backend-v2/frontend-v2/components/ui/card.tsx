@@ -69,7 +69,7 @@ const Card = React.forwardRef<
         ...props.style
       }}
       {...interactiveProps}
-      {...(interactive ? {} : props)}
+      {...(interactive ? { children: props.children } : props)}
     />
   )
 })
