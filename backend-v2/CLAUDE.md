@@ -464,6 +464,35 @@ pytest --cov=[module] --cov-report=term-missing
 python utils/registry_manager.py add [feature] [details]
 ```
 
+### 🐳 Docker Development Workflow:
+```bash
+# Quick start (recommended for new developers)
+cd backend-v2
+./docker-dev-start.sh           # SQLite + lightweight setup
+
+# Full production setup
+./docker-start.sh               # PostgreSQL + Redis + Nginx
+
+# Stop all Docker services
+./docker-stop.sh
+
+# View Docker logs
+docker-compose logs backend     # Backend logs
+docker-compose logs frontend   # Frontend logs
+docker-compose logs --follow   # Live log streaming
+
+# Container management
+docker-compose ps               # View running containers
+docker-compose exec backend bash # Shell into backend container
+docker-compose down             # Stop and remove containers
+docker-compose up --build      # Rebuild and start containers
+
+# Testing within Docker
+docker-compose exec backend pytest                    # Run backend tests
+docker-compose exec frontend npm test                 # Run frontend tests
+docker-compose exec backend python utils/registry_manager.py check [feature]
+```
+
 ### Emergency Recovery:
 ```bash
 # If tests are failing after changes
@@ -471,6 +500,11 @@ git stash                        # Save current changes
 pytest                           # Verify tests pass on clean state
 git stash pop                    # Restore changes
 pytest --lf                      # Run last failed tests only
+
+# Docker-specific recovery
+docker-compose down              # Stop all containers
+docker-compose up --build       # Fresh rebuild
+docker system prune             # Clean up Docker system (if needed)
 ```
 
 ## 🚀 Marketing Integration Guidelines (2025-07-02)
