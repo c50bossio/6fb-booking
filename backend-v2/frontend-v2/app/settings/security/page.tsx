@@ -278,7 +278,7 @@ export default function SecuritySettingsPage() {
                 <p className="text-xs text-muted-foreground">{login.date}</p>
               </div>
             ))}
-            <Button variant="link" className="p-0 h-auto">
+            <Button variant="ghost" className="p-0 h-auto">
               View full history
             </Button>
           </div>

@@ -4,7 +4,7 @@ import React, { forwardRef, useId } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { cn } from '@/lib/utils'
@@ -75,7 +75,7 @@ interface AccessibleInputProps extends React.InputHTMLAttributes<HTMLInputElemen
 }
 
 export const AccessibleInput = forwardRef<HTMLInputElement, AccessibleInputProps>(
-  ({ label, error, hint, required, icon, className, ...props }, ref) => {
+  ({ label, error, hint, required, icon, className, size, ...props }, ref) => {
     return (
       <AccessibleField label={label} error={error} hint={hint} required={required}>
         <div className="relative">
@@ -148,31 +148,24 @@ interface AccessibleSelectProps {
   required?: boolean
   placeholder?: string
   value?: string
-  onValueChange?: (value: string) => void
+  onChange?: (value: string | string[] | null) => void
   options: Array<{ value: string; label: string; disabled?: boolean }>
   className?: string
 }
 
-export const AccessibleSelect = forwardRef<HTMLButtonElement, AccessibleSelectProps>(
-  ({ label, error, hint, required, placeholder, value, onValueChange, options, className }, ref) => {
+export const AccessibleSelect = forwardRef<HTMLDivElement, AccessibleSelectProps>(
+  ({ label, error, hint, required, placeholder, value, onChange, options, className }, ref) => {
     return (
       <AccessibleField label={label} error={error} hint={hint} required={required}>
-        <Select value={value} onValueChange={onValueChange}>
-          <SelectTrigger ref={ref} className={className}>
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-                disabled={option.disabled}
-              >
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Select
+          ref={ref}
+          value={value}
+          onChange={onChange}
+          options={options}
+          placeholder={placeholder}
+          className={className}
+          error={error}
+        />
       </AccessibleField>
     )
   }

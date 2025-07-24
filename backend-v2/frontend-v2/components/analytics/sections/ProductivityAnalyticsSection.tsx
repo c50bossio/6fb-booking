@@ -55,27 +55,30 @@ export default function ProductivityAnalyticsSection({ data, userRole, dateRange
       title: 'Utilization Rate',
       value: `${productivityData.summary.utilizationRate}%`,
       icon: <ChartBarIcon className="w-5 h-5 text-blue-600" />,
-      trend: productivityData.summary.utilizationRate > 80 ? 'up' : 'down',
+      trend: productivityData.summary.utilizationRate > 80 ? 'up' as const : 'down' as const,
+      change: 5.2,
       description: 'Chair time utilized'
     },
     {
       title: 'Completion Rate',
       value: `${productivityData.summary.completionRate}%`,
       icon: <CheckCircleIcon className="w-5 h-5 text-green-600" />,
-      trend: productivityData.summary.completionRate > 90 ? 'up' : 'down'
+      trend: productivityData.summary.completionRate > 90 ? 'up' as const : 'down' as const,
+      change: 3.8
     },
     {
       title: 'Avg Service Time',
       value: `${productivityData.summary.averageServiceTime} min`,
       icon: <ClockIcon className="w-5 h-5 text-purple-600" />,
-      trend: 'neutral',
+      trend: 'neutral' as const,
       description: 'Per appointment'
     },
     {
       title: 'Efficiency Score',
       value: `${productivityData.summary.efficiency}%`,
       icon: <TrophyIcon className="w-5 h-5 text-orange-600" />,
-      trend: productivityData.summary.efficiency > 90 ? 'up' : 'down'
+      trend: productivityData.summary.efficiency > 90 ? 'up' as const : 'down' as const,
+      change: 7.1
     }
   ]
 

@@ -46,7 +46,7 @@ export default function ClientAnalyticsSection({ data, userRole, dateRange }: Cl
       title: 'Total Clients',
       value: clientData.summary.total_clients || 0,
       icon: <UsersIcon className="w-5 h-5 text-blue-600" />,
-      trend: 'up',
+      trend: 'up' as const,
       change: 12.5,
       changeLabel: 'vs last period'
     },
@@ -54,19 +54,22 @@ export default function ClientAnalyticsSection({ data, userRole, dateRange }: Cl
       title: 'New Clients',
       value: clientData.summary.new_clients || 0,
       icon: <UserPlusIcon className="w-5 h-5 text-green-600" />,
-      trend: clientData.summary.new_client_growth > 0 ? 'up' : 'down',
+      trend: (clientData.summary.new_client_growth || 0) > 0 ? 'up' as const : 'down' as const,
       change: Math.abs(clientData.summary.new_client_growth || 0)
     },
     {
       title: 'Retention Rate',
       value: `${clientData.summary.retention_rate || 0}%`,
       icon: <ArrowPathRoundedSquareIcon className="w-5 h-5 text-purple-600" />,
-      trend: clientData.summary.retention_rate > 80 ? 'up' : 'down'
+      trend: (clientData.summary.retention_rate || 0) > 80 ? 'up' as const : 'down' as const,
+      change: 5.2
     },
     {
       title: 'Avg Client Value',
       value: `$${clientData.summary.average_client_value?.toFixed(2) || '0'}`,
       icon: <StarIcon className="w-5 h-5 text-orange-600" />,
+      trend: 'up' as const,
+      change: 8.3,
       description: 'Lifetime value'
     }
   ]
