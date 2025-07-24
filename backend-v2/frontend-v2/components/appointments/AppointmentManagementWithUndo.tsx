@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Clock, User, Trash2, Edit, RotateCcw } from 'lucide-react'
-import { apiRequest } from '@/lib/api'
+import { apiRequest } from '@/lib/api-client-sentry'
 import { toast } from '@/hooks/use-toast'
 
 interface Appointment {

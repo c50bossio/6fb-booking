@@ -527,3 +527,196 @@ async def get_automation_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get automation status"
         )
+
+# Additional endpoints for analytics page compatibility
+
+class UpsellingOverview(BaseModel):
+    """Overview data structure expected by the frontend"""
+    date_range: Dict[str, str]
+    summary: Dict[str, Any]
+    revenue: Dict[str, Any]
+
+class UpsellingPerformance(BaseModel):
+    """Performance data structure expected by the frontend"""
+    avg_time_to_conversion_hours: float
+    top_services: List[Dict[str, Any]]
+    channel_performance: List[Dict[str, Any]]
+
+@router.get("/overview", response_model=UpsellingOverview)
+async def get_upselling_overview(
+    start_date: str = Query(..., description="Start date in YYYY-MM-DD format"),
+    end_date: str = Query(..., description="End date in YYYY-MM-DD format"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get upselling overview data for the analytics dashboard.
+    Provides summary and revenue metrics in the format expected by the frontend.
+    """
+    try:
+        period_start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        period_end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
+        # Get attempts in period
+        attempts_query = db.query(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.barber_id == current_user.id,
+                UpsellAttempt.implemented_at >= period_start,
+                UpsellAttempt.implemented_at <= period_end
+            )
+        )
+        
+        attempts = attempts_query.all()
+        total_attempts = len(attempts)
+        implemented_attempts = len([a for a in attempts if a.status in [UpsellStatus.CLIENT_CONTACTED, UpsellStatus.FOLLOW_UP_SCHEDULED]])
+        
+        # Get conversions
+        conversions = db.query(UpsellConversion).join(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.barber_id == current_user.id,
+                UpsellConversion.converted_at >= period_start,
+                UpsellConversion.converted_at <= period_end
+            )
+        ).all()
+        
+        total_conversions = len(conversions)
+        
+        # Calculate metrics
+        implementation_rate = (implemented_attempts / total_attempts * 100) if total_attempts > 0 else 0
+        conversion_rate = (total_conversions / implemented_attempts * 100) if implemented_attempts > 0 else 0
+        overall_success_rate = (total_conversions / total_attempts * 100) if total_attempts > 0 else 0
+        
+        # Revenue calculations
+        potential_revenue = sum(attempt.potential_revenue or 0 for attempt in attempts)
+        actual_revenue = sum(conversion.actual_revenue or 0 for conversion in conversions)
+        revenue_realization_rate = (actual_revenue / potential_revenue * 100) if potential_revenue > 0 else 0
+        
+        avg_potential_revenue = potential_revenue / total_attempts if total_attempts > 0 else 0
+        avg_actual_revenue = actual_revenue / total_conversions if total_conversions > 0 else 0
+        
+        return UpsellingOverview(
+            date_range={
+                "start": start_date,
+                "end": end_date
+            },
+            summary={
+                "total_attempts": total_attempts,
+                "implemented_attempts": implemented_attempts,
+                "total_conversions": total_conversions,
+                "implementation_rate": implementation_rate,
+                "conversion_rate": conversion_rate,
+                "overall_success_rate": overall_success_rate
+            },
+            revenue={
+                "potential_revenue": potential_revenue,
+                "actual_revenue": actual_revenue,
+                "revenue_realization_rate": revenue_realization_rate,
+                "avg_potential_revenue": avg_potential_revenue,
+                "avg_actual_revenue": avg_actual_revenue
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting upselling overview: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get upselling overview"
+        )
+
+@router.get("/performance", response_model=UpsellingPerformance)
+async def get_upselling_performance(
+    start_date: str = Query(..., description="Start date in YYYY-MM-DD format"),
+    end_date: str = Query(..., description="End date in YYYY-MM-DD format"),
+    group_by: str = Query("service", description="Group performance data by service or channel"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get upselling performance data for the analytics dashboard.
+    Provides detailed performance metrics and service analysis.
+    """
+    try:
+        period_start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        period_end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
+        # Get conversions with time data
+        conversions = db.query(UpsellConversion).join(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.barber_id == current_user.id,
+                UpsellConversion.converted_at >= period_start,
+                UpsellConversion.converted_at <= period_end
+            )
+        ).all()
+        
+        # Calculate average time to conversion
+        conversion_times = []
+        for conversion in conversions:
+            if conversion.attempt.implemented_at and conversion.converted_at:
+                time_diff = conversion.converted_at - conversion.attempt.implemented_at
+                conversion_times.append(time_diff.total_seconds() / 3600)  # Convert to hours
+        
+        avg_time_to_conversion_hours = sum(conversion_times) / len(conversion_times) if conversion_times else 0
+        
+        # Top services analysis
+        service_performance = {}
+        for conversion in conversions:
+            service = conversion.target_service_name or "Unknown Service"
+            if service not in service_performance:
+                service_performance[service] = {"conversions": 0, "revenue": 0}
+            service_performance[service]["conversions"] += 1
+            service_performance[service]["revenue"] += conversion.actual_revenue or 0
+        
+        top_services = [
+            {
+                "service": service,
+                "conversions": data["conversions"],
+                "revenue": data["revenue"]
+            }
+            for service, data in sorted(service_performance.items(), key=lambda x: x[1]["revenue"], reverse=True)
+        ][:5]  # Top 5 services
+        
+        # Channel performance analysis
+        channel_performance = {}
+        attempts = db.query(UpsellAttempt).filter(
+            and_(
+                UpsellAttempt.barber_id == current_user.id,
+                UpsellAttempt.implemented_at >= period_start,
+                UpsellAttempt.implemented_at <= period_end
+            )
+        ).all()
+        
+        for attempt in attempts:
+            channel = attempt.channel.value if attempt.channel else "UNKNOWN"
+            if channel not in channel_performance:
+                channel_performance[channel] = {"attempts": 0, "conversions": 0, "revenue": 0}
+            channel_performance[channel]["attempts"] += 1
+            
+            # Check if this attempt has conversions
+            attempt_conversions = [c for c in conversions if c.attempt_id == attempt.id]
+            if attempt_conversions:
+                channel_performance[channel]["conversions"] += len(attempt_conversions)
+                channel_performance[channel]["revenue"] += sum(c.actual_revenue or 0 for c in attempt_conversions)
+        
+        channel_performance_list = [
+            {
+                "channel": channel,
+                "attempts": data["attempts"],
+                "conversions": data["conversions"],
+                "revenue": data["revenue"],
+                "conversion_rate": (data["conversions"] / data["attempts"] * 100) if data["attempts"] > 0 else 0
+            }
+            for channel, data in channel_performance.items()
+        ]
+        
+        return UpsellingPerformance(
+            avg_time_to_conversion_hours=avg_time_to_conversion_hours,
+            top_services=top_services,
+            channel_performance=channel_performance_list
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting upselling performance: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get upselling performance"
+        )

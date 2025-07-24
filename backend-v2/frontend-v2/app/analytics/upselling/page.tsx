@@ -119,11 +119,11 @@ export default function UpsellingAnalyticsPage() {
       }
       
       // Fetch overview data
-      const overviewData = await apiGet(`/api/v2/analytics/upselling/overview?start_date=${startDate}&end_date=${endDate}`)
+      const overviewData = await apiGet(`/api/v2/upselling/overview?start_date=${startDate}&end_date=${endDate}`)
       setOverviewData(overviewData)
       
       // Fetch performance data
-      const performanceData = await apiGet(`/api/v2/analytics/upselling/performance?start_date=${startDate}&end_date=${endDate}&group_by=${groupBy}`)
+      const performanceData = await apiGet(`/api/v2/upselling/performance?start_date=${startDate}&end_date=${endDate}&group_by=${groupBy}`)
       setPerformanceData(performanceData.performance_data || [])
       
     } catch (err: any) {
