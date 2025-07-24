@@ -12,6 +12,7 @@ import {
   CalendarIcon,
   ArrowRightOnRectangleIcon,
   LinkIcon,
+  ShareIcon,
   QrCodeIcon,
   ClipboardDocumentIcon
 } from '@heroicons/react/24/outline'
@@ -228,7 +229,7 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
               title="Share Booking Links & QR Code"
               aria-label="Open booking sharing options"
             >
-              <LinkIcon className="w-5 h-5" />
+              <ShareIcon className="w-5 h-5" />
             </button>
           )}
 
