@@ -17,7 +17,7 @@ import {
   ArrowDownIcon
 } from '@heroicons/react/24/outline'
 import { useToast } from '@/hooks/useToast'
-import { apiRequest } from '@/lib/api-client-sentry'
+// Use simple fetch for API calls to avoid module import issues
 
 interface UpsellingSummary {
   total_attempts: number
@@ -98,13 +98,33 @@ export default function UpsellingAnalyticsPage() {
       const startDate = dateRange.start.toISOString().split('T')[0]
       const endDate = dateRange.end.toISOString().split('T')[0]
       
+      // Simple fetch wrapper with error handling
+      const apiGet = async (url: string) => {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add auth header if available
+            ...(typeof window !== 'undefined' && localStorage.getItem('token') ? {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            } : {})
+          }
+        })
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+        
+        return response.json()
+      }
+      
       // Fetch overview data
-      const overviewResponse = await apiRequest(`/api/v2/analytics/upselling/overview?start_date=${startDate}&end_date=${endDate}`)
-      setOverviewData(overviewResponse.data)
+      const overviewData = await apiGet(`/api/v2/analytics/upselling/overview?start_date=${startDate}&end_date=${endDate}`)
+      setOverviewData(overviewData)
       
       // Fetch performance data
-      const performanceResponse = await apiRequest(`/api/v2/analytics/upselling/performance?start_date=${startDate}&end_date=${endDate}&group_by=${groupBy}`)
-      setPerformanceData(performanceResponse.data.performance_data || [])
+      const performanceData = await apiGet(`/api/v2/analytics/upselling/performance?start_date=${startDate}&end_date=${endDate}&group_by=${groupBy}`)
+      setPerformanceData(performanceData.performance_data || [])
       
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to load upselling analytics'

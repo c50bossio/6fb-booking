@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
-import { getMyBookings, type BookingResponse } from '@/lib/api'
+import { getMyBookings, type BookingResponse, type BookingListResponse } from '@/lib/api'
 
 /**
  * CLEAN CALENDAR IMPLEMENTATION
@@ -37,8 +37,9 @@ export default function CleanCalendarPage() {
       try {
         setLoading(true)
         setError(null)
-        const userBookings = await getMyBookings()
-        setBookings(userBookings || [])
+        const response = await getMyBookings()
+        // Extract bookings array from the response object
+        setBookings(response?.bookings || [])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load bookings')
         setBookings([])

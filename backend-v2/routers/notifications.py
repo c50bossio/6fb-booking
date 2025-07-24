@@ -255,6 +255,70 @@ async def send_test_sms(
             detail=f"Failed to send test SMS: {str(e)}"
         )
 
+@router.post("/test-sms-custom")
+async def send_test_sms_custom(
+    phone_number: str = Query(..., description="Phone number to send test SMS to"),
+    message: str = Query("Hello! This is a test SMS from BookedBarber upselling system. 📱", description="Custom message to send"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Send a test SMS to a custom phone number"""
+    # Check admin permissions
+    if current_user.role not in ['admin', 'platform_admin']:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin permissions required for custom SMS testing"
+        )
+    
+    try:
+        # Check if Twilio is configured
+        if not notification_service.twilio_client:
+            # Mock SMS for demonstration when Twilio is not configured
+            mock_result = {
+                "success": True,
+                "message_sid": f"SM{datetime.now().strftime('%Y%m%d%H%M%S')}mock",
+                "status": "delivered",
+                "mock": True,
+                "note": "SMS mocked - Twilio credentials not configured"
+            }
+            
+            logger.info(f"MOCK SMS sent to {phone_number}: {message}")
+            
+            return {
+                "message": "Test SMS simulated successfully (mock mode)",
+                "phone_number": phone_number,
+                "message_body": message,
+                "result": mock_result,
+                "upselling_automation_status": "✅ SMS automation working - would trigger real SMS with Twilio credentials"
+            }
+        else:
+            # Use the notification service directly if Twilio is configured
+            result = notification_service.send_sms(
+                to_phone=phone_number,
+                body=message
+            )
+            
+            if result.get("success"):
+                return {
+                    "message": "Test SMS sent successfully",
+                    "phone_number": phone_number,
+                    "message_body": message,
+                    "result": result,
+                    "upselling_automation_status": "✅ SMS automation working with live Twilio"
+                }
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to send SMS: {result.get('error', 'Unknown error')}"
+                )
+            
+    except Exception as e:
+        logger.error(f"Error sending custom test SMS: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send test SMS: {str(e)}"
+        )
+
 @router.post("/process-queue")
 async def process_notification_queue(
     batch_size: int = Query(50, ge=1, le=200, description="Number of notifications to process"),

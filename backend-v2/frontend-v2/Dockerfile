@@ -41,8 +41,8 @@ ENV NODE_ENV production
 ENV SKIP_LINT true
 RUN npm run build && ls -la .next/
 
-# Stage 3: Runner
-FROM node:18-alpine AS runner
+# Stage 3: Development (pure dev mode)
+FROM node:18-alpine AS development
 WORKDIR /app
 
 ENV NODE_ENV development
@@ -54,10 +54,44 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json* ./
+
+# Copy source files (not built)
+COPY . .
+
+# Install sharp for development
+RUN npm install sharp
+
+# Set correct permissions
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+
+# Start in pure development mode
+CMD ["npm", "run", "dev"]
+
+# Stage 4: Production Runner
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Create a non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
-# Copy all source files for development mode
-COPY --from=builder /app .
+# Copy built application
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
 
 # Install sharp in runner stage too
 RUN npm install sharp
@@ -71,5 +105,5 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-# Start the application in development mode
-CMD ["npm", "run", "dev"]
+# Start the application in production mode
+CMD ["npm", "start"]

@@ -26,9 +26,11 @@ export function useMemoWithCache<T>(
       // Limit cache size
       if (cacheRef.current && cacheRef.current.size > 100) {
         const keysIterator = cacheRef.current.keys()
-        const firstKey = keysIterator.next().value
-        if (firstKey !== undefined) {
-          cacheRef.current.delete(firstKey)
+        if (keysIterator) {
+          const nextResult = keysIterator.next()
+          if (nextResult && !nextResult.done && nextResult.value !== undefined) {
+            cacheRef.current.delete(nextResult.value)
+          }
         }
       }
     }

@@ -39,6 +39,10 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  
+  // Debug logging
+  console.log('🔍 Header component - user data:', user)
+  console.log('🔍 Header component - should show share button:', !!user)
   const [notificationDropdownPosition, setNotificationDropdownPosition] = useState({ top: 0, left: 0 })
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)

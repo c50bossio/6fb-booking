@@ -108,7 +108,7 @@ function DashboardContent() {
     lastEvent,
     connectionError 
   } = useRealtimeAnalytics({
-    enabled: user?.role === 'admin' || user?.role === 'barber',
+    enabled: user?.role === 'admin' || user?.role === 'barber' || user?.role === 'platform_admin',
     showNotifications: true
   })
 
@@ -119,6 +119,13 @@ function DashboardContent() {
         // Check authentication first
         const userData = await getProfile()
         console.log('Dashboard: User data received:', userData)
+        console.log('Dashboard: User role checks:', {
+          role: userData.role,
+          unified_role: userData.unified_role,
+          is_system_admin: userData.is_system_admin,
+          can_view_analytics: userData.can_view_analytics,
+          shouldShowAdvancedDashboard: userData.role === 'admin' || userData.role === 'barber' || userData.role === 'platform_admin'
+        })
         if (!userData) {
           console.log('Dashboard: No user data, will redirect to login')
           return
@@ -160,7 +167,7 @@ function DashboardContent() {
         ]
 
         // Add role-specific requests
-        if (userData.role === 'admin' || userData.role === 'barber') {
+        if (userData.role === 'admin' || userData.role === 'barber' || userData.role === 'platform_admin') {
           dashboardRequests.push(
             {
               endpoint: '/api/v2/dashboard/client-metrics',
@@ -190,7 +197,7 @@ function DashboardContent() {
           }
 
           // Process role-specific data
-          if (userData.role === 'admin' || userData.role === 'barber') {
+          if (userData.role === 'admin' || userData.role === 'barber' || userData.role === 'platform_admin') {
             // Client metrics
             if (results[1]) {
               setClientMetrics(results[1])
@@ -218,7 +225,7 @@ function DashboardContent() {
             setBookings([])
           }
 
-          if (userData.role === 'admin' || userData.role === 'barber') {
+          if (userData.role === 'admin' || userData.role === 'barber' || userData.role === 'platform_admin') {
             const [metricsResult, analyticsResult] = await Promise.allSettled([
               getClientDashboardMetrics(),
               getDashboardAnalytics(userData.id)
@@ -316,8 +323,16 @@ function DashboardContent() {
     )
   }
 
+  // Debug logging for dashboard rendering
+  console.log('Dashboard: Rendering decision:', {
+    userRole: user?.role,
+    userUnifiedRole: user?.unified_role,
+    shouldShowAdvancedDashboard: user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'platform_admin',
+    isSystemAdmin: user?.is_system_admin
+  })
+
   // Render specialized barber dashboard layout
-  if (user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin') {
+  if (user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'platform_admin') {
     // Calculate completion rate from analytics data
     const completionRate = analytics?.appointment_summary ? 
       Math.round(100 - (analytics.appointment_summary.cancellation_rate + analytics.appointment_summary.no_show_rate)) : 95

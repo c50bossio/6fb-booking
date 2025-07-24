@@ -63,11 +63,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
+      target: development
     container_name: bookedbarber-backend
     environment:
-      # Database Configuration (SQLite for development)
-      DATABASE_URL: sqlite:///./6fb_booking.db
+      # Database Configuration (SQLite for development) - use shared volume
+      DATABASE_URL: sqlite:///./shared/6fb_booking.db
       
       # Redis Configuration
       REDIS_URL: redis://:bookedbarber_redis_password_2025@redis:6379/0
@@ -109,6 +109,7 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./uploads:/app/uploads
+      - .:/app/shared
     ports:
       - "8000:8000"
     networks:
@@ -133,7 +134,7 @@ services:
     build:
       context: ./frontend-v2
       dockerfile: Dockerfile
-      target: runner
+      target: development
       args:
         # Build-time environment variables (browser-accessible URLs)
         NEXT_PUBLIC_API_URL: http://localhost:8000
@@ -158,10 +159,14 @@ services:
       NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID: AW-YOUR_CONVERSION_ID
       
       # Feature Flags
-      NEXT_PUBLIC_ENABLE_DEBUG_PANEL: "false"
-      NEXT_PUBLIC_SHOW_TEST_DATA: "false"
+      NEXT_PUBLIC_ENABLE_DEBUG_PANEL: "true"
+      NEXT_PUBLIC_SHOW_TEST_DATA: "true"
       NEXT_PUBLIC_ENABLE_ANALYTICS: "true"
       NEXT_PUBLIC_ENABLE_ERROR_TRACKING: "true"
+      
+      # Debug Dashboard Components
+      NEXT_PUBLIC_DEBUG_DASHBOARD: "true"
+      NEXT_PUBLIC_FORCE_ADMIN_DASHBOARD: "true"
       
       # Security
       NEXT_PUBLIC_CSP_ENABLED: "true"
