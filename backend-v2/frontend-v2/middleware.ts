@@ -31,6 +31,7 @@ const publicRoutes = [
   '/cookies',
   '/offline',
   '/calendar-showcase',
+  '/calendar-demo',
   '/service-worker.js',
   '/manifest.json',
 ]
