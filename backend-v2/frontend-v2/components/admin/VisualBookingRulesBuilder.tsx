@@ -1,0 +1,902 @@
+'use client'
+
+import React, { useState, useCallback, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
+// Simple separator component inline
+import { 
+  PlusIcon,
+  TrashIcon,
+  EyeIcon,
+  ClockIcon,
+  UserGroupIcon,
+  CalendarDaysIcon,
+  CurrencyDollarIcon,
+  MapPinIcon,
+  Cog6ToothIcon,
+  DocumentTextIcon,
+  LightBulbIcon,
+  ArrowPathIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  PlayIcon,
+  BoltIcon,
+  ShieldCheckIcon,
+  StarIcon
+} from '@heroicons/react/24/outline'
+// Using native HTML5 drag and drop instead of react-beautiful-dnd for simplicity
+
+interface RuleCondition {
+  id: string
+  type: 'time' | 'date' | 'service' | 'barber' | 'client' | 'custom'
+  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'between' | 'in' | 'not_in' | 'contains'
+  field: string
+  value: any
+  logicalOperator?: 'AND' | 'OR'
+}
+
+interface RuleAction {
+  id: string
+  type: 'allow' | 'deny' | 'require_approval' | 'modify_price' | 'add_fee' | 'send_notification' | 'redirect'
+  parameters: Record<string, any>
+  message?: string
+}
+
+interface VisualRule {
+  id: string
+  name: string
+  description: string
+  enabled: boolean
+  priority: number
+  conditions: RuleCondition[]
+  actions: RuleAction[]
+  tags: string[]
+  category: 'scheduling' | 'pricing' | 'access' | 'notifications' | 'business_logic'
+}
+
+interface RuleTemplate {
+  id: string
+  name: string
+  description: string
+  category: string
+  icon: React.ReactNode
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  conditions: Partial<RuleCondition>[]
+  actions: Partial<RuleAction>[]
+  tags: string[]
+}
+
+const RULE_TEMPLATES: RuleTemplate[] = [
+  {
+    id: 'advance_booking_limit',
+    name: 'Advance Booking Limit',
+    description: 'Limit how far in advance clients can book appointments',
+    category: 'scheduling',
+    icon: <CalendarDaysIcon className="w-5 h-5" />,
+    difficulty: 'beginner',
+    conditions: [
+      { type: 'date', field: 'appointment_date', operator: 'greater_than', value: '30 days' }
+    ],
+    actions: [
+      { type: 'deny', parameters: { message: 'Bookings are limited to 30 days in advance' } }
+    ],
+    tags: ['scheduling', 'limits', 'business_hours']
+  },
+  {
+    id: 'weekend_premium',
+    name: 'Weekend Premium Pricing',
+    description: 'Add 20% surcharge for weekend appointments',
+    category: 'pricing',
+    icon: <CurrencyDollarIcon className="w-5 h-5" />,
+    difficulty: 'intermediate',
+    conditions: [
+      { type: 'date', field: 'appointment_day', operator: 'in', value: ['Saturday', 'Sunday'] }
+    ],
+    actions: [
+      { type: 'modify_price', parameters: { adjustment_type: 'percentage', amount: 20 } }
+    ],
+    tags: ['pricing', 'weekend', 'surcharge']
+  },
+  {
+    id: 'vip_priority_booking',
+    name: 'VIP Priority Booking',
+    description: 'Allow VIP clients to book slots 24 hours before regular clients',
+    category: 'access',
+    icon: <StarIcon className="w-5 h-5" />,
+    difficulty: 'advanced',
+    conditions: [
+      { type: 'client', field: 'client_type', operator: 'equals', value: 'vip' },
+      { type: 'date', field: 'booking_time', operator: 'greater_than', value: '24 hours before' }
+    ],
+    actions: [
+      { type: 'allow', parameters: { priority: 'high' } }
+    ],
+    tags: ['vip', 'priority', 'access']
+  },
+  {
+    id: 'same_day_approval',
+    name: 'Same Day Approval Required',
+    description: 'Require manager approval for same-day bookings',
+    category: 'business_logic',
+    icon: <ShieldCheckIcon className="w-5 h-5" />,
+    difficulty: 'intermediate',
+    conditions: [
+      { type: 'date', field: 'appointment_date', operator: 'equals', value: 'today' }
+    ],
+    actions: [
+      { type: 'require_approval', parameters: { approver_role: 'manager', timeout_hours: 2 } }
+    ],
+    tags: ['approval', 'same_day', 'management']
+  },
+  {
+    id: 'cancellation_fee',
+    name: 'Late Cancellation Fee',
+    description: 'Apply $25 fee for cancellations less than 24 hours notice',
+    category: 'pricing',
+    icon: <ExclamationTriangleIcon className="w-5 h-5" />,
+    difficulty: 'intermediate',
+    conditions: [
+      { type: 'time', field: 'cancellation_notice', operator: 'less_than', value: '24 hours' }
+    ],
+    actions: [
+      { type: 'add_fee', parameters: { amount: 25, description: 'Late cancellation fee' } }
+    ],
+    tags: ['cancellation', 'fee', 'policy']
+  },
+  {
+    id: 'group_booking_discount',
+    name: 'Group Booking Discount',
+    description: '15% discount for bookings of 3 or more people',
+    category: 'pricing',
+    icon: <UserGroupIcon className="w-5 h-5" />,
+    difficulty: 'beginner',
+    conditions: [
+      { type: 'custom', field: 'party_size', operator: 'greater_than', value: 2 }
+    ],
+    actions: [
+      { type: 'modify_price', parameters: { adjustment_type: 'percentage', amount: -15 } }
+    ],
+    tags: ['group', 'discount', 'promotion']
+  }
+]
+
+const CONDITION_TYPES = {
+  time: { label: 'Time', icon: <ClockIcon className="w-4 h-4" />, fields: ['hour', 'minute', 'time_range'] },
+  date: { label: 'Date', icon: <CalendarDaysIcon className="w-4 h-4" />, fields: ['appointment_date', 'day_of_week', 'booking_date'] },
+  service: { label: 'Service', icon: <Cog6ToothIcon className="w-4 h-4" />, fields: ['service_id', 'service_duration', 'service_price'] },
+  barber: { label: 'Barber', icon: <UserGroupIcon className="w-4 h-4" />, fields: ['barber_id', 'barber_experience', 'barber_availability'] },
+  client: { label: 'Client', icon: <UserGroupIcon className="w-4 h-4" />, fields: ['client_type', 'client_history', 'loyalty_status'] },
+  custom: { label: 'Custom', icon: <Cog6ToothIcon className="w-4 h-4" />, fields: ['custom_field'] }
+}
+
+const ACTION_TYPES = {
+  allow: { label: 'Allow Booking', icon: <CheckCircleIcon className="w-4 h-4" />, color: 'green' },
+  deny: { label: 'Deny Booking', icon: <ExclamationTriangleIcon className="w-4 h-4" />, color: 'red' },
+  require_approval: { label: 'Require Approval', icon: <ShieldCheckIcon className="w-4 h-4" />, color: 'yellow' },
+  modify_price: { label: 'Modify Price', icon: <CurrencyDollarIcon className="w-4 h-4" />, color: 'blue' },
+  add_fee: { label: 'Add Fee', icon: <CurrencyDollarIcon className="w-4 h-4" />, color: 'orange' },
+  send_notification: { label: 'Send Notification', icon: <BoltIcon className="w-4 h-4" />, color: 'purple' },
+  redirect: { label: 'Redirect', icon: <ArrowPathIcon className="w-4 h-4" />, color: 'indigo' }
+}
+
+interface VisualBookingRulesBuilderProps {
+  onSave: (rules: VisualRule[]) => void
+  onCancel: () => void
+  initialRules?: VisualRule[]
+}
+
+export default function VisualBookingRulesBuilder({ 
+  onSave, 
+  onCancel, 
+  initialRules = [] 
+}: VisualBookingRulesBuilderProps) {
+  const [rules, setRules] = useState<VisualRule[]>(initialRules)
+  const [activeTab, setActiveTab] = useState('builder')
+  const [selectedTemplate, setSelectedTemplate] = useState<RuleTemplate | null>(null)
+  const [editingRule, setEditingRule] = useState<VisualRule | null>(null)
+  const [previewRule, setPreviewRule] = useState<VisualRule | null>(null)
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false)
+
+  const generateId = () => Math.random().toString(36).substr(2, 9)
+
+  const createRuleFromTemplate = (template: RuleTemplate) => {
+    const newRule: VisualRule = {
+      id: generateId(),
+      name: template.name,
+      description: template.description,
+      enabled: true,
+      priority: rules.length + 1,
+      conditions: template.conditions.map(condition => ({
+        id: generateId(),
+        type: condition.type || 'custom',
+        operator: condition.operator || 'equals',
+        field: condition.field || '',
+        value: condition.value || '',
+        logicalOperator: 'AND'
+      })) as RuleCondition[],
+      actions: template.actions.map(action => ({
+        id: generateId(),
+        type: action.type || 'allow',
+        parameters: action.parameters || {},
+        message: action.parameters?.message || ''
+      })) as RuleAction[],
+      tags: template.tags,
+      category: template.category as any
+    }
+    return newRule
+  }
+
+  const handleUseTemplate = (template: RuleTemplate) => {
+    const newRule = createRuleFromTemplate(template)
+    setEditingRule(newRule)
+    setShowTemplateDialog(false)
+    setActiveTab('builder')
+  }
+
+  const handleSaveRule = () => {
+    if (!editingRule) return
+    
+    const existingIndex = rules.findIndex(r => r.id === editingRule.id)
+    if (existingIndex >= 0) {
+      const updatedRules = [...rules]
+      updatedRules[existingIndex] = editingRule
+      setRules(updatedRules)
+    } else {
+      setRules([...rules, editingRule])
+    }
+    
+    setEditingRule(null)
+  }
+
+  const handleDeleteRule = (ruleId: string) => {
+    setRules(rules.filter(r => r.id !== ruleId))
+  }
+
+  const handleDragStart = (e: React.DragEvent, ruleId: string) => {
+    e.dataTransfer.setData('text/plain', ruleId)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault()
+    const draggedRuleId = e.dataTransfer.getData('text/plain')
+    const draggedRuleIndex = rules.findIndex(r => r.id === draggedRuleId)
+    
+    if (draggedRuleIndex === -1 || draggedRuleIndex === targetIndex) return
+
+    const items = Array.from(rules)
+    const [reorderedItem] = items.splice(draggedRuleIndex, 1)
+    items.splice(targetIndex, 0, reorderedItem)
+
+    // Update priorities based on new order
+    const updatedRules = items.map((rule, index) => ({
+      ...rule,
+      priority: index + 1
+    }))
+
+    setRules(updatedRules)
+  }
+
+  const addCondition = () => {
+    if (!editingRule) return
+    
+    const newCondition: RuleCondition = {
+      id: generateId(),
+      type: 'time',
+      operator: 'equals',
+      field: '',
+      value: '',
+      logicalOperator: 'AND'
+    }
+    
+    setEditingRule({
+      ...editingRule,
+      conditions: [...editingRule.conditions, newCondition]
+    })
+  }
+
+  const updateCondition = (conditionId: string, updates: Partial<RuleCondition>) => {
+    if (!editingRule) return
+    
+    setEditingRule({
+      ...editingRule,
+      conditions: editingRule.conditions.map(condition =>
+        condition.id === conditionId ? { ...condition, ...updates } : condition
+      )
+    })
+  }
+
+  const removeCondition = (conditionId: string) => {
+    if (!editingRule) return
+    
+    setEditingRule({
+      ...editingRule,
+      conditions: editingRule.conditions.filter(c => c.id !== conditionId)
+    })
+  }
+
+  const addAction = () => {
+    if (!editingRule) return
+    
+    const newAction: RuleAction = {
+      id: generateId(),
+      type: 'allow',
+      parameters: {},
+      message: ''
+    }
+    
+    setEditingRule({
+      ...editingRule,
+      actions: [...editingRule.actions, newAction]
+    })
+  }
+
+  const updateAction = (actionId: string, updates: Partial<RuleAction>) => {
+    if (!editingRule) return
+    
+    setEditingRule({
+      ...editingRule,
+      actions: editingRule.actions.map(action =>
+        action.id === actionId ? { ...action, ...updates } : action
+      )
+    })
+  }
+
+  const removeAction = (actionId: string) => {
+    if (!editingRule) return
+    
+    setEditingRule({
+      ...editingRule,
+      actions: editingRule.actions.filter(a => a.id !== actionId)
+    })
+  }
+
+  const getDifficultyBadge = (difficulty: string) => {
+    const colors = {
+      beginner: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+      intermediate: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+      advanced: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+    }
+    return <Badge className={colors[difficulty as keyof typeof colors]}>{difficulty}</Badge>
+  }
+
+  const getActionColor = (actionType: string) => {
+    const type = ACTION_TYPES[actionType as keyof typeof ACTION_TYPES]
+    return type?.color || 'gray'
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Visual Booking Rules Builder</h2>
+          <p className="text-muted-foreground">Create sophisticated booking rules with an intuitive visual interface</p>
+        </div>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => setShowTemplateDialog(true)}>
+            <LightBulbIcon className="w-4 h-4 mr-2" />
+            Use Template
+          </Button>
+          <Button 
+            onClick={() => setEditingRule({
+              id: generateId(),
+              name: '',
+              description: '',
+              enabled: true,
+              priority: rules.length + 1,
+              conditions: [],
+              actions: [],
+              tags: [],
+              category: 'scheduling'
+            })}
+          >
+            <PlusIcon className="w-4 h-4 mr-2" />
+            Create Rule
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Rules Overview</TabsTrigger>
+          <TabsTrigger value="builder">Rule Builder</TabsTrigger>
+          <TabsTrigger value="preview">Test & Preview</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          {/* Rules List */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DocumentTextIcon className="w-5 h-5" />
+                Active Rules ({rules.filter(r => r.enabled).length})
+              </CardTitle>
+              <CardDescription>
+                Drag and drop to reorder rule priority. Higher rules override lower ones.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {rules.length === 0 ? (
+                <div className="text-center py-12">
+                  <Cog6ToothIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No rules created yet</h3>
+                  <p className="text-muted-foreground mb-4">Start by creating a rule or using a template</p>
+                  <Button onClick={() => setShowTemplateDialog(true)}>
+                    <LightBulbIcon className="w-4 h-4 mr-2" />
+                    Browse Templates
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {rules.map((rule, index) => (
+                    <div
+                      key={rule.id}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, rule.id)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, index)}
+                      className={`p-4 border rounded-lg hover:shadow-md transition-shadow cursor-move ${
+                        rule.enabled ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900/50'
+                      }`}
+                    >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <h3 className="font-semibold">{rule.name}</h3>
+                                      <Badge variant="outline">Priority {rule.priority}</Badge>
+                                      {!rule.enabled && <Badge variant="secondary">Disabled</Badge>}
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mb-3">{rule.description}</p>
+                                    
+                                    <div className="flex items-center gap-4 text-sm">
+                                      <span className="flex items-center gap-1">
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                        {rule.conditions.length} condition{rule.conditions.length !== 1 ? 's' : ''}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                        {rule.actions.length} action{rule.actions.length !== 1 ? 's' : ''}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {rule.tags.map(tag => (
+                                        <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-2">
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      onClick={() => setPreviewRule(rule)}
+                                    >
+                                      <EyeIcon className="w-4 h-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      onClick={() => setEditingRule(rule)}
+                                    >
+                                      <Cog6ToothIcon className="w-4 h-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      onClick={() => handleDeleteRule(rule.id)}
+                                    >
+                                      <TrashIcon className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="builder" className="space-y-6">
+          {editingRule ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {editingRule.name ? `Editing: ${editingRule.name}` : 'Create New Rule'}
+                </CardTitle>
+                <CardDescription>
+                  Configure conditions and actions for your booking rule
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="rule-name">Rule Name</Label>
+                    <Input
+                      id="rule-name"
+                      value={editingRule.name}
+                      onChange={(e) => setEditingRule({ ...editingRule, name: e.target.value })}
+                      placeholder="e.g., Weekend Premium Pricing"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rule-category">Category</Label>
+                    <Select 
+                      value={editingRule.category} 
+                      onValueChange={(value) => setEditingRule({ ...editingRule, category: value as any })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="scheduling">Scheduling</SelectItem>
+                        <SelectItem value="pricing">Pricing</SelectItem>
+                        <SelectItem value="access">Access Control</SelectItem>
+                        <SelectItem value="notifications">Notifications</SelectItem>
+                        <SelectItem value="business_logic">Business Logic</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="rule-description">Description</Label>
+                  <Textarea
+                    id="rule-description"
+                    value={editingRule.description}
+                    onChange={(e) => setEditingRule({ ...editingRule, description: e.target.value })}
+                    placeholder="Describe what this rule does and when it applies"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="border-t my-6"></div>
+
+                {/* Conditions */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">Conditions</h3>
+                    <Button onClick={addCondition} size="sm">
+                      <PlusIcon className="w-4 h-4 mr-2" />
+                      Add Condition
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {editingRule.conditions.map((condition, index) => (
+                      <div key={condition.id} className="p-4 border rounded-lg">
+                        <div className="flex items-start gap-4">
+                          {index > 0 && (
+                            <Select
+                              value={condition.logicalOperator}
+                              onValueChange={(value) => updateCondition(condition.id, { logicalOperator: value as 'AND' | 'OR' })}
+                            >
+                              <SelectTrigger className="w-20">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="AND">AND</SelectItem>
+                                <SelectItem value="OR">OR</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+
+                          <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
+                            <Select
+                              value={condition.type}
+                              onValueChange={(value) => updateCondition(condition.id, { type: value as any })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.entries(CONDITION_TYPES).map(([key, type]) => (
+                                  <SelectItem key={key} value={key}>
+                                    <div className="flex items-center gap-2">
+                                      {type.icon}
+                                      {type.label}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            <Select
+                              value={condition.field}
+                              onValueChange={(value) => updateCondition(condition.id, { field: value })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Field" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CONDITION_TYPES[condition.type]?.fields.map(field => (
+                                  <SelectItem key={field} value={field}>
+                                    {field.replace(/_/g, ' ')}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            <Select
+                              value={condition.operator}
+                              onValueChange={(value) => updateCondition(condition.id, { operator: value as any })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="equals">Equals</SelectItem>
+                                <SelectItem value="not_equals">Not Equals</SelectItem>
+                                <SelectItem value="greater_than">Greater Than</SelectItem>
+                                <SelectItem value="less_than">Less Than</SelectItem>
+                                <SelectItem value="between">Between</SelectItem>
+                                <SelectItem value="in">In List</SelectItem>
+                                <SelectItem value="not_in">Not In List</SelectItem>
+                                <SelectItem value="contains">Contains</SelectItem>
+                              </SelectContent>
+                            </Select>
+
+                            <Input
+                              value={condition.value}
+                              onChange={(e) => updateCondition(condition.id, { value: e.target.value })}
+                              placeholder="Value"
+                            />
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeCondition(condition.id)}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {editingRule.conditions.length === 0 && (
+                      <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
+                        <p className="text-muted-foreground">No conditions added yet</p>
+                        <Button onClick={addCondition} variant="ghost" className="mt-2">
+                          <PlusIcon className="w-4 h-4 mr-2" />
+                          Add your first condition
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="border-t my-6"></div>
+
+                {/* Actions */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">Actions</h3>
+                    <Button onClick={addAction} size="sm">
+                      <PlusIcon className="w-4 h-4 mr-2" />
+                      Add Action
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {editingRule.actions.map((action) => (
+                      <div key={action.id} className="p-4 border rounded-lg">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-1 space-y-3">
+                            <Select
+                              value={action.type}
+                              onValueChange={(value) => updateAction(action.id, { type: value as any })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.entries(ACTION_TYPES).map(([key, type]) => (
+                                  <SelectItem key={key} value={key}>
+                                    <div className="flex items-center gap-2">
+                                      {type.icon}
+                                      {type.label}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            {/* Action-specific parameters */}
+                            {action.type === 'modify_price' && (
+                              <div className="grid grid-cols-2 gap-3">
+                                <Select
+                                  value={action.parameters.adjustment_type || 'percentage'}
+                                  onValueChange={(value) => updateAction(action.id, {
+                                    parameters: { ...action.parameters, adjustment_type: value }
+                                  })}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="percentage">Percentage</SelectItem>
+                                    <SelectItem value="fixed">Fixed Amount</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <Input
+                                  type="number"
+                                  value={action.parameters.amount || ''}
+                                  onChange={(e) => updateAction(action.id, {
+                                    parameters: { ...action.parameters, amount: Number(e.target.value) }
+                                  })}
+                                  placeholder="Amount"
+                                />
+                              </div>
+                            )}
+
+                            {action.type === 'add_fee' && (
+                              <div className="grid grid-cols-2 gap-3">
+                                <Input
+                                  type="number"
+                                  value={action.parameters.amount || ''}
+                                  onChange={(e) => updateAction(action.id, {
+                                    parameters: { ...action.parameters, amount: Number(e.target.value) }
+                                  })}
+                                  placeholder="Fee Amount"
+                                />
+                                <Input
+                                  value={action.parameters.description || ''}
+                                  onChange={(e) => updateAction(action.id, {
+                                    parameters: { ...action.parameters, description: e.target.value }
+                                  })}
+                                  placeholder="Fee Description"
+                                />
+                              </div>
+                            )}
+
+                            {(action.type === 'deny' || action.type === 'require_approval') && (
+                              <Input
+                                value={action.message || ''}
+                                onChange={(e) => updateAction(action.id, { message: e.target.value })}
+                                placeholder="Message to display to user"
+                              />
+                            )}
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeAction(action.id)}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {editingRule.actions.length === 0 && (
+                      <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
+                        <p className="text-muted-foreground">No actions added yet</p>
+                        <Button onClick={addAction} variant="ghost" className="mt-2">
+                          <PlusIcon className="w-4 h-4 mr-2" />
+                          Add your first action
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Save/Cancel */}
+                <div className="flex justify-end gap-3 pt-6 border-t">
+                  <Button variant="outline" onClick={() => setEditingRule(null)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveRule}>
+                    Save Rule
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="text-center py-12">
+              <Cog6ToothIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">No rule selected</h3>
+              <p className="text-muted-foreground mb-4">Select a rule to edit or create a new one</p>
+              <Button onClick={() => setShowTemplateDialog(true)}>
+                <LightBulbIcon className="w-4 h-4 mr-2" />
+                Browse Templates
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="preview" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PlayIcon className="w-5 h-5" />
+                Test Your Rules
+              </CardTitle>
+              <CardDescription>
+                Preview how your rules will work with different booking scenarios
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12">
+                <EyeIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Rule Testing Coming Soon</h3>
+                <p className="text-muted-foreground">
+                  Test your rules with simulated booking scenarios to ensure they work as expected
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Template Selection Dialog */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Choose a Rule Template</DialogTitle>
+            <DialogDescription>
+              Start with a pre-built template and customize it for your needs
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+            {RULE_TEMPLATES.map((template) => (
+              <Card key={template.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      {template.icon}
+                      <CardTitle className="text-base">{template.name}</CardTitle>
+                    </div>
+                    {getDifficultyBadge(template.difficulty)}
+                  </div>
+                  <CardDescription>{template.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {template.tags.map(tag => (
+                      <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                    ))}
+                  </div>
+                  <Button 
+                    className="w-full" 
+                    size="sm"
+                    onClick={() => handleUseTemplate(template)}
+                  >
+                    Use This Template
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Save/Cancel Actions */}
+      <div className="flex justify-end gap-3 pt-6 border-t">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel Changes
+        </Button>
+        <Button onClick={() => onSave(rules)}>
+          Save All Rules
+        </Button>
+      </div>
+    </div>
+  )
+}

@@ -162,6 +162,24 @@ export const INTEGRATION_METADATA: Record<IntegrationType, IntegrationMetadata> 
     ],
     helpUrl: 'https://support.bookedbarber.com/integrations/google-calendar'
   },
+  [IntegrationType.GOOGLE_MY_BUSINESS]: {
+    type: IntegrationType.GOOGLE_MY_BUSINESS,
+    name: 'google_my_business',
+    displayName: 'Google My Business',
+    description: 'Manage your business profile, reviews, and local SEO presence',
+    icon: 'BuildingStorefrontIcon',
+    color: '#4285F4',
+    requiresOAuth: true,
+    features: [
+      'Business profile management',
+      'Review monitoring & responses',
+      'Photo and post management',
+      'Local SEO optimization',
+      'Performance analytics',
+      'Customer insights'
+    ],
+    helpUrl: 'https://support.bookedbarber.com/integrations/google-my-business'
+  },
   [IntegrationType.STRIPE]: {
     type: IntegrationType.STRIPE,
     name: 'stripe',

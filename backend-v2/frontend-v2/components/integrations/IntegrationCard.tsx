@@ -21,6 +21,7 @@ import { integrationsAPI } from '@/lib/api/integrations'
 import type { IntegrationResponse, IntegrationMetadata, IntegrationStatus } from '@/types/integration'
 import { IntegrationType } from '@/types/integration'
 import * as Icons from '@heroicons/react/24/outline'
+import GMBManagementCard from './GMBManagementCard'
 
 interface IntegrationCardProps {
   integration?: IntegrationResponse
@@ -223,6 +224,11 @@ export default function IntegrationCard({
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show specialized GMB management interface when connected
+  if (metadata.type === IntegrationType.GOOGLE_MY_BUSINESS && integration?.is_connected) {
+    return <GMBManagementCard integration={integration} onHealthCheck={onHealthCheck} />
   }
 
   return (
