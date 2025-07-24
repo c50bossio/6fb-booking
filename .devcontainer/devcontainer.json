@@ -16,20 +16,18 @@
       "onAutoForward": "openBrowser"
     },
     "8000": {
-      "label": "BookedBarber API",
+      "label": "BookedBarber API", 
       "onAutoForward": "notify"
     }
   },
   
-  "postCreateCommand": "cd backend-v2 && echo '🚀 Setting up BookedBarber V2 environment...' && chmod +x docker-dev-start.sh",
-  
-  "postStartCommand": "cd backend-v2 && echo '🐳 Starting Docker containers...' && ./docker-dev-start.sh",
+  "postCreateCommand": "chmod +x backend-v2/docker-dev-start.sh && echo '✅ BookedBarber V2 setup complete. Run: cd backend-v2 && ./docker-dev-start.sh'",
   
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
-        "bradlc.vscode-tailwindcss",
+        "bradlc.vscode-tailwindcss", 
         "esbenp.prettier-vscode",
         "ms-vscode.vscode-typescript-next"
       ],
