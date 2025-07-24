@@ -4,29 +4,15 @@ import React, { useState, useEffect } from 'react'
 import { BusinessTypeSelection, BusinessType } from './BusinessTypeSelection'
 import { AccountSetup, AccountInfo } from './AccountSetup'
 import { BusinessInformation, BusinessInfo } from './BusinessInformation'
-import { ServiceTemplateSelection } from './ServiceTemplateSelection'
-import { PricingConfirmation } from './PricingConfirmation'
-import { PaymentSetup } from './PaymentSetup'
 import { validateStep, ValidationError, getFieldError } from '@/lib/registrationValidation'
 import { toast } from '@/hooks/use-toast'
-import { ServiceTemplate } from '@/lib/types/service-templates'
 
-export type RegistrationStep = 1 | 2 | 3 | 4 | 5 | 6
+export type RegistrationStep = 1 | 2 | 3
 
 export interface RegistrationData {
   businessType: BusinessType | null
   accountInfo: AccountInfo
   businessInfo: BusinessInfo
-  serviceTemplates: ServiceTemplate[]
-  pricingInfo: {
-    chairs: number
-    monthlyTotal: number
-    tier: string
-  } | null
-  paymentInfo: {
-    trialStarted: boolean
-    paymentMethodAdded: boolean
-  } | null
 }
 
 interface MultiStepRegistrationProps {
@@ -37,10 +23,7 @@ interface MultiStepRegistrationProps {
 const steps = [
   { number: 1, title: 'Business Type', description: 'What describes your business?' },
   { number: 2, title: 'Account Setup', description: 'Create your login credentials' },
-  { number: 3, title: 'Business Details', description: 'Tell us about your business' },
-  { number: 4, title: 'Service Templates', description: 'Choose your starting services (optional)' },
-  { number: 5, title: 'Pricing', description: 'Confirm your plan and pricing' },
-  { number: 6, title: 'Payment', description: 'Start your free trial' }
+  { number: 3, title: 'Business Details', description: 'Tell us about your business' }
 ]
 
 export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistrationProps) {
@@ -87,10 +70,7 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
       chairCount: 1,
       barberCount: 1,
       description: ''
-    },
-    serviceTemplates: [],
-    pricingInfo: null,
-    paymentInfo: null
+    }
   })
 
   const updateBusinessType = (businessType: BusinessType) => {
@@ -105,20 +85,6 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
     setRegistrationData(prev => ({ ...prev, businessInfo }))
   }
 
-  const updatePricingInfo = (chairs: number, monthlyTotal: number, tier: string) => {
-    setRegistrationData(prev => ({
-      ...prev,
-      pricingInfo: { chairs, monthlyTotal, tier }
-    }))
-  }
-
-  const updateServiceTemplates = (serviceTemplates: ServiceTemplate[]) => {
-    setRegistrationData(prev => ({ ...prev, serviceTemplates }))
-  }
-
-  const updatePaymentInfo = (paymentInfo: { trialStarted: boolean; paymentMethodAdded: boolean }) => {
-    setRegistrationData(prev => ({ ...prev, paymentInfo }))
-  }
 
   const nextStep = () => {
     console.log('[MultiStepRegistration] nextStep called, currentStep:', currentStep)
@@ -145,9 +111,12 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
     // Clear validation errors if validation passed
     setValidationErrors([])
     
-    if (currentStep < 6) {
+    if (currentStep < 3) {
       console.log('[MultiStepRegistration] Moving to next step')
       setCurrentStep((prev) => (prev + 1) as RegistrationStep)
+    } else if (currentStep === 3) {
+      console.log('[MultiStepRegistration] Completing registration')
+      handleComplete()
     }
   }
 
@@ -318,43 +287,6 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
                 </div>
               )}
 
-              {currentStep === 4 && registrationData.businessType && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
-                  <ServiceTemplateSelection
-                    businessType={registrationData.businessType}
-                    businessName={registrationData.businessInfo.businessName}
-                    selectedTemplates={registrationData.serviceTemplates}
-                    onUpdate={updateServiceTemplates}
-                    onNext={nextStep}
-                    onBack={prevStep}
-                  />
-                </div>
-              )}
-
-              {currentStep === 5 && registrationData.businessType && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
-                  <PricingConfirmation
-                businessType={registrationData.businessType}
-                chairCount={registrationData.businessInfo.chairCount}
-                businessName={registrationData.businessInfo.businessName}
-                onConfirm={updatePricingInfo}
-                onNext={nextStep}
-                onBack={prevStep}
-                  />
-                </div>
-              )}
-
-              {currentStep === 6 && registrationData.pricingInfo && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
-                  <PaymentSetup
-                    businessName={registrationData.businessInfo.businessName}
-                    pricingInfo={registrationData.pricingInfo}
-                    onComplete={updatePaymentInfo}
-                    onFinish={handleComplete}
-                    onBack={prevStep}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
