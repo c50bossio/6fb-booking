@@ -50,11 +50,12 @@ class ConversationStatus(enum.Enum):
 
 
 class SubscriptionTier(enum.Enum):
-    """Agent subscription tiers"""
+    """Agent subscription tiers - Optimized pricing structure"""
     TRIAL = "trial"
-    STARTER = "starter"
-    PROFESSIONAL = "professional"
-    ENTERPRISE = "enterprise"
+    STARTER = "starter"      # $10/month - 1 agent, 5K tokens
+    PROFESSIONAL = "professional"  # $25/month - 3 agents, 15K tokens
+    BUSINESS = "business"    # $50/month - unlimited agents, 50K tokens
+    ENTERPRISE = "enterprise"  # Custom pricing
     CUSTOM = "custom"
 
 
@@ -79,10 +80,10 @@ class Agent(Base):
     min_interval_hours = Column(Integer, default=24)  # Minimum time between messages
     max_attempts = Column(Integer, default=3)  # Max attempts per conversation
     
-    # Pricing
-    base_price = Column(Float, default=29.99)  # Monthly base price
-    token_rate = Column(Float, default=0.0001)  # Cost per token
-    success_fee_percent = Column(Float, default=2.0)  # Success fee percentage
+    # Pricing - Optimized for accessibility and usage-based scaling
+    base_price = Column(Float, default=10.00)  # Monthly base price (reduced for accessibility)
+    token_rate = Column(Float, default=0.0005)  # Cost per token (increased margin)
+    success_fee_percent = Column(Float, default=1.5)  # Success fee percentage (slightly reduced)
     
     # Metadata
     is_active = Column(Boolean, default=True)
@@ -261,21 +262,29 @@ class AgentSubscription(Base):
     tier = Column(SQLEnum(SubscriptionTier), default=SubscriptionTier.TRIAL, index=True)
     status = Column(String(20), default="active", index=True)  # active, past_due, cancelled
     
-    # Billing
-    monthly_price = Column(Float, default=0.0)
+    # Billing - New accessible pricing tiers
+    monthly_price = Column(Float, default=10.00)  # Starter tier default
     stripe_subscription_id = Column(String(100), nullable=True)
     stripe_customer_id = Column(String(100), nullable=True)
     
-    # Usage limits
+    # Usage limits - Tiered structure with generous token allowances
     conversation_limit = Column(Integer, nullable=True)  # None = unlimited
-    agent_limit = Column(Integer, default=3)
-    included_tokens = Column(Integer, default=0)
+    agent_limit = Column(Integer, default=1)  # Default for starter
+    included_tokens = Column(Integer, default=5000)  # Free tokens included
     
-    # Usage tracking (current period)
+    # Usage tracking (current period) - Enhanced for tiered pricing
     conversations_used = Column(Integer, default=0)
     tokens_used = Column(Integer, default=0)
     overage_tokens = Column(Integer, default=0)
     overage_charges = Column(Float, default=0.0)
+    
+    # Token usage breakdown by tier (JSON)
+    token_tier_breakdown = Column(JSON, default={})
+    token_tier_costs = Column(JSON, default={})
+    
+    # Success-based revenue tracking
+    monthly_revenue_generated = Column(Float, default=0.0)
+    success_fees_charged = Column(Float, default=0.0)
     
     # Dates
     trial_ends_at = Column(DateTime, nullable=True)

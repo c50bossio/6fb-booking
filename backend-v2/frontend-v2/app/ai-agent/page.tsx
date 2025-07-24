@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { Brain, TrendingUp, Zap, Eye, Settings, Activity, Clock, Target, BarChart3, AlertCircle } from 'lucide-react'
+import { Brain, TrendingUp, Zap, Eye, Settings, Activity, Clock, Target, BarChart3, AlertCircle, CreditCard } from 'lucide-react'
+import AIAgentPricingDisplay from '@/components/ai/AIAgentPricingDisplay'
 
 /**
  * 🤖 AI Agent Dashboard - Real-time AI monitoring and control
@@ -56,7 +57,7 @@ export default function AIAgentDashboard() {
   const [status, setStatus] = useState<AIStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedTab, setSelectedTab] = useState<'opportunities' | 'insights' | 'memory' | 'settings'>('opportunities')
+  const [selectedTab, setSelectedTab] = useState<'opportunities' | 'insights' | 'memory' | 'settings' | 'pricing'>('opportunities')
   const [executingIds, setExecutingIds] = useState<Set<string>>(new Set())
 
   // Simple fetch wrapper (avoiding import issues)
@@ -284,11 +285,12 @@ export default function AIAgentDashboard() {
             { id: 'opportunities', label: 'Opportunities', icon: Target },
             { id: 'insights', label: 'AI Insights', icon: TrendingUp },
             { id: 'memory', label: 'AI Memory', icon: Brain },
+            { id: 'pricing', label: 'Pricing', icon: CreditCard },
             { id: 'settings', label: 'Settings', icon: Settings }
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setSelectedTab(tab.id as any)}
+              onClick={() => setSelectedTab(tab.id as 'opportunities' | 'insights' | 'memory' | 'settings' | 'pricing')}
               className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
                 selectedTab === tab.id
                   ? 'border-blue-500 text-blue-600'
@@ -541,6 +543,20 @@ export default function AIAgentDashboard() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {selectedTab === 'pricing' && (
+        <div className="space-y-6">
+          <AIAgentPricingDisplay
+            currentTier="starter"
+            onUpgrade={(tier) => {
+              console.log('Upgrade to:', tier)
+              // TODO: Implement upgrade flow
+              alert(`Upgrading to ${tier} plan - Feature coming soon!`)
+            }}
+            showComparison={true}
+          />
         </div>
       )}
 

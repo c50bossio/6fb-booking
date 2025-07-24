@@ -248,17 +248,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       ? isAnimating ? '-translate-y-full' : 'translate-y-0'
       : isAnimating ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
 
-    // Debug logging for modal positioning
-    console.log('🔍 Modal rendering:', {
-      isOpen,
-      effectivePosition,
-      size,
-      variant,
-      isAnimating,
-      isVisible,
-      adaptivePositioning,
-      zIndex: 2147483647
-    })
+    // Modal positioning debug (removed console.log for production)
 
     return (
       <div

@@ -262,12 +262,11 @@ ${businessName}`
       size="4xl"
       position="center"
       variant="default"
-      className="max-w-5xl"
       closeOnOverlayClick={true}
       closeOnEscape={true}
-      adaptivePositioning={true}
+      adaptivePositioning={false}
     >
-      <ModalBody className="max-h-[75vh] overflow-y-auto">
+      <ModalBody className="max-h-[75vh] max-w-full overflow-y-auto">
         {/* Enhanced Description with better typography */}
         <div className="mb-8">
           <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -276,7 +275,7 @@ ${businessName}`
         </div>
 
         {/* Improved Share Options Grid with better spacing and responsiveness */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 w-full">
           {shareOptions.map(renderOptionCard)}
         </div>
 

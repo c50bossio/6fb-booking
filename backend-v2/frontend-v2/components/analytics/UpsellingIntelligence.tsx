@@ -4,9 +4,10 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { useToast } from '@/hooks/useToast'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowTrendingUpIcon, CurrencyDollarIcon, UserIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { ArrowTrendingUpIcon, CurrencyDollarIcon, UserIcon, SparklesIcon, BoltIcon } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
 import ClientDetailsModal from './ClientDetailsModal'
+import SubscriptionUpgradeCard from '@/components/ai/SubscriptionUpgradeCard'
 import { recordUpsellAttempt, UpsellAttemptRequest } from '@/lib/api'
 
 interface UpsellOpportunity {
@@ -94,6 +95,7 @@ export function UpsellingIntelligence({
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
   const [selectedOpportunity, setSelectedOpportunity] = useState<UpsellOpportunity | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showAIUpgrade, setShowAIUpgrade] = useState(true)
   const { success, info } = useToast()
 
   // Filter and sort opportunities by confidence and potential revenue
@@ -235,8 +237,37 @@ export function UpsellingIntelligence({
   }
 
   return (
-    <div className={cn('space-y-4', className)}>
-      {/* Header */}
+    <div className={cn('space-y-6', className)}>
+      {/* AI Agent Subscription Upsell */}
+      {showAIUpgrade && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+              <BoltIcon className="w-4 h-4 mr-2 text-primary-600" />
+              AI Agent Subscription Optimization
+            </h3>
+            <button
+              onClick={() => setShowAIUpgrade(false)}
+              className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              Dismiss
+            </button>
+          </div>
+          <SubscriptionUpgradeCard
+            currentPlan="starter"
+            monthlyTokenUsage={35000}
+            estimatedMonthlyCost={27.50}
+            onUpgrade={() => {
+              success('AI Agent Upgrade Initiated! 🤖', {
+                description: 'Redirecting to subscription management...',
+                duration: 3000
+              })
+              // TODO: Implement actual upgrade flow
+            }}
+          />
+        </div>
+      )}
+      {/* Service Upselling Opportunities Header */}
       <Card variant="secondary" borderAccent>
         <CardHeader>
           <div className="flex items-center justify-between">
