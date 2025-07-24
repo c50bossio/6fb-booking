@@ -185,7 +185,7 @@ describe('useCookieConsent', () => {
         await result.current.acceptAll()
       })
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/v1/privacy/consent', {
+      expect(mockFetch).toHaveBeenCalledWith('/api/v2/privacy/consent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

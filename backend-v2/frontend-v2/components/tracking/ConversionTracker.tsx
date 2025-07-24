@@ -38,6 +38,8 @@ export enum ConversionEventType {
   APPOINTMENT_RESCHEDULED = 'appointment_rescheduled',
   REVIEW_SUBMITTED = 'review_submitted',
   REFERRAL_CLICKED = 'referral_clicked',
+  FEATURE_INTEREST = 'feature_interest',
+  PRICING_PLAN_SELECTED = 'pricing_plan_selected',
 }
 
 // Event parameters interface

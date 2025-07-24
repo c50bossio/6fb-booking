@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import UnifiedCalendar from '../UnifiedCalendar'
 import RevenueCalendarOverlay from './RevenueCalendarOverlay'
+import ClientLifecycleCalendarWidget from './ClientLifecycleCalendarWidget'
+import ClientRelationshipTimeline from './ClientRelationshipTimeline'
+import SmartBookingRecommendations from './SmartBookingRecommendations'
+import AutomatedFollowUpScheduler from './AutomatedFollowUpScheduler'
 import { 
   EyeIcon, 
   EyeSlashIcon, 
@@ -54,7 +58,14 @@ interface SixFigureCalendarViewProps {
     annual_target: number
   }
   showRevenueOverlay?: boolean
+  showClientLifecycle?: boolean
+  showBookingIntelligence?: boolean
   onUpsellSuggestion?: (opportunity: any) => void
+  onClientMilestoneAction?: (milestone: any) => void
+  onFollowUpAction?: (event: any) => void
+  onBookingRecommendationApply?: (recommendation: any) => void
+  onFollowUpScheduled?: (action: any) => void
+  onFollowUpExecuted?: (actionId: string) => void
   className?: string
 }
 
@@ -100,10 +111,19 @@ export default function SixFigureCalendarView({
   onRefresh,
   revenueTargets = DEFAULT_REVENUE_TARGETS,
   showRevenueOverlay = true,
+  showClientLifecycle = true,
+  showBookingIntelligence = true,
   onUpsellSuggestion,
+  onClientMilestoneAction,
+  onFollowUpAction,
+  onBookingRecommendationApply,
+  onFollowUpScheduled,
+  onFollowUpExecuted,
   className = ""
 }: SixFigureCalendarViewProps) {
   const [revenueOverlayVisible, setRevenueOverlayVisible] = useState(showRevenueOverlay)
+  const [clientLifecycleVisible, setClientLifecycleVisible] = useState(showClientLifecycle)
+  const [bookingIntelligenceVisible, setBookingIntelligenceVisible] = useState(showBookingIntelligence)
   const [calendarLayout, setCalendarLayout] = useState<'standard' | 'revenue-focused'>('revenue-focused')
 
   // Enhanced appointments with revenue intelligence
@@ -283,7 +303,25 @@ export default function SixFigureCalendarView({
                 onClick={() => setRevenueOverlayVisible(!revenueOverlayVisible)}
               >
                 {revenueOverlayVisible ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
-                <span className="ml-1">Analytics</span>
+                <span className="ml-1">Revenue</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setClientLifecycleVisible(!clientLifecycleVisible)}
+              >
+                {clientLifecycleVisible ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                <span className="ml-1">Clients</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setBookingIntelligenceVisible(!bookingIntelligenceVisible)}
+              >
+                {bookingIntelligenceVisible ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                <span className="ml-1">Intelligence</span>
               </Button>
             </div>
           </div>
@@ -308,9 +346,9 @@ export default function SixFigureCalendarView({
       </Card>
 
       {/* Main Calendar Layout */}
-      <div className={`grid gap-4 ${revenueOverlayVisible ? 'lg:grid-cols-3' : 'grid-cols-1'}`}>
+      <div className={`grid gap-4 ${revenueOverlayVisible || clientLifecycleVisible || bookingIntelligenceVisible ? 'lg:grid-cols-3' : 'grid-cols-1'}`}>
         {/* Calendar Component */}
-        <div className={`${revenueOverlayVisible ? 'lg:col-span-2' : 'col-span-1'}`}>
+        <div className={`${revenueOverlayVisible || clientLifecycleVisible || bookingIntelligenceVisible ? 'lg:col-span-2' : 'col-span-1'}`}>
           <Card>
             <CardContent className="p-0">
               <UnifiedCalendar
@@ -336,17 +374,62 @@ export default function SixFigureCalendarView({
           </Card>
         </div>
 
-        {/* Revenue Analytics Overlay */}
-        {revenueOverlayVisible && (
-          <div className="lg:col-span-1">
-            <RevenueCalendarOverlay
-              appointments={enhancedAppointments}
-              currentDate={currentDate}
-              revenueTargets={revenueTargets}
-              onUpsellSuggestion={handleUpsellSuggestion}
-              view={view}
-              className="sticky top-4"
-            />
+        {/* Right Sidebar - Analytics, Client Lifecycle, and Booking Intelligence */}
+        {(revenueOverlayVisible || clientLifecycleVisible || bookingIntelligenceVisible) && (
+          <div className="lg:col-span-1 space-y-4">
+            {/* Revenue Analytics Overlay */}
+            {revenueOverlayVisible && (
+              <RevenueCalendarOverlay
+                appointments={enhancedAppointments}
+                currentDate={currentDate}
+                revenueTargets={revenueTargets}
+                onUpsellSuggestion={handleUpsellSuggestion}
+                view={view}
+                className="sticky top-4"
+              />
+            )}
+            
+            {/* Client Lifecycle Components */}
+            {clientLifecycleVisible && (
+              <>
+                <ClientLifecycleCalendarWidget
+                  appointments={enhancedAppointments}
+                  currentDate={currentDate}
+                  view={view}
+                  onClientMilestoneAction={onClientMilestoneAction}
+                  className="sticky top-4"
+                />
+                
+                <ClientRelationshipTimeline
+                  appointments={enhancedAppointments}
+                  currentDate={currentDate}
+                  view={view}
+                  onFollowUpAction={onFollowUpAction}
+                  className="sticky top-4"
+                />
+              </>
+            )}
+            
+            {/* Booking Intelligence Components */}
+            {bookingIntelligenceVisible && (
+              <>
+                <SmartBookingRecommendations
+                  appointments={enhancedAppointments}
+                  currentDate={currentDate}
+                  view={view}
+                  onBookingRecommendationApply={onBookingRecommendationApply}
+                  className="sticky top-4"
+                />
+                
+                <AutomatedFollowUpScheduler
+                  appointments={enhancedAppointments}
+                  currentDate={currentDate}
+                  onFollowUpScheduled={onFollowUpScheduled}
+                  onFollowUpExecuted={onFollowUpExecuted}
+                  className="sticky top-4"
+                />
+              </>
+            )}
           </div>
         )}
       </div>
@@ -358,11 +441,11 @@ export default function SixFigureCalendarView({
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">6FB Method</Badge>
               <span className="text-gray-600">
-                Premium positioning • Value-based pricing • Client relationships
+                Client relationships • Revenue optimization • Lifecycle management
               </span>
             </div>
             <div className="text-gray-500 text-xs">
-              Path to ${revenueTargets.annual_target.toLocaleString()} annually
+              Path to ${revenueTargets.annual_target.toLocaleString()} through relationship excellence
             </div>
           </div>
         </CardContent>

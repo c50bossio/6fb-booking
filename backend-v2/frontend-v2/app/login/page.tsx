@@ -214,17 +214,46 @@ function LoginContent() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center space-y-4">
-          <Logo variant="mono" size="lg" className="mx-auto" href="#" />
-          <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">Welcome Back</h1>
-          <p className="mt-2 text-accent-600 dark:text-gray-300">
-            Sign in to manage your barbershop
-          </p>
+    <main className="relative flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden">
+      {/* Premium Background with Glassmorphism Support */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800" />
+      
+      {/* Floating Accent Elements for Depth */}
+      <div className="absolute top-1/4 -left-16 w-32 h-32 bg-gradient-to-r from-teal-400/20 to-blue-500/10 rounded-full blur-3xl animate-pulse hidden lg:block" />
+      <div className="absolute bottom-1/4 -right-16 w-40 h-40 bg-gradient-to-r from-blue-500/10 to-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000 hidden lg:block" />
+      
+      <div className="relative z-10 max-w-md w-full space-y-8">
+        {/* Enhanced Header with 2025 Typography */}
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <Logo variant="mono" size="lg" className="mx-auto drop-shadow-sm" href="/" />
+            {/* Subtle glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-teal-500/5 to-transparent rounded-full blur-xl" />
+          </div>
+          
+          <div className="space-y-3">
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent leading-tight tracking-tight">
+              Welcome Back
+            </h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+              Sign in to your <span className="text-teal-600 dark:text-teal-400 font-semibold">BookedBarber</span> account
+            </p>
+          </div>
         </div>
 
-        <Card className="mt-8">
+        {/* Enhanced Glassmorphism Card */}
+        <div className="relative group">
+          {/* Card Background with Multiple Layers */}
+          <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/40 backdrop-blur-xl rounded-3xl border border-white/30 dark:border-gray-700/30 shadow-2xl shadow-black/5 dark:shadow-black/20" />
+          <div className="absolute inset-[1px] bg-white/40 dark:bg-gray-700/20 backdrop-blur-sm rounded-3xl" />
+          
+          {/* Premium Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-blue-600/5 dark:from-teal-400/10 dark:to-blue-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          {/* Floating Highlight Effect */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 dark:via-gray-300/30 to-transparent rounded-t-3xl" />
+          
+          <Card className="relative bg-transparent border-0 shadow-none rounded-3xl">
           <CardContent>
             <Form onSubmit={handleSubmit} isSubmitting={loginState.loading}>
               {successMessage && (
@@ -283,66 +312,136 @@ function LoginContent() {
                 />
               )}
 
-              <FormField>
-                <ValidatedInput
-                  id="email"
-                  type="email"
-                  label="Email address"
-                  placeholder="Enter your email"
-                  leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
-                  showPasswordToggle={false}
-                  helperText="Use the email associated with your BookedBarber account"
-                  {...getFieldProps('email')}
-                />
-              </FormField>
+              {/* Enhanced Premium Form Fields */}
+              <div className="space-y-6">
+                <FormField>
+                  <div className="relative group">
+                    <ValidatedInput
+                      id="email"
+                      type="email"
+                      label="Email address"
+                      placeholder="Enter your email"
+                      leftIcon={<Mail className="h-4 w-4 text-teal-500 dark:text-teal-400 group-focus-within:text-teal-600 dark:group-focus-within:text-teal-300 transition-colors duration-200" />}
+                      showPasswordToggle={false}
+                      helperText="Use the email associated with your BookedBarber account"
+                      className="rounded-2xl border-slate-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-500 dark:focus-within:border-teal-400 transition-all duration-300 shadow-sm hover:shadow-md group"
+                      {...getFieldProps('email')}
+                    />
+                    {/* Premium Focus Ring */}
+                    <div className="absolute inset-0 rounded-2xl ring-0 group-focus-within:ring-2 group-focus-within:ring-teal-500/20 transition-all duration-300 pointer-events-none" />
+                  </div>
+                </FormField>
 
-              <FormField>
-                <ValidatedInput
-                  id="password"
-                  type="password"
-                  label="Password"
-                  placeholder="Enter your password"
-                  leftIcon={<Lock className="h-4 w-4 text-gray-400" />}
-                  showPasswordToggle
-                  {...getFieldProps('password')}
-                />
-              </FormField>
+                <FormField>
+                  <div className="relative group">
+                    <ValidatedInput
+                      id="password"
+                      type="password"
+                      label="Password"
+                      placeholder="Enter your password"
+                      leftIcon={<Lock className="h-4 w-4 text-teal-500 dark:text-teal-400 group-focus-within:text-teal-600 dark:group-focus-within:text-teal-300 transition-colors duration-200" />}
+                      showPasswordToggle
+                      className="rounded-2xl border-slate-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-500 dark:focus-within:border-teal-400 transition-all duration-300 shadow-sm hover:shadow-md group"
+                      {...getFieldProps('password')}
+                    />
+                    {/* Premium Focus Ring */}
+                    <div className="absolute inset-0 rounded-2xl ring-0 group-focus-within:ring-2 group-focus-within:ring-teal-500/20 transition-all duration-300 pointer-events-none" />
+                  </div>
+                </FormField>
+              </div>
 
-              <div className="flex items-center justify-between">
+              {/* Enhanced Remember Me & Forgot Password Section */}
+              <div className="flex items-center justify-between pt-2">
                 <EnhancedRememberMe
                   value={rememberMe}
                   onChange={setRememberMe}
-                  className="flex-1"
+                  className="flex-1 text-slate-600 dark:text-slate-300"
                 />
-                <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 ml-4">
+                <Link 
+                  href="/forgot-password" 
+                  className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 ml-4 transition-colors duration-200 hover:underline decoration-teal-500/30 underline-offset-4"
+                >
                   Forgot password?
                 </Link>
               </div>
 
-              <FormActions>
-                <Button
-                  type="submit"
-                  loading={loginState.loading}
-                  loadingText="Signing in..."
-                  variant="primary"
-                  fullWidth
-                  size="lg"
-                  disabled={!isFormValid || loginState.loading || rateLimit.isLocked}
-                >
-                  {rateLimit.isLocked ? 'Account Locked' : 'Sign in'}
-                </Button>
+              {/* Enhanced Premium Submit Button */}
+              <FormActions className="pt-6" align="center">
+                <div className="relative group">
+                  <Button
+                    type="submit"
+                    loading={loginState.loading}
+                    loadingText="Signing in..."
+                    fullWidth
+                    size="lg"
+                    disabled={!isFormValid || loginState.loading || rateLimit.isLocked}
+                    className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-600 via-teal-600 to-teal-700 dark:from-teal-500 dark:via-teal-500 dark:to-teal-600 hover:from-teal-700 hover:via-teal-700 hover:to-teal-800 dark:hover:from-teal-600 dark:hover:via-teal-600 dark:hover:to-teal-700 text-white font-semibold py-4 px-6 shadow-lg shadow-teal-500/25 dark:shadow-teal-400/20 hover:shadow-xl hover:shadow-teal-500/30 dark:hover:shadow-teal-400/25 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-lg"
+                  >
+                    {/* Button shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                    
+                    <span className="relative z-10 flex items-center justify-center">
+                      {rateLimit.isLocked ? (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          Account Locked
+                        </>
+                      ) : loginState.loading ? (
+                        <>
+                          <svg className="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Signing in...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                          </svg>
+                          Sign in to your account
+                        </>
+                      )}
+                    </span>
+                  </Button>
+                </div>
               </FormActions>
 
-              <div className="text-center space-y-2">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  Don't have an account?{' '}
-                  <Link href="/register" className="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                    Create account
+              {/* Enhanced Footer Links */}
+              <div className="text-center space-y-4 pt-8">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="w-full border-t border-slate-200 dark:border-gray-700" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white/80 dark:bg-gray-800/80 text-slate-500 dark:text-slate-400 backdrop-blur-sm rounded-full">
+                      New to BookedBarber?
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-600 dark:text-slate-300">
+                    Don't have an account?{' '}
+                    <Link 
+                      href="/register" 
+                      className="font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors duration-200 hover:underline decoration-teal-500/30 underline-offset-4"
+                    >
+                      Create your account
+                    </Link>
+                  </p>
+                  
+                  <Link 
+                    href="/" 
+                    className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors duration-200 group"
+                  >
+                    <svg className="w-4 h-4 mr-2 group-hover:-translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to home
                   </Link>
-                </p>
-                <Link href="/" className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                  Back to home
-                </Link>
+                </div>
               </div>
 
               <SocialLoginGroup 
@@ -360,6 +459,7 @@ function LoginContent() {
             </Form>
           </CardContent>
         </Card>
+        </div>
       </div>
     </main>
   )

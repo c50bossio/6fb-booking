@@ -91,7 +91,7 @@ class IntegrationAnalyzer {
         }
 
         // Check API versioning
-        if (mainPy.includes('/api/v1')) {
+        if (mainPy.includes('/api/v2')) {
             this.log('API versioning detected', 'success');
         } else {
             this.addIssue('configuration', 'warning', 'API versioning not found');

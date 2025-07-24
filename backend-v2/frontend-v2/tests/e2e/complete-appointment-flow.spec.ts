@@ -222,7 +222,7 @@ test.describe('Complete Appointment Flow', () => {
     console.log('🔧 Verifying system integrations...');
 
     // Step 1: Verify payment in Stripe (via API check)
-    const paymentCheck = await customerPage.request.get(`${CONFIG.API_URL}/api/v1/payments/${appointmentId}`);
+    const paymentCheck = await customerPage.request.get(`${CONFIG.API_URL}/api/v2/payments/${appointmentId}`);
     expect(paymentCheck.status()).toBe(200);
     
     const paymentData = await paymentCheck.json();
@@ -230,11 +230,11 @@ test.describe('Complete Appointment Flow', () => {
     expect(paymentData.amount).toBe(CONFIG.TEST_AMOUNT * 100); // Stripe uses cents
 
     // Step 2: Verify webhook delivery
-    const webhookCheck = await customerPage.request.get(`${CONFIG.API_URL}/api/v1/webhooks/status`);
+    const webhookCheck = await customerPage.request.get(`${CONFIG.API_URL}/api/v2/webhooks/status`);
     expect(webhookCheck.status()).toBe(200);
 
     // Step 3: Verify appointment in database
-    const appointmentCheck = await customerPage.request.get(`${CONFIG.API_URL}/api/v1/appointments/${appointmentId}`);
+    const appointmentCheck = await customerPage.request.get(`${CONFIG.API_URL}/api/v2/appointments/${appointmentId}`);
     expect(appointmentCheck.status()).toBe(200);
     
     const appointmentData = await appointmentCheck.json();

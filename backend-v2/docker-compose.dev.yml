@@ -1,0 +1,119 @@
+# =============================================================================
+# BookedBarber V2 - Development Docker Compose Configuration  
+# =============================================================================
+# 🎯 Simplified development setup with SQLite and hot reload
+# 🚀 Faster startup and testing without PostgreSQL complexity
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # FastAPI Backend Service (Development)
+  # =============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: bookedbarber-backend-dev
+    environment:
+      # SQLite Database (Development)
+      DATABASE_URL: sqlite:///./6fb_booking.db
+      
+      # Application Settings
+      ENVIRONMENT: development
+      DEBUG: "true"
+      PORT: 8000
+      HOST: 0.0.0.0
+      
+      # JWT and Security
+      JWT_SECRET_KEY: dev_jwt_secret_key_not_for_production
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: 30
+      
+      # CORS Settings (Permissive for development)
+      CORS_ORIGINS: http://localhost:3000,http://frontend:3000,http://localhost:8000
+      
+      # Development Service Keys (Test/Demo)
+      STRIPE_PUBLISHABLE_KEY: pk_test_51234567890
+      STRIPE_SECRET_KEY: sk_test_51234567890
+      GOOGLE_CLIENT_ID: dev_google_client_id.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: dev_google_client_secret
+      
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    networks:
+      - bookedbarber-dev-network
+    restart: unless-stopped
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # =============================================================================
+  # Next.js Frontend Service (Development)
+  # =============================================================================
+  frontend:
+    build:
+      context: ./frontend-v2
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        # Build-time environment variables
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+        NEXT_PUBLIC_ENVIRONMENT: development
+        NODE_ENV: development
+    container_name: bookedbarber-frontend-dev
+    environment:
+      # Runtime environment variables
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+      NEXT_PUBLIC_ENVIRONMENT: development
+      NODE_ENV: development
+      PORT: 3000
+      
+      # Development Service Keys (Test/Demo)
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_51234567890
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: dev_google_client_id.apps.googleusercontent.com
+      
+      # Feature Flags (Development)
+      NEXT_PUBLIC_ENABLE_DEBUG_PANEL: "true"
+      NEXT_PUBLIC_SHOW_TEST_DATA: "true"
+      NEXT_PUBLIC_ENABLE_ANALYTICS: "false"
+      NEXT_PUBLIC_ENABLE_ERROR_TRACKING: "false"
+      
+    volumes:
+      - ./frontend-v2:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    networks:
+      - bookedbarber-dev-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# =============================================================================
+# Custom Network for Development
+# =============================================================================
+networks:
+  bookedbarber-dev-network:
+    driver: bridge

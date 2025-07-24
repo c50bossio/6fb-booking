@@ -29,6 +29,8 @@ import { EnhancedMobileCTA } from '@/components/conversion/EnhancedMobileCTA'
 
 export default function LandingPage() {
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'professional' | 'enterprise'>('professional')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const { track, trackPageView } = useConversionTracking()
   
   // Track page view on load
@@ -38,6 +40,20 @@ export default function LandingPage() {
       page_path: '/'
     })
   }, [trackPageView])
+
+  // Handle plan selection with loading state
+  const handlePlanSelection = async (planKey: 'starter' | 'professional' | 'enterprise') => {
+    setIsLoading(true)
+    setSelectedPlan(planKey)
+    
+    // Track plan selection
+    track(ConversionEventType.PRICING_PLAN_SELECTED, { plan: planKey })
+    
+    // Simulate brief loading for better UX
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 300)
+  }
 
   const features = [
     {
@@ -138,65 +154,170 @@ export default function LandingPage() {
 
   return (
     <main className="bg-white dark:bg-gray-900 mobile-safe no-overflow-x">
-      {/* Enhanced Header Navigation - 2025 Glassmorphism Design */}
-      <header className="sticky top-0 z-50 transition-all duration-500 hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20">
-        {/* Premium Glassmorphism Background with Enhanced Interactions */}
-        <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border-b border-slate-200/60 dark:border-gray-800/60 transition-all duration-500 hover:bg-white/90 dark:hover:bg-gray-900/90 hover:backdrop-blur-3xl" />
+      {/* Premium Header Navigation - 2025 Professional Design */}
+      <header className="sticky top-0 z-50 transition-all duration-500 hover:shadow-xl hover:shadow-black/8 dark:hover:shadow-black/25">
+        {/* Enhanced Glassmorphism Background with Premium Blur */}
+        <div className="absolute inset-0 bg-white/85 dark:bg-gray-900/85 backdrop-blur-3xl border-b border-slate-200/40 dark:border-gray-800/40 transition-all duration-500 hover:bg-white/92 dark:hover:bg-gray-900/92 hover:backdrop-blur-[40px]" />
         
-        {/* Subtle Depth Enhancement with Interaction Response */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/50 to-transparent dark:from-gray-900/50 pointer-events-none transition-opacity duration-500 hover:opacity-80" />
+        {/* Multi-Layer Depth Enhancement */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/30 to-transparent dark:from-gray-900/60 dark:via-gray-900/30 pointer-events-none transition-all duration-500" />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            {/* Enhanced Logo Section with Sophisticated Interactions */}
-            <div className="flex items-center">
-              <div className="group transition-all duration-500 hover:scale-105 relative">
-                <div className="absolute -inset-2 bg-gradient-to-r from-blue-600/0 via-purple-600/10 to-blue-600/0 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-500 blur-sm" />
-                <div className="relative">
-                  <LogoFull variant="auto" size="md" href="/" />
+        {/* Subtle Top Accent */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+        
+        <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="flex justify-between items-center py-5 lg:py-6">
+            {/* Premium Logo Section with Enhanced Brand Presence */}
+            <div className="flex items-center min-w-0 flex-shrink-0">
+              <div className="group transition-all duration-500 hover:scale-[1.02] relative mr-2">
+                {/* Premium Logo Glow Effect */}
+                <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/0 via-purple-600/12 to-blue-600/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-700 blur-md" />
+                
+                {/* Logo Container with Better Spacing */}
+                <div className="relative py-1 px-2">
+                  <LogoFull variant="auto" size="lg" href="/" />
                 </div>
+                
+                {/* Subtle Bottom Accent */}
+                <div className="absolute bottom-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
             </div>
             
-            {/* Enhanced Navigation with Sophisticated Micro-Interactions */}
-            <nav className="hidden md:flex items-center space-x-10">
+            {/* Premium Navigation with Perfect Spacing and Alignment */}
+            <nav className="hidden lg:flex items-center space-x-12 xl:space-x-16" role="navigation" aria-label="Main navigation">
               <Link 
-                href="/billing/plans" 
-                className="relative text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-base transition-all duration-500 group overflow-hidden"
+                href="#pricing" 
+                className="relative text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-base lg:text-lg transition-all duration-500 group overflow-hidden py-3 px-1"
               >
-                <span className="relative z-10 transition-transform duration-300 group-hover:scale-105">Pricing</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-100/60 to-slate-200/60 dark:from-gray-800/60 dark:to-gray-700/60 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500 -m-2 scale-75 group-hover:scale-100" />
-                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-500 delay-100" />
+                <span className="relative z-10 transition-all duration-300 group-hover:scale-[1.02] inline-block">Pricing</span>
+                
+                {/* Enhanced Background Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-100/70 via-white/80 to-slate-100/70 dark:from-gray-800/70 dark:via-gray-700/80 dark:to-gray-800/70 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-500 -m-3 scale-90 group-hover:scale-100 backdrop-blur-sm" />
+                
+                {/* Premium Underline Animation */}
+                <div className="absolute bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-600 group-hover:w-full transition-all duration-600 delay-150 rounded-full shadow-sm" />
+                
+                {/* Subtle Top Highlight */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent group-hover:w-full transition-all duration-500 delay-100" />
               </Link>
               
               <Link 
                 href="#features" 
-                className="relative text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-base transition-all duration-500 group overflow-hidden"
+                className="relative text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-base lg:text-lg transition-all duration-700 ease-out group overflow-hidden py-3 px-1"
+                style={{ transitionDelay: '75ms' }}
               >
-                <span className="relative z-10 transition-transform duration-300 group-hover:scale-105">Features</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-100/60 to-slate-200/60 dark:from-gray-800/60 dark:to-gray-700/60 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500 -m-2 scale-75 group-hover:scale-100" />
-                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 group-hover:w-full transition-all duration-500 delay-100" />
+                <span className="relative z-10 transition-all duration-500 ease-out group-hover:scale-[1.02] inline-block">Features</span>
+                
+                {/* Enhanced Background Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-100/70 via-white/80 to-slate-100/70 dark:from-gray-800/70 dark:via-gray-700/80 dark:to-gray-800/70 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out -m-3 scale-90 group-hover:scale-100 backdrop-blur-sm" />
+                
+                {/* Premium Underline Animation */}
+                <div className="absolute bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 group-hover:w-full transition-all duration-800 ease-out delay-150 rounded-full shadow-sm" />
+                
+                {/* Subtle Top Highlight */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0 h-px bg-gradient-to-r from-transparent via-green-400/60 to-transparent group-hover:w-full transition-all duration-700 ease-out delay-100" />
               </Link>
               
               <Link 
                 href="#testimonials" 
-                className="relative text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-base transition-all duration-500 group overflow-hidden"
+                className="relative text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-base lg:text-lg transition-all duration-700 ease-out group overflow-hidden py-3 px-1"
+                style={{ transitionDelay: '150ms' }}
               >
-                <span className="relative z-10 transition-transform duration-300 group-hover:scale-105">Testimonials</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-100/60 to-slate-200/60 dark:from-gray-800/60 dark:to-gray-700/60 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500 -m-2 scale-75 group-hover:scale-100" />
-                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 group-hover:w-full transition-all duration-500 delay-100" />
+                <span className="relative z-10 transition-all duration-500 ease-out group-hover:scale-[1.02] inline-block">Testimonials</span>
+                
+                {/* Enhanced Background Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-100/70 via-white/80 to-slate-100/70 dark:from-gray-800/70 dark:via-gray-700/80 dark:to-gray-800/70 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out -m-3 scale-90 group-hover:scale-100 backdrop-blur-sm" />
+                
+                {/* Premium Underline Animation */}
+                <div className="absolute bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 group-hover:w-full transition-all duration-800 ease-out delay-150 rounded-full shadow-sm" />
+                
+                {/* Subtle Top Highlight */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0 h-px bg-gradient-to-r from-transparent via-purple-400/60 to-transparent group-hover:w-full transition-all duration-700 ease-out delay-100" />
               </Link>
             </nav>
             
-            {/* Enhanced Auth CTAs with Better Styling */}
-            <div className="relative">
-              <AuthHeaderCTAs />
+            {/* Mobile Navigation Toggle - Enhanced */}
+            <button 
+              className="lg:hidden relative p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-slate-200/60 dark:border-gray-700/60 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-500 ease-out hover:scale-110"
+              aria-label="Toggle mobile menu"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <div className="w-6 h-6 flex flex-col justify-center items-center space-y-1">
+                <div className={`w-5 h-0.5 bg-slate-600 dark:bg-slate-300 rounded-full transition-all duration-500 ease-out ${mobileMenuOpen ? 'rotate-45 translate-y-1.5' : 'hover:w-4'}`} />
+                <div className={`w-5 h-0.5 bg-slate-600 dark:bg-slate-300 rounded-full transition-all duration-500 ease-out ${mobileMenuOpen ? 'opacity-0' : ''}`} />
+                <div className={`w-5 h-0.5 bg-slate-600 dark:bg-slate-300 rounded-full transition-all duration-500 ease-out ${mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : 'hover:w-4'}`} />
+              </div>
+            </button>
+            
+            {/* Premium Auth CTAs with Professional Styling */}
+            <div className="relative flex items-center space-x-3 min-w-0 flex-shrink-0">
+              <div className="hidden sm:block">
+                <AuthHeaderCTAs />
+              </div>
+              
+              {/* Mobile CTA - Simplified */}
+              <div className="sm:hidden">
+                <Link 
+                  href="/register"
+                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-sm rounded-xl transition-all duration-500 ease-out hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 active:scale-95"
+                >
+                  Start Free
+                </Link>
+              </div>
             </div>
           </div>
         </div>
         
-        {/* Subtle Bottom Shadow */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-gray-700 to-transparent" />
+        {/* Enhanced Bottom Border with Gradient */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300/60 dark:via-gray-600/60 to-transparent" />
+        
+        {/* Subtle Bottom Shadow for Depth */}
+        <div className="absolute -bottom-4 left-0 right-0 h-4 bg-gradient-to-b from-black/5 to-transparent pointer-events-none" />
+        
+        {/* Mobile Navigation Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-slate-200/40 dark:border-gray-800/40 shadow-xl">
+            <div className="max-w-7xl mx-auto px-6 py-6">
+              <nav className="flex flex-col space-y-4">
+                <Link 
+                  href="#pricing"
+                  className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-lg py-2 transition-colors duration-300"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Pricing
+                </Link>
+                <Link 
+                  href="#features"
+                  className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-lg py-2 transition-colors duration-300"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Features
+                </Link>
+                <Link 
+                  href="#testimonials"
+                  className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-lg py-2 transition-colors duration-300"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Testimonials
+                </Link>
+                <Link 
+                  href="/login"
+                  className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-lg py-2 transition-colors duration-300"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link 
+                  href="/register"
+                  className="mt-4 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Start Free Trial
+                </Link>
+              </nav>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* A/B Tested Hero Section */}
@@ -232,14 +353,14 @@ export default function LandingPage() {
       />
 
       {/* Enhanced Features Section - 2025 Bento Box Grid Design */}
-      <section id="features" className="py-24 relative overflow-hidden">
+      <section id="features" className="py-20 lg:py-28 xl:py-32 relative overflow-hidden">
         {/* Performance-First Background with Subtle Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" />
         <div className="absolute inset-0" style={{
           backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23000000\" fill-opacity=\"0.02\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"1\"%3E%3C/circle%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"
         }} />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           {/* Enhanced Typography System with Premium Visual Hierarchy */}
           <div className="text-center mb-20 relative">
             {/* Floating Badge with Enhanced Visual Treatment */}
@@ -292,12 +413,12 @@ export default function LandingPage() {
                 Powerful features designed specifically for 
                 <span className="relative mx-2">
                   <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-bold">barbers</span>
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-full" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-full block" />
                 </span>
                 and barbershop owners who want to 
                 <span className="relative mx-2">
                   <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent font-bold">own their chair</span>
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-600/30 to-teal-600/30 rounded-full" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-600/30 to-teal-600/30 rounded-full block" />
                 </span>
                 and build their brand.
               </span>
@@ -311,16 +432,12 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Enhanced Bento Box Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Enhanced Bento Box Grid Layout - Fixed Desktop Alignment */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className={`group relative overflow-hidden rounded-3xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${
-                  index === 0 ? 'md:col-span-2 lg:col-span-1' : ''
-                } ${
-                  index === 2 ? 'lg:col-span-2' : ''
-                }`}
+                className="group relative overflow-hidden rounded-3xl transition-all duration-700 ease-out hover:scale-[1.02] hover:-translate-y-1 h-full"
                 style={{
                   animationDelay: `${index * 100}ms`
                 }}
@@ -337,48 +454,48 @@ export default function LandingPage() {
                 {/* Floating Highlight Effect */}
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 dark:via-gray-300/60 to-transparent rounded-t-3xl" />
                 
-                {/* Enhanced Content Layout */}
-                <div className="relative p-8 lg:p-10 h-full flex flex-col">
+                {/* Enhanced Content Layout - Optimized for Equal Heights */}
+                <div className="relative p-6 lg:p-8 h-full flex flex-col min-h-[420px]">
                   {/* Header Section with Improved Visual Hierarchy */}
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex-shrink-0">
-                      <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center shadow-lg shadow-black/10 group-hover:shadow-2xl group-hover:shadow-black/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-white/20 backdrop-blur-sm`}>
-                        <feature.icon className="w-8 h-8 text-white" />
+                      <div className={`w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center shadow-lg shadow-black/10 group-hover:shadow-2xl group-hover:shadow-black/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-white/20 backdrop-blur-sm`}>
+                        <feature.icon className="w-7 h-7 lg:w-8 lg:h-8 text-white" />
                       </div>
                     </div>
                     
                     <div className="text-right">
-                      <div className={`text-2xl lg:text-3xl font-bold bg-gradient-to-r ${feature.color} bg-clip-text text-transparent`}>
+                      <div className={`text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r ${feature.color} bg-clip-text text-transparent`}>
                         {feature.metric}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">improvement</div>
                     </div>
                   </div>
                   
-                  {/* Enhanced Typography with Better Spacing */}
+                  {/* Enhanced Typography with Professional Consistency - Optimized Sizing */}
                   <div className="flex-grow">
-                    <h3 className="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors">
+                    <h3 className="text-lg lg:text-xl xl:text-2xl font-bold text-slate-900 dark:text-white mb-4 leading-[1.2] group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors tracking-tight line-clamp-2">
                       {feature.title}
                     </h3>
                     
-                    <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed text-base lg:text-lg">
+                    <p className="text-slate-600 dark:text-slate-300 mb-6 leading-[1.6] text-sm lg:text-base font-medium line-clamp-3">
                       {feature.description}
                     </p>
                     
-                    {/* Enhanced Benefits with Better Visual Treatment */}
-                    <div className="space-y-3 mb-8">
+                    {/* Enhanced Benefits with Consistent Typography - Optimized Spacing */}
+                    <div className="space-y-3 mb-6">
                       {feature.benefits.map((benefit, benefitIndex) => (
                         <div 
                           key={benefitIndex} 
-                          className="flex items-center text-sm lg:text-base text-slate-600 dark:text-slate-300 transform transition-all duration-300"
+                          className="flex items-center text-sm lg:text-base text-slate-600 dark:text-slate-300 transform transition-all duration-300 leading-[1.4]"
                           style={{
                             animationDelay: `${(index * 100) + (benefitIndex * 50)}ms`
                           }}
                         >
-                          <div className="w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                          <div className="w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0 shadow-sm">
                             <CheckIcon className="w-3 h-3 text-white" />
                           </div>
-                          <span className="font-medium">{benefit}</span>
+                          <span className="font-semibold tracking-wide">{benefit}</span>
                         </div>
                       ))}
                     </div>
@@ -391,7 +508,7 @@ export default function LandingPage() {
                         variant="outline" 
                         size="lg" 
                         className={`w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-2 border-white/40 dark:border-gray-700/40 hover:border-white/60 dark:hover:border-gray-600/60 hover:bg-gradient-to-r hover:from-white/90 hover:to-slate-50/90 dark:hover:from-gray-700/90 dark:hover:to-gray-600/90 hover:shadow-2xl hover:shadow-black/10 dark:hover:shadow-black/30 text-slate-700 dark:text-slate-200 font-bold transition-all duration-300 hover:scale-105 relative overflow-hidden`}
-                        onClick={() => track('feature_interest', { feature: feature.title })}
+                        onClick={() => track(ConversionEventType.FEATURE_INTEREST, { feature: feature.title })}
                       >
                         {/* Premium Button Background Effect */}
                         <div className={`absolute inset-0 bg-gradient-to-r ${feature.color} opacity-0 hover:opacity-10 transition-opacity duration-300`} />
@@ -440,7 +557,7 @@ export default function LandingPage() {
       </section>
 
       {/* Enhanced Success Metrics Section - 2025 Glassmorphism Design */}
-      <section className="py-24 relative overflow-hidden">
+      <section className="py-20 lg:py-28 xl:py-32 relative overflow-hidden">
         {/* Premium Dark Background with Depth */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
         <div className="absolute inset-0 opacity-20" style={{
@@ -453,7 +570,7 @@ export default function LandingPage() {
           backgroundSize: '200% 200%'
         }} />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           {/* Enhanced Typography with Strategic Hierarchy */}
           <div className="text-center mb-16">
             {/* Premium Badge */}
@@ -462,7 +579,7 @@ export default function LandingPage() {
               <span className="text-white/80 font-medium text-sm tracking-wide uppercase">Live Platform Metrics</span>
             </div>
             
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-8 leading-[1.1] tracking-tight">
               <span className="text-white">Join </span>
               <span className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent font-extrabold">
                 15,000+
@@ -470,7 +587,7 @@ export default function LandingPage() {
               <span className="text-white"> Successful Barbers</span>
             </h2>
             
-            <p className="text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl lg:text-3xl text-slate-300 max-w-4xl mx-auto leading-[1.6] font-medium">
               Barbers using BookedBarber are earning 6-figures and building sustainable businesses with the Six Figure Barber methodology
             </p>
           </div>
@@ -528,18 +645,18 @@ export default function LandingPage() {
                       <metric.icon className="w-10 h-10 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
                     </div>
                     
-                    {/* Enhanced Typography with Counter Animation Effect */}
-                    <div className={`text-4xl lg:text-5xl font-bold text-white mb-2 bg-gradient-to-r ${metric.gradient} bg-clip-text group-hover:text-transparent transition-all duration-500 transform group-hover:scale-105`}>
+                    {/* Enhanced Typography with Professional Consistency */}
+                    <div className={`text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-3 bg-gradient-to-r ${metric.gradient} bg-clip-text group-hover:text-transparent transition-all duration-500 transform group-hover:scale-105 leading-[1.1] tracking-tight`}>
                       <span className="inline-block transition-all duration-300 group-hover:animate-pulse">
                         {metric.value}
                       </span>
                     </div>
                     
-                    <div className="text-slate-300 font-semibold text-lg mb-1 transition-all duration-300 group-hover:text-white group-hover:scale-105">
+                    <div className="text-slate-300 font-bold text-lg lg:text-xl mb-2 transition-all duration-300 group-hover:text-white group-hover:scale-105 leading-[1.3] tracking-wide">
                       {metric.label}
                     </div>
                     
-                    <div className="text-slate-400 text-sm font-medium opacity-80 transition-all duration-300 group-hover:opacity-100 group-hover:text-slate-300">
+                    <div className="text-slate-400 text-sm lg:text-base font-medium opacity-80 transition-all duration-300 group-hover:opacity-100 group-hover:text-slate-300 leading-[1.4]">
                       {metric.subtext}
                     </div>
                   </div>
@@ -652,33 +769,35 @@ export default function LandingPage() {
       </section>
 
       {/* Enhanced Social Proof Section */}
-      <ABTestingWrapper
-        testId="social_proof_2025"
-        variants={[
-          {
-            id: 'combined',
-            name: 'Combined Stats & Testimonials',
-            weight: 40,
-            component: <EnhancedSocialProof variant="combined" />
-          },
-          {
-            id: 'testimonials_focus',
-            name: 'Testimonials Focus',
-            weight: 30,
-            component: <EnhancedSocialProof variant="testimonials_focus" />
-          },
-          {
-            id: 'stats_focus',
-            name: 'Stats Focus',
-            weight: 30,
-            component: <EnhancedSocialProof variant="stats_focus" />
-          }
-        ]}
-        fallbackVariant="combined"
-      />
+      <section id="testimonials">
+        <ABTestingWrapper
+          testId="social_proof_2025"
+          variants={[
+            {
+              id: 'combined',
+              name: 'Combined Stats & Testimonials',
+              weight: 40,
+              component: <EnhancedSocialProof variant="combined" />
+            },
+            {
+              id: 'testimonials_focus',
+              name: 'Testimonials Focus',
+              weight: 30,
+              component: <EnhancedSocialProof variant="testimonials_focus" />
+            },
+            {
+              id: 'stats_focus',
+              name: 'Stats Focus',
+              weight: 30,
+              component: <EnhancedSocialProof variant="stats_focus" />
+            }
+          ]}
+          fallbackVariant="combined"
+        />
+      </section>
 
       {/* Enhanced Pricing Section - 2025 Premium Design */}
-      <section className="py-24 relative overflow-hidden">
+      <section id="pricing" className="py-20 lg:py-28 xl:py-32 relative overflow-hidden">
         {/* Premium Background with Subtle Texture */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" />
         <div className="absolute inset-0 dark:hidden" style={{
@@ -688,7 +807,7 @@ export default function LandingPage() {
           backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"80\" height=\"80\" viewBox=\"0 0 80 80\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.03\"%3E%3Cpath d=\"M40 0l40 40-40 40L0 40z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"
         }} />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           {/* Enhanced Typography with Premium Visual Hierarchy */}
           <div className="text-center mb-20 relative">
             {/* Premium Floating Badge with Enhanced Design */}
@@ -744,13 +863,13 @@ export default function LandingPage() {
               <span className="relative">
                 Choose the plan that fits your business. 
                 <span className="relative mx-2">
-                  <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold">Upgrade</span>
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-600/30 to-emerald-600/30 rounded-full" />
+                  <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold inline-block">Upgrade</span>
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-600/30 to-emerald-600/30 rounded-full block" />
                 </span>
                 or 
                 <span className="relative mx-2">
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-bold">downgrade</span>
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-full" />
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-bold inline-block">downgrade</span>
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-full block" />
                 </span>
                 anytime with no long-term commitments.
               </span>
@@ -767,8 +886,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Enhanced Pricing Grid with Bento Box Layout */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+          {/* Enhanced Pricing Grid with Bento Box Layout - Fixed Badge Clipping */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16 pt-12">
             {Object.entries(plans).map(([key, plan]) => {
               const isPopular = 'popular' in plan && plan.popular
               const isSelected = selectedPlan === key
@@ -776,12 +895,15 @@ export default function LandingPage() {
               return (
                 <div
                   key={key}
-                  className={`group relative rounded-3xl transition-all duration-500 cursor-pointer hover:scale-[1.02] overflow-hidden ${
+                  className={`pricing-card-container group relative rounded-3xl transition-all duration-700 ease-out cursor-pointer hover:scale-[1.02] ${
                     isPopular ? 'scale-105 md:scale-110' : ''
                   } ${
                     isSelected ? 'scale-105 ring-4 ring-blue-500/20' : ''
+                  } ${
+                    isLoading ? 'pointer-events-none opacity-75' : ''
                   }`}
-                  onClick={() => setSelectedPlan(key as any)}
+                  style={{ transitionDelay: `${Object.keys(plans).indexOf(key) * 150}ms` }}
+                  onClick={() => handlePlanSelection(key as any)}
                 >
                   {/* Enhanced Glassmorphism Card Background with Micro-Interactions */}
                   <div className={`absolute inset-0 backdrop-blur-xl rounded-3xl border transition-all duration-500 group-hover:backdrop-blur-2xl ${
@@ -793,16 +915,16 @@ export default function LandingPage() {
                   {/* Animated Background Shimmer Effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   
-                  {/* Enhanced Premium Popular Badge with Micro-Interactions */}
+                  {/* Enhanced Premium Popular Badge - Fixed Text Cutoff */}
                   {isPopular && (
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
-                      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-2xl border border-white/20 backdrop-blur-sm group-hover:scale-105 group-hover:shadow-3xl transition-all duration-300 relative overflow-hidden">
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20">
+                      <div className="popular-badge bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-2xl border border-white/20 backdrop-blur-sm group-hover:scale-105 group-hover:shadow-3xl transition-all duration-300 relative overflow-visible whitespace-nowrap">
                         {/* Badge Shimmer Effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                         
                         <span className="flex items-center relative z-10">
-                          <TrophyIcon className="w-4 h-4 mr-2 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300" />
-                          <span className="group-hover:scale-105 transition-transform duration-300">Most Popular</span>
+                          <TrophyIcon className="w-4 h-4 mr-2 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
+                          <span className="group-hover:scale-105 transition-transform duration-300 font-bold tracking-wide">Most Popular</span>
                         </span>
                       </div>
                     </div>
@@ -871,7 +993,7 @@ export default function LandingPage() {
 
                     {/* Enhanced CTA Button */}
                     <div className="mt-auto">
-                      <Link href="/register" onClick={() => track('pricing_plan_selected', { plan: key })}>
+                      <Link href="/register" onClick={() => track(ConversionEventType.PRICING_PLAN_SELECTED, { plan: key })}>
                         <Button 
                           variant={isPopular ? 'default' : 'outline'} 
                           size="lg"
@@ -980,8 +1102,8 @@ export default function LandingPage() {
         {/* Subtle Top Border */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
         
-        <div className="relative py-16 lg:py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative py-20 lg:py-28 xl:py-32">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
             {/* Enhanced Grid Layout */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
               {/* Enhanced Brand Section with Sophisticated Interactions */}
@@ -1060,7 +1182,8 @@ export default function LandingPage() {
                       <li key={linkIndex}>
                         <Link 
                           href={link.href} 
-                          className="group flex items-center text-slate-300 hover:text-white transition-all duration-300 text-base relative overflow-hidden rounded-lg p-2 -m-2 hover:bg-white/5"
+                          className="group flex items-center text-slate-300 hover:text-white transition-all duration-500 ease-out text-base relative overflow-hidden rounded-lg p-2 -m-2 hover:bg-white/5"
+                          style={{ transitionDelay: `${linkIndex * 50}ms` }}
                         >
                           {link.icon && (
                             <link.icon className="w-4 h-4 mr-3 text-slate-400 group-hover:text-blue-400 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />

@@ -39,6 +39,98 @@
     height: 100%;
   }
   
+  /* Fix gradient text rendering issues across browsers */
+  .gradient-text {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    /* Fallback for browsers that don't support gradient text */
+    @supports not (-webkit-background-clip: text) {
+      color: inherit;
+      background: none;
+    }
+  }
+
+  /* Popular badge positioning and text rendering fixes */
+  .popular-badge {
+    /* Ensure proper text rendering */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    
+    /* Prevent text cutoff */
+    white-space: nowrap;
+    overflow: visible;
+    
+    /* Stable positioning */
+    transform-origin: center bottom;
+    
+    /* Cross-browser backdrop blur support */
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    
+    /* Ensure proper z-index stacking */
+    isolation: isolate;
+    
+    /* Additional positioning fixes */
+    min-width: max-content;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ensure parent containers don't clip the badge */
+  .pricing-card-container {
+    overflow: visible !important;
+  }
+
+  /* Login page glassmorphism enhancements */
+  .login-glass-card {
+    /* Enhanced backdrop blur support */
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    
+    /* Improved shadow rendering */
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      0 1px 0 rgba(255, 255, 255, 0.5) inset,
+      0 -1px 0 rgba(0, 0, 0, 0.1) inset;
+      
+    /* Cross-browser gradient support */
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0.3) 100%
+    );
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .login-glass-card {
+      background: linear-gradient(
+        135deg,
+        rgba(55, 65, 81, 0.4) 0%,
+        rgba(31, 41, 55, 0.2) 100%
+      );
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 1px 0 rgba(255, 255, 255, 0.1) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.2) inset;
+    }
+  }
+
+  /* Enhanced form focus states */
+  .premium-input-focus {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .premium-input-focus:focus-within {
+    transform: translateY(-1px);
+    box-shadow: 
+      0 4px 12px rgba(20, 184, 166, 0.15),
+      0 0 0 3px rgba(20, 184, 166, 0.1);
+  }
+  
   /* Optimize font rendering */
   body {
     text-rendering: optimizeLegibility;

@@ -143,11 +143,11 @@ function UnifiedFinanceContent() {
         // Load financial summary based on user role
         try {
           const [paymentsResponse, earningsResponse] = await Promise.all([
-            fetchAPI(`/api/v1/payments/reports`, {
+            fetchAPI(`/api/v2/payments/reports`, {
               method: 'POST',
               body: JSON.stringify({ start_date: startDate, end_date: endDate })
             }),
-            userData.role !== 'client' ? fetchAPI(`/api/v1/payments/earnings?start_date=${startDate}&end_date=${endDate}`) : null
+            userData.role !== 'client' ? fetchAPI(`/api/v2/payments/earnings?start_date=${startDate}&end_date=${endDate}`) : null
           ])
 
           setFinancialSummary({
