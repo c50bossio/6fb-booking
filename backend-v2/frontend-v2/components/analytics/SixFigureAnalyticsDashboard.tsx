@@ -12,7 +12,9 @@ import {
   BoltIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  LightBulbIcon
+  LightBulbIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
 } from '@heroicons/react/24/outline'
 
 interface SixFigureAnalyticsDashboardProps {
@@ -50,6 +52,7 @@ export default function SixFigureAnalyticsDashboard({
   const [insights, setInsights] = useState<CoachingInsight[]>([])
   const [currentInsightIndex, setCurrentInsightIndex] = useState(0)
   const [activeCoachingTab, setActiveCoachingTab] = useState<'insights' | 'progress' | 'milestones'>('insights')
+  const [isPriorityRecommendationsCollapsed, setIsPriorityRecommendationsCollapsed] = useState(true)
 
   // Generate coaching insights based on today's performance and metrics (memoized for performance)
   const generateInsights = useCallback((stats: typeof todayStats, metrics: SixFigureBarberMetrics | null): CoachingInsight[] => {
@@ -346,10 +349,22 @@ export default function SixFigureAnalyticsDashboard({
               {/* Professional Coaching Insights from Backend */}
               {metrics?.coaching_insights && metrics.coaching_insights.length > 0 ? (
                 <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                    🎯 Priority Recommendations
-                  </h4>
-                  {metrics.coaching_insights.slice(0, 3).map((insight, index) => (
+                  <div 
+                    className="flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg p-2 -m-2 transition-colors mb-3"
+                    onClick={() => setIsPriorityRecommendationsCollapsed(!isPriorityRecommendationsCollapsed)}
+                  >
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                      🎯 Priority Recommendations
+                    </h4>
+                    {isPriorityRecommendationsCollapsed ? (
+                      <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+                    ) : (
+                      <ChevronUpIcon className="w-4 h-4 text-gray-500" />
+                    )}
+                  </div>
+                  {!isPriorityRecommendationsCollapsed && (
+                    <div className="space-y-3">
+                      {metrics.coaching_insights.slice(0, 3).map((insight, index) => (
                     <div key={index} className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
                       <div className="flex items-start space-x-3">
                         <div className={`p-2 rounded-full ${
@@ -443,7 +458,9 @@ export default function SixFigureAnalyticsDashboard({
                         </div>
                       </div>
                     </div>
-                  ))}
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
