@@ -2,10 +2,11 @@
 
 import React from 'react'
 
-// Loading spinner component
-export function LoadingSpinner({ size = 'md', className = '' }: { 
+// Enhanced loading spinner component
+export function LoadingSpinner({ size = 'md', className = '', variant = 'default' }: { 
   size?: 'sm' | 'md' | 'lg'
   className?: string 
+  variant?: 'default' | 'primary' | 'minimal'
 }) {
   const sizeClasses = {
     sm: 'h-4 w-4',
@@ -13,9 +14,15 @@ export function LoadingSpinner({ size = 'md', className = '' }: {
     lg: 'h-8 w-8',
   }
 
+  const variantClasses = {
+    default: 'text-gray-600 dark:text-gray-400',
+    primary: 'text-primary-600',
+    minimal: 'text-gray-400 dark:text-gray-500'
+  }
+
   return (
     <svg
-      className={`animate-spin ${sizeClasses[size]} ${className}`}
+      className={`animate-spin ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -37,13 +44,58 @@ export function LoadingSpinner({ size = 'md', className = '' }: {
   )
 }
 
-// Full page loading component
-export function PageLoading({ message = 'Loading...' }: { message?: string }) {
+// Enhanced full page loading component
+export function PageLoading({ 
+  message = 'Loading...', 
+  description,
+  variant = 'default' 
+}: { 
+  message?: string
+  description?: string
+  variant?: 'default' | 'minimal' | 'branded'
+}) {
+  if (variant === 'minimal') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+        <LoadingSpinner size="lg" variant="minimal" />
+      </div>
+    )
+  }
+
+  if (variant === 'branded') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+        <div className="text-center space-y-6 p-8">
+          <div className="flex items-center justify-center space-x-3 mb-6">
+            <div className="w-1 h-12 bg-primary-500 rounded-full"></div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                BookedBarber
+              </h2>
+            </div>
+          </div>
+          <LoadingSpinner size="lg" variant="primary" className="mx-auto mb-4" />
+          <div>
+            <p className="text-gray-700 dark:text-gray-300 text-lg font-medium">{message}</p>
+            {description && (
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">{description}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <LoadingSpinner size="lg" className="mx-auto text-primary-600 mb-4" />
-        <p className="text-accent-600 text-lg">{message}</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="text-center space-y-4">
+        <LoadingSpinner size="lg" variant="primary" className="mx-auto" />
+        <div>
+          <p className="text-gray-700 dark:text-gray-300 text-lg font-medium">{message}</p>
+          {description && (
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">{description}</p>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -81,31 +133,53 @@ export function LoadingButton({
   )
 }
 
-// Card/section loading skeleton
+// Enhanced card loading skeleton that matches our card variants
 export function LoadingSkeleton({ 
   lines = 3, 
   className = '',
-  showAvatar = false 
+  showAvatar = false,
+  variant = 'default'
 }: { 
   lines?: number
   className?: string
-  showAvatar?: boolean 
+  showAvatar?: boolean
+  variant?: 'default' | 'primary' | 'secondary' | 'elevated' | 'hero'
 }) {
+  const variantClasses = {
+    default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
+    primary: 'bg-white dark:bg-gray-800 border border-primary-200 dark:border-primary-800 shadow-sm',
+    secondary: 'bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700',
+    elevated: 'bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700',
+    hero: 'bg-gradient-to-br from-primary-50 to-white dark:from-gray-800 dark:to-gray-900 border border-primary-100 dark:border-gray-700 shadow-lg'
+  }
+
   return (
-    <div className={`animate-pulse ${className}`}>
+    <div className={`animate-pulse rounded-lg p-6 ${variantClasses[variant]} ${className}`}>
       <div className="flex items-start space-x-4">
         {showAvatar && (
-          <div className="rounded-full bg-gray-200 h-10 w-10" />
+          <div className="rounded-full bg-gray-200 dark:bg-gray-600 h-10 w-10 shadow-sm" />
         )}
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 space-y-3">
+          {variant === 'hero' && (
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="w-1 h-6 bg-primary-300 rounded-full"></div>
+              <div className="h-6 bg-gray-200 dark:bg-gray-600 rounded w-32"></div>
+            </div>
+          )}
           {Array.from({ length: lines }).map((_, i) => (
             <div
               key={i}
-              className={`h-4 bg-gray-200 rounded ${
+              className={`h-4 bg-gray-200 dark:bg-gray-600 rounded transition-all duration-200 ${
                 i === lines - 1 ? 'w-3/4' : 'w-full'
               }`}
             />
           ))}
+          {variant === 'elevated' && (
+            <div className="flex space-x-2 mt-4">
+              <div className="h-8 w-20 bg-primary-200 dark:bg-primary-800 rounded-full"></div>
+              <div className="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded-full"></div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -420,6 +494,138 @@ export function SuccessMessage({
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+// Enhanced Dashboard Skeleton matching our dashboard design
+export function DashboardSkeleton({ className = '' }: { className?: string }) {
+  return (
+    <div className={`space-y-6 ${className}`}>
+      {/* Enhanced header skeleton with accent line */}
+      <div className="animate-pulse">
+        <div className="flex items-center space-x-4 mb-2">
+          <div className="w-1 h-12 bg-primary-300 rounded-full"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-600 rounded w-40"></div>
+        </div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-64 ml-6"></div>
+      </div>
+
+      {/* Stats cards in grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <LoadingSkeleton 
+            key={i} 
+            variant={i === 0 ? 'hero' : 'elevated'} 
+            lines={2}
+            className="h-24"
+          />
+        ))}
+      </div>
+
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <LoadingSkeleton variant="primary" lines={6} className="h-80" />
+        <LoadingSkeleton variant="secondary" lines={5} className="h-80" />
+      </div>
+    </div>
+  )
+}
+
+// Enhanced Calendar Skeleton matching our calendar design
+export function CalendarPageSkeleton({ className = '' }: { className?: string }) {
+  return (
+    <div className={`space-y-6 ${className}`}>
+      {/* Enhanced calendar header with accent line */}
+      <div className="animate-pulse flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+        <div>
+          <div className="flex items-center space-x-4 mb-2">
+            <div className="w-1 h-12 bg-primary-300 rounded-full"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-600 rounded w-32"></div>
+          </div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-56 ml-6"></div>
+        </div>
+        
+        {/* Action buttons skeleton */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 shadow-sm">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-10 w-16 bg-gray-200 dark:bg-gray-600 rounded"></div>
+            ))}
+          </div>
+          <div className="flex gap-3">
+            <div className="h-10 w-32 bg-primary-200 dark:bg-primary-800 rounded shadow-sm"></div>
+            <div className="h-10 w-20 bg-gray-200 dark:bg-gray-600 rounded shadow-sm"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Calendar grid skeleton */}
+      <div className="animate-pulse bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="space-y-4">
+          {/* Calendar header */}
+          <div className="flex justify-between items-center">
+            <div className="h-6 bg-gray-200 dark:bg-gray-600 rounded w-32" />
+            <div className="flex space-x-2">
+              <div className="h-8 w-8 bg-gray-200 dark:bg-gray-600 rounded" />
+              <div className="h-8 w-8 bg-gray-200 dark:bg-gray-600 rounded" />
+            </div>
+          </div>
+          
+          {/* Days grid */}
+          <div className="grid grid-cols-7 gap-2">
+            {Array.from({ length: 42 }).map((_, i) => (
+              <div key={i} className="h-24 bg-gray-100 dark:bg-gray-700 rounded border transition-all duration-200"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Enhanced List Item Skeleton for appointments, clients, etc.
+export function ListItemSkeleton({ 
+  showAvatar = true, 
+  showBadge = false,
+  className = '' 
+}: { 
+  showAvatar?: boolean
+  showBadge?: boolean
+  className?: string 
+}) {
+  return (
+    <div className={`animate-pulse flex items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ${className}`}>
+      <div className="flex items-center space-x-4 flex-1">
+        {showAvatar && (
+          <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full shadow-sm"></div>
+        )}
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-1/2"></div>
+        </div>
+      </div>
+      
+      <div className="flex items-center space-x-3">
+        {showBadge && (
+          <div className="h-6 w-16 bg-primary-200 dark:bg-primary-800 rounded-full"></div>
+        )}
+        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-600 rounded"></div>
+      </div>
+    </div>
+  )
+}
+
+// Enhanced Notification Skeleton
+export function NotificationSkeleton({ className = '' }: { className?: string }) {
+  return (
+    <div className={`animate-pulse flex items-start space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg ${className}`}>
+      <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 shadow-sm"></div>
+      <div className="flex-1 space-y-2">
+        <div className="h-4 bg-blue-200 dark:bg-blue-700 rounded w-full"></div>
+        <div className="h-3 bg-blue-200 dark:bg-blue-700 rounded w-2/3"></div>
+      </div>
+      <div className="w-4 h-4 bg-blue-200 dark:bg-blue-700 rounded"></div>
     </div>
   )
 }

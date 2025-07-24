@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { handleAuthError } from '@/lib/auth-error-handler'
 // Using UnifiedCalendar for all calendar views
@@ -41,6 +41,8 @@ import { LocationSelector } from '@/components/navigation/LocationSelector'
 import { LocationSelectorLoadingState, LocationSelectorErrorState } from '@/components/navigation/LocationSelectorSkeleton'
 import { CalendarExport } from '@/components/calendar/CalendarExport'
 import type { Appointment, AppointmentStatus, CalendarView, User, CalendarInteraction } from '@/types/calendar'
+import { useCalendarPageState } from '@/hooks/useCalendarPageState'
+import { AccessibilityStatus } from '@/components/dev/AccessibilityStatus'
 import { 
   formatDateForAPI, 
   parseAPIDate, 
@@ -66,31 +68,61 @@ import {
 
 export default function CalendarPage() {
   const router = useRouter()
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
-  const [filteredBookings, setFilteredBookings] = useState<BookingResponse[]>([])
-  const [user, setUser] = useState<User | null>(null)
-  const [barbers, setBarbers] = useState<User[]>([])
-  const [cancelingId, setCancelingId] = useState<number | null>(null)
-  const [viewMode, setViewMode] = useState<CalendarView>('week')
-  const [selectedBarberId, setSelectedBarberId] = useState<number | 'all'>('all')
-  const [locations, setLocations] = useState<Location[]>([])
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
-  const [filteredBarbers, setFilteredBarbers] = useState<User[]>([])
-  const [locationLoadingError, setLocationLoadingError] = useState<string | null>(null)
-  const [isLoadingLocations, setIsLoadingLocations] = useState(false)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showTimePickerModal, setShowTimePickerModal] = useState(false)
-  const [preselectedTime, setPreselectedTime] = useState<string | undefined>(undefined)
-  const [pendingDate, setPendingDate] = useState<Date | null>(null)
-  const [showSyncPanel, setShowSyncPanel] = useState(false)
-  const [showConflictResolver, setShowConflictResolver] = useState(false)
-  const [showRescheduleModal, setShowRescheduleModal] = useState(false)
-  const [rescheduleModalData, setRescheduleModalData] = useState<{ appointmentId: number; newStartTime: string } | null>(null)
-  const [todayRevenue, setTodayRevenue] = useState(0)
-  const [todayAppointmentCount, setTodayAppointmentCount] = useState(0)
-  const [showHeatmap, setShowHeatmap] = useState(false)
-  const [revenueCollapsed, setRevenueCollapsed] = useState(false)
-  const [showAnalytics, setShowAnalytics] = useState(false)
+  
+  // Use consolidated state management
+  const { state, actions } = useCalendarPageState()
+  const {
+    selectedDate,
+    filteredBookings,
+    user,
+    barbers,
+    cancelingId,
+    viewMode,
+    selectedBarberId,
+    locations,
+    selectedLocationId,
+    filteredBarbers,
+    locationLoadingError,
+    isLoadingLocations,
+    preselectedTime,
+    pendingDate,
+    rescheduleModalData,
+    todayRevenue,
+    todayAppointmentCount,
+    modals: {
+      showCreateModal,
+      showTimePickerModal,
+      showSyncPanel,
+      showConflictResolver,
+      showRescheduleModal,
+      showHeatmap,
+      revenueCollapsed,
+      showAnalytics
+    }
+  } = state
+
+  // Extract actions for convenience
+  const {
+    setSelectedDate,
+    setViewMode,
+    setPendingDate,
+    setFilteredBookings,
+    setUser,
+    setBarbers,
+    setFilteredBarbers,
+    setLocations,
+    setSelectedBarberId,
+    setSelectedLocationId,
+    setCancelingId,
+    setIsLoadingLocations,
+    setLocationLoadingError,
+    toggleModal,
+    setPreselectedTime,
+    setRescheduleModalData,
+    setTodayRevenue,
+    setTodayAppointmentCount,
+    batchUpdate
+  } = actions
 
   // Enhanced API integration with optimistic updates
   const {
@@ -104,8 +136,8 @@ export default function CalendarPage() {
   // Load locations with enhanced error handling and retry
   const loadLocations = async () => {
     try {
-      setIsLoadingLocations(true)
-      setLocationLoadingError(null)
+      actions.setIsLoadingLocations(true)
+      actions.setLocationLoadingError(null)
       
       const userLocations = await CalendarErrorHandler.retryWithBackoff(
         async () => {
@@ -126,24 +158,24 @@ export default function CalendarPage() {
       )
       
       // Locations loaded successfully
-      setLocations(userLocations || [])
+      actions.setLocations(userLocations || [])
       
       // Set default location if we have locations
       if (userLocations && userLocations.length > 0) {
-        setSelectedLocationId(userLocations[0].id)
+        actions.setSelectedLocationId(userLocations[0].id)
       }
     } catch (locationErr) {
       // Enhanced error handling with specific messages
       const error = await CalendarErrorHandler.handleError(locationErr, 'location-load')
-      setLocationLoadingError(error.message)
-      setLocations([])
+      actions.setLocationLoadingError(error.message)
+      actions.setLocations([])
       
       // If it's a network error and we're offline, show a more helpful message
       if (!navigator.onLine) {
-        setLocationLoadingError('You appear to be offline. Location features will be available when you reconnect.')
+        actions.setLocationLoadingError('You appear to be offline. Location features will be available when you reconnect.')
       }
     } finally {
-      setIsLoadingLocations(false)
+      actions.setIsLoadingLocations(false)
     }
   }
   
@@ -221,7 +253,7 @@ export default function CalendarPage() {
     switch (interaction.type) {
       case 'select':
         if (interaction.target === 'date' && interaction.data instanceof Date) {
-          setSelectedDate(interaction.data)
+          actions.setSelectedDate(interaction.data)
         } else if (interaction.target === 'appointment') {
           // Handle appointment selection
           const appointment = interaction.data as Appointment
@@ -231,14 +263,14 @@ export default function CalendarPage() {
         
       case 'create':
         if (interaction.target === 'date' && interaction.data instanceof Date) {
-          setSelectedDate(interaction.data)
-          setPreselectedTime('09:00')
-          setShowCreateModal(true)
+          actions.setSelectedDate(interaction.data)
+          actions.setPreselectedTime('09:00')
+          actions.toggleModal('showCreateModal', true)
         } else if (interaction.target === 'time-slot') {
           const date = interaction.data as Date
-          setSelectedDate(date)
-          setPreselectedTime(format(date, 'HH:mm'))
-          setShowCreateModal(true)
+          actions.setSelectedDate(date)
+          actions.setPreselectedTime(format(date, 'HH:mm'))
+          actions.toggleModal('showCreateModal', true)
         }
         break
         
@@ -290,7 +322,7 @@ export default function CalendarPage() {
           () => getProfile()
         )
         
-        setUser(userProfile)
+        actions.setUser(userProfile)
         
         // Load locations for multi-location accounts
         if (userProfile.role === 'admin' || userProfile.role === 'enterprise_admin') {
@@ -308,11 +340,11 @@ export default function CalendarPage() {
             () => getAllUsers('barber')
           )
           // Barbers loaded successfully
-          setBarbers(allBarbers || [])
+          actions.setBarbers(allBarbers || [])
         } catch (barberErr) {
           console.error('⚠️ Failed to load barbers (non-critical):', barberErr)
           // Don't fail the whole loading process if barbers can't be loaded
-          setBarbers([])
+          actions.setBarbers([])
         }
         
         // Load appointments with optimistic updates manager
@@ -343,7 +375,7 @@ export default function CalendarPage() {
   // Filter bookings by selected date, location, and barber
   useEffect(() => {
     if (!selectedDate || !bookings.length) {
-      setFilteredBookings([])
+      actions.setFilteredBookings([])
       return
     }
 
@@ -381,13 +413,13 @@ export default function CalendarPage() {
       return timeA - timeB
     })
 
-    setFilteredBookings(dayBookings)
+    actions.setFilteredBookings(dayBookings)
   }, [selectedDate, bookings, selectedBarberId, selectedLocationId, filteredBarbers])
 
   // Filter barbers by selected location
   useEffect(() => {
     if (!selectedLocationId || !barbers.length) {
-      setFilteredBarbers(barbers)
+      actions.setFilteredBarbers(barbers)
       return
     }
 
@@ -403,11 +435,11 @@ export default function CalendarPage() {
       return true
     })
 
-    setFilteredBarbers(locationBarbers)
+    actions.setFilteredBarbers(locationBarbers)
     
     // Reset barber selection if current selection is not available in this location
     if (selectedBarberId !== 'all' && !locationBarbers.some(b => b.id === selectedBarberId)) {
-      setSelectedBarberId('all')
+      actions.setSelectedBarberId('all')
     }
   }, [selectedLocationId, barbers, selectedBarberId])
 
@@ -447,21 +479,21 @@ export default function CalendarPage() {
     })
 
     // Count all appointments for today
-    setTodayAppointmentCount(todayBookings.length)
+    actions.setTodayAppointmentCount(todayBookings.length)
 
     // Calculate revenue from completed appointments
     const revenue = todayBookings
       .filter(booking => booking.status === 'completed')
       .reduce((sum, booking) => sum + (booking.price || 0), 0)
 
-    setTodayRevenue(revenue)
+    actions.setTodayRevenue(revenue)
   }, [bookings, selectedLocationId, filteredBarbers])
 
   const handleCancelBooking = async (bookingId: number) => {
     if (!confirm('Are you sure you want to cancel this appointment?')) return
 
     try {
-      setCancelingId(bookingId)
+      actions.setCancelingId(bookingId)
       
       // Use optimistic cancel with timeout and retry
       await CalendarErrorHandler.retryWithBackoff(
@@ -488,7 +520,7 @@ export default function CalendarPage() {
         toastError('Offline', 'Cannot cancel appointment while offline. Please reconnect and try again.')
       }
     } finally {
-      setCancelingId(null)
+      actions.setCancelingId(null)
     }
   }
 
@@ -516,8 +548,8 @@ export default function CalendarPage() {
       )
       
       // Close modal and show success
-      setShowRescheduleModal(false)
-      setRescheduleModalData(null)
+      actions.toggleModal('showRescheduleModal', false)
+      actions.setRescheduleModalData(null)
       toastSuccess('Appointment Rescheduled', 'Your appointment has been successfully rescheduled.')
       
       // Clear error history on success
@@ -578,8 +610,8 @@ export default function CalendarPage() {
         CalendarErrorHandler.clearRetryHistory('appointment-drag-drop')
       } else {
         // For other interactions, show the reschedule modal
-        setRescheduleModalData({ appointmentId, newStartTime })
-        setShowRescheduleModal(true)
+        actions.setRescheduleModalData({ appointmentId, newStartTime })
+        actions.toggleModal('showRescheduleModal', true)
       }
     } catch (err) {
       console.error('❌ Failed to update appointment:', err)
@@ -597,10 +629,10 @@ export default function CalendarPage() {
 
   const handleLocationChange = (location: Location) => {
     // Location changed successfully
-    setSelectedLocationId(location.id)
+    actions.setSelectedLocationId(location.id)
     
     // Reset barber selection when location changes to show all barbers in new location
-    setSelectedBarberId('all')
+    actions.setSelectedBarberId('all')
     
     // Show info toast about location change with additional context
     const locationBarberCount = barbers.filter(barber => {
@@ -661,16 +693,24 @@ export default function CalendarPage() {
     <ErrorBoundary>
       <div className="calendar-page p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div className="calendar-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="calendar-header flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <div className="order-1 lg:order-1">
-          <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">Calendar</h1>
-          <p className="text-accent-600 dark:text-gray-400 text-sm lg:text-base">
+          {/* Enhanced header with accent line */}
+          <div className="flex items-center space-x-4 mb-2">
+            <div className="w-1 h-12 bg-primary-500 rounded-full"></div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Calendar
+              </h1>
+            </div>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 text-base ml-6">
             Manage your appointments and schedule
           </p>
           
           {/* Location Selector - Only show for multi-location accounts */}
           {(user?.role === 'admin' || user?.role === 'enterprise_admin') && (
-            <div className="mt-3 max-w-sm">
+            <div className="mt-4 max-w-sm ml-6">
               {isLoadingLocations ? (
                 <LocationSelectorLoadingState compact={true} />
               ) : locationLoadingError ? (
@@ -716,35 +756,41 @@ export default function CalendarPage() {
           </Suspense>
         </div>
         
-        <div className="order-2 lg:order-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+        <div className="order-2 lg:order-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
           {/* View Mode Switcher - Mobile Optimized */}
-          <div className="calendar-view-switcher flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-full sm:w-auto">
+          <div className="calendar-view-switcher flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-full sm:w-auto shadow-sm" role="tablist" aria-label="Calendar view selector">
             <button
-              onClick={() => setViewMode('day')}
+              onClick={() => actions.setViewMode('day')}
+              role="tab"
+              aria-selected={viewMode === 'day'}
               className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
                 viewMode === 'day' 
                   ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Day
             </button>
             <button
-              onClick={() => setViewMode('week')}
+              onClick={() => actions.setViewMode('week')}
+              role="tab"
+              aria-selected={viewMode === 'week'}
               className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
                 viewMode === 'week' 
                   ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Week
             </button>
             <button
-              onClick={() => setViewMode('month')}
+              onClick={() => actions.setViewMode('month')}
+              role="tab"
+              aria-selected={viewMode === 'month'}
               className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
                 viewMode === 'month' 
                   ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Month
@@ -752,43 +798,46 @@ export default function CalendarPage() {
           </div>
           
           {/* Action Buttons - Mobile Optimized */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <Button 
-              onClick={() => setShowCreateModal(true)}
-              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
+              onClick={() => actions.toggleModal('showCreateModal', true)}
+              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white shadow-sm transition-all duration-200"
             >
               <PlusIcon className="w-4 h-4" />
               <span className="hidden sm:inline">New Appointment</span>
               <span className="sm:hidden">New</span>
             </Button>
             
-            {/* Google Calendar Sync Button - Only for barbers - Mobile Responsive */}
+            {/* Barber-Specific Tools - Enhanced for Professional Use */}
             {user?.role === 'barber' && (
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2 p-2 bg-primary-50 dark:bg-primary-900/10 rounded-lg border border-primary-100 dark:border-primary-800">
                 <Button 
                   variant="outline"
-                  onClick={() => setShowSyncPanel(!showSyncPanel)}
-                  className="calendar-action-button flex items-center gap-2 min-h-[44px]"
+                  onClick={() => actions.toggleModal('showSyncPanel')}
+                  className="calendar-action-button flex items-center gap-2 min-h-[44px] shadow-sm transition-all duration-200 hover:shadow-md"
+                  aria-label={showSyncPanel ? "Hide Google Calendar sync panel" : "Show Google Calendar sync panel"}
                 >
-                  <ArrowsRightLeftIcon className="w-4 h-4" />
+                  <ArrowsRightLeftIcon className="w-4 h-4" aria-hidden="true" />
                   <span className="hidden lg:inline">Sync</span>
                 </Button>
                 
                 <Button 
                   variant="outline"
-                  onClick={() => setShowConflictResolver(!showConflictResolver)}
-                  className="calendar-action-button flex items-center gap-2 min-h-[44px]"
+                  onClick={() => actions.toggleModal('showConflictResolver')}
+                  className="calendar-action-button flex items-center gap-2 min-h-[44px] shadow-sm transition-all duration-200 hover:shadow-md"
+                  aria-label={showConflictResolver ? "Hide conflict resolver" : "Show conflict resolver"}
                 >
-                  <ExclamationTriangleIcon className="w-4 h-4" />
+                  <ExclamationTriangleIcon className="w-4 h-4" aria-hidden="true" />
                   <span className="hidden lg:inline">Conflicts</span>
                 </Button>
                 
                 <Button 
                   variant="outline"
                   onClick={() => router.push('/barber-availability')}
-                  className="calendar-action-button flex items-center gap-2 min-h-[44px]"
+                  className="calendar-action-button flex items-center gap-2 min-h-[44px] shadow-sm transition-all duration-200 hover:shadow-md"
+                  aria-label="Manage barber availability"
                 >
-                  <CalendarDaysIcon className="w-4 h-4" />
+                  <CalendarDaysIcon className="w-4 h-4" aria-hidden="true" />
                   <span className="hidden lg:inline">Availability</span>
                 </Button>
               </div>
@@ -798,9 +847,10 @@ export default function CalendarPage() {
             <Button 
               variant="outline"
               onClick={() => router.push('/recurring')}
-              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
+              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto shadow-sm transition-all duration-200 hover:shadow-md"
+              aria-label="Manage recurring appointments"
             >
-              <ClockIcon className="w-4 h-4" />
+              <ClockIcon className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">Recurring</span>
               <span className="sm:hidden">Recurring</span>
             </Button>
@@ -808,8 +858,8 @@ export default function CalendarPage() {
             {/* Heatmap Toggle Button */}
             <Button 
               variant="outline"
-              onClick={() => setShowHeatmap(!showHeatmap)}
-              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
+              onClick={() => actions.toggleModal('showHeatmap')}
+              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto shadow-sm transition-all duration-200 hover:shadow-md"
               title={showHeatmap ? "Hide availability heatmap" : "Show availability heatmap"}
             >
               <svg 
@@ -833,9 +883,9 @@ export default function CalendarPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowAnalytics(!showAnalytics)}
-              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
-              title="View Analytics"
+              onClick={() => actions.toggleModal('showAnalytics')}
+              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto shadow-sm transition-all duration-200 hover:shadow-md"
+              aria-label={showAnalytics ? "Hide calendar analytics" : "Show calendar analytics"}
             >
               <svg
                 className="w-5 h-5"
@@ -843,6 +893,7 @@ export default function CalendarPage() {
                 stroke="currentColor"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -867,8 +918,8 @@ export default function CalendarPage() {
             {/* Mobile menu for additional options */}
             <CalendarMobileMenu
               user={user}
-              onSyncToggle={() => setShowSyncPanel(!showSyncPanel)}
-              onConflictToggle={() => setShowConflictResolver(!showConflictResolver)}
+              onSyncToggle={() => actions.toggleModal('showSyncPanel')}
+              onConflictToggle={() => actions.toggleModal('showConflictResolver')}
             />
           </div>
         </div>
@@ -887,7 +938,7 @@ export default function CalendarPage() {
             todayCount={todayAppointmentCount}
             selectedDate={selectedDate || new Date()}
             collapsed={revenueCollapsed}
-            onToggleCollapse={() => setRevenueCollapsed(!revenueCollapsed)}
+            onToggleCollapse={() => actions.toggleModal('revenueCollapsed')}
           />
         </Suspense>
       </div>
@@ -908,25 +959,25 @@ export default function CalendarPage() {
                 onAppointmentClick={(appointment) => {
                   // Set selected date to appointment date
                   const appointmentDate = new Date(appointment.start_time)
-                  setSelectedDate(appointmentDate)
+                  actions.setSelectedDate(appointmentDate)
                 }}
                 onTimeSlotClick={(date) => {
                   // Open modal with pre-selected date/time
-                  setSelectedDate(date)
-                  setPreselectedTime(format(date, 'HH:mm'))
-                  setShowCreateModal(true)
+                  actions.setSelectedDate(date)
+                  actions.setPreselectedTime(format(date, 'HH:mm'))
+                  actions.toggleModal('showCreateModal', true)
                 }}
                 onAppointmentUpdate={handleAppointmentUpdate}
                 onDayClick={(date) => {
                   // Single click to set selected date for time picker
-                  setPendingDate(date)
-                  setShowTimePickerModal(true)
+                  actions.setPendingDate(date)
+                  actions.toggleModal('showTimePickerModal', true)
                 }}
                 onDayDoubleClick={(date) => {
                   // Double-click creates appointment with default time
-                  setSelectedDate(date)
-                  setPreselectedTime('09:00')
-                  setShowCreateModal(true)
+                  actions.setSelectedDate(date)
+                  actions.setPreselectedTime('09:00')
+                  actions.toggleModal('showCreateModal', true)
                 }}
                 startHour={8}
                 endHour={19}
@@ -951,7 +1002,7 @@ export default function CalendarPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowHeatmap(false)}
+                    onClick={() => actions.toggleModal('showHeatmap', false)}
                     className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -964,10 +1015,10 @@ export default function CalendarPage() {
                     appointments={bookings}
                     startDate={selectedDate || new Date()}
                     onTimeSlotClick={(date, time) => {
-                      setShowHeatmap(false)
-                      setSelectedDate(date)
-                      setPreselectedTime(time)
-                      setShowCreateModal(true)
+                      actions.toggleModal('showHeatmap', false)
+                      actions.setSelectedDate(date)
+                      actions.setPreselectedTime(time)
+                      actions.toggleModal('showCreateModal', true)
                     }}
                   />
                 </Suspense>
@@ -1038,8 +1089,8 @@ export default function CalendarPage() {
       <CreateAppointmentModal
         isOpen={showCreateModal}
         onClose={() => {
-          setShowCreateModal(false)
-          setPreselectedTime(undefined)
+          actions.toggleModal('showCreateModal', false)
+          actions.setPreselectedTime(undefined)
         }}
         preselectedDate={selectedDate || undefined}
         preselectedTime={preselectedTime}
@@ -1049,7 +1100,7 @@ export default function CalendarPage() {
           try {
             // Use enhanced refresh that automatically handles optimistic updates
             await refreshAppointments()
-            setPreselectedTime(undefined)
+            actions.setPreselectedTime(undefined)
             
             // Calendar refreshed successfully with optimistic updates
             
@@ -1066,16 +1117,16 @@ export default function CalendarPage() {
       <TimePickerModal
         isOpen={showTimePickerModal}
         onClose={() => {
-          setShowTimePickerModal(false)
-          setPendingDate(null)
+          actions.toggleModal('showTimePickerModal', false)
+          actions.setPendingDate(null)
         }}
         selectedDate={pendingDate || undefined}
         onSelectTime={(time) => {
-          setSelectedDate(pendingDate)
-          setPreselectedTime(time)
-          setShowTimePickerModal(false)
-          setShowCreateModal(true)
-          setPendingDate(null)
+          actions.setSelectedDate(pendingDate)
+          actions.setPreselectedTime(time)
+          actions.toggleModal('showTimePickerModal', false)
+          actions.toggleModal('showCreateModal', true)
+          actions.setPendingDate(null)
         }}
       />
 
@@ -1084,8 +1135,8 @@ export default function CalendarPage() {
         <RescheduleModal
           isOpen={showRescheduleModal}
           onClose={() => {
-            setShowRescheduleModal(false)
-            setRescheduleModalData(null)
+            actions.toggleModal('showRescheduleModal', false)
+            actions.setRescheduleModalData(null)
           }}
           onReschedule={handleModalReschedule}
           appointment={
@@ -1157,10 +1208,13 @@ export default function CalendarPage() {
           selectedDate={selectedDate || new Date()}
           userId={user?.id}
           isOpen={showAnalytics}
-          onToggle={() => setShowAnalytics(!showAnalytics)}
+          onToggle={() => actions.toggleModal('showAnalytics')}
           position="right"
         />
       </Suspense>
+      
+      {/* Development-only accessibility status */}
+      <AccessibilityStatus />
       
       </div>
     </ErrorBoundary>
