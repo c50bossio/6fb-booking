@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { 
-  TargetIcon,
+  TagIcon,
   TrophyIcon,
   RocketLaunchIcon,
   ChartBarIcon,
@@ -382,7 +382,7 @@ export default function GoalTrackingDashboard({ userId, currentMetrics, historic
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Goal Tracking & Progress</h2>
         <Button onClick={() => setShowGoalCreator(!showGoalCreator)}>
-          <TargetIcon className="w-4 h-4 mr-2" />
+          <TagIcon className="w-4 h-4 mr-2" />
           Set New Goal
         </Button>
       </div>

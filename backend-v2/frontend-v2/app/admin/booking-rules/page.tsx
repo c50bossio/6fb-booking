@@ -13,7 +13,7 @@ import {
 import BusinessHours from '../../../components/BusinessHours'
 import BookingRulesList from '../../../components/BookingRulesList'
 import BookingRuleEditor from '../../../components/BookingRuleEditor'
-import VisualBookingRulesBuilder from '../../../components/admin/VisualBookingRulesBuilder'
+// import VisualBookingRulesBuilder from '../../../components/admin/VisualBookingRulesBuilder'
 
 type TabType = 'business-hours' | 'booking-rules' | 'rule-editor' | 'visual-builder'
 
@@ -321,11 +321,10 @@ export default function AdminBookingRulesPage() {
           )}
           
           {activeTab === 'visual-builder' && (
-            <VisualBookingRulesBuilder
-              onSave={handleSaveVisualRules}
-              onCancel={handleCancelVisualBuilder}
-              initialRules={[]}
-            />
+            <div className="p-6 text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Visual Builder Temporarily Unavailable</h3>
+              <p className="text-gray-600">The visual builder is currently being updated. Please use the booking rules tab instead.</p>
+            </div>
           )}
           
           {activeTab === 'rule-editor' && showRuleEditor && (

@@ -31,6 +31,7 @@ import { useCalendarDragAndDrop } from '@/hooks/useCalendarDragAndDrop'
 
 // Use standardized booking response interface
 import type { BookingResponse } from '@/lib/api'
+import type { CalendarView } from '@/types/calendar'
 
 interface Appointment extends BookingResponse {
   height?: number // Calendar-specific computed field
@@ -46,7 +47,8 @@ interface Barber {
   role?: string
 }
 
-export type CalendarView = 'day' | 'week' | 'month'
+// Re-export CalendarView for backward compatibility
+export type { CalendarView } from '@/types/calendar'
 
 interface UnifiedCalendarProps {
   // Core props
@@ -599,4 +601,4 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
 })
 
 export default UnifiedCalendar
-export type { UnifiedCalendarProps, CalendarView }
+export type { UnifiedCalendarProps }

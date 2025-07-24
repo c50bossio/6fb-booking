@@ -503,9 +503,10 @@ export default function VisualBookingRulesBuilder({
                                   </div>
                                 </div>
                               </div>
-                    </div>
-                  ))}
-                </div>
+                            </div>
+                          ))}
+                        </div>
+                )
               )}
             </CardContent>
           </Card>

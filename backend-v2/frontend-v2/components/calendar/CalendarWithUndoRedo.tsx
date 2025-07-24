@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import UnifiedCalendar, { CalendarView } from '../UnifiedCalendar'
+import UnifiedCalendar from '../UnifiedCalendar'
+import type { CalendarView } from '@/types/calendar'
 import { 
   AppointmentUndoRedoProvider, 
   AppointmentUndoRedoControls,

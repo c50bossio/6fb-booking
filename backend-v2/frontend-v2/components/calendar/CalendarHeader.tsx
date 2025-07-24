@@ -6,7 +6,7 @@ import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon } from '@heroicons/rea
 import { Button } from '../ui/button'
 import { useResponsive } from '@/hooks/useResponsive'
 import { getMobileTouchClass } from '@/lib/mobile-touch-enhancements'
-import type { CalendarView } from '../UnifiedCalendar'
+import type { CalendarView } from '@/types/calendar'
 
 interface CalendarHeaderProps {
   view: CalendarView

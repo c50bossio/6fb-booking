@@ -10,13 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from "@/components/ui/use-toast"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
+import { Select } from '@/components/ui/select'
 import { 
   Table, 
   TableBody, 
@@ -329,16 +323,16 @@ export default function StaffInvitationsPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="role">Role *</Label>
-                    <Select value={inviteRole} onValueChange={setInviteRole} {...({} as any)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="barber" {...({} as any)}>Barber</SelectItem>
-                        <SelectItem value="receptionist" {...({} as any)}>Receptionist</SelectItem>
-                        <SelectItem value="shop_manager" {...({} as any)}>Shop Manager</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Select 
+                      value={inviteRole} 
+                      onChange={(value) => setInviteRole(value as string)}
+                      options={[
+                        { value: "barber", label: "Barber" },
+                        { value: "receptionist", label: "Receptionist" },
+                        { value: "shop_manager", label: "Shop Manager" }
+                      ]}
+                      placeholder="Select a role"
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="message">Personal Message (Optional)</Label>
