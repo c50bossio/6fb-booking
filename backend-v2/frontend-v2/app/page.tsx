@@ -321,6 +321,9 @@ export default function LandingPage() {
         )}
       </header>
 
+      {/* Authentication-Aware Hero Section for Logged-in Users */}
+      <AuthHeroCTAs />
+
       {/* A/B Tested Hero Section */}
       <ABTestingWrapper
         testId="homepage_hero_2025"

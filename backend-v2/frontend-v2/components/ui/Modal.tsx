@@ -62,9 +62,10 @@ const overlayVariants = cva(
   {
     variants: {
       position: {
-        center: 'items-center p-4',
-        bottom: 'items-end',
-        top: 'items-start',
+        center: 'items-center justify-center p-4',
+        bottom: 'items-end justify-center',
+        top: 'items-start justify-center pt-4',
+        'adaptive': 'items-start justify-center p-4',
       },
     },
     defaultVariants: {
@@ -89,6 +90,8 @@ export interface ModalProps extends VariantProps<typeof modalVariants> {
   className?: string
   overlayClassName?: string
   overflow?: 'hidden' | 'visible' | 'auto'
+  /** Enable adaptive positioning to prevent cutoff. Defaults to false. */
+  adaptivePositioning?: boolean
 }
 
 const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
@@ -109,11 +112,47 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     trapFocus = true,
     className,
     overlayClassName,
+    adaptivePositioning = false,
   }, ref) => {
     const [isVisible, setIsVisible] = useState(false)
     const [isAnimating, setIsAnimating] = useState(false)
     const modalRef = useRef<HTMLDivElement>(null)
     const previousFocus = useRef<HTMLElement | null>(null)
+    const [adaptivePosition, setAdaptivePosition] = useState<'center' | 'top' | 'bottom' | 'adaptive'>(position || 'bottom')
+    const [maxHeight, setMaxHeight] = useState<string>('80vh')
+
+    // Adaptive positioning logic
+    useEffect(() => {
+      if (!adaptivePositioning || !isOpen) return
+
+      const updatePosition = () => {
+        if (!modalRef.current) return
+
+        const viewportHeight = window.innerHeight
+        const modalRect = modalRef.current.getBoundingClientRect()
+        const modalHeight = modalRect.height
+
+        // If modal is too tall for viewport, use adaptive positioning with scrolling
+        if (modalHeight > viewportHeight * 0.9) {
+          setAdaptivePosition('adaptive')
+          setMaxHeight('90vh')
+        } else if (modalHeight > viewportHeight * 0.7) {
+          // Use center positioning with reduced max height
+          setAdaptivePosition('center')
+          setMaxHeight('80vh')
+        } else {
+          // Use original position
+          setAdaptivePosition(position || 'center')
+          setMaxHeight('80vh')
+        }
+      }
+
+      // Update on mount and window resize
+      updatePosition()
+      window.addEventListener('resize', updatePosition)
+      
+      return () => window.removeEventListener('resize', updatePosition)
+    }, [adaptivePositioning, isOpen, position])
 
     // Focus management
     useEffect(() => {
@@ -202,16 +241,17 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
 
     if (!isVisible) return null
 
-    const slideTransform = position === 'bottom' 
+    const effectivePosition = adaptivePositioning ? adaptivePosition : position
+    const slideTransform = effectivePosition === 'bottom' 
       ? isAnimating ? 'translate-y-full' : 'translate-y-0'
-      : position === 'top'
+      : effectivePosition === 'top' || effectivePosition === 'adaptive'
       ? isAnimating ? '-translate-y-full' : 'translate-y-0'
       : isAnimating ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
 
     return (
       <div
         className={overlayVariants({ 
-          position, 
+          position: effectivePosition, 
           className: `${isAnimating ? 'opacity-0' : 'opacity-100'} ${overlayClassName || ''}` 
         })}
         style={{ zIndex: 2147483647 }} // Maximum z-index to ensure modal appears on top
@@ -236,14 +276,15 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           className={modalVariants({ 
             size, 
             variant, 
-            position,
+            position: effectivePosition,
             overflow,
             className: `${slideTransform} ${className || ''}` 
           })}
+          style={{ maxHeight: adaptivePositioning ? maxHeight : undefined }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modal Handle (iOS-style) */}
-          {position === 'bottom' && (
+          {effectivePosition === 'bottom' && (
             <div className="flex justify-center py-3">
               <div className="w-10 h-1 bg-ios-gray-300 dark:bg-ios-gray-600 rounded-full"></div>
             </div>
@@ -286,7 +327,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           )}
 
           {/* Content */}
-          <div className="flex-1">
+          <div className={`flex-1 ${adaptivePositioning && adaptivePosition === 'adaptive' ? 'overflow-y-auto' : ''}`}>
             {children}
           </div>
         </div>

@@ -23,7 +23,7 @@ import {
   MinusIcon,
 } from '@heroicons/react/24/outline'
 import { BookingLinkGenerator, generateBookingURL } from '@/lib/booking-link-generator'
-import { BookingLinkParams, ServiceInfo, BarberInfo } from '@/types/booking-links'
+import { BookingLinkParams, ServiceInfo, BarberInfo, LocationInfo } from '@/types/booking-links'
 
 interface LinkCustomizerProps {
   isOpen: boolean
@@ -32,6 +32,7 @@ interface LinkCustomizerProps {
   businessName?: string
   services?: ServiceInfo[]
   barbers?: BarberInfo[]
+  locations?: LocationInfo[]
   mode?: 'set-parameters' | 'quick'
 }
 
@@ -48,9 +49,15 @@ const MOCK_SERVICES: ServiceInfo[] = [
 ]
 
 const MOCK_BARBERS: BarberInfo[] = [
-  { id: 1, name: 'Marcus Johnson', slug: 'marcus', email: 'marcus@6fb.com', isActive: true, services: [1, 2, 3, 4], timezone: 'America/New_York' },
-  { id: 2, name: 'David Smith', slug: 'david', email: 'david@6fb.com', isActive: true, services: [1, 3, 5], timezone: 'America/New_York' },
-  { id: 3, name: 'James Wilson', slug: 'james', email: 'james@6fb.com', isActive: true, services: [1, 2, 4, 5], timezone: 'America/New_York' },
+  { id: 1, name: 'Marcus Johnson', slug: 'marcus', email: 'marcus@6fb.com', isActive: true, services: [1, 2, 3, 4], timezone: 'America/New_York', locationId: 1 },
+  { id: 2, name: 'David Smith', slug: 'david', email: 'david@6fb.com', isActive: true, services: [1, 3, 5], timezone: 'America/New_York', locationId: 1 },
+  { id: 3, name: 'James Wilson', slug: 'james', email: 'james@6fb.com', isActive: true, services: [1, 2, 4, 5], timezone: 'America/New_York', locationId: 2 },
+]
+
+const MOCK_LOCATIONS: LocationInfo[] = [
+  { id: 1, name: 'Downtown Location', slug: 'downtown', address: '123 Main St', city: 'New York', state: 'NY', zipCode: '10001', phone: '(555) 123-4567', timezone: 'America/New_York', isActive: true, organizationId: 1 },
+  { id: 2, name: 'Uptown Location', slug: 'uptown', address: '456 Broadway', city: 'New York', state: 'NY', zipCode: '10002', phone: '(555) 987-6543', timezone: 'America/New_York', isActive: true, organizationId: 1 },
+  { id: 3, name: 'Brooklyn Location', slug: 'brooklyn', address: '789 Atlantic Ave', city: 'Brooklyn', state: 'NY', zipCode: '11201', phone: '(555) 555-1234', timezone: 'America/New_York', isActive: true, organizationId: 1 },
 ]
 
 const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
@@ -60,12 +67,14 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
   businessName = 'Your Business',
   services = MOCK_SERVICES,
   barbers = MOCK_BARBERS,
+  locations = MOCK_LOCATIONS,
   mode = 'set-parameters'
 }) => {
   // Form state
   const [linkParams, setLinkParams] = useState<BookingLinkParams>({})
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [selectedBarbers, setSelectedBarbers] = useState<string[]>([])
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([])
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
   const [timeRange, setTimeRange] = useState({ start: '', end: '' })
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -77,8 +86,9 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
     const generator = new BookingLinkGenerator('https://book.6fb.com/your-business')
     generator.setServices(services)
     generator.setBarbers(barbers)
+    generator.setLocations(locations)
     return generator
-  }, [services, barbers])
+  }, [services, barbers, locations])
 
   // Generated URL
   const generatedUrl = useMemo(() => {
@@ -86,6 +96,8 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
       ...linkParams,
       service: selectedServices.length === 1 ? selectedServices[0] : selectedServices.length > 1 ? selectedServices : undefined,
       barber: selectedBarbers.length === 1 ? selectedBarbers[0] : selectedBarbers.length > 1 ? selectedBarbers : undefined,
+      location: selectedLocations.length === 1 ? selectedLocations[0] : undefined,
+      locations: selectedLocations.length > 1 ? selectedLocations : undefined,
       dateRange: dateRange.start && dateRange.end ? `${dateRange.start},${dateRange.end}` : undefined,
       timeRange: timeRange.start && timeRange.end ? `${timeRange.start},${timeRange.end}` : undefined,
     }
@@ -101,7 +113,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
       console.error('Failed to generate URL:', error)
       return 'https://book.6fb.com/your-business'
     }
-  }, [linkParams, selectedServices, selectedBarbers, dateRange, timeRange, linkGenerator])
+  }, [linkParams, selectedServices, selectedBarbers, selectedLocations, dateRange, timeRange, linkGenerator])
 
   // Reset form when modal opens
   useEffect(() => {
@@ -109,6 +121,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
       setLinkParams({})
       setSelectedServices([])
       setSelectedBarbers([])
+      setSelectedLocations([])
       setDateRange({ start: '', end: '' })
       setTimeRange({ start: '', end: '' })
       setFormErrors({})
@@ -152,6 +165,16 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
         return prev.filter(b => b !== barberSlug)
       }
       return [...prev, barberSlug]
+    })
+  }
+
+  // Handle location selection
+  const toggleLocation = (locationSlug: string) => {
+    setSelectedLocations(prev => {
+      if (prev.includes(locationSlug)) {
+        return prev.filter(l => l !== locationSlug)
+      }
+      return [...prev, locationSlug]
     })
   }
 
@@ -203,6 +226,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
     setLinkParams({})
     setSelectedServices([])
     setSelectedBarbers([])
+    setSelectedLocations([])
     setDateRange({ start: '', end: '' })
     setTimeRange({ start: '', end: '' })
     setFormErrors({})
@@ -216,6 +240,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
         params: linkParams,
         services: selectedServices,
         barbers: selectedBarbers,
+        locations: selectedLocations,
         dateRange,
         timeRange,
         url: generatedUrl
@@ -233,6 +258,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
       position="center"
       variant="default"
       className="max-w-4xl"
+      adaptivePositioning={true}
     >
       <ModalBody className="pb-8">
         {/* Header */}
@@ -351,6 +377,50 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                 ))}
               </div>
             </Card>
+
+            {/* Location Selection */}
+            {locations.length > 0 && (
+              <Card variant="elevated" padding="lg">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-ios bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center">
+                    <CogIcon className="w-4 h-4 text-warning-600 dark:text-warning-400" />
+                  </div>
+                  <h3 className="text-ios-headline font-semibold text-accent-900 dark:text-white">
+                    Select Locations
+                  </h3>
+                </div>
+                <p className="text-ios-footnote text-ios-gray-600 dark:text-ios-gray-400 mb-4">
+                  Choose which locations to include for multi-location businesses.
+                </p>
+                <div className="grid grid-cols-1 gap-3">
+                  {locations.map(location => (
+                    <div
+                      key={location.id}
+                      onClick={() => toggleLocation(location.slug)}
+                      className={`p-3 rounded-ios-lg border-2 cursor-pointer transition-all duration-200 ${
+                        selectedLocations.includes(location.slug)
+                          ? 'border-warning-500 bg-warning-50 dark:bg-warning-900/20'
+                          : 'border-ios-gray-200 dark:border-ios-gray-700 hover:border-warning-300 dark:hover:border-warning-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-accent-900 dark:text-white">
+                            {location.name}
+                          </div>
+                          <div className="text-ios-caption1 text-ios-gray-600 dark:text-ios-gray-400">
+                            {location.address}, {location.city}, {location.state}
+                          </div>
+                        </div>
+                        {selectedLocations.includes(location.slug) && (
+                          <CheckIcon className="w-5 h-5 text-warning-600 dark:text-warning-400" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             {/* Date & Time Configuration */}
             {mode === 'set-parameters' && (
@@ -665,6 +735,27 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                     </div>
                   )}
 
+                  {selectedLocations.length > 0 && (
+                    <div>
+                      <span className="text-ios-caption1 font-medium text-ios-gray-700 dark:text-ios-gray-300">
+                        Locations:
+                      </span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedLocations.map(locationSlug => {
+                          const location = locations.find(l => l.slug === locationSlug)
+                          return (
+                            <span
+                              key={locationSlug}
+                              className="px-2 py-1 bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-300 rounded-ios text-ios-caption2 font-medium"
+                            >
+                              {location?.name || locationSlug}
+                            </span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {(dateRange.start || dateRange.end || linkParams.date) && (
                     <div>
                       <span className="text-ios-caption1 font-medium text-ios-gray-700 dark:text-ios-gray-300">
@@ -699,7 +790,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                     </div>
                   )}
 
-                  {Object.keys(linkParams).length === 0 && selectedServices.length === 0 && selectedBarbers.length === 0 && (
+                  {Object.keys(linkParams).length === 0 && selectedServices.length === 0 && selectedBarbers.length === 0 && selectedLocations.length === 0 && (
                     <div className="text-ios-caption1 text-ios-gray-500 dark:text-ios-gray-500 text-center py-4">
                       No parameters set. This will generate a standard booking link.
                     </div>

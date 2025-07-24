@@ -28,6 +28,7 @@ import {
   WrenchScrewdriverIcon,
   BoltIcon,
   ChartBarIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 
 interface ShareBookingModalProps {
@@ -298,9 +299,16 @@ ${businessName}`
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Current Booking URL
                   </p>
-                  <code className="text-sm text-primary-600 dark:text-primary-300 font-mono truncate block">
-                    {bookingUrl}
-                  </code>
+                  <a
+                    href={bookingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary-600 dark:text-primary-300 font-mono hover:text-primary-700 dark:hover:text-primary-200 hover:underline transition-colors duration-200 cursor-pointer flex items-center gap-2 group"
+                    title="Click to open booking page in new tab"
+                  >
+                    <span className="truncate flex-1">{bookingUrl}</span>
+                    <ArrowTopRightOnSquareIcon className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
+                  </a>
                 </div>
                 <button
                   onClick={() => copyToClipboard(bookingUrl, 'url-display')}

@@ -18,6 +18,14 @@ import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { TrialStatusBanner } from '@/components/ui/TrialStatusBanner'
 import { TrialWarningSystem } from '@/components/ui/TrialWarningSystem'
 import { ErrorBoundary } from '@/components/error-boundaries'
+import { useRealtimeAnalytics } from '@/hooks/useRealtimeAnalytics'
+import { LazyAnalytics, LazySixFigureTracker, createLazyComponent } from '@/components/ui/LazyLoader'
+
+// Lazy load the upselling intelligence component
+const LazyUpsellingIntelligence = createLazyComponent(
+  () => import('@/components/analytics/UpsellingIntelligence'),
+  'card'
+)
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -92,6 +100,17 @@ function DashboardContent() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [showTimezoneWarning, setShowTimezoneWarning] = useState(false)
   const [showTimezoneModal, setShowTimezoneModal] = useState(false)
+  
+  // Real-time analytics integration
+  const { 
+    isConnected: realtimeConnected, 
+    analyticsData: realtimeData, 
+    lastEvent,
+    connectionError 
+  } = useRealtimeAnalytics({
+    enabled: user?.role === 'admin' || user?.role === 'barber',
+    showNotifications: true
+  })
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -444,6 +463,59 @@ function DashboardContent() {
               </CardContent>
             </Card>
           )}
+
+          {/* Six Figure Barber Goal Tracking - Enhanced Analytics with Lazy Loading */}
+          <ErrorBoundary feature="six-figure-tracker" userId={user?.id}>
+            <LazySixFigureTracker
+              className="mb-8"
+              variant="hero"
+              showProjections={true}
+              showActionables={true}
+            />
+          </ErrorBoundary>
+
+          {/* Real-time Analytics Dashboard with Lazy Loading */}
+          <ErrorBoundary feature="interactive-analytics" userId={user?.id}>
+            <div className="mb-8">
+              {/* Real-time Connection Status */}
+              {connectionError && (
+                <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <div className="flex items-center text-yellow-800 dark:text-yellow-200 text-sm">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
+                    {connectionError}
+                  </div>
+                </div>
+              )}
+              
+              {realtimeConnected && (
+                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-center text-green-800 dark:text-green-200 text-sm">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    Real-time updates active
+                    {lastEvent && (
+                      <span className="ml-2 text-xs opacity-75">
+                        Last: {lastEvent.type.replace('_', ' ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <LazyAnalytics
+                sixFigureGoalEnabled={true}
+                className="w-full"
+              />
+            </div>
+          </ErrorBoundary>
+
+          {/* Upselling Intelligence - Six Figure Barber Revenue Optimization */}
+          <ErrorBoundary feature="upselling-intelligence" userId={user?.id}>
+            <LazyUpsellingIntelligence
+              className="mb-8"
+              autoNotifications={true}
+              showActionCards={true}
+            />
+          </ErrorBoundary>
 
           <ErrorBoundary 
             feature="barber-dashboard"

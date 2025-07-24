@@ -10,8 +10,8 @@ from typing import List, Optional, Dict, Any
 from datetime import date, datetime, timedelta
 from pydantic import BaseModel, Field
 
-from core.database import get_db
-from core.auth import get_current_user
+from db import get_db
+from utils.auth import get_current_user
 from services.calendar_revenue_optimizer import CalendarRevenueOptimizer
 from models.user import User
 from models.appointment import Appointment
