@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", response_model=ServiceTemplateListResponse)
+@router.get("/", response_model=None)
 async def get_service_templates(
     category: Optional[str] = Query(None, description="Filter by service category"),
     six_fb_tier: Optional[str] = Query(None, description="Filter by 6FB tier"),
@@ -82,7 +82,7 @@ async def get_service_templates(
         # Convert to response format
         template_responses = []
         for template in templates:
-            response = ServiceTemplateResponse.from_orm(template)
+            response = ServiceTemplateResponse.model_validate(template)
             response.pricing_range_display = template.pricing_range_display
             response.is_six_figure_aligned = template.is_six_figure_aligned
             template_responses.append(response)
@@ -122,7 +122,7 @@ async def get_featured_templates(
         # Convert to response format
         responses = []
         for template in templates:
-            response = ServiceTemplateResponse.from_orm(template)
+            response = ServiceTemplateResponse.model_validate(template)
             response.pricing_range_display = template.pricing_range_display
             response.is_six_figure_aligned = template.is_six_figure_aligned
             responses.append(response)
@@ -157,7 +157,7 @@ async def get_service_template(
                 detail=f"Service template {template_id} not found"
             )
         
-        response = ServiceTemplateResponse.from_orm(template)
+        response = ServiceTemplateResponse.model_validate(template)
         response.pricing_range_display = template.pricing_range_display
         response.is_six_figure_aligned = template.is_six_figure_aligned
         
@@ -321,7 +321,7 @@ async def create_service_template(
             created_by_id=current_user.id
         )
         
-        response = ServiceTemplateResponse.from_orm(template)
+        response = ServiceTemplateResponse.model_validate(template)
         response.pricing_range_display = template.pricing_range_display
         response.is_six_figure_aligned = template.is_six_figure_aligned
         

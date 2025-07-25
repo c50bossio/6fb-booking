@@ -8,7 +8,9 @@ import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
 import models.upselling
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, social_auth, search
+from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search
+# Consolidated analytics router (replaces: analytics, ai_analytics, marketing_analytics, email_analytics)
+from routers import unified_analytics
 
 # Import V2 API endpoints for Six Figure Barber enhancements
 from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization
@@ -304,7 +306,7 @@ app.include_router(social_auth.router, prefix="/api/v2")  # Social authenticatio
 
 # Removed auth bypass - using real authentication only
 app.include_router(mfa.router, prefix="/api/v2")  # Multi-Factor Authentication endpoints
-app.include_router(bookings.router, prefix="/api/v2")
+# DEPRECATED: bookings.router removed - use appointments.router instead (cleaner API)
 app.include_router(appointments.router, prefix="/api/v2")  # Standardized appointment endpoints
 app.include_router(payments.router, prefix="/api/v2")
 app.include_router(clients.router, prefix="/api/v2")
@@ -319,7 +321,7 @@ app.include_router(barbers.router, prefix="/api/v2")
 app.include_router(barber_availability.router, prefix="/api/v2")
 app.include_router(recurring_appointments.router, prefix="/api/v2")
 app.include_router(webhooks.router, prefix="/api/v2")
-app.include_router(analytics.router, prefix="/api/v2")
+# Replaced with unified_analytics.router - see consolidated analytics below
 app.include_router(dashboard.router, prefix="/api/v2")
 app.include_router(booking_rules.router, prefix="/api/v2")
 app.include_router(notifications.router, prefix="/api/v2")
@@ -330,10 +332,10 @@ app.include_router(sms_webhooks.router, prefix="/api/v2")
 app.include_router(webhook_management.router, prefix="/api/v2")  # Re-enabled with webhook models
 app.include_router(enterprise.router, prefix="/api/v2")
 app.include_router(marketing.router, prefix="/api/v2")
-app.include_router(marketing_analytics.router, prefix="/api/v2")  # Marketing analytics and attribution - re-enabled for testing
+# Replaced with unified_analytics.router - see consolidated analytics below
 app.include_router(short_urls.router, prefix="/s")  # Prefix for branded short URLs to avoid conflicts
 app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v2
-# app.include_router(email_analytics.router, prefix="/api/v2")  # Disabled - service archived
+# Email analytics consolidated into unified_analytics.router
 app.include_router(test_data.router, prefix="/api/v2")
 app.include_router(reviews.router, prefix="/api/v2")  # Re-enabled for testing
 app.include_router(locations.router, prefix="/api/v2")  # Re-enabled - schema implementation verified
@@ -347,7 +349,9 @@ app.include_router(organizations.router, prefix="/api/v2")  # Organization manag
 app.include_router(trial_monitoring.router, prefix="/api/v2")  # Trial expiration monitoring and notifications
 app.include_router(privacy.router)  # GDPR compliance and privacy management
 # app.include_router(cache.router)  # Redis cache management and monitoring - disabled due to archived services
-app.include_router(ai_analytics.router, prefix="/api/v2")  # Revolutionary AI-powered cross-user analytics
+# Replaced with unified_analytics.router - see consolidated analytics below
+# CONSOLIDATED ANALYTICS ROUTER - Replaces analytics, ai_analytics, marketing_analytics, email_analytics
+app.include_router(unified_analytics.router, prefix="/api/v2")  # Unified analytics with core, AI, and marketing analytics
 app.include_router(agents.router, prefix="/api/v2")  # AI Agent management - enabled with mock provider
 app.include_router(tracking.router)  # Conversion tracking and attribution
 app.include_router(customer_pixels.router)  # Customer tracking pixel management

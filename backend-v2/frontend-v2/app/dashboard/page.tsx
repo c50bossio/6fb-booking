@@ -21,11 +21,6 @@ import { ErrorBoundary } from '@/components/error-boundaries'
 import { useRealtimeAnalytics } from '@/hooks/useRealtimeAnalytics'
 import { LazyAnalytics, LazySixFigureTracker, createLazyComponent } from '@/components/ui/LazyLoader'
 
-// Lazy load the upselling intelligence component
-const LazyUpsellingIntelligence = createLazyComponent(
-  () => import('@/components/analytics/UpsellingIntelligence'),
-  'card'
-)
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -523,14 +518,6 @@ function DashboardContent() {
             </div>
           </ErrorBoundary>
 
-          {/* Upselling Intelligence - Six Figure Barber Revenue Optimization */}
-          <ErrorBoundary feature="upselling-intelligence" userId={user?.id}>
-            <LazyUpsellingIntelligence
-              className="mb-8"
-              autoNotifications={true}
-              showActionCards={true}
-            />
-          </ErrorBoundary>
 
           <ErrorBoundary 
             feature="barber-dashboard"

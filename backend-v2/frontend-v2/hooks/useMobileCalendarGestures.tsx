@@ -22,8 +22,8 @@ interface GestureCallbacks {
   onSwipeDown?: () => void
   onPinchZoom?: (scale: number) => void
   onTap?: (x: number, y: number) => void
-  onLongPress?: (x: number, y: number) => void
-  onDoubleTap?: (x: number, y: number) => void
+  onLongPress?: (target: EventTarget | null) => void
+  onDoubleTap?: (event: React.TouchEvent) => void
 }
 
 interface GestureOptions {
@@ -129,7 +129,7 @@ export function useMobileCalendarGestures(
         tapCountRef.current += 1
         if (tapCountRef.current === 2) {
           triggerHaptic('medium')
-          callbacks.onDoubleTap?.(touch.clientX, touch.clientY)
+          callbacks.onDoubleTap?.(e as any)
           tapCountRef.current = 0
         }
       } else {
@@ -140,7 +140,7 @@ export function useMobileCalendarGestures(
       // Start long press detection
       longPressTimeoutRef.current = setTimeout(() => {
         triggerHaptic('heavy')
-        callbacks.onLongPress?.(touch.clientX, touch.clientY)
+        callbacks.onLongPress?.(e.target)
         setGestureState(prev => ({ ...prev, gestureType: 'longPress' }))
       }, opts.longPressDelay)
 
@@ -299,7 +299,13 @@ export function useMobileCalendarGestures(
     gestureRef,
     gestureState,
     getSwipePreviewStyles,
-    triggerHaptic,
+    triggerHapticFeedback: triggerHaptic,
+    
+    // Event handlers to match MobileCalendarLayout interface
+    handleTouchStart: (e: React.TouchEvent) => handleTouchStart(e.nativeEvent),
+    handleTouchMove: (e: React.TouchEvent) => handleTouchMove(e.nativeEvent),
+    handleTouchEnd: (e: React.TouchEvent) => handleTouchEnd(e.nativeEvent),
+    handleLongPress: callbacks.onLongPress || (() => {}),
     
     // Utility methods
     isSwipingLeft: gestureState.direction === 'left' && gestureState.isGesturing,

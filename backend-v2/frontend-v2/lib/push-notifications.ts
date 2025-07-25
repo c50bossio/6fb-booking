@@ -1,308 +1,568 @@
-// Push notification management utilities
-import { API_URL } from './api'
+/**
+ * Push Notifications System
+ * Native-like notification experience for BookedBarber PWA
+ * Six Figure Barber methodology integration for revenue optimization
+ */
 
-interface PushSubscriptionData {
-  endpoint: string
+export interface NotificationData {
+  id: string;
+  title: string;
+  body: string;
+  icon?: string;
+  image?: string;
+  badge?: string;
+  tag?: string;
+  url?: string;
+  actions?: NotificationAction[];
+  requireInteraction?: boolean;
+  silent?: boolean;
+  timestamp?: number;
+  data?: any;
+}
+
+export interface NotificationAction {
+  action: string;
+  title: string;
+  icon?: string;
+}
+
+export interface PushSubscriptionData {
+  endpoint: string;
   keys: {
-    p256dh: string
-    auth: string
-  }
+    p256dh: string;
+    auth: string;
+  };
+  expirationTime?: number;
 }
 
-interface NotificationOptions {
-  title: string
-  body: string
-  icon?: string
-  badge?: string
-  tag?: string
-  data?: any
-  requireInteraction?: boolean
-  actions?: Array<{
-    action: string
-    title: string
-    icon?: string
-  }>
-}
+export type NotificationType = 
+  | 'appointment_reminder'
+  | 'appointment_confirmation'
+  | 'appointment_cancelled'
+  | 'appointment_rescheduled'
+  | 'client_arrived'
+  | 'payment_received'
+  | 'review_request'
+  | 'revenue_milestone'
+  | 'schedule_conflict'
+  | 'marketing_update'
+  | 'system_alert';
 
-// Convert base64 string to Uint8Array for Web Push
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4)
-  const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/')
+class PushNotificationManager {
+  private registration: ServiceWorkerRegistration | null = null;
+  private subscription: PushSubscription | null = null;
+  private isInitialized = false;
+  private userId: string | null = null;
+  private barberId: string | null = null;
 
-  const rawData = window.atob(base64)
-  const outputArray = new Uint8Array(rawData.length)
+  /**
+   * Initialize push notification system
+   */
+  async initialize(userId?: string, barberId?: string): Promise<boolean> {
+    if (this.isInitialized) return true;
 
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i)
-  }
-  return outputArray
-}
+    try {
+      // Check if notifications are supported
+      if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+        console.warn('Push notifications not supported');
+        return false;
+      }
 
-// Check if push notifications are supported
-export function isPushNotificationSupported(): boolean {
-  return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
-}
+      // Register service worker
+      this.registration = await navigator.serviceWorker.register('/sw.js');
+      
+      // Wait for service worker to be ready
+      await navigator.serviceWorker.ready;
 
-// Get current notification permission status
-export function getNotificationPermission(): NotificationPermission {
-  if (!('Notification' in window)) {
-    return 'denied'
-  }
-  return Notification.permission
-}
+      this.userId = userId || null;
+      this.barberId = barberId || null;
+      this.isInitialized = true;
 
-// Request notification permission
-export async function requestNotificationPermission(): Promise<NotificationPermission> {
-  if (!isPushNotificationSupported()) {
-    throw new Error('Push notifications are not supported in this browser')
-  }
-
-  const permission = await Notification.requestPermission()
-  return permission
-}
-
-// Subscribe to push notifications
-export async function subscribeToPushNotifications(userId: string): Promise<PushSubscription | null> {
-  if (!isPushNotificationSupported()) {
-    throw new Error('Push notifications are not supported')
-  }
-
-  // Check permission
-  const permission = await requestNotificationPermission()
-  if (permission !== 'granted') {
-    throw new Error('Notification permission denied')
-  }
-
-  // Get service worker registration
-  const registration = await navigator.serviceWorker.ready
-
-  // Get the VAPID public key from environment or API
-  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'YOUR_VAPID_PUBLIC_KEY'
-  const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey)
-
-  try {
-    // Subscribe to push notifications
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: convertedVapidKey
-    })
-
-    // Send subscription to backend
-    await savePushSubscription(userId, subscription)
-
-    return subscription
-  } catch (error) {
-    console.error('Failed to subscribe to push notifications:', error)
-    throw error
-  }
-}
-
-// Save push subscription to backend
-async function savePushSubscription(userId: string, subscription: PushSubscription): Promise<void> {
-  const subscriptionData: PushSubscriptionData = {
-    endpoint: subscription.endpoint,
-    keys: {
-      p256dh: btoa(String.fromCharCode(...Array.from(new Uint8Array(subscription.getKey('p256dh')!)))),
-      auth: btoa(String.fromCharCode(...Array.from(new Uint8Array(subscription.getKey('auth')!))))
+      console.log('🔔 Push notification system initialized');
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize push notifications:', error);
+      return false;
     }
   }
 
-  const response = await fetch(`${API_URL}/api/v2/push/subscribe`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    },
-    body: JSON.stringify({
-      user_id: userId,
-      subscription: subscriptionData
-    })
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to save push subscription')
-  }
-}
-
-// Unsubscribe from push notifications
-export async function unsubscribeFromPushNotifications(userId: string): Promise<void> {
-  if (!isPushNotificationSupported()) {
-    return
-  }
-
-  try {
-    const registration = await navigator.serviceWorker.ready
-    const subscription = await registration.pushManager.getSubscription()
-
-    if (subscription) {
-      // Unsubscribe from push manager
-      await subscription.unsubscribe()
-
-      // Remove subscription from backend
-      await removePushSubscription(userId, subscription.endpoint)
+  /**
+   * Request notification permission from user
+   */
+  async requestPermission(): Promise<NotificationPermission> {
+    if (!('Notification' in window)) {
+      throw new Error('Notifications not supported');
     }
-  } catch (error) {
-    console.error('Failed to unsubscribe from push notifications:', error)
-    throw error
-  }
-}
 
-// Remove push subscription from backend
-async function removePushSubscription(userId: string, endpoint: string): Promise<void> {
-  const response = await fetch(`${API_URL}/api/v2/push/unsubscribe`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    },
-    body: JSON.stringify({
-      user_id: userId,
-      endpoint: endpoint
-    })
-  })
+    let permission = Notification.permission;
 
-  if (!response.ok) {
-    throw new Error('Failed to remove push subscription')
-  }
-}
-
-// Check if user is subscribed to push notifications
-export async function isSubscribedToPushNotifications(): Promise<boolean> {
-  if (!isPushNotificationSupported()) {
-    return false
-  }
-
-  try {
-    const registration = await navigator.serviceWorker.ready
-    const subscription = await registration.pushManager.getSubscription()
-    return subscription !== null
-  } catch {
-    return false
-  }
-}
-
-// Get current push subscription
-export async function getCurrentPushSubscription(): Promise<PushSubscription | null> {
-  if (!isPushNotificationSupported()) {
-    return null
-  }
-
-  try {
-    const registration = await navigator.serviceWorker.ready
-    const subscription = await registration.pushManager.getSubscription()
-    return subscription
-  } catch {
-    return null
-  }
-}
-
-// Show a local notification (for testing)
-export function showLocalNotification(options: NotificationOptions): void {
-  if (!isPushNotificationSupported() || Notification.permission !== 'granted') {
-    console.warn('Cannot show notification: permission not granted')
-    return
-  }
-
-  // Use service worker to show notification for better reliability
-  navigator.serviceWorker.ready.then(registration => {
-    registration.showNotification(options.title, {
-      body: options.body,
-      icon: options.icon || '/icon?size=192',
-      badge: options.badge || '/icon?size=96',
-      tag: options.tag,
-      data: options.data,
-      requireInteraction: options.requireInteraction || false,
-      // actions: options.actions || [] // Commented out - not supported in NotificationOptions
-    })
-  })
-}
-
-// Update notification preferences
-export async function updateNotificationPreferences(
-  userId: string,
-  preferences: {
-    appointments?: boolean
-    bookings?: boolean
-    payments?: boolean
-    marketing?: boolean
-    reminders?: boolean
-  }
-): Promise<void> {
-  const response = await fetch(`${API_URL}/api/v2/push/preferences`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    },
-    body: JSON.stringify({
-      user_id: userId,
-      preferences
-    })
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to update notification preferences')
-  }
-}
-
-// Get notification preferences
-export async function getNotificationPreferences(userId: string): Promise<any> {
-  const response = await fetch(`${API_URL}/api/v2/push/preferences/${userId}`, {
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
     }
-  })
 
-  if (!response.ok) {
-    throw new Error('Failed to get notification preferences')
+    if (permission === 'granted') {
+      console.log('✅ Notification permission granted');
+      await this.subscribeToPush();
+    } else {
+      console.log('❌ Notification permission denied');
+    }
+
+    return permission;
   }
 
-  return response.json()
+  /**
+   * Subscribe to push notifications
+   */
+  async subscribeToPush(): Promise<PushSubscription | null> {
+    if (!this.registration) {
+      throw new Error('Service worker not registered');
+    }
+
+    try {
+      // Check if already subscribed
+      this.subscription = await this.registration.pushManager.getSubscription();
+      
+      if (!this.subscription) {
+        // Create new subscription
+        const vapidPublicKey = await this.getVapidPublicKey();
+        
+        this.subscription = await this.registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey)
+        });
+
+        console.log('🔔 Push subscription created');
+      }
+
+      // Send subscription to server
+      await this.sendSubscriptionToServer(this.subscription);
+      
+      return this.subscription;
+    } catch (error) {
+      console.error('Failed to subscribe to push notifications:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Unsubscribe from push notifications
+   */
+  async unsubscribe(): Promise<boolean> {
+    if (!this.subscription) return true;
+
+    try {
+      await this.subscription.unsubscribe();
+      await this.removeSubscriptionFromServer();
+      
+      this.subscription = null;
+      console.log('🔕 Push notifications disabled');
+      return true;
+    } catch (error) {
+      console.error('Failed to unsubscribe:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Show local notification
+   */
+  async showNotification(notification: NotificationData): Promise<void> {
+    if (!this.registration) {
+      throw new Error('Service worker not registered');
+    }
+
+    if (Notification.permission !== 'granted') {
+      console.warn('Notification permission not granted');
+      return;
+    }
+
+    const options: NotificationOptions = {
+      body: notification.body,
+      icon: notification.icon || '/icon?size=192',
+      badge: notification.badge || '/icon?size=96',
+      image: notification.image,
+      tag: notification.tag || 'general',
+      requireInteraction: notification.requireInteraction || false,
+      silent: notification.silent || false,
+      timestamp: notification.timestamp || Date.now(),
+      data: {
+        ...notification.data,
+        url: notification.url,
+        notificationId: notification.id
+      },
+      actions: notification.actions
+    };
+
+    await this.registration.showNotification(notification.title, options);
+    
+    // Track notification display
+    this.trackNotificationEvent('displayed', notification);
+  }
+
+  /**
+   * Schedule appointment reminder notifications
+   */
+  async scheduleAppointmentReminder(appointment: any, reminderTime: number): Promise<void> {
+    const now = Date.now();
+    const appointmentTime = new Date(appointment.start_time).getTime();
+    const reminderDelay = appointmentTime - reminderTime - now;
+
+    if (reminderDelay <= 0) return; // Already past reminder time
+
+    setTimeout(() => {
+      this.showNotification({
+        id: `reminder_${appointment.id}`,
+        title: '⏰ Appointment Reminder',
+        body: `${appointment.client_name} appointment in ${Math.round(reminderTime / (1000 * 60))} minutes`,
+        tag: 'appointment_reminder',
+        requireInteraction: true,
+        url: `/calendar?appointment=${appointment.id}`,
+        actions: [
+          {
+            action: 'view_appointment',
+            title: 'View Details'
+          },
+          {
+            action: 'mark_arrived',
+            title: 'Client Arrived'
+          }
+        ],
+        data: { appointment }
+      });
+    }, reminderDelay);
+  }
+
+  /**
+   * Send appointment confirmation notification
+   */
+  async sendAppointmentConfirmation(appointment: any): Promise<void> {
+    await this.showNotification({
+      id: `confirmation_${appointment.id}`,
+      title: '✅ Appointment Confirmed',
+      body: `${appointment.client_name} - ${appointment.service_name} on ${new Date(appointment.start_time).toLocaleDateString()}`,
+      tag: 'appointment_confirmation',
+      url: `/calendar?appointment=${appointment.id}`,
+      actions: [
+        {
+          action: 'view_calendar',
+          title: 'View Calendar'
+        },
+        {
+          action: 'contact_client',
+          title: 'Contact Client'
+        }
+      ],
+      data: { appointment }
+    });
+  }
+
+  /**
+   * Send revenue milestone notification (Six Figure Barber)
+   */
+  async sendRevenueMilestone(milestone: any): Promise<void> {
+    const milestoneMessages = {
+      daily: '🎯 Daily revenue goal achieved!',
+      weekly: '🚀 Weekly revenue milestone reached!',
+      monthly: '💰 Monthly revenue target hit!',
+      yearly: '🏆 Six Figure Barber goal achieved!'
+    };
+
+    await this.showNotification({
+      id: `milestone_${milestone.type}_${Date.now()}`,
+      title: milestoneMessages[milestone.type as keyof typeof milestoneMessages] || '💰 Revenue Milestone',
+      body: `Congratulations! You've earned $${milestone.amount.toLocaleString()} ${milestone.period}`,
+      tag: 'revenue_milestone',
+      requireInteraction: true,
+      url: '/analytics?tab=revenue',
+      actions: [
+        {
+          action: 'view_analytics',
+          title: 'View Analytics'
+        },
+        {
+          action: 'share_success',
+          title: 'Share Success'
+        }
+      ],
+      data: { milestone }
+    });
+  }
+
+  /**
+   * Send client review request notification
+   */
+  async sendReviewRequest(appointment: any): Promise<void> {
+    // Wait 1 hour after appointment completion
+    const reviewDelay = 60 * 60 * 1000; // 1 hour
+
+    setTimeout(() => {
+      this.showNotification({
+        id: `review_request_${appointment.id}`,
+        title: '⭐ Request Client Review',
+        body: `Ask ${appointment.client_name} to leave a review for great service`,
+        tag: 'review_request',
+        url: `/clients/${appointment.client_id}?action=review`,
+        actions: [
+          {
+            action: 'send_review_request',
+            title: 'Send Review Link'
+          },
+          {
+            action: 'skip_review',
+            title: 'Skip'
+          }
+        ],
+        data: { appointment }
+      });
+    }, reviewDelay);
+  }
+
+  /**
+   * Send marketing campaign notification
+   */
+  async sendMarketingUpdate(campaign: any): Promise<void> {
+    await this.showNotification({
+      id: `marketing_${campaign.id}`,
+      title: '📈 Marketing Update',
+      body: campaign.message || 'New marketing insights available',
+      tag: 'marketing_update',
+      url: '/marketing',
+      actions: [
+        {
+          action: 'view_marketing',
+          title: 'View Details'
+        }
+      ],
+      data: { campaign }
+    });
+  }
+
+  /**
+   * Handle notification preferences
+   */
+  async updateNotificationPreferences(preferences: any): Promise<void> {
+    try {
+      const response = await fetch('/api/v1/notification-preferences', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: this.userId,
+          barberId: this.barberId,
+          preferences
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update preferences');
+      }
+
+      console.log('✅ Notification preferences updated');
+    } catch (error) {
+      console.error('Failed to update notification preferences:', error);
+    }
+  }
+
+  /**
+   * Get notification history
+   */
+  async getNotificationHistory(limit = 50): Promise<any[]> {
+    try {
+      const response = await fetch(`/api/v1/notifications?limit=${limit}&userId=${this.userId}`);
+      if (!response.ok) throw new Error('Failed to fetch history');
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to get notification history:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Check if notifications are supported and enabled
+   */
+  isSupported(): boolean {
+    return 'Notification' in window && 'serviceWorker' in navigator;
+  }
+
+  /**
+   * Get current notification permission status
+   */
+  getPermissionStatus(): NotificationPermission {
+    return Notification.permission;
+  }
+
+  /**
+   * Check if push notifications are active
+   */
+  async isSubscribed(): Promise<boolean> {
+    if (!this.registration) return false;
+    
+    const subscription = await this.registration.pushManager.getSubscription();
+    return !!subscription;
+  }
+
+  /**
+   * Private helper methods
+   */
+  private async getVapidPublicKey(): Promise<string> {
+    try {
+      const response = await fetch('/api/v1/vapid-public-key');
+      const data = await response.json();
+      return data.publicKey;
+    } catch (error) {
+      console.error('Failed to get VAPID key:', error);
+      // Fallback key (should be replaced with actual key)
+      return 'BEl62iUYgUivxIkv69yViEuiBIa40HI80NM9f8rxr6CrTjWXbTI5cU0J7DVtBWNhA5IkBxEuKkr4nJfpQRn5E8Q';
+    }
+  }
+
+  private urlBase64ToUint8Array(base64String: string): Uint8Array {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  private async sendSubscriptionToServer(subscription: PushSubscription): Promise<void> {
+    try {
+      const response = await fetch('/api/v1/push-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: this.userId,
+          barberId: this.barberId,
+          subscription: {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')!))),
+              auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')!)))
+            },
+            expirationTime: subscription.expirationTime
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save subscription');
+      }
+
+      console.log('✅ Push subscription saved to server');
+    } catch (error) {
+      console.error('Failed to send subscription to server:', error);
+    }
+  }
+
+  private async removeSubscriptionFromServer(): Promise<void> {
+    try {
+      await fetch('/api/v1/push-subscription', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: this.userId,
+          barberId: this.barberId
+        })
+      });
+    } catch (error) {
+      console.error('Failed to remove subscription from server:', error);
+    }
+  }
+
+  private trackNotificationEvent(event: string, notification: NotificationData): void {
+    // Track notification events for analytics
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'notification_' + event, {
+        notification_type: notification.tag,
+        notification_id: notification.id,
+        user_id: this.userId,
+        barber_id: this.barberId
+      });
+    }
+  }
 }
 
-// Common notification templates
+/**
+ * Notification Templates for common scenarios
+ */
 export const notificationTemplates = {
-  appointmentReminder: (appointmentTime: string, clientName: string): NotificationOptions => ({
-    title: 'Appointment Reminder',
-    body: `You have an appointment with ${clientName} at ${appointmentTime}`,
-    icon: '/icon?size=192',
-    badge: '/icon?size=96',
-    tag: 'appointment-reminder',
+  appointmentReminder: (appointment: any, minutesUntil: number): NotificationData => ({
+    id: `reminder_${appointment.id}`,
+    title: '⏰ Appointment Reminder',
+    body: `${appointment.client_name} appointment in ${minutesUntil} minutes`,
+    tag: 'appointment_reminder',
     requireInteraction: true,
+    url: `/calendar?appointment=${appointment.id}`,
     actions: [
-      { action: 'view', title: 'View Details' },
-      { action: 'dismiss', title: 'Dismiss' }
-    ]
+      { action: 'view_appointment', title: 'View Details' },
+      { action: 'mark_arrived', title: 'Client Arrived' }
+    ],
+    data: { appointment }
   }),
 
-  newBooking: (clientName: string, service: string, time: string): NotificationOptions => ({
-    title: 'New Booking',
-    body: `${clientName} booked ${service} for ${time}`,
-    icon: '/icon?size=192',
-    badge: '/icon?size=96',
-    tag: 'new-booking',
+  clientArrived: (appointment: any): NotificationData => ({
+    id: `arrived_${appointment.id}`,
+    title: '👋 Client Arrived',
+    body: `${appointment.client_name} has arrived for their appointment`,
+    tag: 'client_arrived',
+    url: `/calendar?appointment=${appointment.id}`,
     actions: [
-      { action: 'accept', title: 'Accept' },
-      { action: 'view', title: 'View' }
-    ]
+      { action: 'start_service', title: 'Start Service' },
+      { action: 'view_notes', title: 'View Notes' }
+    ],
+    data: { appointment }
   }),
 
-  paymentReceived: (amount: string, clientName: string): NotificationOptions => ({
-    title: 'Payment Received',
-    body: `You received ${amount} from ${clientName}`,
-    icon: '/icon?size=192',
-    badge: '/icon?size=96',
-    tag: 'payment-received'
+  paymentReceived: (payment: any): NotificationData => ({
+    id: `payment_${payment.id}`,
+    title: '💰 Payment Received',
+    body: `$${payment.amount} received from ${payment.client_name}`,
+    tag: 'payment_received',
+    url: `/payments?payment=${payment.id}`,
+    data: { payment }
   }),
 
-  cancellation: (clientName: string, time: string): NotificationOptions => ({
-    title: 'Appointment Cancelled',
-    body: `${clientName} cancelled their appointment for ${time}`,
-    icon: '/icon?size=192',
-    badge: '/icon?size=96',
-    tag: 'cancellation',
-    requireInteraction: true
+  dailyRevenue: (amount: number): NotificationData => ({
+    id: `daily_revenue_${Date.now()}`,
+    title: '🎯 Daily Goal Achieved!',
+    body: `Congratulations! Today's revenue: $${amount.toLocaleString()}`,
+    tag: 'revenue_milestone',
+    requireInteraction: true,
+    url: '/analytics?tab=revenue',
+    actions: [
+      { action: 'view_analytics', title: 'View Analytics' },
+      { action: 'share_success', title: 'Share Success' }
+    ],
+    data: { amount, period: 'daily' }
+  }),
+
+  scheduleConflict: (conflict: any): NotificationData => ({
+    id: `conflict_${conflict.id}`,
+    title: '⚠️ Schedule Conflict',
+    body: `Conflicting appointments detected. Review needed.`,
+    tag: 'schedule_conflict',
+    requireInteraction: true,
+    url: `/calendar?conflict=${conflict.id}`,
+    actions: [
+      { action: 'resolve_conflict', title: 'Resolve Now' },
+      { action: 'view_calendar', title: 'View Calendar' }
+    ],
+    data: { conflict }
   })
-}
+};
+
+// Export singleton instance
+export const pushNotificationManager = new PushNotificationManager();
+export default pushNotificationManager;

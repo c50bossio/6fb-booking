@@ -42,6 +42,8 @@ import {
   RectangleStackIcon,
   DevicePhoneMobileIcon,
   ShoppingBagIcon,
+  ArrowTrendingUpIcon,
+  CogIcon as AutomationIcon,
   // Solid versions for mobile
   HomeIcon as HomeIconSolid,
   CalendarIcon as CalendarIconSolid,
@@ -269,6 +271,46 @@ export const navigationItems: NavigationItem[] = [
         icon: LinkIcon,
         roles: ['admin', 'super_admin'],
         description: 'Trackable booking URLs and QR codes'
+      }
+    ]
+  },
+  
+  // Business Automation - Manual → Semi-Auto → AI Agent progression
+  {
+    name: 'Business Automation',
+    href: '/automation',
+    icon: AutomationIcon,
+    roles: ['admin', 'barber', 'super_admin'],
+    description: 'Manual, semi-auto, and AI-powered business automation',
+    isNew: true,
+    children: [
+      {
+        name: 'Upselling Automation',
+        href: '/automation/upselling',
+        icon: ArrowTrendingUpIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Manual → Semi-Auto → AI Agent upselling controls'
+      },
+      {
+        name: 'Client Communication',
+        href: '/automation/communication',
+        icon: ChatBubbleLeftRightIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Automated messaging and follow-ups'
+      },
+      {
+        name: 'Booking Management',
+        href: '/automation/booking',
+        icon: CalendarIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Automated scheduling and confirmations'
+      },
+      {
+        name: 'Revenue Optimization',
+        href: '/automation/revenue',
+        icon: CurrencyDollarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'AI-powered pricing and revenue strategies'
       }
     ]
   },

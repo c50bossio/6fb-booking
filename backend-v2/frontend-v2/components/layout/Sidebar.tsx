@@ -95,6 +95,10 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
       ['Customer Management', 'Communication', 'Marketing Suite', 'Reviews', 'Products'].includes(item.name)
     )
     
+    const automationItems = filteredNavigationItems.filter(item => 
+      ['Business Automation'].includes(item.name)
+    )
+    
     const financeItems = filteredNavigationItems.filter(item => 
       ['Finance Hub', 'Analytics'].includes(item.name)
     )
@@ -110,6 +114,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
     return {
       core: coreItems,
       business: businessItems,
+      automation: automationItems,
       finance: financeItems,
       admin: adminItems,
       settings: settingsItems
@@ -258,10 +263,10 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
 
   return (
     <aside className={`
-      relative flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
+      sticky top-0 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
       transition-all duration-300 ease-out
       ${collapsed ? 'w-16' : 'w-64'}
-      h-full overflow-hidden z-10
+      h-screen overflow-hidden z-10
     `}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -417,6 +422,17 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
                   <div className="space-y-1">
                     {!collapsed && renderSectionHeader('Business')}
                     {groupedNavigation.business.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+
+              {/* Business Automation Section */}
+              {groupedNavigation.automation.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Automation')}
+                    {groupedNavigation.automation.map((item, index) => renderNavigationItem(item, 0, index))}
                   </div>
                 </>
               )}

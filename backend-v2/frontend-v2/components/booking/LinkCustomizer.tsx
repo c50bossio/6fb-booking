@@ -258,7 +258,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
       position="center"
       variant="default"
       className="max-w-4xl"
-      adaptivePositioning={true}
+      adaptivePositioning={false}
     >
       <ModalBody className="pb-8">
         {/* Header */}
