@@ -81,7 +81,7 @@ export default function CreateAppointmentModal({
   // Load time slots when date, service, or barber changes
   useEffect(() => {
     if (formData.date && formData.service) {
-      loadSlots(formData.date, formData.service.id, formData.barber?.id)
+      loadSlots(formData.date, String(formData.service.id), formData.barber?.id ? String(formData.barber.id) : undefined)
     }
   }, [formData.date, formData.service, formData.barber, loadSlots])
 

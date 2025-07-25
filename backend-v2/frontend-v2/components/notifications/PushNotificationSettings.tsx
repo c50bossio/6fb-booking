@@ -79,7 +79,7 @@ export function PushNotificationSettings() {
 
         // Load preferences if user is logged in
         if (user && subscribed) {
-          const prefs = await getNotificationPreferences(user.id)
+          const prefs = await getNotificationPreferences(String(user.id))
           setPreferences(prefs)
         }
       }
@@ -102,7 +102,7 @@ export function PushNotificationSettings() {
 
     setIsLoading(true)
     try {
-      const subscription = await subscribeToPushNotifications(user.id)
+      const subscription = await subscribeToPushNotifications(String(user.id))
       if (subscription) {
         setIsSubscribed(true)
         setPermission('granted')
@@ -134,7 +134,7 @@ export function PushNotificationSettings() {
 
     setIsLoading(true)
     try {
-      await unsubscribeFromPushNotifications(user.id)
+      await unsubscribeFromPushNotifications(String(user.id))
       setIsSubscribed(false)
       toast({
         title: 'Notifications disabled',
@@ -159,7 +159,7 @@ export function PushNotificationSettings() {
 
     setIsSaving(true)
     try {
-      await updateNotificationPreferences(user.id, newPreferences)
+      await updateNotificationPreferences(String(user.id), newPreferences)
       toast({
         title: 'Preferences updated',
         description: 'Your notification preferences have been saved.'

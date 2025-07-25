@@ -93,7 +93,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
 
     const paths = pathname.split('/').filter(Boolean)
-    const breadcrumbs = [{ label: 'Dashboard', href: '/dashboard' }]
+    const breadcrumbs: Array<{ label: string; href: string; isLast?: boolean }> = [{ label: 'Dashboard', href: '/dashboard' }]
 
     
     // Find matching navigation items for better labels

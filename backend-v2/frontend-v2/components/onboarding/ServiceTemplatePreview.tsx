@@ -107,7 +107,7 @@ export const ServiceTemplatePreview: React.FC<ServiceTemplatePreviewProps> = ({
 
         {/* Content */}
         <div className="p-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="methodology">6FB Methodology</TabsTrigger>

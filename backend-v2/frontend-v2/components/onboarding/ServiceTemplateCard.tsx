@@ -43,7 +43,7 @@ export const ServiceTemplateCard: React.FC<ServiceTemplateCardProps> = ({
 
   return (
     <Card
-      variant={selected ? 'accent' : 'default'}
+      variant={selected ? 'elevated' : 'outlined'}
       className={`
         cursor-pointer transition-all duration-200 hover:shadow-lg
         ${selected ? 'ring-2 ring-primary-500 ring-offset-2' : ''}

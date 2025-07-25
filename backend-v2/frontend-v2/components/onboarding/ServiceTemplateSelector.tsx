@@ -231,7 +231,7 @@ export const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = (
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <LoadingStates key={i} variant="card" />
+            <LoadingStates.Loading key={i} variant="skeleton" />
           ))}
         </div>
       </div>
@@ -306,40 +306,40 @@ export const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = (
             <div className="flex flex-wrap gap-2">
               <Select
                 value={filters.six_fb_tier || ''}
-                onValueChange={(value) => handleFilterChange('six_fb_tier', value)}
+                onChange={(value) => handleFilterChange('six_fb_tier', value as string)}
                 placeholder="All Tiers"
-              >
-                <option value="">All Tiers</option>
-                {SIX_FB_TIERS.map(tier => (
-                  <option key={tier.value} value={tier.value}>
-                    {tier.label}
-                  </option>
-                ))}
-              </Select>
+                options={[
+                  { value: '', label: 'All Tiers' },
+                  ...SIX_FB_TIERS.map(tier => ({
+                    value: tier.value,
+                    label: tier.label
+                  }))
+                ]}
+              />
               <Select
                 value={filters.category || ''}
-                onValueChange={(value) => handleFilterChange('category', value)}
+                onChange={(value) => handleFilterChange('category', value as string)}
                 placeholder="All Categories"
-              >
-                <option value="">All Categories</option>
-                {SERVICE_CATEGORIES.map(category => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
-                ))}
-              </Select>
+                options={[
+                  { value: '', label: 'All Categories' },
+                  ...SERVICE_CATEGORIES.map(category => ({
+                    value: category.value,
+                    label: category.label
+                  }))
+                ]}
+              />
               <Select
                 value={filters.revenue_impact || ''}
-                onValueChange={(value) => handleFilterChange('revenue_impact', value)}
+                onChange={(value) => handleFilterChange('revenue_impact', value as string)}
                 placeholder="Revenue Impact"
-              >
-                <option value="">All Impacts</option>
-                {REVENUE_IMPACT_LEVELS.map(level => (
-                  <option key={level.value} value={level.value}>
-                    {level.label}
-                  </option>
-                ))}
-              </Select>
+                options={[
+                  { value: '', label: 'All Impacts' },
+                  ...REVENUE_IMPACT_LEVELS.map(level => ({
+                    value: level.value,
+                    label: level.label
+                  }))
+                ]}
+              />
               <Button
                 variant="outline"
                 size="sm"
@@ -414,11 +414,11 @@ export const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = (
           icon={Star}
           title="No templates found"
           description="Try adjusting your search or filters to find templates."
-          action={
-            <Button onClick={clearFilters} variant="outline">
-              Clear Filters
-            </Button>
-          }
+          action={{
+            label: "Clear Filters",
+            onClick: clearFilters,
+            variant: "outline"
+          }}
         />
       ) : (
         <div className={`

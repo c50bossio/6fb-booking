@@ -9,8 +9,8 @@ import { Select } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Textarea } from '@/components/ui/Textarea';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { format, addDays, addWeeks, addMonths } from 'date-fns';
 import { 
@@ -313,7 +313,6 @@ export default function RecurringAppointmentWizard({
                   <RadioGroupItem 
                     value={type.value} 
                     checked={patternData.pattern_type === type.value}
-                    readOnly
                   />
                   <div>
                     <h4 className="font-medium">{type.label}</h4>
@@ -436,7 +435,7 @@ export default function RecurringAppointmentWizard({
               <Button
                 key={day.value}
                 type="button"
-                variant={patternData.days_of_week?.includes(day.value) ? 'default' : 'outline'}
+                variant={patternData.days_of_week?.includes(day.value) ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => {
                   const currentDays = patternData.days_of_week || [];
@@ -511,23 +510,24 @@ export default function RecurringAppointmentWizard({
               </Label>
               <Select
                 value={patternData.week_of_month?.toString() || ''}
-                onValueChange={(value) => updatePatternData({ week_of_month: parseInt(value) })}
+                onChange={(value) => updatePatternData({ week_of_month: parseInt(value as string) })}
                 disabled={!!patternData.day_of_month}
-              >
-                <option value="1">1st</option>
-                <option value="2">2nd</option>
-                <option value="3">3rd</option>
-                <option value="4">4th</option>
-              </Select>
+                options={[
+                  { value: '1', label: '1st' },
+                  { value: '2', label: '2nd' },
+                  { value: '3', label: '3rd' },
+                  { value: '4', label: '4th' }
+                ]}
+              />
               <Select
                 value={patternData.weekday_of_month?.toString() || ''}
-                onValueChange={(value) => updatePatternData({ weekday_of_month: parseInt(value) })}
+                onChange={(value) => updatePatternData({ weekday_of_month: parseInt(value as string) })}
                 disabled={!!patternData.day_of_month}
-              >
-                {DAYS_OF_WEEK.map(day => (
-                  <option key={day.value} value={day.value}>{day.label}</option>
-                ))}
-              </Select>
+                options={DAYS_OF_WEEK.map(day => ({
+                  value: day.value,
+                  label: day.label
+                }))}
+              />
               <span className="text-sm text-gray-500">of each month</span>
             </div>
           </RadioGroup>
@@ -647,7 +647,6 @@ export default function RecurringAppointmentWizard({
                   <RadioGroupItem 
                     value={type.value} 
                     checked={patternData.payment_type === type.value}
-                    readOnly
                   />
                   <div>
                     <h4 className="font-medium">{type.label}</h4>

@@ -31,7 +31,6 @@ export function NotificationBadge() {
   const { isSubscribed, showNotification } = usePushNotifications()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
-  const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
     // Mock notifications for demo
@@ -108,7 +107,7 @@ export function NotificationBadge() {
   }
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -149,9 +148,6 @@ export function NotificationBadge() {
                 className="p-3 cursor-pointer"
                 onClick={() => {
                   markAsRead(notification.id)
-                  if (notification.actionUrl) {
-                    setIsOpen(false)
-                  }
                 }}
               >
                 <Link

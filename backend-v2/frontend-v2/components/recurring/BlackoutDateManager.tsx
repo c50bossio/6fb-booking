@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/Textarea';
+import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { format, parseISO, isAfter, isBefore } from 'date-fns';
@@ -510,13 +510,16 @@ export default function BlackoutDateManager({
           />
           <Select
             value=""
-            onValueChange={(value) => setFormData(prev => ({ ...prev, reason: value }))}
-          >
-            <option value="">Quick Select</option>
-            {COMMON_REASONS.map(reason => (
-              <option key={reason} value={reason}>{reason}</option>
-            ))}
-          </Select>
+            onChange={(value) => setFormData(prev => ({ ...prev, reason: value as string }))}
+            placeholder="Quick Select"
+            options={[
+              { value: '', label: 'Quick Select' },
+              ...COMMON_REASONS.map(reason => ({
+                value: reason,
+                label: reason
+              }))
+            ]}
+          />
         </div>
         {errors.reason && (
           <p className="text-sm text-red-600 mt-1">{errors.reason}</p>
@@ -552,13 +555,16 @@ export default function BlackoutDateManager({
               <Label htmlFor="recurrence_pattern">Recurrence Pattern</Label>
               <Select
                 value={formData.recurrence_pattern || ''}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, recurrence_pattern: value }))}
-              >
-                <option value="">Select pattern</option>
-                {RECURRENCE_PATTERNS.map(pattern => (
-                  <option key={pattern.value} value={pattern.value}>{pattern.label}</option>
-                ))}
-              </Select>
+                onChange={(value) => setFormData(prev => ({ ...prev, recurrence_pattern: value as string }))}
+                placeholder="Select pattern"
+                options={[
+                  { value: '', label: 'Select pattern' },
+                  ...RECURRENCE_PATTERNS.map(pattern => ({
+                    value: pattern.value,
+                    label: pattern.label
+                  }))
+                ]}
+              />
               {errors.recurrence_pattern && (
                 <p className="text-sm text-red-600 mt-1">{errors.recurrence_pattern}</p>
               )}

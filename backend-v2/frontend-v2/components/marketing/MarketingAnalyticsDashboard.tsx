@@ -168,7 +168,7 @@ export default function MarketingAnalyticsDashboard({ organizationId }: Marketin
   }, [dateRange])
 
   if (loading) {
-    return <LoadingStates.Loading message="Loading marketing analytics..." />
+    return <LoadingStates.Loading text="Loading marketing analytics..." />
   }
 
   if (error) {

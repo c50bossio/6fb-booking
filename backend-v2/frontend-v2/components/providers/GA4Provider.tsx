@@ -75,7 +75,7 @@ export function GA4Provider({ children }: GA4ProviderProps) {
       const pageTitle = document.title || url
       const pagePath = url
       
-      analytics.trackPageView(pageTitle, pagePath, url)
+      analytics.trackPageView(pageTitle, pagePath, { full_url: url })
     }
 
     // Track initial page load
@@ -105,7 +105,7 @@ export function GA4Provider({ children }: GA4ProviderProps) {
 
   const trackPageView = useCallback((title: string, path: string) => {
     if (analytics && canLoadAnalytics) {
-      analytics.trackPageView(title, path, window.location.href)
+      analytics.trackPageView(title, path, { full_url: window.location.href })
     }
   }, [analytics, canLoadAnalytics])
 

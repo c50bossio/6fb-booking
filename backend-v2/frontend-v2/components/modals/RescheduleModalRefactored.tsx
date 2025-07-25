@@ -82,7 +82,7 @@ export default function RescheduleModal({
   // Load time slots when date changes
   useEffect(() => {
     if (newDate && appointment.service_id) {
-      loadSlots(newDate, appointment.service_id, appointment.barber_id)
+      loadSlots(newDate, String(appointment.service_id), appointment.barber_id ? String(appointment.barber_id) : undefined)
     }
   }, [newDate, appointment.service_id, appointment.barber_id, loadSlots])
 
@@ -212,8 +212,10 @@ export default function RescheduleModal({
         {/* Error Display */}
         {error && (
           <ErrorDisplay 
-            error={error} 
-            onRetry={() => setError(null)}
+            message={error} 
+            onAction={() => setError(null)}
+            actionLabel="Dismiss"
+            showAction={true}
           />
         )}
 
