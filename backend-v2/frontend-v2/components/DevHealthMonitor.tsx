@@ -44,6 +44,14 @@ export function DevHealthMonitor() {
     }
 
     const checkHealth = async () => {
+      // Detect if we're in GitHub Codespaces
+      const isCodespaces = window.location.hostname.includes('.app.github.dev');
+      const backendUrl = isCodespaces 
+        ? window.location.hostname.replace('-3000.app.github.dev', '-8000.app.github.dev')
+        : 'localhost:8000';
+      const backendProtocol = isCodespaces ? 'https://' : 'http://';
+      const backendBaseUrl = `${backendProtocol}${backendUrl}`;
+
       // Check Frontend (self)
       setServices(prev => prev.map(s => 
         s.name === 'Frontend' ? { ...s, status: 'up', responseTime: 0 } : s
@@ -52,7 +60,7 @@ export function DevHealthMonitor() {
       // Check Backend API
       try {
         const startTime = Date.now();
-        const response = await fetch('http://localhost:8000/health', {
+        const response = await fetch(`${backendBaseUrl}/health`, {
           method: 'GET',
           signal: AbortSignal.timeout(5000)
         }).catch(() => null);
@@ -79,7 +87,7 @@ export function DevHealthMonitor() {
 
       // Check Redis (via backend endpoint)
       try {
-        const response = await fetch('http://localhost:8000/api/v2/health/redis', {
+        const response = await fetch(`${backendBaseUrl}/api/v2/health/redis`, {
           method: 'GET',
           signal: AbortSignal.timeout(3000)
         }).catch(() => null);

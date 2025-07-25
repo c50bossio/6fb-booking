@@ -236,7 +236,7 @@ function LoginContent() {
               Welcome Back
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-              Sign in to your <span className="text-teal-600 dark:text-teal-400 font-semibold">BookedBarber</span> account
+              Sign in to your <span className="text-slate-900 dark:text-white font-semibold">BookedBarber</span> account
             </p>
           </div>
         </div>

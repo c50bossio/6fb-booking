@@ -31,7 +31,7 @@ from services.mfa_service import MFAService
 from services.suspicious_login_detection import get_suspicious_login_detector
 from services.password_security import validate_password_strength, password_security_service
 from models.mfa import UserMFASecret, MFADeviceTrust
-from utils.logging_config import get_audit_logger
+from utils.audit_logger_bypass import get_audit_logger
 import schemas
 import models
 from schemas import UserType

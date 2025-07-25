@@ -26,7 +26,7 @@ from schemas_new.commission import (
     PayoutPreviewBarber, PayoutPreviewAdmin,
     filter_commission_response
 )
-from utils.logging_config import get_audit_logger
+from utils.audit_logger_bypass import get_audit_logger
 from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 
 router = APIRouter(
