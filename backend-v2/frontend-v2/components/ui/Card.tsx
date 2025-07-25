@@ -52,7 +52,7 @@ const Card = React.forwardRef<
         "rounded-lg border bg-card text-card-foreground transition-all duration-200",
         {
           // Default variant - clean, minimal
-          "border-gray-200 bg-white shadow-sm hover:shadow-md": variant === "default",
+          "border-gray-200 bg-white shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-700": variant === "default",
           
           // Primary variant - for hero/important content (used sparingly)
           "border-primary-200 bg-primary-50 shadow-md hover:shadow-lg dark:bg-primary-900/10 dark:border-primary-800": variant === "primary",
