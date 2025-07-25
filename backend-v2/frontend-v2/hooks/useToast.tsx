@@ -252,13 +252,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         closeButton
         expand
         position="bottom-right"
+        offset="16px"
         toastOptions={{
           className: 'sonner-toast',
           style: {
             borderRadius: '0.5rem',
             border: '1px solid',
             borderColor: 'var(--border)',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            maxWidth: '420px',
+            width: 'calc(100vw - 32px)', // Responsive width with margin
+            marginRight: '16px',
+            marginBottom: '16px'
           }
         }}
       />
