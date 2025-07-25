@@ -14,7 +14,9 @@ import {
   Download,
   Upload,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Settings,
+  Percent
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -248,10 +250,10 @@ export default function ServiceBulkOperations({
             </div>
             {selectedServices.length > 0 && (
               <div className="flex gap-2">
-                <Badge variant="blue">
+                <Badge variant="secondary">
                   Total Value: ${selectedServiceData.reduce((sum, s) => sum + s.base_price, 0).toFixed(2)}
                 </Badge>
-                <Badge variant="blue">
+                <Badge variant="secondary">
                   Avg Duration: {Math.round(selectedServiceData.reduce((sum, s) => sum + s.duration_minutes, 0) / selectedServiceData.length)}min
                 </Badge>
               </div>

@@ -384,9 +384,8 @@ export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: R
           <div>
             <h4 className="font-medium mb-3">Select New Date</h4>
             <Calendar
-              selectedDate={modifyDate}
-              onDateSelect={setModifyDate}
-              bookingDates={[]}
+              selected={modifyDate}
+              onSelect={(date) => setModifyDate(date || null)}
             />
           </div>
 

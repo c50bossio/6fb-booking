@@ -12,7 +12,7 @@ import {
   useHighContrastMode,
   CalendarInstructions,
   SkipToCalendar
-} from '../calendar/CalendarAccessibility';
+} from '../calendar/CalendarAccessibility.tsx';
 
 export interface CalendarProps {
   mode?: 'single' | 'multiple' | 'range';

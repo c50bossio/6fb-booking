@@ -2,13 +2,14 @@
 Health check endpoints for monitoring service status
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from typing import Dict, Any
 import redis
 import psutil
 import time
-from datetime import datetime
+import os
+from datetime import datetime, timezone
 
 from db import get_db, engine
 from services.redis_service import cache_service
@@ -23,19 +24,31 @@ except ImportError:
     POOL_MONITOR_AVAILABLE = False
 
 router = APIRouter(
-    prefix="/api/v2/health",
+    prefix="/health",
     tags=["health"]
 )
 
+# Global container start time for tracking restarts
+CONTAINER_START_TIME = datetime.now(timezone.utc)
+
 @router.get("/", response_model=Dict[str, Any])
-async def health_check():
-    """Basic health check endpoint"""
+async def health_check(request: Request):
+    """Basic health check endpoint with Docker support"""
+    container_info = {
+        "container_id": os.environ.get('HOSTNAME', 'local'),
+        "container_mode": os.environ.get('CONTAINER_MODE', 'false') == 'true',
+        "start_time": CONTAINER_START_TIME.isoformat(),
+        "uptime_seconds": (datetime.now(timezone.utc) - CONTAINER_START_TIME).total_seconds()
+    }
+    
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": "BookedBarber API",
         "version": "2.0.0",
-        "environment": settings.environment
+        "environment": settings.environment,
+        "container": container_info,
+        "client_ip": request.client.host if request.client else None
     }
 
 @router.get("/detailed", response_model=Dict[str, Any])
@@ -427,4 +440,124 @@ async def _check_google_calendar_health() -> Dict[str, Any]:
             "status": "unhealthy",
             "error": str(e),
             "service": "google_calendar"
+        }
+
+
+# Docker-specific health endpoints
+@router.get("/docker", response_model=Dict[str, Any])
+async def docker_health_check(request: Request, db: Session = Depends(get_db)):
+    """Docker-specific health check with container information"""
+    try:
+        # Import the extended health checker
+        from docker_health_extended import health_checker
+        
+        # Get comprehensive health data
+        health_data = await health_checker.get_comprehensive_health()
+        
+        # Add request information
+        health_data["request_info"] = {
+            "client_ip": request.client.host if request.client else None,
+            "user_agent": request.headers.get("user-agent"),
+            "x_forwarded_for": request.headers.get("x-forwarded-for"),
+            "x_real_ip": request.headers.get("x-real-ip")
+        }
+        
+        return health_data
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "container": {
+                "container_id": os.environ.get('HOSTNAME', 'local'),
+                "container_mode": os.environ.get('CONTAINER_MODE', 'false') == 'true'
+            }
+        }
+
+
+@router.get("/ready", response_model=Dict[str, Any])
+async def readiness_check(db: Session = Depends(get_db)):
+    """Kubernetes-style readiness probe for Docker containers"""
+    try:
+        # Check critical services for readiness
+        ready = True
+        checks = {}
+        
+        # Database readiness
+        try:
+            from sqlalchemy import text
+            db.execute(text("SELECT 1"))
+            checks["database"] = {"status": "ready"}
+        except Exception as e:
+            checks["database"] = {"status": "not_ready", "error": str(e)}
+            ready = False
+        
+        # Redis readiness
+        try:
+            if cache_service.is_available():
+                # Test basic operation
+                cache_service.set("readiness_check", "ok", ttl=5)
+                value = cache_service.get("readiness_check")
+                cache_service.delete("readiness_check")
+                
+                if value == "ok":
+                    checks["redis"] = {"status": "ready"}
+                else:
+                    checks["redis"] = {"status": "not_ready", "error": "Operation test failed"}
+                    ready = False
+            else:
+                checks["redis"] = {"status": "not_ready", "error": "Not available"}
+                ready = False
+        except Exception as e:
+            checks["redis"] = {"status": "not_ready", "error": str(e)}
+            ready = False
+        
+        status_code = 200 if ready else 503
+        
+        return {
+            "status": "ready" if ready else "not_ready",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "checks": checks,
+            "container": {
+                "container_id": os.environ.get('HOSTNAME', 'local'),
+                "uptime": (datetime.now(timezone.utc) - CONTAINER_START_TIME).total_seconds()
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
+
+@router.get("/live", response_model=Dict[str, Any])
+async def liveness_check(request: Request):
+    """Kubernetes-style liveness probe for Docker containers"""
+    try:
+        # Simple liveness check - if we can respond, we're alive
+        uptime = (datetime.now(timezone.utc) - CONTAINER_START_TIME).total_seconds()
+        
+        return {
+            "status": "alive",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "uptime_seconds": uptime,
+            "container": {
+                "container_id": os.environ.get('HOSTNAME', 'local'),
+                "start_time": CONTAINER_START_TIME.isoformat(),
+                "container_mode": os.environ.get('CONTAINER_MODE', 'false') == 'true'
+            },
+            "process": {
+                "pid": os.getpid(),
+                "memory_mb": psutil.Process().memory_info().rss // (1024 * 1024),
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }

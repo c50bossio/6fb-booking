@@ -107,22 +107,24 @@ export default function ServiceAnalyticsPanel({
         <div className="flex gap-3">
           <Select
             value={dateRange}
-            onValueChange={onDateRangeChange}
+            onChange={(value) => onDateRangeChange(value as string)}
             className="w-40"
-          >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
-            <option value="1y">Last year</option>
-          </Select>
+            options={[
+              { value: '7d', label: 'Last 7 days' },
+              { value: '30d', label: 'Last 30 days' },
+              { value: '90d', label: 'Last 90 days' },
+              { value: '1y', label: 'Last year' }
+            ]}
+          />
           <Select
             value={comparisonPeriod}
-            onValueChange={setComparisonPeriod}
+            onChange={(value) => setComparisonPeriod(value as string)}
             className="w-40"
-          >
-            <option value="previous">Previous Period</option>
-            <option value="year">Last Year</option>
-          </Select>
+            options={[
+              { value: 'previous', label: 'Previous Period' },
+              { value: 'year', label: 'Last Year' }
+            ]}
+          />
         </div>
         <Button variant="outline" size="sm">
           <Download className="w-4 h-4 mr-2" />

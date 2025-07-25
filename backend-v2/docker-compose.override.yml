@@ -1,0 +1,198 @@
+# BookedBarber V2 Docker Compose Override - Development Optimizations
+# This file enhances the base docker-compose.yml with development-specific optimizations
+# for authentication consistency and browser cache management
+
+version: '3.8'
+
+services:
+  # Enhanced Redis Configuration for Auth Consistency
+  redis:
+    command: >
+      redis-server 
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --timeout 300
+      --tcp-keepalive 60
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    healthcheck:
+      test: |
+        redis-cli ping &&
+        redis-cli eval "return redis.call('ping')" 0
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+      - redis_conf:/usr/local/etc/redis
+
+  # Enhanced Database Configuration  
+  db:
+    healthcheck:
+      test: |
+        pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-sixfb} &&
+        psql -U ${DB_USER:-postgres} -d ${DB_NAME:-sixfb} -c "SELECT 1;" > /dev/null
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-sixfb}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      # Performance optimizations for development
+      POSTGRES_SHARED_PRELOAD_LIBRARIES: 'pg_stat_statements'
+      POSTGRES_MAX_CONNECTIONS: '100'
+      POSTGRES_SHARED_BUFFERS: '128MB'
+
+  # Enhanced Backend Configuration for Auth Reliability
+  backend:
+    environment:
+      # Enhanced auth configuration
+      REDIS_URL: redis://redis:6379/0
+      REDIS_MAX_CONNECTIONS: 20
+      REDIS_SOCKET_TIMEOUT: 5
+      
+      # Session management
+      SESSION_COOKIE_SECURE: "false"  # For localhost development
+      SESSION_COOKIE_SAMESITE: "lax"
+      SESSION_COOKIE_HTTPONLY: "true"
+      SESSION_TTL: 86400  # 24 hours
+      
+      # Auth debugging for containers
+      ENABLE_AUTH_DEBUGGING: "true"
+      LOG_LEVEL: "DEBUG"
+      
+      # Container-specific settings
+      CONTAINER_MODE: "true"
+      HEALTH_CHECK_TIMEOUT: 30
+      
+      # Database optimizations
+      DB_POOL_SIZE: 10
+      DB_MAX_OVERFLOW: 20
+      DB_POOL_TIMEOUT: 30
+      DB_POOL_RECYCLE: 3600
+      
+      # CORS for container networking
+      CORS_ORIGINS: "http://localhost:3000,http://frontend:3000,http://127.0.0.1:3000"
+      FRONTEND_URL: "http://localhost:3000"
+      
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: |
+        curl -f http://localhost:8000/health &&
+        curl -f http://localhost:8000/api/v1/auth/debug || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    volumes:
+      # Enhanced volume mounting for development
+      - ./:/app
+      - /app/.git
+      - /app/__pycache__
+      - /app/.pytest_cache
+      - /app/node_modules
+      # Add cache directories
+      - backend_cache:/app/.cache
+      - backend_logs:/app/logs
+
+  # Enhanced Frontend Configuration for Cache Management
+  frontend:
+    environment:
+      # API Configuration with fallbacks
+      NEXT_PUBLIC_API_URL: "http://localhost:8000"
+      NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+      NEXT_INTERNAL_API_URL: "http://backend:8000"  # Internal container communication
+      
+      # Container-specific settings
+      CONTAINER_MODE: "true"
+      NEXT_PUBLIC_CONTAINER_MODE: "true"
+      
+      # Enhanced development settings
+      NEXT_PUBLIC_ENVIRONMENT: "development"
+      NEXT_PUBLIC_ENABLE_DEBUG_PANEL: "true"
+      NODE_ENV: "development"
+      
+      # Cache control for development
+      NEXT_PUBLIC_CACHE_CONTROL: "no-cache, no-store, must-revalidate"
+      NEXT_PUBLIC_AUTH_CACHE_BUSTER: "container-restart"
+      
+      # Hot reload optimization
+      WATCHPACK_POLLING: "true"
+      NEXT_CACHE_DISABLED: "false"
+      
+      # Browser cache headers for auth
+      NEXT_PUBLIC_AUTH_HEADERS: "Cache-Control: no-cache, Pragma: no-cache"
+      
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: |
+        curl -f http://localhost:3000 &&
+        curl -f http://localhost:3000/api/health || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    restart: unless-stopped
+    volumes:
+      # Enhanced volume mounting with cache optimization
+      - ./frontend-v2:/app
+      - frontend_node_modules:/app/node_modules
+      # Persistent but clearable cache
+      - frontend_next_cache:/app/.next
+      - frontend_cache:/app/.cache
+      # Development tools
+      - frontend_eslint_cache:/app/.eslintcache
+
+# Enhanced volumes for better caching and persistence
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  redis_conf:
+    driver: local
+  frontend_node_modules:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./frontend-v2/node_modules
+  frontend_next_cache:
+    driver: local
+  frontend_cache:
+    driver: local
+  frontend_eslint_cache:
+    driver: local
+  backend_cache:
+    driver: local
+  backend_logs:
+    driver: local
+
+# Enhanced network configuration
+networks:
+  bookedbarber-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.bridge.host_binding_ipv4: "0.0.0.0"

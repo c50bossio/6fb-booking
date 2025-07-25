@@ -23,7 +23,7 @@ function StaticHeaderCTAs({ className = '' }: { className?: string }) {
 function StaticHeroCTAs({ className = '' }: { className?: string }) {
   return (
     <div className={`flex justify-center ${className}`}>
-      <CTAButton ctaId="register" size="xl" showIcon={true} />
+      <CTAButton ctaId="register" size="lg" showIcon={true} />
     </div>
   )
 }
@@ -147,7 +147,7 @@ function AuthHeroCTAsInternal({ className = '' }: { className?: string }) {
     // Unauthenticated users see the regular register button
     return (
       <div className={`flex justify-center ${className}`}>
-        <CTAButton ctaId="register" size="xl" showIcon={true} />
+        <CTAButton ctaId="register" size="lg" showIcon={true} />
       </div>
     )
   }

@@ -138,7 +138,7 @@ export default function ServiceTemplateRecommendations({
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold">${template.base_price}</p>
+                    <p className="text-lg font-bold">${template.suggested_base_price}</p>
                     <p className="text-xs text-gray-500">{template.duration_minutes}min</p>
                   </div>
                 </div>
@@ -156,12 +156,12 @@ export default function ServiceTemplateRecommendations({
                 </div>
 
                 {/* Template Benefits */}
-                {template.template_benefits && template.template_benefits.length > 0 && (
+                {template.template_tags && template.template_tags.length > 0 && (
                   <ul className="space-y-1 mb-3">
-                    {template.template_benefits.slice(0, 2).map((benefit, idx) => (
+                    {template.template_tags.slice(0, 2).map((tag, idx) => (
                       <li key={idx} className="flex items-start gap-1 text-xs text-gray-600">
                         <ChevronRight className="w-3 h-3 mt-0.5" />
-                        <span>{benefit}</span>
+                        <span>{tag}</span>
                       </li>
                     ))}
                   </ul>

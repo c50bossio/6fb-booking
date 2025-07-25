@@ -130,16 +130,17 @@ export default function ServiceOverviewGrid({
             </div>
             <Select
               value={filterCategory}
-              onValueChange={onFilterChange}
+              onChange={(value) => onFilterChange(value as string)}
               className="w-48"
-            >
-              <option value="">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>
-                  {cat.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </option>
-              ))}
-            </Select>
+              placeholder="All Categories"
+              options={[
+                { value: '', label: 'All Categories' },
+                ...categories.map(cat => ({
+                  value: cat,
+                  label: cat.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                }))
+              ]}
+            />
             <Select
               value={sortBy}
               onValueChange={(value) => setSortBy(value as any)}
