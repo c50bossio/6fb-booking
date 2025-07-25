@@ -23,9 +23,16 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "@/components/*": ["./components/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/styles/*": ["./styles/*"],
+      "@/types/*": ["./types/*"],
+      "@/utils/*": ["./utils/*"],
+      "@/app/*": ["./app/*"],
+      "@/api/*": ["./app/api/*"],
+      "@/core/*": ["../core/*"]
     },
     "target": "ES2017"
   },
