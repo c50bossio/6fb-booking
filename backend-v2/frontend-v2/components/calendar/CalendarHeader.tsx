@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { format, startOfWeek, endOfWeek } from 'date-fns'
-import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { Button } from '../ui/button'
 import { useResponsive } from '@/hooks/useResponsive'
 import { getMobileTouchClass } from '@/lib/mobile-touch-enhancements'
@@ -15,6 +15,8 @@ interface CalendarHeaderProps {
   onTodayClick: () => void
   onRefresh?: () => void
   isLoading?: boolean
+  onToggleSmartPanel?: () => void
+  showSmartPanel?: boolean
 }
 
 export const CalendarHeader = React.memo(function CalendarHeader({
@@ -23,7 +25,9 @@ export const CalendarHeader = React.memo(function CalendarHeader({
   onNavigate,
   onTodayClick,
   onRefresh,
-  isLoading = false
+  isLoading = false,
+  onToggleSmartPanel,
+  showSmartPanel = false
 }: CalendarHeaderProps) {
   const { isMobile } = useResponsive()
 
@@ -96,6 +100,19 @@ export const CalendarHeader = React.memo(function CalendarHeader({
         >
           Today
         </Button>
+        
+        {onToggleSmartPanel && (
+          <Button
+            variant={showSmartPanel ? "default" : "outline"}
+            size="sm"
+            onClick={onToggleSmartPanel}
+            className={`${isMobile ? getMobileTouchClass('small', 'secondary') : ''} ${showSmartPanel ? 'bg-blue-600 text-white' : ''}`}
+            disabled={isLoading}
+          >
+            <SparklesIcon className="w-4 h-4 mr-1" />
+            {!isMobile && 'Smart'}
+          </Button>
+        )}
         
         {onRefresh && (
           <Button

@@ -1,0 +1,11 @@
+{
+  "total_executions": 1,
+  "success_rate": 100.0,
+  "executions_by_agent": {
+    "debugger": 1
+  },
+  "executions_by_trigger": {
+    "http_errors": 1
+  },
+  "last_updated": "2025-07-25T13:56:10.588223"
+}

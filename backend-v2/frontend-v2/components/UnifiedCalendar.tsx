@@ -18,6 +18,10 @@ import { CalendarKeyboardNavigation } from './calendar/CalendarKeyboardNavigatio
 import { KeyboardShortcutIndicator, useKeyboardShortcutIndicator } from './ui/keyboard-shortcut-indicator'
 import { useKeyboardShortcutsHelp } from './ui/keyboard-shortcuts-help'
 import { CalendarA11yProvider, useScreenReaderAnnouncement } from './calendar/CalendarAccessibility'
+import SmartSchedulingPanel from './calendar/SmartSchedulingPanel'
+import CalendarKeyboardShortcuts from './calendar/CalendarKeyboardShortcuts'
+import CalendarUIEnhancements, { useCalendarUIEnhancements } from './calendar/CalendarUIEnhancements'
+import { AppointmentTooltip, TimeSlotTooltip } from './calendar/CalendarTooltips'
 
 // Import loading states
 import { CalendarEmptyState, CalendarLoadingManager } from './calendar/CalendarLoadingStates'
@@ -150,6 +154,14 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
   const helpDialog = useKeyboardShortcutsHelp()
   const { announce: screenReaderAnnounce, AnnouncementRegion } = useScreenReaderAnnouncement()
   
+  // Smart scheduling panel state
+  const [showSmartPanel, setShowSmartPanel] = React.useState(false)
+  const [schedulingRules, setSchedulingRules] = React.useState([])
+  
+  // UI enhancements
+  const { metrics } = useCalendarUIEnhancements(appointments, barbers)
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = React.useState(false)
+  
   // Swipe navigation for mobile
   const swipeContainerRef = useSwipeNavigation(
     () => navigateDate('next'), // Swipe left goes to next
@@ -220,6 +232,22 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     onAppointmentUpdate,
     checkAndUpdateAppointment
   })
+  
+  // Smart scheduling handlers
+  const handleSmartSlotSelect = useCallback((slot: any) => {
+    // Convert smart slot to regular time slot click
+    onTimeSlotClick?.(slot.start_time, slot.barber_id)
+    // Close the smart panel after selection
+    setShowSmartPanel(false)
+    // Announce the selection
+    announce(`Smart time slot selected: ${format(slot.start_time, 'h:mm a')} with ${slot.confidence}% confidence`)
+  }, [onTimeSlotClick, announce])
+
+  const handleSchedulingRulesUpdate = useCallback((rules: any[]) => {
+    setSchedulingRules(rules)
+    // Announce rules update
+    announce('Smart scheduling rules updated')
+  }, [announce])
   
   // Removed heavy performance monitoring for better performance
   
@@ -548,19 +576,23 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                         const topPercent = (startMinutes / 60) * 100
                         
                         return (
-                          <div
+                          <AppointmentTooltip
                             key={appointment.id}
-                            className={`absolute left-1 right-1 mx-1 px-2 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${getServiceColor(appointment.service_name || appointment.status)}`}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onAppointmentClick?.(appointment)
-                            }}
-                            style={{
-                              top: `${topPercent}%`,
-                              height: `${Math.max(heightPercent, 25)}%`, // Minimum height for readability
-                              zIndex: 10
-                            }}
+                            appointment={appointment}
+                            showAdvanced={!isMobile}
                           >
+                            <div
+                              className={`absolute left-1 right-1 mx-1 px-2 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${getServiceColor(appointment.service_name || appointment.status)}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onAppointmentClick?.(appointment)
+                              }}
+                              style={{
+                                top: `${topPercent}%`,
+                                height: `${Math.max(heightPercent, 25)}%`, // Minimum height for readability
+                                zIndex: 10
+                              }}
+                            >
                             <div className="flex flex-col h-full justify-between relative">
                               {/* Barber initials - top right corner */}
                               <div className="absolute -top-1 -right-1 w-4 h-4 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 rounded-full flex items-center justify-center text-xs font-bold leading-none">
@@ -577,7 +609,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                                 {format(new Date(appointment.start_time), 'h:mm a')}
                               </div>
                             </div>
-                          </div>
+                          </AppointmentTooltip>
                         )
                       })}
                     </div>
@@ -842,7 +874,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
   return (
     <div 
       className={`
-        unified-calendar h-full flex flex-col 
+        unified-calendar h-full flex 
         bg-white dark:bg-gray-900 
         text-gray-900 dark:text-gray-100
         border border-gray-200 dark:border-gray-700 
@@ -853,20 +885,37 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
         // Deselect appointment when clicking on background
         setSelectedAppointmentId(null)
       }}>
-      {/* Navigation header with enhanced mobile touch targets */}
-      <CalendarHeader
-        view={view}
-        currentDate={state.currentDate}
-        onNavigate={navigateDate}
-        onTodayClick={() => {
-          setCurrentDate(new Date())
-          onDateChange?.(new Date())
-        }}
-        onRefresh={onRefresh}
-        isLoading={isLoading}
-      />
       
-      {/* View content with loading manager */}
+      {/* Main calendar container */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Navigation header with enhanced mobile touch targets */}
+        <CalendarHeader
+          view={view}
+          currentDate={state.currentDate}
+          onNavigate={navigateDate}
+          onTodayClick={() => {
+            setCurrentDate(new Date())
+            onDateChange?.(new Date())
+          }}
+          onRefresh={onRefresh}
+          isLoading={isLoading}
+          onToggleSmartPanel={() => setShowSmartPanel(!showSmartPanel)}
+          showSmartPanel={showSmartPanel}
+        />
+        
+        {/* Calendar UI Enhancements */}
+        <CalendarUIEnhancements
+          currentDate={state.currentDate}
+          view={view}
+          appointments={appointments}
+          barbers={barbers}
+          metrics={metrics}
+          showMetrics={true}
+          showInsights={true}
+          showQuickActions={true}
+        />
+        
+        {/* View content with loading manager */}
       <div 
         className={`
           calendar-content flex-1 overflow-hidden relative 
@@ -913,7 +962,22 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
             </>
           )}
         </CalendarLoadingManager>
+        </div>
       </div>
+      
+      {/* Smart Scheduling Panel - Sidebar */}
+      {showSmartPanel && (
+        <div className="w-96 flex-shrink-0 border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 overflow-y-auto">
+          <SmartSchedulingPanel
+            selectedDate={state.currentDate}
+            appointments={appointments}
+            barbers={barbers}
+            onSlotSelect={handleSmartSlotSelect}
+            onRuleUpdate={handleSchedulingRulesUpdate}
+            className="h-full"
+          />
+        </div>
+      )}
       
       {/* Modals */}
       {state.showClientModal && state.selectedClient && (
@@ -940,6 +1004,30 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
       <KeyboardShortcutIndicator
         show={showIndicator && !isMobile && !isLoading}
         onClick={helpDialog.open}
+      />
+      
+      {/* Calendar Keyboard Shortcuts */}
+      <CalendarKeyboardShortcuts
+        currentDate={state.currentDate}
+        view={view}
+        onDateChange={(date) => {
+          setCurrentDate(date)
+          onDateChange?.(date)
+        }}
+        onViewChange={onViewChange}
+        onCreateAppointment={() => {
+          // Use current time for new appointment
+          const now = new Date()
+          onTimeSlotClick?.(now)
+        }}
+        onRefresh={onRefresh}
+        onToggleSmartPanel={() => setShowSmartPanel(!showSmartPanel)}
+        onSearch={() => {
+          // Implement search functionality if needed
+          announce('Search functionality coming soon')
+        }}
+        onShowHelp={() => setShowKeyboardShortcuts(true)}
+        isEnabled={!isLoading && !state.isDragging}
       />
       
       {/* Keyboard Navigation */}
