@@ -473,7 +473,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     return (
       <div className="day-view h-full overflow-auto bg-gray-50 dark:bg-gray-900">
         {/* Header with barber avatars - Fresha style */}
-        <div className="flex bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+        <div className="flex overflow-x-auto bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
           {/* Time column header */}
           <div className="w-20 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 p-3">
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
@@ -483,7 +483,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
           
           {/* Barber columns */}
           {activeBarbers.map(barber => (
-            <div key={barber.id} className="flex-1 min-w-0 p-3 text-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
+            <div key={barber.id} className="w-80 flex-shrink-0 p-3 text-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
               <div className="flex flex-col items-center space-y-2">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                   {(barber.name || barber.first_name || barber.email)?.charAt(0)?.toUpperCase() || 'B'}
@@ -497,7 +497,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
         </div>
 
         {/* Time slots and appointments grid */}
-        <div className="flex">
+        <div className="flex overflow-x-auto">
           {/* Time labels column */}
           <div className="w-20 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             {hours.map(hour => (
@@ -517,7 +517,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
             )
             
             return (
-              <div key={barber.id} className="flex-1 min-w-0 border-r border-gray-200 dark:border-gray-700 last:border-r-0 bg-white dark:bg-gray-800">
+              <div key={barber.id} className="w-80 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 last:border-r-0 bg-white dark:bg-gray-800">
                 {hours.map(hour => {
                   const hourAppointments = barberAppointments.filter(apt => 
                     new Date(apt.start_time).getHours() === hour
