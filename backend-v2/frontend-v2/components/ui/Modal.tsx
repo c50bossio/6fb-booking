@@ -16,7 +16,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
  */
 
 const modalVariants = cva(
-  'relative bg-white dark:bg-dark-elevated-100 rounded-t-ios-2xl shadow-ios-2xl transform transition-all duration-300 ease-out',
+  'relative bg-white dark:bg-gray-900 rounded-t-ios-2xl shadow-ios-2xl transform transition-all duration-300 ease-out',
   {
     variants: {
       size: {
@@ -32,9 +32,9 @@ const modalVariants = cva(
         screen: 'w-screen h-screen rounded-none',
       },
       variant: {
-        default: 'bg-white dark:bg-dark-elevated-100',
-        glass: 'bg-white/80 dark:bg-dark-elevated-100/80 backdrop-blur-ios border border-white/20 dark:border-white/10',
-        gradient: 'bg-gradient-to-br from-white to-ios-gray-50 dark:from-dark-elevated-100 dark:to-dark-surface-100',
+        default: 'bg-white dark:bg-gray-900',
+        glass: 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-ios border border-white/20 dark:border-white/10',
+        gradient: 'bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800',
         premium: 'bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-950 dark:to-accent-950',
       },
       position: {
@@ -67,7 +67,7 @@ const overlayVariants = cva(
         bottom: 'items-end justify-center',
         top: 'items-start justify-center pt-4',
         'adaptive': 'items-start justify-center p-4',
-        'header-aware': 'items-start justify-center pt-24', // Account for header height + margin
+        'header-aware': 'items-start justify-center pt-48', // Position well below header with more spacing
       },
     },
     defaultVariants: {
@@ -94,6 +94,8 @@ export interface ModalProps extends VariantProps<typeof modalVariants> {
   overflow?: 'hidden' | 'visible' | 'auto'
   /** Enable adaptive positioning to prevent cutoff. Defaults to false. */
   adaptivePositioning?: boolean
+  /** Custom z-index for modal stacking. Defaults to 9999. */
+  zIndex?: number
 }
 
 const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
@@ -115,6 +117,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     className,
     overlayClassName,
     adaptivePositioning = false,
+    zIndex = 9999,
   }, ref) => {
     const [isVisible, setIsVisible] = useState(false)
     const [isAnimating, setIsAnimating] = useState(false)
@@ -259,14 +262,27 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           className: `${isAnimating ? 'opacity-0' : 'opacity-100'} ${overlayClassName || ''}` 
         })}
         style={{ 
-          zIndex: 2147483647, // Maximum z-index to ensure modal appears on top
+          zIndex: zIndex + 1000, // Much higher z-index to avoid conflicts
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0
         }}
-        onClick={closeOnOverlayClick ? onClose : undefined}
+        onClick={(e) => {
+          // Robust click-outside detection
+          if (closeOnOverlayClick) {
+            const clickedElement = e.target as HTMLElement;
+            const modalContent = clickedElement.closest('[role="dialog"]');
+            
+            // If click is outside modal content, close it
+            if (!modalContent) {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }
+          }
+        }}
         onKeyDown={handleKeyDown}
         role="dialog"
         aria-modal="true"
@@ -296,23 +312,26 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
             maxWidth: '90vw',
             width: 'auto'
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation()
+            // Ensure clicks inside modal content don't close the modal
+          }}
         >
           {/* Modal Handle (iOS-style) */}
           {effectivePosition === 'bottom' && (
             <div className="flex justify-center py-3">
-              <div className="w-10 h-1 bg-ios-gray-300 dark:bg-ios-gray-600 rounded-full"></div>
+              <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
             </div>
           )}
 
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-ios-gray-200 dark:border-ios-gray-700">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex-1">
                 {title && (
                   <h2 
                     id="modal-title" 
-                    className="text-ios-headline font-semibold text-accent-900 dark:text-white"
+                    className="text-lg font-semibold text-gray-900 dark:text-white"
                   >
                     {title}
                   </h2>
@@ -320,7 +339,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
                 {description && (
                   <p 
                     id="modal-description" 
-                    className="text-ios-subheadline text-ios-gray-600 dark:text-ios-gray-400 mt-1"
+                    className="text-sm text-gray-600 dark:text-gray-400 mt-1"
                   >
                     {description}
                   </p>
@@ -330,7 +349,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="ml-4 p-2 rounded-full text-ios-gray-400 hover:text-ios-gray-600 dark:hover:text-ios-gray-300 hover:bg-ios-gray-100 dark:hover:bg-ios-gray-800 transition-colors duration-200"
+                  className="ml-4 p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
                   aria-label="Close modal"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
@@ -363,7 +382,7 @@ const ModalHeader = React.forwardRef<HTMLDivElement, ModalHeaderProps>(
     return (
       <div
         ref={ref}
-        className={`px-6 py-4 border-b border-ios-gray-200 dark:border-ios-gray-700 ${className || ''}`}
+        className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 ${className || ''}`}
         {...props}
       >
         {children}
@@ -405,7 +424,7 @@ const ModalFooter = React.forwardRef<HTMLDivElement, ModalFooterProps>(
     return (
       <div
         ref={ref}
-        className={`px-6 py-4 border-t border-ios-gray-200 dark:border-ios-gray-700 bg-ios-gray-50 dark:bg-dark-surface-100 flex items-center justify-end gap-3 ${className || ''}`}
+        className={`px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-end gap-3 ${className || ''}`}
         {...props}
       >
         {children}
