@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { format, startOfWeek, endOfWeek } from 'date-fns'
-import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, SparklesIcon, UsersIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import { Button } from '../ui/button'
 import { useResponsive } from '@/hooks/useResponsive'
 import { getMobileTouchClass } from '@/lib/mobile-touch-enhancements'
@@ -17,6 +17,10 @@ interface CalendarHeaderProps {
   isLoading?: boolean
   onToggleSmartPanel?: () => void
   showSmartPanel?: boolean
+  onToggleClientManager?: () => void
+  showClientManager?: boolean
+  onToggleRevenuePanel?: () => void
+  showRevenuePanel?: boolean
 }
 
 export const CalendarHeader = React.memo(function CalendarHeader({
@@ -27,7 +31,11 @@ export const CalendarHeader = React.memo(function CalendarHeader({
   onRefresh,
   isLoading = false,
   onToggleSmartPanel,
-  showSmartPanel = false
+  showSmartPanel = false,
+  onToggleClientManager,
+  showClientManager = false,
+  onToggleRevenuePanel,
+  showRevenuePanel = false
 }: CalendarHeaderProps) {
   const { isMobile } = useResponsive()
 
@@ -111,6 +119,32 @@ export const CalendarHeader = React.memo(function CalendarHeader({
           >
             <SparklesIcon className="w-4 h-4 mr-1" />
             {!isMobile && 'Smart'}
+          </Button>
+        )}
+
+        {onToggleClientManager && (
+          <Button
+            variant={showClientManager ? "default" : "outline"}
+            size="sm"
+            onClick={onToggleClientManager}
+            className={`${isMobile ? getMobileTouchClass('small', 'secondary') : ''} ${showClientManager ? 'bg-purple-600 text-white' : ''}`}
+            disabled={isLoading}
+          >
+            <UsersIcon className="w-4 h-4 mr-1" />
+            {!isMobile && 'Clients'}
+          </Button>
+        )}
+
+        {onToggleRevenuePanel && (
+          <Button
+            variant={showRevenuePanel ? "default" : "outline"}
+            size="sm"
+            onClick={onToggleRevenuePanel}
+            className={`${isMobile ? getMobileTouchClass('small', 'secondary') : ''} ${showRevenuePanel ? 'bg-green-600 text-white' : ''}`}
+            disabled={isLoading}
+          >
+            <ChartBarIcon className="w-4 h-4 mr-1" />
+            {!isMobile && 'Revenue'}
           </Button>
         )}
         

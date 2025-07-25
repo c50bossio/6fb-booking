@@ -22,6 +22,8 @@ import SmartSchedulingPanel from './calendar/SmartSchedulingPanel'
 import CalendarKeyboardShortcuts from './calendar/CalendarKeyboardShortcuts'
 import CalendarUIEnhancements, { useCalendarUIEnhancements } from './calendar/CalendarUIEnhancements'
 import { AppointmentTooltip, TimeSlotTooltip } from './calendar/CalendarTooltips'
+import CalendarClientManager from './calendar/CalendarClientManager'
+import RevenueOptimizationPanel from './calendar/RevenueOptimizationPanel'
 
 // Import loading states
 import { CalendarEmptyState, CalendarLoadingManager } from './calendar/CalendarLoadingStates'
@@ -80,6 +82,9 @@ interface UnifiedCalendarProps {
   onAppointmentUpdate?: (appointmentId: number, newStartTime: string, isDragDrop?: boolean) => void
   onDayClick?: (date: Date) => void
   onDayDoubleClick?: (date: Date) => void
+  onCreateAppointment?: (clientId?: number) => void
+  onUpdateClient?: (client: any) => void
+  onViewClientHistory?: (clientId: number) => void
   
   // Configuration props
   startHour?: number
@@ -111,6 +116,9 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
   onAppointmentUpdate,
   onDayClick,
   onDayDoubleClick,
+  onCreateAppointment,
+  onUpdateClient,
+  onViewClientHistory,
   startHour = 8,
   endHour = 19,
   slotDuration = 30,
@@ -135,7 +143,15 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     showConflictModalWithAnalysis,
     hideConflictModal,
     addOptimisticUpdate,
-    removeOptimisticUpdate
+    removeOptimisticUpdate,
+    showClientManager,
+    hideClientManager,
+    toggleClientManager,
+    selectClientInManager,
+    showRevenuePanel,
+    hideRevenuePanel,
+    toggleRevenuePanel,
+    setRevenuePanelPeriod
   } = useCalendarState(currentDate)
   
   // Simplified performance hooks - removed heavy monitoring for better performance
@@ -247,6 +263,85 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     setSchedulingRules(rules)
     // Announce rules update
     announce('Smart scheduling rules updated')
+  }, [announce])
+
+  // Client management handlers
+  const handleClientSelect = useCallback((client: any) => {
+    selectClientInManager(client)
+    onClientClick?.(client)
+    announce(`Selected client ${client.first_name} ${client.last_name}`)
+  }, [selectClientInManager, onClientClick, announce])
+
+  const handleCreateAppointmentForClient = useCallback((clientId?: number) => {
+    onCreateAppointment?.(clientId)
+    announce('Creating new appointment')
+  }, [onCreateAppointment, announce])
+
+  const handleUpdateClient = useCallback((client: any) => {
+    onUpdateClient?.(client)
+    announce(`Updated client ${client.first_name} ${client.last_name}`)
+  }, [onUpdateClient, announce])
+
+  const handleViewClientHistory = useCallback((clientId: number) => {
+    onViewClientHistory?.(clientId)
+    announce('Viewing client history')
+  }, [onViewClientHistory, announce])
+
+  // Revenue optimization handlers
+  const handleOptimizationAction = useCallback((action: string, data: any) => {
+    console.log('Revenue optimization action:', action, data)
+    announce(`Executing optimization: ${action}`)
+    
+    switch (action) {
+      case 'optimize_pricing':
+        // Handle pricing optimization
+        announce('Analyzing pricing opportunities')
+        break
+      case 'optimize_schedule':
+        // Handle schedule optimization
+        announce('Optimizing schedule gaps')
+        break
+      case 'improve_upselling':
+        // Handle upselling improvement
+        announce('Reviewing upselling strategies')
+        break
+      case 'increase_client_value':
+        // Handle client value optimization
+        announce('Analyzing client value opportunities')
+        break
+      case 'accelerate_growth':
+        // Handle growth acceleration
+        announce('Reviewing growth strategies')
+        break
+      case 'set_goals':
+        // Handle goal setting
+        announce('Opening goal setting interface')
+        break
+      case 'price_optimization':
+        // Handle price analysis
+        announce('Opening price analysis tool')
+        break
+      case 'service_optimization':
+        // Handle service mix optimization
+        announce('Analyzing service mix optimization')
+        break
+      default:
+        announce(`Optimization action: ${action}`)
+    }
+  }, [announce])
+
+  const handleViewRevenueDetails = useCallback((type: string, id: string) => {
+    console.log('View revenue details:', type, id)
+    announce(`Viewing detailed ${type} report`)
+    
+    switch (type) {
+      case 'revenue_report':
+        // Handle detailed revenue report
+        announce(`Opening detailed revenue report for ${id}`)
+        break
+      default:
+        announce(`Opening ${type} details`)
+    }
   }, [announce])
   
   // Removed heavy performance monitoring for better performance
@@ -593,20 +688,21 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                                 zIndex: 10
                               }}
                             >
-                            <div className="flex flex-col h-full justify-between relative">
-                              {/* Barber initials - top right corner */}
-                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 rounded-full flex items-center justify-center text-xs font-bold leading-none">
-                                {getBarberInitials(appointment.barber_id)}
-                              </div>
-                              
-                              <div className="truncate font-semibold pr-4">
-                                {appointment.client_name}
-                              </div>
-                              <div className="truncate text-xs opacity-90">
-                                {appointment.service_name || 'Service'}
-                              </div>
-                              <div className="truncate text-xs opacity-75">
-                                {format(new Date(appointment.start_time), 'h:mm a')}
+                              <div className="flex flex-col h-full justify-between relative">
+                                {/* Barber initials - top right corner */}
+                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 rounded-full flex items-center justify-center text-xs font-bold leading-none">
+                                  {getBarberInitials(appointment.barber_id)}
+                                </div>
+                                
+                                <div className="truncate font-semibold pr-4">
+                                  {appointment.client_name}
+                                </div>
+                                <div className="truncate text-xs opacity-90">
+                                  {appointment.service_name || 'Service'}
+                                </div>
+                                <div className="truncate text-xs opacity-75">
+                                  {format(new Date(appointment.start_time), 'h:mm a')}
+                                </div>
                               </div>
                             </div>
                           </AppointmentTooltip>
@@ -901,6 +997,10 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
           isLoading={isLoading}
           onToggleSmartPanel={() => setShowSmartPanel(!showSmartPanel)}
           showSmartPanel={showSmartPanel}
+          onToggleClientManager={toggleClientManager}
+          showClientManager={state.showClientManager}
+          onToggleRevenuePanel={toggleRevenuePanel}
+          showRevenuePanel={state.showRevenuePanel}
         />
         
         {/* Calendar UI Enhancements */}
@@ -975,6 +1075,41 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
             onSlotSelect={handleSmartSlotSelect}
             onRuleUpdate={handleSchedulingRulesUpdate}
             className="h-full"
+          />
+        </div>
+      )}
+
+      {/* Client Management Panel - Sidebar */}
+      {state.showClientManager && (
+        <div className="w-96 flex-shrink-0 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto">
+          <CalendarClientManager
+            selectedDate={state.selectedDate || state.currentDate}
+            selectedAppointment={state.selectedAppointmentId ? 
+              filteredAppointments.find(apt => apt.id.toString() === state.selectedAppointmentId) : null
+            }
+            clients={clients}
+            appointments={filteredAppointments}
+            onClientSelect={handleClientSelect}
+            onCreateAppointment={handleCreateAppointmentForClient}
+            onUpdateClient={handleUpdateClient}
+            onViewClientHistory={handleViewClientHistory}
+            className="h-full"
+            isVisible={state.showClientManager}
+          />
+        </div>
+      )}
+
+      {/* Revenue Optimization Panel - Sidebar */}
+      {state.showRevenuePanel && (
+        <div className="w-96 flex-shrink-0 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto">
+          <RevenueOptimizationPanel
+            selectedDate={state.selectedDate || state.currentDate}
+            appointments={filteredAppointments}
+            clients={clients}
+            onOptimizationAction={handleOptimizationAction}
+            onViewDetails={handleViewRevenueDetails}
+            className="h-full"
+            isVisible={state.showRevenuePanel}
           />
         </div>
       )}

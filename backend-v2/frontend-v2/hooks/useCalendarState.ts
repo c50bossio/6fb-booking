@@ -31,6 +31,14 @@ export interface UnifiedCalendarState {
   showClientModal: boolean
   showConflictModal: boolean
   
+  // Client management panel state
+  showClientManager: boolean
+  clientManagerSelectedClient: any | null
+  
+  // Revenue optimization panel state
+  showRevenuePanel: boolean
+  revenuePanelPeriod: 'day' | 'week' | 'month'
+  
   // Conflict management
   conflictAnalysis: ConflictAnalysis | null
   pendingUpdate: { appointmentId: number; newStartTime: string } | null
@@ -55,6 +63,10 @@ export function useCalendarState(initialDate: Date) {
     selectedClient: null,
     showClientModal: false,
     showConflictModal: false,
+    showClientManager: false,
+    clientManagerSelectedClient: null,
+    showRevenuePanel: false,
+    revenuePanelPeriod: 'day',
     conflictAnalysis: null,
     pendingUpdate: null,
     optimisticUpdates: new Map()
@@ -134,6 +146,42 @@ export function useCalendarState(initialDate: Date) {
     })
   }, [])
 
+  const showClientManager = useCallback(() => {
+    setState(prev => ({ ...prev, showClientManager: true }))
+  }, [])
+
+  const hideClientManager = useCallback(() => {
+    setState(prev => ({ ...prev, showClientManager: false }))
+  }, [])
+
+  const toggleClientManager = useCallback(() => {
+    setState(prev => ({ ...prev, showClientManager: !prev.showClientManager }))
+  }, [])
+
+  const selectClientInManager = useCallback((client: any) => {
+    setState(prev => ({ 
+      ...prev, 
+      clientManagerSelectedClient: client,
+      showClientManager: true 
+    }))
+  }, [])
+
+  const showRevenuePanel = useCallback(() => {
+    setState(prev => ({ ...prev, showRevenuePanel: true }))
+  }, [])
+
+  const hideRevenuePanel = useCallback(() => {
+    setState(prev => ({ ...prev, showRevenuePanel: false }))
+  }, [])
+
+  const toggleRevenuePanel = useCallback(() => {
+    setState(prev => ({ ...prev, showRevenuePanel: !prev.showRevenuePanel }))
+  }, [])
+
+  const setRevenuePanelPeriod = useCallback((period: 'day' | 'week' | 'month') => {
+    setState(prev => ({ ...prev, revenuePanelPeriod: period }))
+  }, [])
+
   return {
     state,
     updateState,
@@ -146,6 +194,14 @@ export function useCalendarState(initialDate: Date) {
     showConflictModalWithAnalysis,
     hideConflictModal,
     addOptimisticUpdate,
-    removeOptimisticUpdate
+    removeOptimisticUpdate,
+    showClientManager,
+    hideClientManager,
+    toggleClientManager,
+    selectClientInManager,
+    showRevenuePanel,
+    hideRevenuePanel,
+    toggleRevenuePanel,
+    setRevenuePanelPeriod
   }
 }
