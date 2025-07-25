@@ -446,60 +446,60 @@ export default function LandingPage() {
                   animationDelay: `${index * 100}ms`
                 }}
               >
-                {/* Enhanced Multi-Layer Glassmorphism Background */}
-                <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white/30 dark:border-gray-700/40 rounded-3xl shadow-xl shadow-black/5 dark:shadow-black/20" />
+                {/* Enhanced Multi-Layer Background with Better Contrast */}
+                <div className="absolute inset-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-2xl border-2 border-slate-200/80 dark:border-gray-600/60 rounded-3xl shadow-2xl shadow-slate-900/10 dark:shadow-black/40" />
                 
-                {/* Secondary Glassmorphism Layer for Depth */}
-                <div className="absolute inset-[1px] bg-white/40 dark:bg-gray-700/40 backdrop-blur-sm rounded-3xl" />
+                {/* Enhanced Secondary Layer for Better Depth */}
+                <div className="absolute inset-[2px] bg-gradient-to-br from-white/60 to-slate-50/80 dark:from-gray-700/60 dark:to-gray-800/80 backdrop-blur-sm rounded-3xl" />
                 
-                {/* Premium Gradient Overlay with Enhanced Depth */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-[0.12] transition-all duration-500 rounded-3xl`} />
+                {/* More Prominent Gradient Overlay */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-[0.08] group-hover:opacity-[0.18] transition-all duration-500 rounded-3xl`} />
                 
-                {/* Floating Highlight Effect */}
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 dark:via-gray-300/60 to-transparent rounded-t-3xl" />
+                {/* Enhanced Highlight Effect */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-400/80 dark:via-gray-200/80 to-transparent rounded-t-3xl" />
                 
                 {/* Enhanced Content Layout - Optimized for Equal Heights */}
                 <div className="relative p-6 lg:p-8 h-full flex flex-col min-h-[420px]">
                   {/* Header Section with Improved Visual Hierarchy */}
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex-shrink-0">
-                      <div className={`w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center shadow-lg shadow-black/10 group-hover:shadow-2xl group-hover:shadow-black/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-white/20 backdrop-blur-sm`}>
-                        <feature.icon className="w-7 h-7 lg:w-8 lg:h-8 text-white" />
+                      <div className={`w-16 h-16 lg:w-18 lg:h-18 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center shadow-xl shadow-black/20 group-hover:shadow-2xl group-hover:shadow-black/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border-2 border-white/30 backdrop-blur-sm ring-2 ring-white/10`}>
+                        <feature.icon className="w-8 h-8 lg:w-9 lg:h-9 text-white drop-shadow-lg" />
                       </div>
                     </div>
                     
                     <div className="text-right">
-                      <div className={`text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r ${feature.color} bg-clip-text text-transparent`}>
+                      <div className={`text-2xl lg:text-3xl xl:text-4xl font-black bg-gradient-to-r ${feature.color} bg-clip-text text-transparent drop-shadow-sm`}>
                         {feature.metric}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">improvement</div>
+                      <div className="text-sm text-slate-600 dark:text-slate-300 font-bold mt-1 uppercase tracking-wide">improvement</div>
                     </div>
                   </div>
                   
-                  {/* Enhanced Typography with Professional Consistency - Optimized Sizing */}
+                  {/* Enhanced Typography with Better Contrast */}
                   <div className="flex-grow">
-                    <h3 className="text-lg lg:text-xl xl:text-2xl font-bold text-slate-900 dark:text-white mb-4 leading-[1.2] group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors tracking-tight line-clamp-2">
+                    <h3 className="text-xl lg:text-2xl xl:text-3xl font-black text-slate-900 dark:text-white mb-4 leading-[1.2] group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors tracking-tight line-clamp-2 drop-shadow-sm">
                       {feature.title}
                     </h3>
                     
-                    <p className="text-slate-600 dark:text-slate-300 mb-6 leading-[1.6] text-sm lg:text-base font-medium line-clamp-3">
+                    <p className="text-slate-700 dark:text-slate-200 mb-6 leading-[1.6] text-base lg:text-lg font-semibold line-clamp-3">
                       {feature.description}
                     </p>
                     
-                    {/* Enhanced Benefits with Consistent Typography - Optimized Spacing */}
-                    <div className="space-y-3 mb-6">
+                    {/* Enhanced Benefits with Better Visual Impact */}
+                    <div className="space-y-4 mb-6">
                       {feature.benefits.map((benefit, benefitIndex) => (
                         <div 
                           key={benefitIndex} 
-                          className="flex items-center text-sm lg:text-base text-slate-600 dark:text-slate-300 transform transition-all duration-300 leading-[1.4]"
+                          className="flex items-center text-base lg:text-lg text-slate-800 dark:text-slate-100 transform transition-all duration-300 leading-[1.4]"
                           style={{
                             animationDelay: `${(index * 100) + (benefitIndex * 50)}ms`
                           }}
                         >
-                          <div className="w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0 shadow-sm">
-                            <CheckIcon className="w-3 h-3 text-white" />
+                          <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0 shadow-lg shadow-green-500/25 ring-2 ring-white/20">
+                            <CheckIcon className="w-4 h-4 text-white font-bold" />
                           </div>
-                          <span className="font-semibold tracking-wide">{benefit}</span>
+                          <span className="font-bold tracking-wide">{benefit}</span>
                         </div>
                       ))}
                     </div>
@@ -538,13 +538,13 @@ export default function LandingPage() {
                 </div>
                 
                 {/* Enhanced Multi-Layer Depth System */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/[0.03] via-transparent to-white/[0.02] dark:from-white/[0.03] dark:via-transparent dark:to-black/[0.02] rounded-3xl pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/[0.08] via-transparent to-white/[0.06] dark:from-white/[0.08] dark:via-transparent dark:to-black/[0.06] rounded-3xl pointer-events-none" />
                 
-                {/* Premium Edge Glow Effect */}
-                <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-r ${feature.color} blur-xl -z-10 scale-95`} style={{ filter: 'blur(20px)' }} />
+                {/* Enhanced Edge Glow Effect */}
+                <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-30 transition-all duration-500 bg-gradient-to-r ${feature.color} blur-xl -z-10 scale-95`} style={{ filter: 'blur(20px)' }} />
                 
-                {/* Floating Interaction Indicator */}
-                <div className="absolute top-4 right-4 w-2 h-2 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-all duration-300" />
+                {/* More Prominent Interaction Indicator */}
+                <div className="absolute top-4 right-4 w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full opacity-60 group-hover:opacity-100 group-hover:animate-pulse transition-all duration-300 shadow-lg shadow-green-500/50" />
               </div>
             ))}
           </div>
