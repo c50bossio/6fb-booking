@@ -35,6 +35,7 @@ const analyticsTabs: AnalyticsTab[] = [
   { id: 'overview', label: 'Overview', roles: ['all'] },
   { id: 'revenue', label: 'Revenue', roles: ['all'] },
   { id: 'clients', label: 'Clients', roles: ['all'] },
+  { id: 'upselling', label: 'Upselling', roles: ['barber', 'admin', 'location_manager', 'super_admin'] },
   { id: 'marketing', label: 'Marketing', roles: ['admin', 'super_admin', 'location_manager'] },
   { id: 'reviews', label: 'Reviews', roles: ['admin', 'super_admin', 'location_manager'] },
   { id: 'productivity', label: 'Productivity', roles: ['barber', 'admin', 'location_manager'] },
