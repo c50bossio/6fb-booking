@@ -107,6 +107,8 @@ services:
 
   # Enhanced Frontend Configuration for Cache Management
   frontend:
+    ports:
+      - "3000:3000"
     environment:
       # API Configuration with fallbacks
       NEXT_PUBLIC_API_URL: "http://localhost:8000"
