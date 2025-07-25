@@ -66,6 +66,7 @@ const overlayVariants = cva(
         bottom: 'items-end justify-center',
         top: 'items-start justify-center pt-4',
         'adaptive': 'items-start justify-center p-4',
+        'header-aware': 'items-start justify-center pt-20', // Account for header height
       },
     },
     defaultVariants: {

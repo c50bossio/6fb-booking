@@ -259,14 +259,14 @@ ${businessName}`
       isOpen={isOpen}
       onClose={onClose}
       title="Share Booking"
-      size="4xl"
-      position="center"
+      size="3xl"
+      position="adaptive"
       variant="default"
       closeOnOverlayClick={true}
       closeOnEscape={true}
-      adaptivePositioning={false}
+      adaptivePositioning={true}
     >
-      <ModalBody className="max-h-[75vh] max-w-full overflow-y-auto">
+      <ModalBody className="max-h-[80vh] max-w-full overflow-y-auto p-6">
         {/* Enhanced Description with better typography */}
         <div className="mb-8">
           <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">

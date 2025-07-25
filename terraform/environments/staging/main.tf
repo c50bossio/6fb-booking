@@ -90,6 +90,12 @@ variable "domain_name" {
   default     = "staging.bookedbarber.com"
 }
 
+variable "db_password" {
+  description = "Database master password"
+  type        = string
+  sensitive   = true
+}
+
 # =============================================================================
 # DATA SOURCES
 # =============================================================================
@@ -341,7 +347,7 @@ resource "aws_db_instance" "main" {
   
   db_name  = "bookedbarber_staging"
   username = "staging_admin"
-  password = "staging_password_123!"  # Use AWS Secrets Manager in production
+  password = var.db_password  # Password from environment variable or secrets manager
   
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.main.name
