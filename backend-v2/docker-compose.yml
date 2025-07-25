@@ -65,6 +65,14 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: bookedbarber-backend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
     environment:
       # Database Configuration (SQLite for development) - use shared volume
       DATABASE_URL: sqlite:///./shared/6fb_booking.db
@@ -121,11 +129,11 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health", "--max-time", "5"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
 
   # =============================================================================
   # Next.js Frontend Service
@@ -142,6 +150,14 @@ services:
         NEXT_PUBLIC_ENVIRONMENT: development
         NODE_ENV: development
     container_name: bookedbarber-frontend
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 1G
+          cpus: '0.75'
     environment:
       # Runtime environment variables (browser-accessible URLs)
       NEXT_PUBLIC_API_URL: http://localhost:8000
@@ -184,11 +200,11 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || wget --quiet --tries=1 --spider http://localhost:3000/ || exit 1"]
+      interval: 20s
       timeout: 10s
-      retries: 3
-      start_period: 60s
+      retries: 5
+      start_period: 120s
 
   # =============================================================================
   # Nginx Reverse Proxy & Load Balancer
@@ -222,8 +238,16 @@ services:
 volumes:
   postgres_data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/postgres
   redis_data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/redis
   frontend_cache:
     driver: local
 

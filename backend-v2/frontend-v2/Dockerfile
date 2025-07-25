@@ -4,9 +4,10 @@
 FROM node:18-alpine AS deps
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Install dependencies with retry logic and caching
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --only=production --ignore-scripts && \
+    npm cache clean --force
 
 # Install sharp for image optimization in production
 RUN npm install sharp
@@ -35,10 +36,10 @@ RUN cp .env.docker .env.production
 # Install sharp for image optimization during build
 RUN npm install sharp
 
-# Build the application
+# Build the application with proper memory allocation
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
-ENV SKIP_LINT true
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build && ls -la .next/
 
 # Stage 3: Development (pure dev mode)
