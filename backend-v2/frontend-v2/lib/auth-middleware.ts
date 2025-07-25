@@ -40,6 +40,7 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
                  'barber' // Default to barber for calendar access
       
       if (process.env.NODE_ENV === 'development') {
+        console.log('Auth middleware debug:', {
           sub: tokenPayload.sub,
           extractedRole: userRole,
           allFields: Object.keys(tokenPayload)
@@ -47,6 +48,7 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
+        console.log('JWT parsing error:', error)
       }
       userRole = 'barber' // Default fallback for calendar access
     }
@@ -118,6 +120,7 @@ export function extractUserRoleFromToken(token: string): string | null {
                      'barber' // Default to barber for calendar access
     
     if (process.env.NODE_ENV === 'development') {
+      console.log('Role extraction from JWT:', {
         sub: payload.sub,
         role: payload.role,
         user_role: payload.user_role,

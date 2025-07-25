@@ -93,6 +93,7 @@ export default function RecurringAppointmentsPage() {
       }
     } catch (error) {
       console.error('Error fetching patterns:', error);
+      toast({
         title: 'Error',
         description: 'Failed to load recurring patterns',
         variant: 'destructive',
@@ -149,7 +150,8 @@ export default function RecurringAppointmentsPage() {
           days_of_week: [1],
           service_name: 'Haircut'
         });
-
+        
+        toast({
           title: 'Success',
           description: 'Recurring pattern created successfully',
         });
@@ -159,6 +161,7 @@ export default function RecurringAppointmentsPage() {
       }
     } catch (error) {
       console.error('Error creating pattern:', error);
+      toast({
         title: 'Error',
         description: 'Failed to create recurring pattern',
         variant: 'destructive',
@@ -183,6 +186,7 @@ export default function RecurringAppointmentsPage() {
 
       if (response.ok) {
         const result = await response.json();
+        toast({
           title: 'Success',
           description: `Generated ${result.total_generated} appointments`,
         });
@@ -192,6 +196,7 @@ export default function RecurringAppointmentsPage() {
       }
     } catch (error) {
       console.error('Error generating appointments:', error);
+      toast({
         title: 'Error',
         description: 'Failed to generate appointments',
         variant: 'destructive',
@@ -214,6 +219,7 @@ export default function RecurringAppointmentsPage() {
 
       if (response.ok) {
         setPatterns(patterns.filter(p => p.id !== patternId));
+        toast({
           title: 'Success',
           description: 'Recurring pattern deleted',
         });
@@ -222,6 +228,7 @@ export default function RecurringAppointmentsPage() {
       }
     } catch (error) {
       console.error('Error deleting pattern:', error);
+      toast({
         title: 'Error',
         description: 'Failed to delete pattern',
         variant: 'destructive',

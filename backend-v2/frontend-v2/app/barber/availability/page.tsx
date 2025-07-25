@@ -61,6 +61,7 @@ export default function BarberAvailabilityPage() {
       setBarberId(user.id);
       fetchAvailabilityData(user.id);
     } else {
+      toast({
         title: 'Error',
         description: 'User information not found',
         variant: 'destructive',
@@ -121,6 +122,7 @@ export default function BarberAvailabilityPage() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching availability data:', error);
+      toast({
         title: 'Error',
         description: 'Failed to load availability data',
         variant: 'destructive',
@@ -176,12 +178,14 @@ export default function BarberAvailabilityPage() {
           setRegularAvailability(newAvailability);
         }
       }
-
+      
+      toast({
         title: 'Success',
         description: 'Availability updated successfully',
       });
     } catch (error) {
       console.error('Error updating availability:', error);
+      toast({
         title: 'Error',
         description: 'Failed to update availability',
         variant: 'destructive',
@@ -217,12 +221,14 @@ export default function BarberAvailabilityPage() {
       if (response.ok) {
         const created = await response.json();
         setTimeOffRequests([...timeOffRequests, created]);
+        toast({
           title: 'Success',
           description: 'Time off request created',
         });
       }
     } catch (error) {
       console.error('Error creating time off:', error);
+      toast({
         title: 'Error',
         description: 'Failed to create time off request',
         variant: 'destructive',
@@ -257,12 +263,14 @@ export default function BarberAvailabilityPage() {
       if (response.ok) {
         const created = await response.json();
         setSpecialAvailability([...specialAvailability, created]);
+        toast({
           title: 'Success',
           description: 'Special availability created',
         });
       }
     } catch (error) {
       console.error('Error creating special availability:', error);
+      toast({
         title: 'Error',
         description: 'Failed to create special availability',
         variant: 'destructive',
