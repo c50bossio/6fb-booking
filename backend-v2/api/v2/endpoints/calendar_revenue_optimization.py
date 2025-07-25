@@ -11,11 +11,9 @@ from datetime import date, datetime, timedelta
 from pydantic import BaseModel, Field
 
 from db import get_db
-from utils.auth import get_current_user
+from dependencies import get_current_user
 from services.calendar_revenue_optimizer import CalendarRevenueOptimizer
-from models.user import User
-from models.appointment import Appointment
-from models.service import Service
+from models import User, Appointment, Service
 import logging
 
 logger = logging.getLogger(__name__)

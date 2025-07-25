@@ -8,10 +8,10 @@ import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
 import models.upselling
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, social_auth
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, marketing_analytics, locations, products, social_auth, search
 
 # Import V2 API endpoints for Six Figure Barber enhancements
-from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling
+from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization
 # service_templates temporarily disabled due to FastAPI error
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
@@ -330,7 +330,7 @@ app.include_router(sms_webhooks.router, prefix="/api/v2")
 app.include_router(webhook_management.router, prefix="/api/v2")  # Re-enabled with webhook models
 app.include_router(enterprise.router, prefix="/api/v2")
 app.include_router(marketing.router, prefix="/api/v2")
-# app.include_router(marketing_analytics.router, prefix="/api/v2")  # Marketing analytics and attribution - temporarily disabled due to PermissionChecker issues
+app.include_router(marketing_analytics.router, prefix="/api/v2")  # Marketing analytics and attribution - re-enabled for testing
 app.include_router(short_urls.router, prefix="/s")  # Prefix for branded short URLs to avoid conflicts
 app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v2
 # app.include_router(email_analytics.router, prefix="/api/v2")  # Disabled - service archived
@@ -340,9 +340,9 @@ app.include_router(locations.router, prefix="/api/v2")  # Re-enabled - schema im
 app.include_router(integrations.router)  # Integration management endpoints - re-enabled for testing
 app.include_router(api_keys.router, prefix="/api/v2")  # API key management
 app.include_router(commissions.router, prefix="/api/v2")  # Commission management
-# app.include_router(commission_rates.router, prefix="/api/v2")  # Commission rate management - temporarily disabled due to PermissionChecker issues
-# app.include_router(billing.router, prefix="/api/v2")  # Chair-based billing and subscription management - temporarily disabled due to PermissionChecker issues
-# app.include_router(invitations.router)  # Staff invitation management - temporarily disabled due to PermissionChecker issues
+app.include_router(commission_rates.router, prefix="/api/v2")  # Commission rate management - re-enabled for testing
+app.include_router(billing.router, prefix="/api/v2")  # Chair-based billing and subscription management - re-enabled for testing
+app.include_router(invitations.router)  # Staff invitation management - re-enabled for testing
 app.include_router(organizations.router, prefix="/api/v2")  # Organization management
 app.include_router(trial_monitoring.router, prefix="/api/v2")  # Trial expiration monitoring and notifications
 app.include_router(privacy.router)  # GDPR compliance and privacy management
@@ -365,6 +365,8 @@ app.include_router(client_lifecycle.router, prefix="/api/v2")  # Client lifecycl
 app.include_router(booking_intelligence.router, prefix="/api/v2")  # AI-powered booking intelligence
 app.include_router(upselling.router, prefix="/api/v2")  # Upselling tracking and conversion analytics
 app.include_router(ai_upselling.router, prefix="/api/v2")  # AI Agent for autonomous upselling
+app.include_router(calendar_revenue_optimization.router, prefix="/api/v2")  # Calendar revenue optimization - Six Figure Barber methodology
+app.include_router(search.router, prefix="/api/v2")  # Global search functionality
 
 @app.get("/")
 def root():

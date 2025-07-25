@@ -23,6 +23,7 @@ import { SimpleThemeToggle } from '@/components/ThemeToggle'
 import { navigation, getUserMenuItems } from '@/lib/navigation'
 import { Logo } from '@/components/ui/Logo'
 import { Portal } from '@/components/ui/Portal'
+import { Search } from '@/components/ui/Search'
 
 interface HeaderProps {
   user: User | null
@@ -147,7 +148,7 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
 
   return (
     <header className={`
-      sticky top-0 z-40 
+      sticky top-0 z-50 
       ${colors.background.card} border-b ${colors.border.default}
       backdrop-blur-ios bg-white/90 dark:bg-gray-900/90
       transition-colors duration-200
@@ -198,22 +199,16 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
 
         {/* Center Section - Search (Desktop) */}
         <div className="hidden md:flex flex-1 max-w-md mx-8">
-          <div className="relative w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search bookings, clients..."
-              className={`
-                block w-full pl-10 pr-3 py-2 border ${colors.border.default} rounded-ios-lg
-                ${colors.background.primary} ${colors.text.primary}
-                placeholder-gray-500 dark:placeholder-gray-400
-                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
-                text-sm transition-colors duration-200
-              `}
-            />
-          </div>
+          <Search
+            placeholder="Search bookings, clients..."
+            className="w-full"
+            onResultSelect={(result) => {
+              // The search component handles navigation internally
+              console.log('Search result selected:', result)
+            }}
+            showRecentItems={true}
+            maxResults={10}
+          />
         </div>
 
         {/* Right Section */}
