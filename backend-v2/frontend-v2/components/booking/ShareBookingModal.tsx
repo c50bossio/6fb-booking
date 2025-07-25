@@ -266,7 +266,7 @@ ${businessName}`
       closeOnEscape={true}
       adaptivePositioning={false}
       zIndex={10000}
-      className="max-w-2xl sm:max-w-3xl mx-4 sm:mx-6"
+      className="max-w-lg sm:max-w-xl mx-4 sm:mx-6"
       overlayClassName="!pt-[32rem] sm:!pt-[36rem] pb-4 sm:pb-6"
     >
       <ModalBody className="max-h-[60vh] sm:max-h-[70vh] max-w-full overflow-y-auto p-2 sm:p-3 min-h-0">
