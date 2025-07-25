@@ -211,39 +211,39 @@ ${businessName}`
     return (
       <div
         key={option.id}
-        className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 min-h-[80px] flex flex-col justify-center hover:bg-gradient-to-br hover:from-gray-50 hover:to-white dark:hover:from-gray-700 dark:hover:to-gray-800 hover:border-primary-300 dark:hover:border-primary-400"
+        className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-2 cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 h-[80px] flex flex-col justify-center hover:bg-gradient-to-br hover:from-gray-50 hover:to-white dark:hover:from-gray-700 dark:hover:to-gray-800 hover:border-primary-300 dark:hover:border-primary-400"
         onClick={option.action}
       >
-        <div className="flex flex-col items-center text-center space-y-1.5">
-          {/* Enhanced Icon with better visual hierarchy */}
+        <div className="flex flex-col items-center text-center space-y-1">
+          {/* Optimized Icon with better visual hierarchy and compact sizing */}
           <div className="relative">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-500/20 dark:to-primary-600/30 flex items-center justify-center group-hover:from-primary-200 group-hover:to-primary-300 dark:group-hover:from-primary-500/30 dark:group-hover:to-primary-600/40 transition-all duration-300 shadow-sm group-hover:shadow-md">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-500/20 dark:to-primary-600/30 flex items-center justify-center group-hover:from-primary-200 group-hover:to-primary-300 dark:group-hover:from-primary-500/30 dark:group-hover:to-primary-600/40 transition-all duration-300 shadow-sm group-hover:shadow-md">
               {isLoading ? (
-                <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-3 h-3 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
               ) : isCopied ? (
-                <CheckIcon className="w-4 h-4 text-green-500" />
+                <CheckIcon className="w-3 h-3 text-green-500" />
               ) : (
-                <Icon className="w-4 h-4 text-primary-600 dark:text-primary-300 group-hover:scale-110 transition-transform duration-300" />
+                <Icon className="w-3 h-3 text-primary-600 dark:text-primary-300 group-hover:scale-110 transition-transform duration-300" />
               )}
             </div>
             {/* Subtle glow effect on hover */}
             <div className="absolute inset-0 rounded-xl bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
           </div>
 
-          {/* Enhanced Content with better typography */}
-          <div className="space-y-1">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary-700 dark:group-hover:text-primary-300 transition-colors duration-300">
+          {/* Enhanced Content with better typography and compact spacing */}
+          <div className="space-y-0.5">
+            <h3 className="text-xs font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary-700 dark:group-hover:text-primary-300 transition-colors duration-300 leading-tight">
               {option.title}
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-2">
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-tight line-clamp-2">
               {option.description}
             </p>
           </div>
 
-          {/* Enhanced Copy indicator with animation */}
+          {/* Enhanced Copy indicator with animation and compact sizing */}
           {isCopied && (
-            <div className="flex items-center space-x-1 text-green-600 dark:text-green-400 animate-bounce">
-              <DocumentDuplicateIcon className="w-4 h-4" />
+            <div className="flex items-center space-x-0.5 text-green-600 dark:text-green-400 animate-bounce">
+              <DocumentDuplicateIcon className="w-3 h-3" />
               <span className="text-xs font-semibold">Copied!</span>
             </div>
           )}
@@ -267,42 +267,42 @@ ${businessName}`
       adaptivePositioning={false}
       zIndex={10000}
       className="max-w-2xl sm:max-w-3xl mx-4 sm:mx-6"
-      overlayClassName="!pt-80 sm:!pt-96 pb-4 sm:pb-6"
+      overlayClassName="!pt-[32rem] sm:!pt-[36rem] pb-4 sm:pb-6"
     >
-      <ModalBody className="max-h-[60vh] sm:max-h-[70vh] max-w-full overflow-y-auto p-3 sm:p-4 min-h-0">
+      <ModalBody className="max-h-[60vh] sm:max-h-[70vh] max-w-full overflow-y-auto p-2 sm:p-3 min-h-0">
 
         {/* Improved Share Options Grid with better spacing and responsiveness */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1 sm:gap-1.5 w-full">
           {shareOptions.map(renderOptionCard)}
         </div>
 
         {/* Enhanced Current booking URL display with premium styling */}
-        <div className="mt-4 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
+        <div className="mt-3 p-2.5 sm:p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-gray-800 dark:text-gray-100 mb-1.5 uppercase tracking-wide">
                 Current Booking URL
               </p>
               <a
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-primary-600 dark:text-primary-300 font-mono hover:text-primary-700 dark:hover:text-primary-200 hover:underline transition-all duration-200 cursor-pointer flex items-center gap-2 group bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400"
+                className="text-xs text-primary-600 dark:text-primary-300 font-mono hover:text-primary-700 dark:hover:text-primary-200 hover:underline transition-all duration-200 cursor-pointer flex items-center gap-2 group bg-white dark:bg-gray-900 px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400"
                 title="Click to open booking page in new tab"
               >
                 <span className="truncate flex-1">{bookingUrl}</span>
-                <ArrowTopRightOnSquareIcon className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
+                <ArrowTopRightOnSquareIcon className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
               </a>
             </div>
             <button
               onClick={() => copyToClipboard(bookingUrl, 'url-display')}
-              className="ml-4 p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-white dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="ml-3 p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-white dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400 transition-all duration-200 shadow-sm hover:shadow-md"
               title="Copy URL to clipboard"
             >
               {copiedOption === 'url-display' ? (
-                <CheckIcon className="w-5 h-5 text-green-500" />
+                <CheckIcon className="w-4 h-4 text-green-500" />
               ) : (
-                <DocumentDuplicateIcon className="w-5 h-5" />
+                <DocumentDuplicateIcon className="w-4 h-4" />
               )}
             </button>
           </div>

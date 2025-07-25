@@ -270,17 +270,9 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           bottom: 0
         }}
         onClick={(e) => {
-          // Robust click-outside detection
-          if (closeOnOverlayClick) {
-            const clickedElement = e.target as HTMLElement;
-            const modalContent = clickedElement.closest('[role="dialog"]');
-            
-            // If click is outside modal content, close it
-            if (!modalContent) {
-              e.preventDefault();
-              e.stopPropagation();
-              onClose();
-            }
+          // Simple click-outside detection: close if clicking the overlay itself
+          if (closeOnOverlayClick && e.target === e.currentTarget) {
+            onClose();
           }
         }}
         onKeyDown={handleKeyDown}

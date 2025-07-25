@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareBookingModal Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #1a1a1a; color: white; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-white p-8">
+    <h1 class="text-2xl mb-4">ShareBookingModal Test</h1>
+    <button id="openModal" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">
+        Open Share Modal
+    </button>
+    
+    <!-- Modal Overlay (Initially Hidden) -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center pt-[32rem] sm:pt-[36rem] pb-4 sm:pb-6 z-[10000]" style="z-index: 10001;">
+        <!-- Modal Content -->
+        <div class="bg-gray-900 rounded-lg max-w-2xl sm:max-w-3xl mx-4 sm:mx-6 w-full" role="dialog">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-white">Share Booking</h2>
+                <button id="closeModal" class="ml-4 p-2 rounded-full text-gray-400 hover:text-gray-300 hover:bg-gray-800">
+                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <div class="max-h-[60vh] sm:max-h-[70vh] max-w-full overflow-y-auto p-3 sm:p-4 min-h-0">
+                <!-- Share Options Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2 w-full">
+                    <!-- Share Option Card 1 -->
+                    <div class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 min-h-[80px] flex flex-col justify-center">
+                        <div class="flex flex-col items-center text-center space-y-1.5">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-500/20 dark:to-blue-600/30 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                                </svg>
+                            </div>
+                            <div class="space-y-1">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">Direct Link</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Copy booking URL</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Share Option Card 2 -->
+                    <div class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 min-h-[80px] flex flex-col justify-center">
+                        <div class="flex flex-col items-center text-center space-y-1.5">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-100 to-green-200 dark:from-green-500/20 dark:to-green-600/30 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-600 dark:text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                                </svg>
+                            </div>
+                            <div class="space-y-1">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">QR Code</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Generate QR code</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Share Option Card 3 -->
+                    <div class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 min-h-[80px] flex flex-col justify-center">
+                        <div class="flex flex-col items-center text-center space-y-1.5">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-500/20 dark:to-purple-600/30 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-purple-600 dark:text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                                </svg>
+                            </div>
+                            <div class="space-y-1">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">Email</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Send via email</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Share Option Card 4 -->
+                    <div class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 min-h-[80px] flex flex-col justify-center">
+                        <div class="flex flex-col items-center text-center space-y-1.5">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-100 to-red-200 dark:from-red-500/20 dark:to-red-600/30 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-red-600 dark:text-red-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z"/>
+                                </svg>
+                            </div>
+                            <div class="space-y-1">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">Social Media</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Share to platforms</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Current URL Section -->
+                <div class="mt-4 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">CURRENT BOOKING URL</p>
+                    <div class="flex items-center space-x-2 bg-white dark:bg-gray-900 rounded border p-2">
+                        <code class="flex-1 text-sm text-gray-600 dark:text-gray-300 font-mono">http://localhost:3000/book</code>
+                        <button class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const openModalBtn = document.getElementById('openModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        
+        openModalBtn.addEventListener('click', () => {
+            modalOverlay.classList.remove('hidden');
+            modalOverlay.classList.add('flex');
+        });
+        
+        closeModalBtn.addEventListener('click', () => {
+            modalOverlay.classList.add('hidden');
+            modalOverlay.classList.remove('flex');
+        });
+        
+        // Click outside to close
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                modalOverlay.classList.add('hidden');
+                modalOverlay.classList.remove('flex');
+            }
+        });
+    </script>
+</body>
+</html>
