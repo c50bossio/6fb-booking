@@ -27,7 +27,9 @@ interface SidebarProps {
 export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const { colors, isDark } = useThemeStyles()
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set(['dashboard', 'calendar & scheduling']))
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => 
+    new Set(['core', 'finance', 'business']) // Keep core sections expanded for barbers
+  )
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchResults, setShowSearchResults] = useState(false)
   
@@ -59,53 +61,86 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   )
 
 
-  // Search functionality
+  // Enhanced search functionality with better filtering
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return []
     
     const query = searchQuery.toLowerCase()
     const results: NavigationItem[] = []
+    const addedHrefs = new Set<string>() // Prevent duplicates
     
-    const searchInItems = (items: NavigationItem[]) => {
+    const searchInItems = (items: NavigationItem[], isChild = false) => {
       items.forEach(item => {
+        // Skip if already added
+        if (addedHrefs.has(item.href)) return
+        
         // Search in item name and description
-        if (item.name.toLowerCase().includes(query) || 
-            item.description?.toLowerCase().includes(query)) {
-          results.push(item)
+        const nameMatch = item.name.toLowerCase().includes(query)
+        const descMatch = item.description?.toLowerCase().includes(query) || false
+        
+        if (nameMatch || descMatch) {
+          results.push({
+            ...item,
+            // Mark as child result if it came from children
+            name: isChild ? `${item.name}` : item.name
+          })
+          addedHrefs.add(item.href)
         }
+        
         // Search in children
         if (item.children) {
-          searchInItems(item.children)
+          searchInItems(item.children, true)
         }
       })
     }
     
     searchInItems(filteredNavigationItems)
-    return results.slice(0, 8) // Limit to 8 results
+    
+    // Sort results by relevance - exact name matches first
+    return results
+      .sort((a, b) => {
+        const aExactMatch = a.name.toLowerCase() === query
+        const bExactMatch = b.name.toLowerCase() === query
+        if (aExactMatch && !bExactMatch) return -1
+        if (!aExactMatch && bExactMatch) return 1
+        return a.name.localeCompare(b.name)
+      })
+      .slice(0, 10) // Increase to 10 results
   }, [searchQuery, filteredNavigationItems])
 
-  // Group navigation items for better organization
+  // Group navigation items for better organization - barber-focused
   const groupedNavigation = useMemo(() => {
+    // Core - always visible and expanded for barbers
     const coreItems = filteredNavigationItems.filter(item => 
-      ['Dashboard', 'Calendar & Scheduling', 'Clients'].includes(item.name)
+      ['Dashboard', 'Calendar & Scheduling', 'My Schedule', 'Clients'].includes(item.name)
     )
     
+    // Business Management - barber tools
     const businessItems = filteredNavigationItems.filter(item => 
-      ['Customer Management', 'Communication', 'Communications', 'Marketing Suite', 'Marketing', 'Reviews', 'Products', 'Services'].includes(item.name)
+      ['Communications', 'Marketing', 'Reviews', 'Products', 'Services'].includes(item.name)
     )
     
+    // Advanced Features - AI and automation
     const automationItems = filteredNavigationItems.filter(item => 
       ['AI Agents', 'Business Automation'].includes(item.name)
     )
     
+    // Finance & Revenue - critical for barbers
     const financeItems = filteredNavigationItems.filter(item => 
-      ['Finance Hub', 'Finance', 'Analytics'].includes(item.name)
+      ['My Earnings', 'Finance', 'Analytics'].includes(item.name)
     )
     
+    // Professional Development - Six Figure Barber alignment
+    const professionalItems = filteredNavigationItems.filter(item => 
+      ['6FB Compliance'].includes(item.name)
+    )
+    
+    // Administration - advanced management
     const adminItems = filteredNavigationItems.filter(item => 
-      ['6FB Compliance', 'Enterprise', 'Administration', 'Business Tools'].includes(item.name)
+      ['Enterprise', 'Administration', 'Business Tools'].includes(item.name)
     )
     
+    // Settings - always at bottom
     const settingsItems = filteredNavigationItems.filter(item => 
       item.name === 'Settings'
     )
@@ -115,6 +150,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
       business: businessItems,
       automation: automationItems,
       finance: financeItems,
+      professional: professionalItems,
       admin: adminItems,
       settings: settingsItems
     }
@@ -264,8 +300,9 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
     <aside className={`
       sticky top-0 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
       transition-all duration-300 ease-out
-      ${collapsed ? 'w-16' : 'w-64'}
-      h-screen overflow-hidden z-10
+      ${collapsed ? 'w-16' : 'w-64 lg:w-72'}
+      h-screen overflow-hidden z-20
+      shadow-lg lg:shadow-none
     `}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -286,8 +323,9 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
           className={`
             p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400
             hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200
-            transition-colors duration-200
-            ${collapsed ? 'absolute top-4 right-2' : 'ml-auto'}
+            transition-all duration-200 hover:scale-110
+            ${collapsed ? 'absolute top-4 right-2 z-30' : 'ml-auto'}
+            focus:outline-none focus:ring-2 focus:ring-primary-500
           `}
         >
           {collapsed ? (
@@ -353,7 +391,255 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
 
       {/* Navigation - Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <nav className="flex-1 px-4 py-4 overflow-y-auto" role="navigation" aria-label="Main navigation">
+        <nav 
+          className="flex-1 px-4 py-4 overflow-y-auto" 
+          role="navigation" 
+          aria-label="Main navigation"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgb(209 213 219) transparent'
+          }}
+        >
+          {showSearchResults ? (
+            /* Search Results */
+            <div className="space-y-1">
+              {!collapsed && renderSectionHeader('Search Results')}
+              {searchResults.length > 0 ? (
+                searchResults.map((item, index) => (
+                  <Link
+                    key={`search-${item.href}-${index}`}
+                    href={item.href}
+                    onClick={clearSearch}
+                    className={`
+                      group flex items-center w-full text-left px-3 py-2 text-sm font-medium rounded-ios-lg
+                      transition-all duration-200 ease-out cursor-pointer relative
+                      ${isActive(item.href) 
+                        ? `bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 shadow-ios-sm` 
+                        : `text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white`
+                      }
+                    `}
+                    title={collapsed ? item.name : undefined}
+                  >
+                    <div className="flex items-center">
+                      <item.icon className={`
+                        flex-shrink-0 w-5 h-5 mr-3 transition-colors duration-200
+                        ${isActive(item.href) ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}
+                        ${collapsed ? 'mr-0' : 'mr-3'}
+                      `} />
+                      {!collapsed && (
+                        <div>
+                          <span className="truncate">{item.name}</span>
+                          {item.description && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <MagnifyingGlassIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No results found</p>
+                  <p className="text-xs mt-1">Try a different search term</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Normal Navigation */
+            <>
+              {/* Core Section */}
+              {groupedNavigation.core.length > 0 && (
+                <div className="space-y-1">
+                  {!collapsed && renderSectionHeader('Core', true)}
+                  {groupedNavigation.core.map((item, index) => renderNavigationItem(item, 0, index))}
+                </div>
+              )}
+
+              {/* Business Section */}
+              {groupedNavigation.business.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Business')}
+                    {groupedNavigation.business.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+
+              {/* Business Automation Section */}
+              {groupedNavigation.automation.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Automation')}
+                    {groupedNavigation.automation.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+
+              {/* Finance & Revenue Section */}
+              {groupedNavigation.finance.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Finance & Revenue')}
+                    {groupedNavigation.finance.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+
+              {/* Professional Development Section */}
+              {groupedNavigation.professional.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Six Figure Barber')}
+                    {groupedNavigation.professional.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+
+              {/* Administration Section */}
+              {groupedNavigation.admin.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Administration')}
+                    {groupedNavigation.admin.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+
+              {/* Settings Section - In scroll area */}
+              {groupedNavigation.settings.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1 pb-6">
+                    {!collapsed && renderSectionHeader('Settings')}
+                    {groupedNavigation.settings.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </nav>
+      </div>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
+        {!collapsed ? (
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center space-y-1">
+            <p className="font-medium">© 2024 Booked Barber</p>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-1 h-1 bg-green-400 rounded-full"></div>
+              <p>v2.0.0</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <QuestionMarkCircleIcon className="w-5 h-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" />
+          </div>
+        )}
+      </div>
+    </aside>
+  )
+}
+          <div className="mx-auto w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">BB</span>
+          </div>
+        ) : (
+          <Logo size="md" />
+        )}
+        
+        <button
+          onClick={() => {
+            onToggleCollapse()
+          }}
+          type="button"
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className={`
+            p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400
+            hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200
+            transition-all duration-200 hover:scale-110
+            ${collapsed ? 'absolute top-4 right-2 z-30' : 'ml-auto'}
+            focus:outline-none focus:ring-2 focus:ring-primary-500
+          `}
+        >
+          {collapsed ? (
+            <ChevronRightIcon className="w-4 h-4" />
+          ) : (
+            <ChevronLeftIcon className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+
+      {/* User Info */}
+      {!collapsed && user && (
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center shadow-sm">
+              <span className="text-sm font-semibold text-white">
+                {user.name?.charAt(0).toUpperCase() || 'U'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                {user.name || 'User'}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {getRoleDisplayName(user)}
+              </p>
+            </div>
+            {/* Status indicator */}
+            <div className="w-2 h-2 bg-green-400 rounded-full shadow-sm"></div>
+          </div>
+        </div>
+      )}
+
+      {/* Search */}
+      {!collapsed && (
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search navigation..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="block w-full pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-ios-lg
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                         placeholder-gray-500 dark:placeholder-gray-400
+                         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+                         text-sm transition-all duration-200 shadow-sm focus:shadow-md"
+            />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              >
+                <XMarkIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Navigation - Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <nav 
+          className="flex-1 px-4 py-4 overflow-y-auto" 
+          role="navigation" 
+          aria-label="Main navigation"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgb(209 213 219) transparent'
+          }}
+        >
           {showSearchResults ? (
             /* Search Results */
             <div className="space-y-1">
@@ -435,13 +721,24 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
                 </>
               )}
 
-              {/* Finance & Analytics Section */}
+              {/* Finance & Revenue Section */}
               {groupedNavigation.finance.length > 0 && (
                 <>
                   {renderSectionSeparator()}
                   <div className="space-y-1">
-                    {!collapsed && renderSectionHeader('Finance & Analytics')}
+                    {!collapsed && renderSectionHeader('Finance & Revenue')}
                     {groupedNavigation.finance.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+
+              {/* Professional Development Section */}
+              {groupedNavigation.professional.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Six Figure Barber')}
+                    {groupedNavigation.professional.map((item, index) => renderNavigationItem(item, 0, index))}
                   </div>
                 </>
               )}
@@ -456,19 +753,20 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
                   </div>
                 </>
               )}
+
+              {/* Settings Section - In scroll area */}
+              {groupedNavigation.settings.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1 pb-6">
+                    {!collapsed && renderSectionHeader('Settings')}
+                    {groupedNavigation.settings.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
             </>
           )}
         </nav>
-
-        {/* Settings Section - Sticky at bottom */}
-        {groupedNavigation.settings.length > 0 && (
-          <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <div className="pt-4 space-y-1">
-              {!collapsed && renderSectionHeader('Settings')}
-              {groupedNavigation.settings.map((item, index) => renderNavigationItem(item, 0, index))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Footer */}
