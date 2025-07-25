@@ -1,0 +1,346 @@
+name: Docker Authentication Tests
+
+on:
+  push:
+    branches: [ main, staging, develop ]
+    paths:
+      - 'backend-v2/**'
+      - 'backend-v2/frontend-v2/**'
+      - '.github/workflows/docker-auth-tests.yml'
+  pull_request:
+    branches: [ main, staging ]
+    paths:
+      - 'backend-v2/**'
+      - 'backend-v2/frontend-v2/**'
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      test_intensity:
+        description: 'Test intensity level'
+        required: false
+        default: 'standard'
+        type: choice
+        options:
+          - 'quick'
+          - 'standard'
+          - 'comprehensive'
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  docker-auth-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      matrix:
+        test_type: [quick, comprehensive]
+        exclude:
+          - test_type: ${{ github.event_name == 'schedule' && 'quick' || 'none' }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+        
+    - name: Install Python dependencies
+      working-directory: backend-v2
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest requests redis
+        
+    - name: Install frontend dependencies
+      working-directory: backend-v2/frontend-v2
+      run: npm ci
+      
+    - name: Create environment files
+      working-directory: backend-v2
+      run: |
+        # Backend environment
+        cat > .env << EOF
+        SECRET_KEY=test-secret-key-for-ci
+        DATABASE_URL=sqlite:///./test_6fb_booking.db
+        REDIS_URL=redis://localhost:6379/1
+        STRIPE_SECRET_KEY=sk_test_fake_key_for_ci
+        STRIPE_WEBHOOK_SECRET=whsec_fake_webhook_secret
+        TWILIO_ACCOUNT_SID=test_account_sid
+        TWILIO_AUTH_TOKEN=test_auth_token
+        SENDGRID_API_KEY=test_sendgrid_key
+        ENVIRONMENT=test
+        DEBUG=false
+        EOF
+        
+        # Frontend environment
+        cat > frontend-v2/.env.local << EOF
+        NEXT_PUBLIC_API_URL=http://localhost:8000
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_fake_key_for_ci
+        NEXT_PUBLIC_ENVIRONMENT=test
+        EOF
+        
+    - name: Set up Docker Compose
+      working-directory: backend-v2
+      run: |
+        # Override compose for CI
+        cat > docker-compose.ci.yml << EOF
+        version: '3.8'
+        services:
+          backend:
+            build: .
+            ports:
+              - "8000:8000"
+            environment:
+              - DATABASE_URL=sqlite:///./test_6fb_booking.db
+              - SECRET_KEY=test-secret-key-for-ci
+              - REDIS_URL=redis://redis:6379/1
+              - ENVIRONMENT=test
+            depends_on:
+              - redis
+            volumes:
+              - ./:/app
+            command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+            
+          redis:
+            image: redis:7-alpine
+            ports:
+              - "6379:6379"
+            command: redis-server --appendonly yes
+            
+          frontend:
+            build: ./frontend-v2
+            ports:
+              - "3000:3000"
+            environment:
+              - NEXT_PUBLIC_API_URL=http://backend:8000
+              - NEXT_PUBLIC_ENVIRONMENT=test
+            depends_on:
+              - backend
+            volumes:
+              - ./frontend-v2:/app
+              - /app/node_modules
+              - /app/.next
+        EOF
+        
+    - name: Start Docker services
+      working-directory: backend-v2
+      run: |
+        docker-compose -f docker-compose.ci.yml up -d
+        
+        # Wait for services to be ready
+        echo "Waiting for services to start..."
+        for i in {1..30}; do
+          if curl -f http://localhost:8000/health >/dev/null 2>&1; then
+            echo "Backend is ready!"
+            break
+          fi
+          echo "Waiting for backend... ($i/30)"
+          sleep 2
+        done
+        
+        # Verify Redis
+        for i in {1..15}; do
+          if docker-compose -f docker-compose.ci.yml exec -T redis redis-cli ping >/dev/null 2>&1; then
+            echo "Redis is ready!"
+            break
+          fi
+          echo "Waiting for Redis... ($i/15)"
+          sleep 1
+        done
+        
+    - name: Run database migrations
+      working-directory: backend-v2
+      run: |
+        # Run migrations in container
+        docker-compose -f docker-compose.ci.yml exec -T backend alembic upgrade head
+        
+    - name: Run quick auth tests
+      if: matrix.test_type == 'quick' || github.event.inputs.test_intensity == 'quick'
+      working-directory: backend-v2
+      run: |
+        echo "Running quick authentication tests..."
+        python test_docker_auth_automated.py
+        
+    - name: Run comprehensive auth tests
+      if: matrix.test_type == 'comprehensive' || github.event.inputs.test_intensity == 'comprehensive'
+      working-directory: backend-v2
+      run: |
+        echo "Running comprehensive authentication tests..."
+        
+        # Run multiple test iterations
+        for iteration in {1..3}; do
+          echo "🔄 Test iteration $iteration/3"
+          python test_docker_auth_automated.py
+          
+          if [ $? -ne 0 ]; then
+            echo "❌ Test iteration $iteration failed"
+            exit 1
+          fi
+          
+          # Brief pause between iterations
+          sleep 5
+        done
+        
+        echo "✅ All test iterations passed!"
+        
+    - name: Run load testing
+      if: matrix.test_type == 'comprehensive' && github.event_name == 'schedule'
+      working-directory: backend-v2
+      run: |
+        echo "Running load testing..."
+        # Simulate concurrent auth requests
+        python -c "
+import asyncio
+import aiohttp
+import time
+
+async def load_test():
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for i in range(20):  # 20 concurrent requests
+            task = session.post(
+                'http://localhost:8000/api/v2/auth/login',
+                json={'email': 'autotest@example.com', 'password': 'AutoTest123#'}
+            )
+            tasks.append(task)
+        
+        start_time = time.time()
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
+        duration = time.time() - start_time
+        
+        success_count = sum(1 for r in responses if hasattr(r, 'status') and r.status == 200)
+        print(f'Load test: {success_count}/20 successful in {duration:.2f}s')
+        
+        if success_count < 18:  # Allow for 10% failure rate
+            exit(1)
+
+asyncio.run(load_test())
+        "
+        
+    - name: Collect test artifacts
+      if: always()
+      working-directory: backend-v2
+      run: |
+        # Create artifacts directory
+        mkdir -p test-artifacts
+        
+        # Collect test results
+        find /tmp -name "docker_auth_test_results_*.json" -exec cp {} test-artifacts/ \; 2>/dev/null || true
+        
+        # Collect Docker logs
+        docker-compose -f docker-compose.ci.yml logs > test-artifacts/docker-logs.txt 2>&1 || true
+        
+        # Collect container stats
+        docker-compose -f docker-compose.ci.yml ps > test-artifacts/container-status.txt 2>&1 || true
+        
+        # Health check results
+        curl -s http://localhost:8000/health > test-artifacts/health-check.json 2>&1 || true
+        curl -s http://localhost:8000/health/detailed > test-artifacts/health-detailed.json 2>&1 || true
+        curl -s http://localhost:8000/health/docker > test-artifacts/health-docker.json 2>&1 || true
+        
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: docker-auth-test-results-${{ matrix.test_type }}-${{ github.run_id }}
+        path: backend-v2/test-artifacts/
+        retention-days: 30
+        
+    - name: Create test report comment (PR only)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Look for test results
+          const artifactsDir = 'backend-v2/test-artifacts';
+          let reportContent = '## 🐳 Docker Authentication Test Results\n\n';
+          
+          try {
+            const files = fs.readdirSync(artifactsDir);
+            const resultFiles = files.filter(f => f.startsWith('docker_auth_test_results_'));
+            
+            if (resultFiles.length > 0) {
+              const latestResult = resultFiles[resultFiles.length - 1];
+              const resultPath = path.join(artifactsDir, latestResult);
+              const results = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+              
+              const successRate = results.summary.success_rate;
+              const emoji = successRate === 100 ? '🎉' : successRate >= 90 ? '✅' : '⚠️';
+              
+              reportContent += `${emoji} **Test Summary**\n`;
+              reportContent += `- **Success Rate**: ${successRate.toFixed(1)}%\n`;
+              reportContent += `- **Total Tests**: ${results.summary.total_tests}\n`;
+              reportContent += `- **Successful**: ${results.summary.successful_tests}\n`;
+              reportContent += `- **Failed**: ${results.summary.failed_tests}\n`;
+              reportContent += `- **Average Duration**: ${results.summary.average_duration_ms.toFixed(1)}ms\n\n`;
+              
+              if (results.summary.failed_tests > 0) {
+                reportContent += '**Failed Tests**:\n';
+                results.test_results
+                  .filter(r => !r.success)
+                  .forEach(r => {
+                    reportContent += `- ❌ ${r.test_name}: ${r.error_message}\n`;
+                  });
+              }
+            } else {
+              reportContent += '⚠️ No test results found\n';
+            }
+          } catch (error) {
+            reportContent += `❌ Error reading test results: ${error.message}\n`;
+          }
+          
+          reportContent += `\n**Test Type**: ${{ matrix.test_type }}\n`;
+          reportContent += `**Commit**: ${context.sha.substring(0, 7)}\n`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: reportContent
+          });
+          
+    - name: Stop Docker services
+      if: always()
+      working-directory: backend-v2
+      run: |
+        docker-compose -f docker-compose.ci.yml down -v
+        
+    - name: Report test failure
+      if: failure() && github.event_name == 'schedule'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🚨 Scheduled Docker Auth Tests Failed - ${new Date().toISOString().split('T')[0]}`,
+            body: `Automated Docker authentication tests failed on scheduled run.
+            
+**Details:**
+- **Branch**: ${context.ref}
+- **Commit**: ${context.sha}
+- **Workflow**: ${context.workflow}
+- **Run**: ${context.runId}
+
+Please investigate the test failures and fix any issues.
+
+**Test Artifacts**: Check the workflow run for detailed logs and test results.`,
+            labels: ['bug', 'ci-failure', 'docker-auth']
+          });

@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 # Test configuration
 TEST_EMAIL="dockertest@example.com"
-TEST_PASSWORD="DockerTest123!"
+TEST_PASSWORD="DockerTest123#"
 TEST_NAME="Docker Test User"
 NUM_TESTS=10
 API_BASE="http://localhost:8000"
@@ -133,12 +133,13 @@ setup_test_user() {
     # Try to create test user (ignore if already exists)
     local user_data="{
         \"email\": \"$TEST_EMAIL\",
-        \"name\": \"$TEST_NAME\",
+        \"first_name\": \"Docker\",
+        \"last_name\": \"Test\",
         \"password\": \"$TEST_PASSWORD\",
-        \"user_type\": \"client\"
+        \"marketing_consent\": false
     }"
     
-    if api_request "POST" "/api/v1/auth/register-client" "$user_data" "200" >/dev/null 2>&1; then
+    if api_request "POST" "/api/v2/auth/register-client" "$user_data" "200" >/dev/null 2>&1; then
         print_success "Test user created"
     else
         print_status "Test user already exists (expected)"
@@ -156,7 +157,7 @@ test_login_attempt() {
     }"
     
     local response
-    if response=$(api_request "POST" "/api/v1/auth/login" "$login_data" "200" 2>/dev/null); then
+    if response=$(api_request "POST" "/api/v2/auth/login" "$login_data" "200" 2>/dev/null); then
         local end_time=$(date +%s.%N)
         local duration=$(echo "$end_time - $start_time" | bc -l)
         
@@ -256,10 +257,10 @@ test_container_health() {
     fi
     
     # Test auth debug endpoint
-    if curl -sf "$API_BASE/api/v1/auth/debug" >/dev/null 2>&1; then
-        print_success "Auth debug endpoint responding"
+    if curl -sf "$API_BASE/api/v2/auth/test" >/dev/null 2>&1; then
+        print_success "Auth test endpoint responding"
     else
-        print_warning "Auth debug endpoint not available (may be disabled)"
+        print_warning "Auth test endpoint not available (may be disabled)"
     fi
     
     return 0
@@ -283,7 +284,7 @@ test_redis_sessions() {
             \"password\": \"$TEST_PASSWORD\"
         }"
         
-        if api_request "POST" "/api/v1/auth/login" "$login_data" "200" >/dev/null 2>&1; then
+        if api_request "POST" "/api/v2/auth/login" "$login_data" "200" >/dev/null 2>&1; then
             sleep 1  # Give Redis time to store session
             local new_session_count=$(docker-compose exec -T redis redis-cli eval "return #redis.call('keys', 'session:*')" 0 2>/dev/null || echo "0")
             
@@ -336,7 +337,7 @@ generate_browser_test() {
     <script>
         const API_BASE = 'http://localhost:8000';
         const TEST_EMAIL = 'dockertest@example.com';
-        const TEST_PASSWORD = 'DockerTest123!';
+        const TEST_PASSWORD = 'DockerTest123#';
         
         function addResult(message, type = 'info') {
             const div = document.createElement('div');
@@ -350,7 +351,7 @@ generate_browser_test() {
             try {
                 addResult('Testing login...', 'info');
                 
-                const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                const response = await fetch(`${API_BASE}/api/v2/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -387,7 +388,7 @@ generate_browser_test() {
                 
                 addResult('Testing auth state...', 'info');
                 
-                const response = await fetch(`${API_BASE}/api/v1/auth/me`, {
+                const response = await fetch(`${API_BASE}/api/v2/auth/me`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Cache-Control': 'no-cache'
@@ -420,7 +421,7 @@ generate_browser_test() {
             
             for (let i = 1; i <= 10; i++) {
                 try {
-                    const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                    const response = await fetch(`${API_BASE}/api/v2/auth/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

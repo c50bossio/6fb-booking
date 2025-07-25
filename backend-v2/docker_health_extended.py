@@ -17,7 +17,14 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from config import settings
-from utils.session_manager import session_manager
+
+# Try to import session manager, but handle gracefully if missing
+try:
+    from utils.session_manager import session_manager
+    SESSION_MANAGER_AVAILABLE = True
+except ImportError:
+    session_manager = None
+    SESSION_MANAGER_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +158,11 @@ class DockerHealthChecker:
             "test_session": {},
             "error": None
         }
+        
+        if not SESSION_MANAGER_AVAILABLE:
+            health["status"] = "not_available"
+            health["error"] = "Session manager not configured"
+            return health
         
         try:
             # Get session counts
