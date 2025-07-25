@@ -9,15 +9,12 @@ This service provides enterprise-level analytics functionality for multi-locatio
 - Enterprise-level KPIs matching Excel spreadsheet metrics
 """
 
-from datetime import datetime, timedelta, date
-from typing import Dict, List, Optional, Tuple, Any
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_, case, extract, distinct
-from sqlalchemy.sql import text
-import calendar
-from decimal import Decimal
+from sqlalchemy import func, and_
 
-from models import User, Appointment, Payment, Client, Service, BarberAvailability
+from models import User, Appointment, Payment, Client, Service
 from location_models import BarbershopLocation, BarberLocation, CompensationModel, CompensationPlan, ChairInventory, ChairStatus
 from schemas import DateRange
 from services.analytics_service import AnalyticsService

@@ -3,16 +3,12 @@ Migration Validator for V2 Migration
 Ensures quality and prevents regressions during migration
 """
 
-import os
-import sys
 import json
 import subprocess
 import ast
-from typing import Dict, List, Tuple, Set, Optional
+from typing import Dict, Tuple
 from pathlib import Path
-import importlib.util
 from datetime import datetime
-import pytest
 
 
 class MigrationValidator:

@@ -11,20 +11,14 @@ This service provides comprehensive A/B testing capabilities for email templates
 from typing import Optional, List, Dict, Any, Tuple
 from datetime import datetime, timedelta
 import logging
-import json
 import random
 import math
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc, func
 import scipy.stats as stats
-import numpy as np
 
 from models import (
-    EmailABTest, EmailAnalyticsEvent, EmailAnalyticsSummary, 
-    NotificationTemplate, User, NotificationQueue
+    EmailABTest, EmailAnalyticsEvent
 )
-from db import get_db
-from config import settings
 
 logger = logging.getLogger(__name__)
 

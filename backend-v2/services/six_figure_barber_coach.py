@@ -5,13 +5,11 @@ This service provides intelligent business coaching based on the Six Figure Barb
 It analyzes performance data and provides actionable insights to help barbers reach their income goals.
 """
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any
 from dataclasses import dataclass
 from enum import Enum
 import logging
 
-from models import User, Appointment, Payment, Client
 
 logger = logging.getLogger(__name__)
 

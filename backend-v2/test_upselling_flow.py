@@ -4,14 +4,9 @@ Test script to verify the complete upselling tracking flow.
 Tests database models, API endpoints, and data flow.
 """
 
-import asyncio
-import json
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
-from db import get_db, engine
-from models import User, Appointment
+from datetime import datetime
+from db import get_db
 from models.upselling import UpsellAttempt, UpsellConversion, UpsellStatus, UpsellChannel
-from api.v2.endpoints.upselling import UpsellAttemptRequest
 
 def test_database_models():
     """Test that our database models work correctly"""

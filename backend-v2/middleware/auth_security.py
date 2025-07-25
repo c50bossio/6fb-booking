@@ -1,13 +1,12 @@
 
-import hashlib
 import secrets
 import bcrypt
 import pyotp
 import qrcode
 from datetime import datetime, timedelta
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 from jose import JWTError, jwt
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status
 from fastapi.security import HTTPBearer
 import redis
 import logging

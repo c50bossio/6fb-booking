@@ -1,13 +1,9 @@
 from fastapi import FastAPI
 from db import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
-import models
 # Import tracking models to register them with SQLAlchemy
-import models.tracking
-import models.upselling
 from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search
 # Consolidated analytics router (replaces: analytics, ai_analytics, marketing_analytics, email_analytics)
 from routers import unified_analytics

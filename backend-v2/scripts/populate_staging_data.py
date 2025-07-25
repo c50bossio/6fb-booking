@@ -12,8 +12,8 @@ This script creates:
 import os
 import sys
 import json
-from datetime import datetime, timedelta, time
-from typing import List, Dict, Any
+from datetime import datetime, timedelta
+from typing import List, Dict
 import random
 
 # Add parent directory to path for imports
@@ -23,7 +23,6 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from db import Base
 from models import User, Appointment, Service
-from config import settings
 from passlib.context import CryptContext
 
 # Password hashing

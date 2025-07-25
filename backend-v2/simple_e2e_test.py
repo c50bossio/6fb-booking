@@ -9,7 +9,7 @@ import requests
 import time
 import websocket
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 import signal
 import sys
 

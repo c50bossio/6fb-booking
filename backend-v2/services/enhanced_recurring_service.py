@@ -6,12 +6,10 @@ Comprehensive service for managing recurring appointment patterns, series, and c
 from datetime import datetime, time, timedelta, date
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, text
+from sqlalchemy import or_
 import models
 import schemas
-import pytz
 import logging
-from dateutil.relativedelta import relativedelta
 from calendar import monthrange
 import holidays
 from dataclasses import dataclass

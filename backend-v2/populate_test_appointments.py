@@ -6,7 +6,6 @@ Populate test appointments directly in the database for calendar testing
 import sqlite3
 from datetime import datetime, timedelta
 import random
-import uuid
 
 # Database connection
 DB_PATH = "6fb_booking.db"

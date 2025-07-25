@@ -10,14 +10,11 @@ import json
 import hmac
 import hashlib
 import time
-from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
-import stripe
 
 from sqlalchemy.orm import Session
-from main import app
-from models import Payment, User, Appointment, Refund, Payout
+from models import Refund, Payout
 from services.payment_security import PaymentSecurity
 from tests.factories import UserFactory, AppointmentFactory, PaymentFactory
 

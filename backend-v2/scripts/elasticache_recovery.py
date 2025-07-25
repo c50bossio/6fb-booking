@@ -37,12 +37,11 @@ import time
 import redis
 import boto3
 import click
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
-from pathlib import Path
+from dataclasses import dataclass
 from colorama import init, Fore, Style
-from botocore.exceptions import ClientError, NoCredentialsError
+from botocore.exceptions import NoCredentialsError
 
 # Initialize colorama
 init(autoreset=True)

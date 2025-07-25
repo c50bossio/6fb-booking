@@ -9,9 +9,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from db import SessionLocal
 from models import Appointment
 from services.appointment_enhancement import enhance_appointments_list
-from schemas import AppointmentResponse, AppointmentListResponse
+from schemas import AppointmentListResponse
 from pprint import pprint
-import json
 
 def debug_schema_validation():
     """Show how Pydantic validation strips enhanced fields"""

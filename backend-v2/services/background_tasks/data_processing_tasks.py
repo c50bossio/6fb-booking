@@ -7,16 +7,14 @@ import logging
 import json
 import csv
 import io
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta, timezone
-from sqlalchemy import func, and_, or_
+from typing import Optional
+from datetime import datetime, timedelta
+from sqlalchemy import func, and_
 
 from services.celery_app import celery_app
 from db import SessionLocal
 from models import Appointment, User, Client, Payment, DataExportRequest
 from models.consent import ExportStatus as ExportStatusModel
-from config import settings
-from services.startup_cache import invalidate_cache_for_event
 
 logger = logging.getLogger(__name__)
 

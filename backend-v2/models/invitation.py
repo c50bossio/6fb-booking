@@ -5,7 +5,7 @@ This model handles invitations sent by organization owners/managers
 to invite staff members (barbers, receptionists) to join their organization.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Enum, Text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
 import secrets

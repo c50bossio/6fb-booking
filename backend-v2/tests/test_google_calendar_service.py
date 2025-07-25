@@ -13,11 +13,9 @@ Tests cover:
 
 import pytest
 import json
-from datetime import datetime, timedelta, timezone, time
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, Any, List
+from datetime import datetime, timedelta, timezone
+from unittest.mock import Mock, patch
 
-from google.auth.transport import requests as google_requests
 from google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import Resource
@@ -28,8 +26,7 @@ from services.google_calendar_service import (
     FreeBusyResponse,
     GoogleCalendarError
 )
-from tests.factories import UserFactory, AppointmentFactory, create_test_user, create_test_appointment
-from models import User, Appointment
+from tests.factories import UserFactory, AppointmentFactory
 from sqlalchemy.orm import Session
 
 

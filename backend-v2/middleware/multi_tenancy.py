@@ -3,10 +3,9 @@ Multi-tenancy Security Middleware for BookedBarber V2
 Ensures data isolation between different barbershop locations
 """
 
-from typing import Optional, List, Set
+from typing import List
 from fastapi import HTTPException, Request, status
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 import logging
 from functools import wraps
 from models import User

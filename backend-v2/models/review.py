@@ -14,7 +14,6 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from db import Base
-from utils.encryption import EncryptedText
 
 
 def utcnow():

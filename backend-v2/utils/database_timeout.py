@@ -4,9 +4,9 @@ import time
 import signal
 import functools
 from contextlib import contextmanager
-from typing import Any, Callable, Optional, TypeVar, Generic
+from typing import Any, Callable, Optional, TypeVar
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError, TimeoutError
+from sqlalchemy.exc import SQLAlchemyError
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,6 @@ T = TypeVar('T')
 
 class DatabaseTimeoutError(Exception):
     """Raised when a database query exceeds the timeout limit."""
-    pass
 
 class QueryTimeoutHandler:
     """Handles query timeouts and circuit breaker pattern."""
@@ -169,7 +168,6 @@ def query_timeout(db: Session, timeout_seconds: float = 30.0):
                     db.execute("SET SESSION statement_timeout = DEFAULT")
         except Exception as e:
             logger.debug(f"Could not reset session timeout: {e}")
-            pass
 
 def with_query_timeout(db: Session, query_func: Callable[[], T], timeout_seconds: float = 30.0) -> T:
     """Execute a query function with timeout protection."""
@@ -235,7 +233,6 @@ def get_barber_availability_optimized(
     @timeout_query(timeout_seconds=10.0)  # Even shorter timeout for availability
     def _check_availability():
         import models
-        from datetime import timedelta
         
         # Quick availability check with minimal queries
         day_of_week = check_date.weekday()

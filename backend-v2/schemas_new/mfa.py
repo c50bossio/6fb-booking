@@ -2,7 +2,7 @@
 Multi-Factor Authentication (MFA) schemas for BookedBarber V2.
 """
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict
 from datetime import datetime
 from enum import Enum
 

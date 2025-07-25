@@ -4,7 +4,7 @@ Enhanced user management API with comprehensive timezone support.
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Optional, List
+from typing import Optional
 import logging
 
 import models

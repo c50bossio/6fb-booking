@@ -6,14 +6,13 @@ This script tests the PostgreSQL setup and configuration to ensure
 everything is working correctly before running the actual migration.
 """
 
-import os
 import sys
 import time
 import logging
 import psycopg2
 import json
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any
 from psycopg2.extras import RealDictCursor
 import argparse
 

@@ -9,14 +9,12 @@ import os
 import sys
 import time
 import json
-import requests
 import subprocess
 import sqlite3
-import asyncio
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class HealthChecker:

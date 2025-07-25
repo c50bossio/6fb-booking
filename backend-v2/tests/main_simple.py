@@ -3,7 +3,7 @@ Simplified FastAPI backend for debugging authentication issues
 This version removes potentially blocking middleware and complex imports
 """
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import timedelta
 import sqlite3

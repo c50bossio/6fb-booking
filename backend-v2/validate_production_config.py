@@ -17,7 +17,7 @@ Exit codes:
 import os
 import sys
 import secrets
-from typing import Dict, List, Tuple
+from typing import Dict
 
 
 class ProductionConfigValidator:

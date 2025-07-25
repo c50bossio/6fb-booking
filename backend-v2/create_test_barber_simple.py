@@ -1,4 +1,3 @@
-from main import app
 from db import SessionLocal
 from utils.auth import get_password_hash
 import models

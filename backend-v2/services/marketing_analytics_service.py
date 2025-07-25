@@ -13,13 +13,12 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_, case, desc, asc
+from sqlalchemy import func, and_, case
 from dataclasses import dataclass
 
-from models import User, Appointment, Payment, Organization
-from models.tracking import ConversionEvent, AttributionPath, TrackingConfiguration, EventType
+from models import Organization
+from models.tracking import ConversionEvent, EventType
 from models.integration import Integration, IntegrationType
-from services.landing_page_service import LandingPageService
 from services.conversion_tracking_service import ConversionTrackingService
 from services.analytics_service import AnalyticsService
 from utils.cache_decorators import cache_analytics

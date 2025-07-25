@@ -7,19 +7,16 @@ using both individual business data and cross-user patterns.
 
 import logging
 import numpy as np
-import pandas as pd
-from typing import Dict, List, Optional, Any, Tuple, Union
+from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta, date
 from dataclasses import dataclass
 from collections import defaultdict
-import json
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc, extract
+from sqlalchemy import func, extract
 
 from models import (
-    User, Appointment, Payment, Service, Client, 
-    PredictiveModel, AIInsightCache, CrossUserMetric, PerformanceBenchmark,
-    BusinessSegment, InsightType
+    Appointment, Payment, Service, Client, CrossUserMetric, 
+    PerformanceBenchmark, BusinessSegment
 )
 from services.ai_benchmarking_service import AIBenchmarkingService
 from services.analytics_service import AnalyticsService as EnhancedAnalyticsService

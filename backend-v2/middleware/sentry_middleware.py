@@ -10,15 +10,12 @@ This middleware enhances Sentry error reporting with:
 - Enhanced breadcrumbs for debugging
 """
 
-import json
 import time
 import logging
-from typing import Dict, Any, Optional, Callable
-from urllib.parse import urlparse
+from typing import Optional, Callable
 
 import sentry_sdk
 from fastapi import Request, Response
-from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 from jose import jwt, JWTError

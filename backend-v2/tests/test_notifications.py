@@ -2,19 +2,16 @@
 Fixed notification tests with proper database isolation
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock, AsyncMock
+from unittest.mock import Mock, patch
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from fastapi.testclient import TestClient
-import json
 
 from models import (
-    User, NotificationTemplate, NotificationPreference, 
-    NotificationQueue, NotificationStatus, Appointment, Client
+    User, NotificationTemplate, NotificationQueue, 
+    NotificationStatus, Appointment
 )
 from services.notification_service import NotificationService
-from utils.auth import create_access_token
 
 
 class TestNotificationService:

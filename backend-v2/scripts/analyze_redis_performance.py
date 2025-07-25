@@ -23,21 +23,17 @@ Requirements:
 
 import redis
 import click
-import json
 import time
 import statistics
-from typing import Dict, List, Optional, Tuple, Any
-from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
+from datetime import datetime
 from collections import defaultdict, Counter
 from colorama import init, Fore, Style
 from tabulate import tabulate
-import re
 
 # Optional imports for advanced analysis
 try:
-    import pandas as pd
     import matplotlib.pyplot as plt
-    import seaborn as sns
     ADVANCED_ANALYSIS = True
 except ImportError:
     ADVANCED_ANALYSIS = False

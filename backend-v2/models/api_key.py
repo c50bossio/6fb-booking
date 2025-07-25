@@ -2,7 +2,7 @@
 API Key model for secure service-to-service authentication.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, JSON, Enum, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, DateTime, JSON, Enum, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum

@@ -10,7 +10,7 @@ Generates proper environment configuration and validates setup.
 import os
 import sys
 import re
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 def print_header():
     """Print setup header."""

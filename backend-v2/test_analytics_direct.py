@@ -2,7 +2,6 @@
 """
 Direct test of analytics service to identify 500 errors
 """
-import sys
 import traceback
 from db import get_db
 from services.analytics_service import AnalyticsService

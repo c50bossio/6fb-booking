@@ -4,7 +4,6 @@ Load Testing and Performance Analysis for BookedBarber V2 API
 """
 
 import requests
-import threading
 import time
 import statistics
 import json

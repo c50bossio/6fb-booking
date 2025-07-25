@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Create a test user for authentication testing."""
 
-from db import SessionLocal, engine
+from db import engine
 from sqlalchemy import text
 from passlib.context import CryptContext
 from datetime import datetime

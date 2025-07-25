@@ -1,7 +1,6 @@
 from datetime import datetime, date, timedelta
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, text
 import models
 import pandas as pd
 import json
@@ -12,14 +11,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.chart import LineChart, PieChart, Reference
 from openpyxl.utils.dataframe import dataframe_to_rows
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
 import logging
-import asyncio
-from typing import AsyncIterator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

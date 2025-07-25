@@ -5,7 +5,7 @@ This module provides a lightweight dependency injection container that manages
 service instances and their dependencies throughout the application lifecycle.
 """
 
-from typing import Dict, Any, TypeVar, Type, Callable, Optional, get_type_hints
+from typing import Dict, Any, TypeVar, Type, Callable
 from functools import wraps
 import inspect
 from threading import Lock
@@ -170,7 +170,6 @@ class DIConfig:
         """Configure all application services"""
         # This will be called during application startup
         # Services will be registered here based on their decorators
-        pass
     
     @staticmethod
     def setup_for_testing(container: ServiceContainer):

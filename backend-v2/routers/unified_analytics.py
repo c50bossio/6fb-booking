@@ -15,9 +15,9 @@ Replaces the previous separate routers:
 - email_analytics.py (email analytics - archived)
 """
 
-from datetime import datetime, timedelta, date
+from datetime import datetime, date
 from typing import Dict, List, Optional, Any
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 import logging
@@ -33,12 +33,11 @@ from services.analytics_service import AnalyticsService
 from services.marketing_analytics_service import MarketingAnalyticsService
 from services.ai_benchmarking_service import AIBenchmarkingService
 from services.predictive_modeling_service import PredictiveModelingService
-from services.privacy_anonymization_service import PrivacyAnonymizationService
 from services.upselling_conversion_detector import UpsellConversionDetector
 
 # Import utilities
-from utils.error_handling import AppError, ValidationError, safe_endpoint
-from utils.role_permissions import Permission, PermissionChecker, get_permission_checker
+from utils.error_handling import safe_endpoint
+from utils.role_permissions import Permission, get_permission_checker
 from utils.marketing_rate_limit import check_marketing_rate_limit
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])

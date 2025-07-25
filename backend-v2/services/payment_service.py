@@ -4,7 +4,7 @@ from models import Payment, Appointment, User, Refund, Payout, GiftCertificate
 from config import settings
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Dict, List
+from typing import Optional
 import secrets
 import string
 from services.payment_security import PaymentSecurity, audit_logger

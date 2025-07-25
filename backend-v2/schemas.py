@@ -363,7 +363,6 @@ class TimezoneConversionResponse(BaseModel):
 
 class UserResponse(User):
     """Enhanced user response with additional fields"""
-    pass
 
 # Booking schemas
 class TimeSlot(BaseModel):
@@ -2687,7 +2686,6 @@ class TopClickedUrlsResponse(BaseModel):
 
 
 # Organization Schemas
-from models.organization import BillingPlan as BillingPlanEnum, UserRole as UserRoleEnum, OrganizationType as OrganizationTypeEnum
 
 class BillingPlan(str, Enum):
     INDIVIDUAL = "individual"

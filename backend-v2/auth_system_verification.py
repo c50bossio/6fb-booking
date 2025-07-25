@@ -7,7 +7,6 @@ This script performs a comprehensive check of all auth components.
 import requests
 import json
 import os
-from pathlib import Path
 
 def check_file_exists(file_path, description):
     """Check if a file exists and report status."""

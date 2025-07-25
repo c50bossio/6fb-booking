@@ -7,14 +7,13 @@ Also creates test services and clients.
 
 import sys
 import os
-from datetime import datetime, timedelta
-from decimal import Decimal
+from datetime import datetime
 
 # Add the backend directory to the Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from sqlalchemy.orm import Session
-from db import SessionLocal, engine
+from db import SessionLocal
 from models import User, Service, Client
 from location_models import BarbershopLocation
 from utils.auth import get_password_hash

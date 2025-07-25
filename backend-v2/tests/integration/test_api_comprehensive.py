@@ -10,7 +10,6 @@ import time
 import sqlite3
 import sys
 from datetime import datetime
-from typing import Dict, List, Optional
 
 class BookedBarberAPITester:
     def __init__(self, base_url: str = "http://localhost:8000"):

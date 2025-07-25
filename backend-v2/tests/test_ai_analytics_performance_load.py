@@ -10,9 +10,8 @@ import time
 import numpy as np
 import psutil
 import os
-import threading
 import concurrent.futures
-from typing import Dict, List, Any, Tuple
+from typing import Dict, Any
 from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
 from collections import defaultdict

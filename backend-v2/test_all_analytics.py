@@ -3,7 +3,6 @@
 Test all analytics endpoints to verify they're working
 """
 import requests
-import json
 
 def test_all_analytics():
     base_url = "http://localhost:8000"

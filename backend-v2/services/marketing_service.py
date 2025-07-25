@@ -1,16 +1,15 @@
 from typing import Optional, List, Dict, Any, Tuple
 from datetime import datetime, timedelta, timezone
 import logging
-import json
 import csv
 import io
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc
+from sqlalchemy import or_, func, desc
 from jinja2 import Template
 
 from models import (
-    User, Client, MarketingCampaign, MarketingTemplate, ContactList, 
-    ContactSegment, ContactListMember, CampaignAnalytics, MarketingUsage
+    Client, MarketingCampaign, MarketingTemplate, ContactList, ContactSegment, 
+    ContactListMember, CampaignAnalytics, MarketingUsage
 )
 from schemas import (
     MarketingCampaignCreate, MarketingCampaignUpdate,
@@ -978,7 +977,6 @@ class MarketingService:
                        status: str, error: Optional[str] = None):
         """Track delivery status for a recipient"""
         # TODO: Implement delivery tracking table
-        pass
     
     def _update_usage_stats(self, db: Session, message_type: str, count: int):
         """Update usage statistics"""

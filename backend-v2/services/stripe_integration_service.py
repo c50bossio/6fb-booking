@@ -4,10 +4,8 @@ Extends the base integration service for Stripe specific functionality.
 """
 
 from typing import Dict, Any, List, Tuple, Optional
-from datetime import datetime
 import aiohttp
 import logging
-from sqlalchemy.orm import Session
 
 from models.integration import Integration, IntegrationType
 from services.integration_service import BaseIntegrationService, IntegrationServiceFactory

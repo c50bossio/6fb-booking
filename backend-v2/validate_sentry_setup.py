@@ -30,9 +30,8 @@ import json
 import time
 import logging
 import argparse
-import asyncio
 import requests
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from urllib.parse import urlparse
 from datetime import datetime
 
@@ -490,14 +489,12 @@ class SentryValidator:
             
             # Check middleware integration
             try:
-                from middleware.sentry_middleware import SentryEnhancementMiddleware
                 readiness_checks.append("sentry_middleware_available")
             except ImportError:
                 warnings.append("sentry_middleware_not_available")
             
             # Check monitoring integration
             try:
-                from services.sentry_monitoring import database_monitor, celery_monitor
                 readiness_checks.append("sentry_monitoring_available")
             except ImportError:
                 warnings.append("sentry_monitoring_not_available")

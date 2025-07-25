@@ -1,7 +1,6 @@
 
 import time
-import json
-from typing import Dict, Optional
+from typing import Optional
 from fastapi import Request, HTTPException, status
 from fastapi.middleware.base import BaseHTTPMiddleware
 import redis

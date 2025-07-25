@@ -2,12 +2,8 @@
 Comprehensive tests for client management endpoints - Fixed version using proper fixtures
 """
 
-import pytest
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
 
-from models import User, Client, Appointment
-from schemas import ClientCreate
 
 
 def test_create_client(client, auth_headers, db: Session):

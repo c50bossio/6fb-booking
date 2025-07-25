@@ -7,7 +7,7 @@ using privacy-compliant cross-user data aggregation.
 
 from datetime import datetime, timedelta, date
 from typing import Dict, List, Optional, Any
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 

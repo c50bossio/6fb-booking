@@ -6,12 +6,11 @@ Handles email, SMS, and push notifications asynchronously.
 import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
-from celery import current_task
 
 from services.celery_app import celery_app
 from services.notification_service import NotificationService
 from db import SessionLocal
-from models import Appointment, User, Client
+from models import Appointment, User
 from config import settings
 
 logger = logging.getLogger(__name__)

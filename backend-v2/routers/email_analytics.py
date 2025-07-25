@@ -4,13 +4,13 @@ Email Analytics API endpoints for BookedBarber
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 
 from db import get_db
 from utils.auth import get_current_user
 from models import User
-from services.email_analytics import get_email_analytics_service, EmailAnalyticsService
+from services.email_analytics import get_email_analytics_service
 from schemas import (
     EmailMetricsResponse,
     EmailCampaignResponse,

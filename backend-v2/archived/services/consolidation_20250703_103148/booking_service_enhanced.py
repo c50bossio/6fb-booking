@@ -10,11 +10,10 @@ This module provides advanced features for preventing double bookings:
 """
 
 from datetime import datetime, time, timedelta, date
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, select
+from sqlalchemy import and_, or_, func
 from sqlalchemy.exc import IntegrityError, OperationalError
-from sqlalchemy.dialects.postgresql import insert
 import models
 import pytz
 import logging
@@ -37,12 +36,10 @@ from services.booking_service import (
 
 class BookingConflictError(Exception):
     """Raised when a booking conflicts with an existing appointment"""
-    pass
 
 
 class ConcurrencyError(Exception):
     """Raised when optimistic concurrency control detects a conflict"""
-    pass
 
 
 @contextmanager

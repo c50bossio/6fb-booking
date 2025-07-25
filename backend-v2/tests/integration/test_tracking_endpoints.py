@@ -1,15 +1,10 @@
 import pytest
 from httpx import AsyncClient
-from datetime import datetime, timedelta
-from unittest.mock import patch, AsyncMock
-from decimal import Decimal
-import json
+from datetime import datetime
 
-from main import app
 from models import User
 from models.tracking import (
-    ConversionEvent, ConversionGoal, CampaignSource,
-    UserLifetimeValue, ConversionAttribution
+    ConversionGoal, CampaignSource
 )
 
 

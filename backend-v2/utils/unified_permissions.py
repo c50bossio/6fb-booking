@@ -6,13 +6,12 @@ replacing the scattered role checking logic throughout the application.
 """
 
 from functools import wraps
-from typing import List, Optional, Callable, Any
+from typing import List, Callable
 from fastapi import HTTPException, status, Depends
 from sqlalchemy.orm import Session
 
 from models import User, UnifiedUserRole
 from dependencies import get_current_user
-from db import get_db
 
 
 class PermissionError(HTTPException):

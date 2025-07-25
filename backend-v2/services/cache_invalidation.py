@@ -6,11 +6,10 @@ cache consistency across the application.
 """
 
 import logging
-from typing import List, Optional, Set
+from typing import Optional
 from datetime import date
 
-from services.redis_service import cache_service
-from utils.cache_decorators import invalidate_pattern, invalidate_user_cache
+from utils.cache_decorators import invalidate_pattern
 
 logger = logging.getLogger(__name__)
 

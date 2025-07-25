@@ -5,13 +5,12 @@ Pre-Deployment Validation Script
 Runs all validations before deployment to ensure system integrity.
 This is the final gate before production deployment.
 """
-import os
 import sys
 import json
 import subprocess
 import time
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict
 import argparse
 from datetime import datetime
 

@@ -1,5 +1,4 @@
-from decimal import Decimal
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from datetime import timedelta
 import logging
@@ -30,13 +29,10 @@ from utils.email_verification import (
 from services.mfa_service import MFAService
 from services.suspicious_login_detection import get_suspicious_login_detector
 from services.password_security import validate_password_strength, password_security_service
-from models.mfa import UserMFASecret, MFADeviceTrust
+from models.mfa import UserMFASecret
 from utils.audit_logger_bypass import get_audit_logger
 import schemas
 import models
-from schemas import UserType
-from utils.input_validation import validate_string, validate_email_address, validate_phone_number, validate_slug, ValidationError as InputValidationError
-from schemas_new.validation import BusinessRegistrationRequest
 
 logger = logging.getLogger(__name__)
 audit_logger = get_audit_logger()
@@ -205,7 +201,6 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
     
     # If there are headers to add, we need to return a Response object
     if headers:
-        from fastapi import Response
         from fastapi.responses import JSONResponse
         
         response = JSONResponse(content=response_data)
@@ -579,7 +574,6 @@ async def register_complete(
         counter += 1
     
     # Create organization
-    from models.organization import BillingPlan, OrganizationType
     
     # Define features based on billing plan
     plan_features = {

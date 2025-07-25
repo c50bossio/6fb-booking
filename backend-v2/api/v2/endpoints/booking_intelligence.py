@@ -5,9 +5,8 @@ based on Six Figure Barber methodology.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from datetime import date, datetime, timedelta
 from pydantic import BaseModel, Field
 

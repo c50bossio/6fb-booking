@@ -6,15 +6,13 @@ Provides additional security layers for payment and financial endpoints
 import time
 import json
 import hashlib
-from typing import Dict, Optional, List, Set
-from datetime import datetime, timedelta
-from fastapi import Request, HTTPException, status
+from typing import Dict, Optional, List
+from fastapi import Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 import redis
 from collections import defaultdict
 import logging
-from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -261,7 +259,6 @@ class FinancialSecurityMiddleware(BaseHTTPMiddleware):
     async def _post_transaction_checks(self, user_id: str, request: Request, response):
         """Additional checks after successful transaction"""
         # Check daily limits, unusual patterns in successful transactions, etc.
-        pass
     
     async def _get_request_body(self, request: Request) -> Optional[Dict]:
         """Safely get request body"""

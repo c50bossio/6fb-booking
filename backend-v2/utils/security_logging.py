@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from enum import Enum
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 

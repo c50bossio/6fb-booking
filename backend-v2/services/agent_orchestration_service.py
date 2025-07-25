@@ -2,24 +2,18 @@
 Agent Orchestration Service - Core engine for managing AI agent lifecycle
 """
 
-import asyncio
-import json
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
-from celery import current_app as celery_app
+from sqlalchemy import func
 
 from models import (
     Agent, AgentInstance, AgentConversation, AgentMetrics, AgentSubscription,
-    AgentType, AgentStatus, ConversationStatus, Client, Appointment, User
+    AgentType, AgentStatus, ConversationStatus, Client, Appointment
 )
-from services.notification_service import notification_service
 # BookingService not needed - using direct functions from booking_service module instead
 from services.payment_service import PaymentService
-from config import settings
-from utils.timezone import convert_to_user_timezone, get_business_timezone
 
 logger = logging.getLogger(__name__)
 
@@ -409,7 +403,6 @@ class AgentOrchestrationService:
         """Cancel scheduled tasks for an agent instance"""
         # Implementation depends on Celery backend
         # For now, tasks will check agent status before executing
-        pass
     
     async def get_agent_analytics(
         self, 

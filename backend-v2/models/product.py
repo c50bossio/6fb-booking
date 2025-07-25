@@ -4,7 +4,6 @@ Handles products, variants, inventory, and orders for retail sales.
 """
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, JSON, ForeignKey, Enum as SQLEnum, Numeric
-from decimal import Decimal as PyDecimal
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import enum

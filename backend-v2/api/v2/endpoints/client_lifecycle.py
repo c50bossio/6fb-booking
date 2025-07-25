@@ -4,11 +4,10 @@ Provides Six Figure Barber methodology-based client lifecycle management for cal
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from datetime import date, datetime, timedelta
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from db import get_db
 from utils.auth import get_current_user

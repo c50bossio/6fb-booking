@@ -4,14 +4,14 @@ Provides Six Figure Barber methodology-based client relationship management and 
 """
 
 from datetime import datetime, date, timedelta
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional
 from dataclasses import dataclass
 from enum import Enum
 import logging
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, func, desc
+from sqlalchemy import and_
 
-from models import Client, Appointment, User
+from models import Client, Appointment
 
 logger = logging.getLogger(__name__)
 

@@ -2,7 +2,6 @@
 Tests for integration-related database models
 """
 
-import pytest
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 

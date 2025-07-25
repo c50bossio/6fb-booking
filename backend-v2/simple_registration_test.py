@@ -3,12 +3,8 @@
 Simple test to verify registration page password requirements
 """
 import time
-import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 def test_registration():
     print("🚀 Starting registration validation test...\n")

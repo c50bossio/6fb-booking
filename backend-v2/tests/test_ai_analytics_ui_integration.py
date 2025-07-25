@@ -6,8 +6,7 @@ including data flow, error handling, consent management, and user experience.
 """
 
 import pytest
-import json
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock
 from typing import Dict, Any
 
 

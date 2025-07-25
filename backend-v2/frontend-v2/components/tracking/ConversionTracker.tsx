@@ -131,6 +131,7 @@ export const trackConversion = (
   
   // Log to console in development
   if (process.env.NODE_ENV === 'development') {
+    console.log('Conversion event tracked:', {
       type: eventType,
       params,
       timestamp: new Date().toISOString(),

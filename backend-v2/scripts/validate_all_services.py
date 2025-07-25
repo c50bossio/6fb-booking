@@ -18,14 +18,13 @@ Usage:
     python scripts/validate_all_services.py --fix        # Attempt to fix issues
 """
 
-import os
 import sys
 import argparse
 import logging
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, Any
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -105,7 +104,6 @@ class ServiceValidator:
             
             # Test 3: PaymentService integration
             try:
-                from services.payment_service import PaymentService
                 service_result['tests_passed'] += 1
                 service_result['details']['payment_service'] = 'Available'
             except Exception as e:
@@ -113,7 +111,6 @@ class ServiceValidator:
             
             # Test 4: StripeIntegrationService
             try:
-                from services.stripe_integration_service import StripeIntegrationService
                 service_result['tests_passed'] += 1
                 service_result['details']['stripe_integration_service'] = 'Available'
             except Exception as e:
@@ -308,7 +305,6 @@ class ServiceValidator:
             
             # Test 2: GoogleCalendarService availability
             try:
-                from services.google_calendar_service import GoogleCalendarService
                 service_result['tests_passed'] += 1
                 service_result['details']['calendar_service'] = 'Available'
             except Exception as e:

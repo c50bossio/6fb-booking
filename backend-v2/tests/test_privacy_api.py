@@ -4,20 +4,13 @@ Tests cookie consent, data export, consent tracking, and privacy status function
 """
 
 import pytest
-import json
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
 from httpx import AsyncClient
 from sqlalchemy.orm import Session
 
 from models.consent import (
     UserConsent, CookieConsent, DataProcessingLog, DataExportRequest, LegalConsentAudit,
     ConsentType, ConsentStatus, DataProcessingPurpose, ExportStatus
-)
-from schemas_new.privacy import (
-    CookiePreferences, CookieConsentRequest, ConsentUpdate, ConsentType as ConsentTypeSchema,
-    ConsentStatus as ConsentStatusSchema, DataExportRequest as DataExportRequestSchema,
-    AccountDeletionRequest, BulkConsentUpdate
 )
 
 

@@ -5,7 +5,7 @@ This module defines the organizations table and user-organization mapping
 to support individual barbers, single barbershops, and multi-location enterprises.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Boolean, Text, JSON, Table, Index
+from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Boolean, Text, JSON, Index
 from sqlalchemy.orm import relationship
 from db import Base
 from datetime import datetime, timezone

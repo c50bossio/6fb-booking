@@ -12,8 +12,6 @@ from alembic import context
 
 # Import the Base and models
 from db import Base
-from models import User, Appointment, Payment, PasswordResetToken, BookingSettings, Client
-from location_models import BarbershopLocation, BarberLocation, ChairInventory, CompensationPlan
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -4,11 +4,9 @@ Verification test for booking slot logic and message consistency.
 Tests the API endpoint and validates frontend message display logic.
 """
 
-import asyncio
 import sys
 from datetime import datetime, date, timedelta
-from typing import Dict, List, Optional
-import json
+from typing import Dict
 
 # Add the backend directory to the Python path
 sys.path.insert(0, '/Users/bossio/6fb-booking/backend-v2')
@@ -19,7 +17,6 @@ from dependencies import get_db
 from sqlalchemy.orm import Session
 from models.barber import Barber
 from models.availability import Availability
-from db import Base, engine
 
 # Create test client
 client = TestClient(app)

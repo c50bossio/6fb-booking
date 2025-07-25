@@ -11,9 +11,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 import logging
 
-from models import User
 from models.integration import Integration, IntegrationType
-from utils.encryption import encrypt_data, decrypt_data
 from utils.audit_logger_bypass import get_audit_logger
 
 logger = logging.getLogger(__name__)

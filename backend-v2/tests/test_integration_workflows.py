@@ -3,14 +3,13 @@ Tests for end-to-end integration workflows
 """
 
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock, patch
 from sqlalchemy.orm import Session
 from datetime import datetime
 
 from models.integration import Integration, IntegrationType, IntegrationStatus
 from models.review import Review, ReviewStatus, ReviewSource
 from models import User
-from services.integration_service import BaseIntegrationService
 
 
 @pytest.mark.asyncio

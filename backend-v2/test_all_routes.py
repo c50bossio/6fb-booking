@@ -7,7 +7,7 @@ Tests all routes from the navigation configuration and generates a detailed repo
 import requests
 import json
 import sys
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List
 from urllib.parse import urljoin
 import time
 

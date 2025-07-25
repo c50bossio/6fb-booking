@@ -11,20 +11,15 @@ Tests cover:
 """
 
 import pytest
-import json
 from datetime import datetime, timedelta, timezone
-from unittest.mock import Mock, patch, MagicMock, call
-from decimal import Decimal
+from unittest.mock import patch, MagicMock
 import stripe
-from typing import Dict, Any, List
 
-from services.payment_service import PaymentService
 from services.stripe_connect_service import StripeConnectService
 from tests.factories import (
-    UserFactory, PaymentFactory, AppointmentFactory,
-    create_test_user, create_test_appointment
+    UserFactory, PaymentFactory, AppointmentFactory
 )
-from models import User, Payment, Appointment, Payout, StripeAccount
+from models import Payout
 from sqlalchemy.orm import Session
 
 

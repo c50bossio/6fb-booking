@@ -5,12 +5,11 @@ Code Consolidation Validation Script
 Checks for remaining code duplication after consolidation efforts.
 Identifies duplicate functions, classes, and logic that should be consolidated.
 """
-import os
 import ast
 import hashlib
 import json
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Any
+from typing import Dict, List
 from collections import defaultdict
 import argparse
 import difflib

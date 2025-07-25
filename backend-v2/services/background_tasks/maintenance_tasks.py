@@ -4,7 +4,6 @@ Handles cache cleanup, health checks, and system optimization.
 """
 
 import logging
-from typing import Dict, Any, List
 from datetime import datetime, timedelta
 
 from services.celery_app import celery_app

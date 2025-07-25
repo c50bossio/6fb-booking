@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """Create a test user for development"""
 
-from sqlalchemy.orm import Session
-from db import SessionLocal, engine
+from db import SessionLocal
 from models import User
 from utils.auth import get_password_hash
-import sys
 
 def create_test_user():
     db = SessionLocal()

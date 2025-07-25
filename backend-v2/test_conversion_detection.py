@@ -6,7 +6,6 @@ Tests the complete flow from upselling attempt to automatic conversion detection
 
 import asyncio
 from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
 from db import get_db
 from models import User, Appointment
 from models.upselling import UpsellAttempt, UpsellStatus, UpsellChannel, UpsellConversion

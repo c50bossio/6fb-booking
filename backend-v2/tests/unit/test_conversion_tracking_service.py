@@ -3,15 +3,11 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, AsyncMock
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from services.conversion_tracking_service import ConversionTrackingService
 from models.tracking import (
-    ConversionEvent, ConversionGoal, CampaignSource, 
-    UserLifetimeValue, ConversionAttribution
+    ConversionEvent, ConversionGoal, UserLifetimeValue
 )
-from models import User
-from models import Appointment
 from models import Payment
 
 

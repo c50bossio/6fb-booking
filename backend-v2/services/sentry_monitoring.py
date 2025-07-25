@@ -11,13 +11,12 @@ This module provides comprehensive monitoring for:
 
 import time
 import logging
-from typing import Dict, Any, Optional, Callable
+from typing import Any, Callable
 from functools import wraps
 from contextlib import contextmanager
 
 import sentry_sdk
 from sentry_sdk import start_transaction, start_span
-from sqlalchemy.orm import Session
 from sqlalchemy.engine import Engine
 from sqlalchemy.event import listens_for
 
@@ -194,7 +193,7 @@ class CeleryMonitor:
         try:
             from celery.signals import (
                 task_prerun, task_postrun, task_failure, 
-                task_retry, task_revoked, worker_ready
+                task_retry, worker_ready
             )
             
             @task_prerun.connect

@@ -3,12 +3,11 @@ Automated Migration Runner for V2 Migration
 Orchestrates the migration process with safety checks
 """
 
-import os
 import sys
 import json
 import subprocess
 import argparse
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Tuple
 from datetime import datetime
 from pathlib import Path
 import importlib.util

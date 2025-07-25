@@ -22,9 +22,7 @@ from googleapiclient.errors import HttpError
 from sqlalchemy.orm import Session
 
 from models import User, Appointment
-from config import settings
-from utils.timezone import convert_to_timezone, get_user_timezone, format_datetime_for_google
-from utils.auth import get_password_hash
+from utils.timezone import get_user_timezone, format_datetime_for_google
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +52,6 @@ class FreeBusyResponse:
 
 class GoogleCalendarError(Exception):
     """Custom exception for Google Calendar operations."""
-    pass
 
 
 class GoogleCalendarService:

@@ -14,8 +14,7 @@ from dependencies import get_current_user
 from services.service_template_service import ServiceTemplateService, get_service_template_service
 from schemas import (
     ServiceTemplateResponse, ServiceTemplateListResponse, ServiceTemplateCreate,
-    ServiceTemplateUpdate, ServiceTemplateApplyRequest, ServiceTemplateApplyResponse,
-    ServiceTemplateFilterRequest, ServiceTemplateCategoryResponse
+    ServiceTemplateApplyRequest, ServiceTemplateApplyResponse, ServiceTemplateFilterRequest
 )
 import logging
 

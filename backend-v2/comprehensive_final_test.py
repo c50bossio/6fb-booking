@@ -5,7 +5,6 @@ Tests all key pages and functionality after recent fixes
 """
 
 import requests
-import time
 import json
 from datetime import datetime
 

@@ -6,7 +6,6 @@ Identifies pages that resolve to the same path
 
 import os
 from collections import defaultdict
-from pathlib import Path
 
 def find_route_conflicts(app_dir):
     """Find conflicting routes in Next.js app directory"""

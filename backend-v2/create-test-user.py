@@ -4,7 +4,6 @@ Create Test User for Calendar Testing
 Creates the test_claude@example.com user if it doesn't exist
 """
 
-import asyncio
 import sys
 from pathlib import Path
 from sqlalchemy.orm import sessionmaker

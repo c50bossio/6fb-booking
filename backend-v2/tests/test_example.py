@@ -2,7 +2,6 @@
 Fixed example tests using proper fixtures from conftest
 """
 
-import pytest
 from fastapi import status
 
 

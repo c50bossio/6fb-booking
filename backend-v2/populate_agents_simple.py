@@ -4,7 +4,6 @@ Simple script to populate agent templates via the API
 """
 
 import requests
-import json
 
 API_URL = "http://localhost:8000"
 

@@ -9,7 +9,7 @@ import asyncio
 import sys
 import logging
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -209,10 +209,6 @@ def test_gdpr_compliance() -> Dict[str, Any]:
         
         # Check if privacy models exist
         try:
-            from models.consent import (
-                UserConsent, CookieConsent, DataExportRequest, 
-                LegalConsentAudit, ConsentType, ConsentStatus
-            )
             models_exist = True
         except ImportError:
             models_exist = False
@@ -226,10 +222,6 @@ def test_gdpr_compliance() -> Dict[str, Any]:
         
         # Check schemas
         try:
-            from schemas_new.privacy import (
-                CookiePreferences, ConsentResponse, DataExportResponse,
-                AccountDeletionResponse, PrivacySettings
-            )
             schemas_exist = True
         except ImportError:
             schemas_exist = False

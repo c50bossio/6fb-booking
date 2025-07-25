@@ -7,17 +7,15 @@ to enable safe cross-user analytics while protecting individual user privacy.
 
 import logging
 import hashlib
-import random
-import math
 import numpy as np
 from typing import Dict, List, Optional, Any, Tuple, Union
-from datetime import datetime, timedelta
+from datetime import datetime
 from dataclasses import dataclass
-from collections import defaultdict, Counter
+from collections import defaultdict
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc
+from sqlalchemy import func
 
-from models import User, Appointment, Payment, Service, AIInsightCache, PerformanceBenchmark, CrossUserMetric
+from models import Appointment, Payment, PerformanceBenchmark, CrossUserMetric
 from models.consent import ConsentType, ConsentStatus
 from services.business_context_service import BusinessContextService
 

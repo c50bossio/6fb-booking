@@ -12,9 +12,8 @@ import requests
 import redis
 import pytest
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass
-from pathlib import Path
 import subprocess
 import sys
 import os

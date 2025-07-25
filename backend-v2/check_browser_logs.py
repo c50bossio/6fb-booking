@@ -3,10 +3,7 @@
 Check browser console logs and network requests for the calendar page
 """
 import asyncio
-import json
 from pyppeteer import launch
-from pyppeteer.browser import Browser
-from pyppeteer.page import Page
 import time
 
 async def check_calendar_page():

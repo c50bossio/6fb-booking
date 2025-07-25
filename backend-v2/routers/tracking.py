@@ -4,13 +4,13 @@ Handles event tracking, analytics, and platform configuration.
 Includes Meta Pixel and Conversions API integration.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from datetime import datetime, timedelta
 
 from db import get_db
-from dependencies import get_current_user, check_user_role
+from dependencies import get_current_user
 from models import User
 from models.tracking import (
     ConversionEvent, TrackingConfiguration, ConversionGoal, 

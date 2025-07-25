@@ -25,14 +25,13 @@ Usage:
 
 import logging
 import time
-import json
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from dataclasses import dataclass, asdict
 from enum import Enum
 
 import boto3
-from botocore.exceptions import ClientError, NoCredentialsError
+from botocore.exceptions import NoCredentialsError
 
 from services.redis_service import cache_service
 from config.redis_config import get_redis_config

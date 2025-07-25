@@ -3,11 +3,9 @@ Tests for the standardized appointments API endpoints.
 This tests the consolidated appointments router that replaced the deprecated bookings router.
 """
 
-import pytest
 from fastapi.testclient import TestClient
-from datetime import datetime, date, time, timedelta
+from datetime import date, timedelta
 from unittest.mock import Mock, patch
-from models import User, Appointment
 from services import booking_service
 
 

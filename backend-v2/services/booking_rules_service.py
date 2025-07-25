@@ -1,10 +1,8 @@
 from datetime import datetime, time, timedelta, date
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
 import models
 import logging
-from services import client_service
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

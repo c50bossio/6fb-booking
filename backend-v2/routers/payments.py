@@ -1,6 +1,5 @@
-from decimal import Decimal
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 from typing import Dict, List, Optional
 from datetime import datetime
@@ -9,20 +8,16 @@ from services.payment_service import PaymentService
 from utils.rate_limit import payment_intent_rate_limit, payment_confirm_rate_limit, refund_rate_limit, payout_rate_limit
 from utils.financial_rate_limit import (
     gift_certificate_create_limit, gift_certificate_validate_limit,
-    stripe_connect_limit, payment_history_limit, payment_report_limit,
-    financial_rate_limit, financial_endpoint_security
+    stripe_connect_limit, payment_history_limit, payment_report_limit
 )
-from utils.input_validation import validate_decimal, ValidationError as InputValidationError
-from schemas_new.validation import PaymentIntentRequest
 
 logger = logging.getLogger(__name__)
 from utils.idempotency import idempotent_operation, get_current_user_id
 from schemas import (
-    PaymentIntentCreate, PaymentIntentResponse, PaymentConfirm, PaymentResponse,
-    RefundCreate, RefundResponse, GiftCertificateCreate, GiftCertificateResponse,
-    GiftCertificateValidate, PaymentHistoryResponse, PaymentReportRequest,
-    PaymentReportResponse, PayoutCreate, PayoutResponse, StripeConnectOnboardingResponse,
-    StripeConnectStatusResponse
+    PaymentIntentCreate, PaymentIntentResponse, PaymentConfirm, RefundCreate,
+    RefundResponse, GiftCertificateCreate, GiftCertificateResponse, GiftCertificateValidate,
+    PaymentHistoryResponse, PaymentReportRequest, PaymentReportResponse,
+    PayoutCreate, PayoutResponse, StripeConnectOnboardingResponse, StripeConnectStatusResponse
 )
 from dependencies import get_current_user
 from models import User, Payment, Payout

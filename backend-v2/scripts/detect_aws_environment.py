@@ -24,12 +24,10 @@ import boto3
 import requests
 import redis
 import click
-import json
 import os
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from colorama import init, Fore, Style
-from urllib.parse import urlparse
 import socket
 
 # Initialize colorama

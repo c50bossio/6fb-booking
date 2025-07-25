@@ -4,7 +4,6 @@ Integrates automated Docker auth testing with the main test suite
 """
 
 import pytest
-import asyncio
 import json
 import os
 import sys

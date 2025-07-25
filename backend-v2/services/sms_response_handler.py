@@ -5,12 +5,12 @@ Handles two-way SMS communication for appointment management
 
 import re
 import logging
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
-from models import Appointment, User, Client, NotificationQueue, NotificationStatus
+from models import Appointment, User, Client
 from services.notification_service import notification_service
 from utils.url_shortener import create_appointment_short_url, create_booking_short_url
 from config import settings

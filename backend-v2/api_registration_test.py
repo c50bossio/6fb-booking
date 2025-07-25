@@ -5,9 +5,7 @@ Tests the registration API directly without browser automation
 """
 
 import requests
-import json
 from datetime import datetime
-import time
 
 def test_registration_api():
     """Test the registration API endpoint directly"""

@@ -22,9 +22,8 @@ Requirements:
 
 import boto3
 import click
-import json
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional
 from colorama import init, Fore, Style
 import ipaddress
 

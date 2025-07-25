@@ -12,37 +12,31 @@ Provides a single, unified interface for all booking operations while maintainin
 backward compatibility with existing API endpoints.
 """
 
-from datetime import datetime, date, timedelta, time
-from typing import List, Optional, Dict, Any, Union
+from datetime import datetime, date, timedelta
+from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
-import secrets
+from sqlalchemy import and_, or_
 import logging
-import pytz
 
 # Models
-from models import User, Appointment, Client, Service, Organization, BarberAvailability
+from models import Appointment
 from models.guest_booking import GuestBooking
 
 # Schemas
 from schemas_new.guest_booking import (
     GuestBookingCreate,
-    GuestBookingResponse,
     PublicAvailabilityResponse,
-    PublicAvailabilitySlot,
     PublicServiceInfo,
     PublicBarberInfo
 )
 
 # Core services (to be gradually replaced)
-from services.booking_service import get_booking_settings, SERVICES
+from services.booking_service import SERVICES
 from services.guest_booking_service import GuestBookingService
 from services.booking_intelligence_service import BookingIntelligenceService
-from services import barber_availability_service
 from services.notification_service import notification_service
 
 # Utilities
-from config import settings
 from utils.cache_decorators import cache_result
 
 logger = logging.getLogger(__name__)

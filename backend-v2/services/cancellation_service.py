@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc
 import logging
@@ -8,7 +8,7 @@ from models.cancellation import (
     CancellationPolicy, AppointmentCancellation, WaitlistEntry, 
     CancellationPolicyHistory, CancellationReason, RefundType
 )
-from models import Appointment, Payment, User, Service, Client, Refund
+from models import Appointment, Payment, Refund
 from services.payment_service import PaymentService
 from services.notification_service import notification_service
 

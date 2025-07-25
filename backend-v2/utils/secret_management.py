@@ -5,7 +5,7 @@ Provides methods to load secrets from environment variables and external secret 
 
 import os
 import secrets
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 import logging
 
 logger = logging.getLogger(__name__)

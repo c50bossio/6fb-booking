@@ -11,8 +11,6 @@ from unittest.mock import patch
 import os
 
 from main import app
-from tests.factories import UserFactory, AppointmentFactory
-from utils.auth import get_password_hash
 
 
 class TestPaymentRateLimiting:

@@ -3,11 +3,9 @@ Tests for the booking service - core business logic for appointments.
 This tests the service layer that handles appointment booking operations.
 """
 
-import pytest
-from datetime import datetime, date, timedelta
-from unittest.mock import Mock, patch
+from datetime import date, timedelta
 from sqlalchemy.orm import Session
-from models import User, Appointment
+from models import User
 from services.booking_service import (
     get_available_slots,
     create_booking,

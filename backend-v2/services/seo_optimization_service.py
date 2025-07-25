@@ -6,14 +6,13 @@ Integrates with existing KeywordGenerationService and BusinessContextService.
 
 import logging
 import re
-import math
-from typing import Dict, List, Optional, Tuple, Any, Set
+from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime
 from dataclasses import dataclass
 from collections import Counter
 from sqlalchemy.orm import Session
 
-from services.keyword_generation_service import KeywordGenerationService, KeywordAnalysisResult
+from services.keyword_generation_service import KeywordGenerationService
 from services.business_context_service import BusinessContextService, BusinessContext
 from services.smart_cta_service import SmartCTAService, CTAContext, CTARecommendation as SmartCTARecommendation
 from utils.sanitization import sanitize_input, validate_text_content

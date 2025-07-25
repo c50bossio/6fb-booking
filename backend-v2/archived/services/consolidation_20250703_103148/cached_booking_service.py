@@ -4,11 +4,10 @@ This service wraps the existing booking_service with caching and invalidation lo
 """
 
 import logging
-from datetime import datetime, time, timedelta, date
+from datetime import datetime, timedelta, date
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 import models
-import pytz
 
 from services.booking_cache_service import booking_cache
 from services.cache_invalidation_service import cache_invalidation_manager

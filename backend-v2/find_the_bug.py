@@ -5,7 +5,7 @@ when no slots show for today
 """
 
 import requests
-from datetime import datetime, time
+from datetime import datetime
 
 # Login
 auth = requests.post("http://localhost:8000/api/v1/auth/login", 

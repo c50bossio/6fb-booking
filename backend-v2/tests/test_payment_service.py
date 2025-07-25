@@ -7,17 +7,15 @@ gift certificate handling, and security validations.
 
 import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, patch, call
-from decimal import Decimal
+from unittest.mock import MagicMock, patch
 import stripe
 
 from sqlalchemy.orm import Session
 from services.payment_service import PaymentService
 from services.payment_security import PaymentSecurity
-from models import User, Appointment, Payment, GiftCertificate, Refund, Payout
+from models import Payment, GiftCertificate, Refund, Payout
 from tests.factories import (
-    UserFactory, AppointmentFactory, PaymentFactory,
-    create_test_appointment, create_test_user
+    UserFactory, AppointmentFactory, PaymentFactory
 )
 
 

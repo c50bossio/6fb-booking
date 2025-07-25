@@ -3,7 +3,6 @@
 Test script to verify all calendar booking app functionality
 """
 import requests
-import json
 from datetime import datetime, timedelta
 
 BASE_URL = "http://localhost:8000"

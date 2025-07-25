@@ -11,17 +11,13 @@ This service handles:
 
 import json
 import logging
-import hmac
-import hashlib
 import uuid
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
-from models import User, Appointment
+from models import User
 from services.enhanced_google_calendar_service import enhanced_google_calendar_service
-from services.timezone_service import timezone_service
 from config import settings
 from utils.encryption import encrypt_data, decrypt_data
 

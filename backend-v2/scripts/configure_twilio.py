@@ -15,11 +15,9 @@ Usage:
     python scripts/configure_twilio.py --test-sms +1234567890  # Send test SMS
 """
 
-import os
 import sys
 import argparse
 import logging
-import json
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -31,7 +29,6 @@ from twilio.rest import Client as TwilioClient
 from twilio.base.exceptions import TwilioRestException
 from config import settings
 from services.notification_service import NotificationService
-from db import get_db
 
 logger = logging.getLogger(__name__)
 

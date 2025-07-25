@@ -6,7 +6,6 @@ Tests the full flow from upselling implementation to analytics dashboard.
 
 import asyncio
 import requests
-from datetime import datetime, timedelta
 
 async def test_upselling_analytics_system():
     """Test the complete upselling analytics system"""

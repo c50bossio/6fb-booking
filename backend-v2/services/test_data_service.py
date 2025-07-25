@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from datetime import datetime, date, time, timedelta
 from typing import List, Dict, Any, Optional
 import random
-from decimal import Decimal
 
 import models
 import schemas
@@ -20,7 +19,6 @@ from location_models import (
     BarbershopLocation, BarberLocation, ChairInventory, ChairAssignmentHistory,
     CompensationPlan, LocationStatus, CompensationModel, ChairStatus, ChairType
 )
-from services import booking_service, barber_availability_service
 from utils.auth import get_password_hash
 import logging
 

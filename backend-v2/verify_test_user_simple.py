@@ -9,7 +9,7 @@ import os
 # Add the backend directory to the Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from db import engine
 
 def verify_test_barber():

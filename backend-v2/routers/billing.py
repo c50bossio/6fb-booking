@@ -5,10 +5,10 @@ This module handles subscription pricing, plan management, and billing operation
 based on the number of chairs in a barbershop or organization.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Dict, List, Optional
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field, validator
 
 from db import get_db
@@ -18,9 +18,7 @@ from models.organization import OrganizationType
 from dependencies import get_current_user
 from utils.role_permissions import (
     Permission,
-    PermissionChecker,
-    get_permission_checker,
-    require_permission
+    PermissionChecker
 )
 import logging
 from utils.pricing import calculate_progressive_price
@@ -28,8 +26,7 @@ from services.stripe_service import StripeSubscriptionService
 from services.notification_service import NotificationService
 import stripe
 from fastapi import Request, Response
-import json
-from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
+from utils.error_handling import ValidationError
 
 logger = logging.getLogger(__name__)
 

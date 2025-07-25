@@ -4,7 +4,6 @@ Test script to verify Redis caching implementation is working correctly
 """
 
 import time
-import asyncio
 from datetime import datetime, date
 from sqlalchemy.orm import Session
 

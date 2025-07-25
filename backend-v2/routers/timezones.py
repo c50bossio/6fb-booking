@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
-from typing import List, Optional
+from typing import Optional
 import pytz
 from datetime import datetime
 import schemas

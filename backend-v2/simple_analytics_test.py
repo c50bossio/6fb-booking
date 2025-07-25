@@ -3,7 +3,6 @@
 Simple test to check analytics endpoints without authentication complexities
 """
 import requests
-import json
 
 def test_analytics_simple():
     """Simple test using curl-like approach"""

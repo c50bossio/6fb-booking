@@ -4,13 +4,10 @@ Production Environment Setup for BookedBarber V2
 Creates production-ready environment configurations safely
 """
 
-import os
 import sys
 import secrets
-import subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List
 
 class ProductionEnvironmentSetup:
     def __init__(self):

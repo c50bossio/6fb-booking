@@ -7,7 +7,6 @@ import os
 os.environ["TESTING"] = "true"
 
 import pytest
-import asyncio
 from typing import Generator, AsyncGenerator
 from httpx import AsyncClient
 from sqlalchemy import create_engine
@@ -153,7 +152,7 @@ def test_user_token(test_user: User) -> str:
 @pytest.fixture(scope="function")
 def mock_notification_service(monkeypatch):
     """Mock notification service to prevent actual email/SMS sending"""
-    from unittest.mock import Mock, AsyncMock
+    from unittest.mock import Mock
     
     # Mock the notification service instance methods
     mock_service = Mock()

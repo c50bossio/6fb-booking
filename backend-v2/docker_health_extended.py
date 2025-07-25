@@ -5,17 +5,15 @@ Provides comprehensive health monitoring for containerized environments
 """
 
 import asyncio
-import json
 import logging
 import os
 import psutil
 import redis
 import time
 from datetime import datetime, timezone
-from fastapi import FastAPI, Request
+from fastapi import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
 from config import settings
 
 # Try to import session manager, but handle gracefully if missing

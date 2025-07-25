@@ -5,7 +5,6 @@ Check SMS Message Status in Twilio
 
 import sys
 import os
-from datetime import datetime
 import time
 
 # Add parent directory to path for imports

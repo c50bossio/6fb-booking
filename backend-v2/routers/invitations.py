@@ -6,23 +6,21 @@ staff invitations for organizations.
 """
 
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from pydantic import BaseModel, EmailStr, Field
 
 from db import get_db
-from models import User, Organization, UserOrganization
+from models import User, UserOrganization
 from models.invitation import StaffInvitation, InvitationStatus, InvitationRole
-from models.organization import UserRole
 from dependencies import get_current_user, require_organization_access
 from services.notification_service import NotificationService
 from config import settings
 from utils.role_permissions import (
     Permission,
-    PermissionChecker,
-    get_permission_checker
+    PermissionChecker
 )
 
 import logging

@@ -4,10 +4,6 @@ SendGrid Email Verification Troubleshooting Script
 Diagnoses and provides solutions for SendGrid email verification issues
 """
 
-import os
-import sys
-import time
-import json
 import requests
 from datetime import datetime
 from config import settings

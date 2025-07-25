@@ -7,11 +7,10 @@ Enables the AI to remember what works, learn from failures, and get smarter over
 
 from sqlalchemy import (
     Column, Integer, String, Float, Boolean, DateTime, 
-    ForeignKey, Text, Enum, Index, JSON, UniqueConstraint
+    ForeignKey, Text, Enum, Index, JSON
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from datetime import datetime
 import enum
 
 from db import Base

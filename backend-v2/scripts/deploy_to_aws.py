@@ -33,7 +33,6 @@ Requirements:
     AWS credentials configured (aws configure or IAM role)
 """
 
-import os
 import sys
 import json
 import time
@@ -42,10 +41,9 @@ import click
 import logging
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from pathlib import Path
 from colorama import init, Fore, Style
-from tabulate import tabulate
 from botocore.exceptions import ClientError, NoCredentialsError
 
 # Initialize colorama

@@ -6,7 +6,6 @@ Create test appointments for calendar testing
 import requests
 from datetime import datetime, timedelta
 import random
-import json
 
 # API configuration
 API_URL = "http://localhost:8000"

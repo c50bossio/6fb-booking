@@ -4,11 +4,9 @@ Provides distributed rate limiting across multiple server instances.
 """
 
 from typing import Optional, Dict, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from fastapi import Request, HTTPException
-import hashlib
-import json
 
 from services.redis_service import cache_service
 from config.redis_config import get_redis_config

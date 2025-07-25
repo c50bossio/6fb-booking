@@ -9,8 +9,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import User
 from db import Base
-import schemas
-from routers.auth import register_client
 from passlib.context import CryptContext
 
 # Setup database

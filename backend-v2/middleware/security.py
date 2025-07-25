@@ -11,10 +11,9 @@ Implements comprehensive security hardening including:
 """
 
 import re
-import json
 import logging
 from typing import List, Dict, Any
-from fastapi import Request, Response, HTTPException
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime

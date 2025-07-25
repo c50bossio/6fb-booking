@@ -3,11 +3,10 @@ Pydantic schemas for secure input validation across endpoints.
 These schemas enforce strict validation rules to prevent injection attacks.
 """
 
-from pydantic import BaseModel, Field, validator, EmailStr, constr, conint, condecimal
+from pydantic import BaseModel, validator, EmailStr, constr, conint, condecimal
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date, time
 from decimal import Decimal
-from enum import Enum
 
 # Common string constraints
 NameStr = constr(min_length=1, max_length=100, pattern=r'^[a-zA-Z\s\'-]+$')

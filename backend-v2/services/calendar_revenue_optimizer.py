@@ -3,8 +3,8 @@ Calendar Revenue Optimizer Service
 Provides AI-powered revenue optimization for the Six Figure Barber calendar system.
 """
 
-from datetime import datetime, date, timedelta
-from typing import List, Dict, Optional, Tuple
+from datetime import datetime, date
+from typing import List, Dict, Optional
 from dataclasses import dataclass
 from enum import Enum
 import statistics

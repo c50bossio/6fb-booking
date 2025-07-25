@@ -15,13 +15,11 @@ import os
 import sys
 import json
 import time
-import hashlib
 import requests
 import argparse
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError

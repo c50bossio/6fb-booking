@@ -5,26 +5,22 @@ Supports multi-touch attribution and cross-platform analytics.
 """
 
 import os
-import json
 import hashlib
 import logging
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Optional, Any
+from datetime import datetime, timedelta
 from enum import Enum
 import httpx
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc
+from sqlalchemy import func, desc
 from fastapi import HTTPException
 import uuid
 
 from models.tracking import (
     ConversionEvent, AttributionPath, TrackingConfiguration,
-    EventType, AttributionModel, ConversionStatus
+    EventType, AttributionModel
 )
 from models import User
-from models import Appointment
-from models import Payment
-from utils.encryption import encrypt_text, decrypt_text
 from schemas_new.tracking import (
     ConversionEventCreate, AttributionReport, TrackingConfigUpdate,
     ConversionAnalytics, ChannelPerformance

@@ -5,12 +5,12 @@ Tracks email performance metrics and integrates with SendGrid Event Webhook
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_
+from sqlalchemy import func, and_
 import logging
 from enum import Enum
 
 from db import get_db
-from models import User, EmailEvent, EmailCampaign
+from models import EmailEvent, EmailCampaign
 from config import Settings
 
 logger = logging.getLogger(__name__)

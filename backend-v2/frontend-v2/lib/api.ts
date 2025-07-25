@@ -305,6 +305,7 @@ export async function login(email: string, password: string) {
                       tokenPayload.sub_role ||
                       'barber' // Default to barber instead of user for calendar access
       
+      console.log('JWT role extraction debug:', {
         sub: tokenPayload.sub,
         role: tokenPayload.role,
         user_role: tokenPayload.user_role,

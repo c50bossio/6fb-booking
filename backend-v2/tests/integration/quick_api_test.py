@@ -2,7 +2,6 @@
 """Quick API connectivity test"""
 
 import requests
-import time
 
 def test_api_connectivity():
     """Test basic API connectivity"""

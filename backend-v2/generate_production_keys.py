@@ -6,8 +6,6 @@ Generates secure keys and secrets for production deployment
 
 import secrets
 import string
-import hashlib
-import os
 from datetime import datetime
 
 def generate_secret_key(length=64):

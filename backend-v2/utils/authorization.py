@@ -6,7 +6,7 @@ appropriate access to location-specific resources.
 """
 
 from functools import wraps
-from typing import Optional, Union, List
+from typing import List
 from fastapi import HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from db import get_db

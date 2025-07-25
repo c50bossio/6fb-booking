@@ -8,7 +8,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from db import SessionLocal
 from models import MarketingTemplate, User
-from datetime import datetime, timezone
 
 def create_marketing_templates(db):
     """Create sample marketing templates"""

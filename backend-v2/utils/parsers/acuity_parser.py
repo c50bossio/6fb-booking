@@ -21,11 +21,11 @@ Common Acuity field mappings:
 
 import csv
 import json
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Tuple
 from datetime import datetime
 import logging
 
-from .base_parser import BaseBookingParser, ParseResult, ParsedClient
+from .base_parser import BaseBookingParser, ParseResult
 
 logger = logging.getLogger(__name__)
 

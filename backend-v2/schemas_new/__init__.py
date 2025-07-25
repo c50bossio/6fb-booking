@@ -6,43 +6,43 @@ Contains Pydantic models for API request/response validation.
 # Re-export schemas from the existing schemas files
 try:
     # Import core schemas (DateRange, etc.)
-    from .core import *
+    pass
 except ImportError:
     pass
 
 try:
     # Import basic schemas (User, SlotsResponse, etc.)
-    from .basic import *
+    pass
 except ImportError:
     pass
 
 try:
     # Import auth schemas
-    from .auth import *
+    pass
 except ImportError:
     pass
 
 try:
     # Try importing from integration schemas first
-    from .integration import *
+    pass
 except ImportError:
     pass
 
 try:
     # Try importing from review schemas
-    from .review import *
+    pass
 except ImportError:
     pass
 
 try:
     # Try importing from booking schemas
-    from .booking import *
+    pass
 except ImportError:
     pass
 
 try:
     # Try importing from MFA schemas
-    from .mfa import *
+    pass
 except ImportError:
     pass
 

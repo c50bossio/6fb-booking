@@ -5,7 +5,6 @@ API Key management endpoints.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
 
 from db import get_db
 from dependencies import get_current_user
@@ -13,7 +12,7 @@ from models import User
 from services.api_key_service import APIKeyService
 from schemas_new.api_key import (
     APIKeyCreate, APIKeyResponse, APIKeyListResponse,
-    APIKeyRotate, APIKeyRevoke
+    APIKeyRevoke
 )
 from utils.audit_logger_bypass import get_audit_logger
 

@@ -12,7 +12,6 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from models import User, UserOrganization, UnifiedUserRole
-from models.organization import UserRole as OrgUserRole
 from dependencies import get_current_user
 from db import get_db
 

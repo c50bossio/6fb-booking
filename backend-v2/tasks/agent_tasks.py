@@ -5,7 +5,6 @@ Celery tasks for AI Agent background processing
 import logging
 from datetime import datetime, timedelta
 from celery import current_app as celery_app
-from sqlalchemy.orm import Session
 from db import SessionLocal
 from services.agent_orchestration_service import agent_orchestration_service
 from services.conversation_service import conversation_service
@@ -162,7 +161,6 @@ def calculate_agent_metrics(instance_id: int, date_str: str):
         
         # Calculate metrics from conversations
         from models import AgentConversation, ConversationStatus
-        from sqlalchemy import func
         
         # Get today's conversations
         start_of_day = datetime.combine(date, datetime.min.time())

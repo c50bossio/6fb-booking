@@ -7,19 +7,15 @@ to appropriate read replicas or primary database based on operation type.
 
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 import logging
 from typing import Generator, Optional, Dict, Any
 from contextlib import contextmanager
-import inspect
 import re
 
 from database.read_replica_config import (
     get_db_manager, 
-    get_read_db, 
-    get_write_db, 
     db_session, 
-    QueryType,
+    QueryType, 
     DatabaseManager
 )
 from utils.auth import get_current_user

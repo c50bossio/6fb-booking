@@ -5,7 +5,6 @@ Pydantic schemas for conversion tracking and attribution.
 from pydantic import BaseModel, Field, validator, field_validator
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-from enum import Enum
 import re
 
 from models.tracking import EventType, AttributionModel, ConversionStatus

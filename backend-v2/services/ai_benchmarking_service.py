@@ -6,21 +6,17 @@ using privacy-compliant aggregated data from across the BookedBarber platform.
 """
 
 import logging
-import numpy as np
-from typing import Dict, List, Optional, Any, Tuple, Union
+from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta, date
 from dataclasses import dataclass
-from collections import defaultdict
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc, asc
+from sqlalchemy import func, desc
 
 from models import (
-    User, Appointment, Payment, Service, PerformanceBenchmark, CrossUserMetric,
-    BenchmarkCategory, BusinessSegment, AIInsightCache, InsightType
+    Appointment, Payment, PerformanceBenchmark, BenchmarkCategory, BusinessSegment
 )
 from services.privacy_anonymization_service import PrivacyAnonymizationService
 from services.analytics_service import AnalyticsService as EnhancedAnalyticsService
-from utils.sanitization import sanitize_input
 
 logger = logging.getLogger(__name__)
 

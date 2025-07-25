@@ -1,0 +1,332 @@
+{
+  "description": "BookedBarber V2 Sub-Agent Automation Configuration",
+  "version": "1.0.0",
+  "enabled": true,
+  "sub_agents": {
+    "debugger": {
+      "description": "Automatically trigger debugger agent for critical issues",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "test_failures",
+          "description": "Trigger on test failures",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Bash(command:*pytest*)",
+            "Bash(command:*npm test*)",
+            "Bash(command:*npm run test*)"
+          ],
+          "conditions": {
+            "exit_code": [1, 2],
+            "stderr_patterns": [
+              "FAILED",
+              "ERRORS",
+              "AssertionError",
+              "SyntaxError",
+              "ImportError",
+              "TypeError"
+            ]
+          },
+          "cooldown_minutes": 5,
+          "max_triggers_per_hour": 10
+        },
+        {
+          "name": "http_errors",
+          "description": "Trigger on HTTP 500/404 errors",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Bash(command:*curl*)",
+            "Bash(command:*uvicorn*)",
+            "Bash(command:*npm run dev*)"
+          ],
+          "conditions": {
+            "log_patterns": [
+              "500 Internal Server Error",
+              "404 Not Found",
+              "CORS error",
+              "Uncaught Exception",
+              "Error 500",
+              "Error 404"
+            ]
+          },
+          "cooldown_minutes": 3,
+          "max_triggers_per_hour": 15
+        },
+        {
+          "name": "javascript_errors",
+          "description": "Trigger on JavaScript console errors",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Edit(file_path:*/frontend-v2/*)",
+            "Write(file_path:*/frontend-v2/*)",
+            "MultiEdit(file_path:*/frontend-v2/*)"
+          ],
+          "conditions": {
+            "browser_console_errors": true,
+            "error_types": [
+              "ReferenceError",
+              "TypeError",
+              "SyntaxError",
+              "React Error",
+              "Uncaught Error"
+            ]
+          },
+          "cooldown_minutes": 2,
+          "max_triggers_per_hour": 20
+        },
+        {
+          "name": "deployment_failures",
+          "description": "Trigger on deployment health check failures",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Bash(command:*docker*)",
+            "Bash(command:*render*)",
+            "Bash(command:*deploy*)"
+          ],
+          "conditions": {
+            "exit_code": [1, 2, 126, 127],
+            "stderr_patterns": [
+              "Container failed to start",
+              "Health check failed",
+              "Deployment failed",
+              "Build failed"
+            ]
+          },
+          "cooldown_minutes": 10,
+          "max_triggers_per_hour": 5
+        }
+      ],
+      "action": {
+        "agent_type": "debugger",
+        "prompt_template": "Critical issue detected: {trigger_name}. {error_details}. Please investigate and provide debugging steps.",
+        "auto_execute": true,
+        "priority": "high"
+      }
+    },
+    "code-reviewer": {
+      "description": "Automatically trigger code review for critical changes",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "security_file_changes",
+          "description": "Trigger on security-sensitive file modifications",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*auth*)",
+            "Edit(file_path:*payment*)",
+            "Edit(file_path:*security*)",
+            "Edit(file_path:*stripe*)",
+            "Write(file_path:*auth*)",
+            "Write(file_path:*payment*)",
+            "Write(file_path:*security*)",
+            "Write(file_path:*stripe*)",
+            "MultiEdit(file_path:*auth*)",
+            "MultiEdit(file_path:*payment*)",
+            "MultiEdit(file_path:*security*)",
+            "MultiEdit(file_path:*stripe*)"
+          ],
+          "conditions": {
+            "file_size_change": ">10",
+            "sensitive_patterns": [
+              "password",
+              "secret",
+              "api_key",
+              "private_key",
+              "stripe_",
+              "auth_token"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 8
+        },
+        {
+          "name": "large_code_changes",
+          "description": "Trigger on large code modifications",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/backend-v2/*.py)",
+            "Edit(file_path:*/frontend-v2/*.tsx)",
+            "Edit(file_path:*/frontend-v2/*.ts)",
+            "Write(file_path:*/backend-v2/*.py)",
+            "Write(file_path:*/frontend-v2/*.tsx)",
+            "Write(file_path:*/frontend-v2/*.ts)",
+            "MultiEdit(file_path:*/backend-v2/*.py)",
+            "MultiEdit(file_path:*/frontend-v2/*.tsx)",
+            "MultiEdit(file_path:*/frontend-v2/*.ts)"
+          ],
+          "conditions": {
+            "lines_changed": ">100",
+            "files_changed": ">3"
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "critical_branch_commits",
+          "description": "Trigger on commits to staging/production branches",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Bash(command:*git commit*)",
+            "Bash(command:*git push origin staging*)",
+            "Bash(command:*git push origin production*)"
+          ],
+          "conditions": {
+            "branch_names": ["staging", "production", "main"],
+            "commit_types": ["feat", "fix", "refactor"]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 6
+        }
+      ],
+      "action": {
+        "agent_type": "code-reviewer",
+        "prompt_template": "Code review required for {trigger_name}. Files changed: {files_changed}. Please review for security, performance, and best practices.",
+        "auto_execute": true,
+        "priority": "high"
+      }
+    },
+    "data-scientist": {
+      "description": "Automatically trigger data analysis for performance issues",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "database_performance_issues",
+          "description": "Trigger on database query performance degradation",
+          "events": ["Continuous"],
+          "matchers": ["*"],
+          "conditions": {
+            "query_time_threshold": ">1000ms",
+            "error_patterns": [
+              "QueryTimeout",
+              "Database connection failed",
+              "SQL syntax error",
+              "Deadlock detected"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 6
+        },
+        {
+          "name": "analytics_dashboard_failures",
+          "description": "Trigger when analytics dashboards fail",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*analytics*)",
+            "Write(file_path:*analytics*)",
+            "MultiEdit(file_path:*analytics*)"
+          ],
+          "conditions": {
+            "http_status_codes": [500, 502, 503],
+            "error_patterns": [
+              "toFixed()",
+              "Cannot read property",
+              "Data processing failed"
+            ]
+          },
+          "cooldown_minutes": 10,
+          "max_triggers_per_hour": 8
+        }
+      ],
+      "action": {
+        "agent_type": "data-scientist",
+        "prompt_template": "Data/performance issue detected: {trigger_name}. {error_details}. Please analyze and provide optimization recommendations.",
+        "auto_execute": true,
+        "priority": "medium"
+      }
+    },
+    "general-purpose": {
+      "description": "Automatically trigger for complex multi-system issues",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "multi_system_failures",
+          "description": "Trigger when multiple systems fail simultaneously",
+          "events": ["Continuous"],
+          "matchers": ["*"],
+          "conditions": {
+            "concurrent_errors": ">3",
+            "system_types": ["frontend", "backend", "database"],
+            "time_window_minutes": 5
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 2
+        },
+        {
+          "name": "complex_integration_issues",
+          "description": "Trigger on complex integration problems",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/integrations/*)",
+            "Edit(file_path:*/services/*integration*)",
+            "Write(file_path:*/integrations/*)",
+            "Write(file_path:*/services/*integration*)"
+          ],
+          "conditions": {
+            "integration_types": ["stripe", "google", "sendgrid", "twilio"],
+            "error_patterns": [
+              "OAuth failed",
+              "API rate limit",
+              "Integration timeout",
+              "Webhook verification failed"
+            ]
+          },
+          "cooldown_minutes": 45,
+          "max_triggers_per_hour": 3
+        }
+      ],
+      "action": {
+        "agent_type": "general-purpose",
+        "prompt_template": "Complex issue detected: {trigger_name}. Multiple systems affected: {affected_systems}. Please provide comprehensive analysis and solution.",
+        "auto_execute": false,
+        "priority": "medium"
+      }
+    }
+  },
+  "safety_mechanisms": {
+    "global_rate_limit": {
+      "max_agent_executions_per_hour": 50,
+      "max_agent_executions_per_day": 200,
+      "cooldown_between_agents": "30s"
+    },
+    "emergency_stop": {
+      "enabled": true,
+      "env_var": "CLAUDE_STOP_SUB_AGENTS",
+      "file_trigger": "/Users/bossio/6fb-booking/.claude/EMERGENCY_STOP"
+    },
+    "conflict_prevention": {
+      "max_concurrent_agents": 1,
+      "agent_priority_order": ["debugger", "code-reviewer", "data-scientist", "general-purpose"]
+    },
+    "resource_protection": {
+      "max_execution_time_minutes": 10,
+      "memory_limit_mb": 512,
+      "cpu_limit_percent": 50
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "log_file": "/Users/bossio/6fb-booking/.claude/sub-agent-automation.log",
+    "metrics": {
+      "execution_count": true,
+      "success_rate": true,
+      "average_execution_time": true,
+      "trigger_accuracy": true
+    },
+    "alerts": {
+      "high_failure_rate": 80,
+      "excessive_triggers": 30,
+      "resource_exhaustion": true
+    }
+  },
+  "integration": {
+    "browser_logs_mcp": {
+      "enabled": true,
+      "endpoint": "http://localhost:9222",
+      "auto_connect": true
+    },
+    "existing_hooks": {
+      "inherit_from": "/Users/bossio/6fb-booking/.claude/hooks.json",
+      "merge_strategy": "append"
+    }
+  }
+}

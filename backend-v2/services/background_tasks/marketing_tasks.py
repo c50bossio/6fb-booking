@@ -4,13 +4,12 @@ Handles email campaigns, SMS marketing, and automated marketing workflows.
 """
 
 import logging
-from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 
 from services.celery_app import celery_app
 from services.marketing_service import MarketingService
 from db import SessionLocal
-from models import MarketingCampaign, Client, User
+from models import MarketingCampaign, Client
 from config import settings
 
 logger = logging.getLogger(__name__)

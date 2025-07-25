@@ -3,10 +3,9 @@ Six Figure Barber Compliance API Router
 Endpoints for compliance scoring and monitoring
 """
 
-from typing import List, Dict, Any, Optional
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from db import get_db
 from dependencies import get_current_user

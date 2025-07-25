@@ -7,7 +7,6 @@ backup codes, trusted devices, and audit logging.
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
 from datetime import datetime
 import logging
 
@@ -35,7 +34,6 @@ from schemas_new.mfa import (
 )
 from services.mfa_service import MFAService
 from utils.auth import verify_password, create_access_token, create_refresh_token
-from datetime import timedelta
 import secrets
 
 logger = logging.getLogger(__name__)

@@ -9,12 +9,11 @@ from fastapi import APIRouter, HTTPException, status, Depends, Request
 from sqlalchemy.orm import Session
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
-from datetime import datetime, date
+from datetime import datetime
 
 from db import get_db
 from models.organization import Organization
 from models import User, Service
-from models.guest_booking import GuestBooking
 from schemas_new.tracking import PublicTrackingPixels
 from schemas_new.guest_booking import (
     GuestBookingCreate,

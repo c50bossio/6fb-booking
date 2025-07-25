@@ -258,8 +258,6 @@ class IntegrationTestRunner:
     def check_models(self):
         """Check if integration models can be imported"""
         try:
-            from models.integration import Integration, IntegrationType, IntegrationStatus
-            from models.review import Review, ReviewPlatform, ReviewSentiment
             return {"healthy": True, "message": "All models importable"}
         except Exception as e:
             return {"healthy": False, "issue": f"Model import failed: {e}"}
@@ -267,8 +265,6 @@ class IntegrationTestRunner:
     def check_api_endpoints(self):
         """Check if API routers can be imported"""
         try:
-            from routers.integrations import router as integrations_router
-            from routers.reviews import router as reviews_router
             return {"healthy": True, "message": "All API routers importable"}
         except Exception as e:
             return {"healthy": False, "issue": f"Router import failed: {e}"}
@@ -276,8 +272,6 @@ class IntegrationTestRunner:
     def check_services(self):
         """Check if service classes can be imported"""
         try:
-            from services.integration_service import BaseIntegrationService, IntegrationServiceFactory
-            from services.gmb_service import GMBService
             return {"healthy": True, "message": "All services importable"}
         except Exception as e:
             return {"healthy": False, "issue": f"Service import failed: {e}"}

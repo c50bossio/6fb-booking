@@ -9,13 +9,12 @@ This service handles all Stripe subscription operations including:
 """
 
 import stripe
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 import logging
 
-from models import User, Organization, UserOrganization
-from models.organization import OrganizationType
+from models import User, Organization
 from config import settings
 from utils.pricing import calculate_progressive_price
 

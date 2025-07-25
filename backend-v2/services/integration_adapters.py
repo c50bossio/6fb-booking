@@ -3,7 +3,7 @@ Adapter classes to make existing integration services compatible with BaseIntegr
 This allows existing services to work with the IntegrationServiceFactory pattern.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 import os
@@ -13,7 +13,7 @@ from services.integration_service import BaseIntegrationService
 from services.gmb_service import GMBService as GMBServiceImpl
 from services.google_calendar_service import GoogleCalendarService as GCalServiceImpl
 from services.stripe_integration_service import StripeIntegrationService as StripeServiceImpl
-from models.integration import IntegrationType, Integration, IntegrationStatus
+from models.integration import IntegrationType, Integration
 from schemas_new.integration import IntegrationHealthCheck
 
 logger = logging.getLogger(__name__)

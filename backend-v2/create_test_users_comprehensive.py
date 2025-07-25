@@ -21,10 +21,8 @@ from sqlalchemy.orm import sessionmaker
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from db import Base, get_db
 from models import User, Organization, UserOrganization, UnifiedUserRole
 from models.organization import OrganizationType, UserRole
-import hashlib
 from passlib.context import CryptContext
 
 # Password hashing

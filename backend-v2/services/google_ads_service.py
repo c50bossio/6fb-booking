@@ -13,21 +13,19 @@ This service integrates with Google Ads API v15 to provide:
 """
 
 import os
-import json
 import logging
-from typing import Dict, List, Optional, Tuple, Any, Union
-from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Optional, Tuple, Any
+from datetime import datetime, timedelta
 from decimal import Decimal
 import httpx
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
-from models.integration import Integration, IntegrationType, IntegrationStatus
+from models.integration import Integration, IntegrationType
 from models.tracking import ConversionEvent, ConversionStatus
-from models import User, Client, Appointment
-from schemas_new.integration import IntegrationCreate, IntegrationUpdate
+from models import Client, Appointment
 from services.integration_service import BaseIntegrationService, IntegrationServiceFactory
-from utils.encryption import encrypt_text, decrypt_text
+from utils.encryption import decrypt_text
 
 
 # Configure logging

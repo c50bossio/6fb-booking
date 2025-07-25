@@ -4,7 +4,6 @@ Test complete booking flow functionality
 """
 
 import requests
-import json
 from datetime import datetime, timedelta
 
 BACKEND_URL = "http://localhost:8000"

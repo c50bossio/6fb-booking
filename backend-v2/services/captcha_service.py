@@ -7,12 +7,10 @@ after a configured number of failures.
 """
 
 import os
-import json
 import redis
 from typing import Optional, Dict, Tuple
 from datetime import datetime, timedelta
 import httpx
-from fastapi import HTTPException
 from config import settings
 import logging
 

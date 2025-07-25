@@ -3,10 +3,8 @@ Smart Call-to-Action Generation System Demo
 Demonstrates the comprehensive features and capabilities of the SmartCTAService.
 """
 
-import asyncio
-import json
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

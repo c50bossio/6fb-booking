@@ -1,12 +1,7 @@
 """
 Tests for client management API endpoints.
 """
-import pytest
 from fastapi.testclient import TestClient
-from datetime import datetime, timedelta
-from main import app
-from models import Client, User, Appointment
-from utils.auth import create_access_token
 
 
 class TestClientAPI:

@@ -11,7 +11,6 @@ from decimal import Decimal
 from services.google_ads_service import GoogleAdsService
 from models.integration import Integration, IntegrationType, IntegrationStatus
 from models.tracking import ConversionEvent, ConversionStatus, EventType
-from models import User, Client, Appointment
 
 
 @pytest.fixture

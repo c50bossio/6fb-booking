@@ -7,10 +7,10 @@ marketing tracking pixels (GTM, GA4, Meta, Google Ads) for their booking pages.
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List, Optional, Any
+from typing import List, Any
 
 from db import get_db
-from dependencies import get_current_active_user, require_organization_access
+from dependencies import get_current_active_user
 from models import User, Organization
 from models.organization import UserRole
 from schemas_new.tracking import (

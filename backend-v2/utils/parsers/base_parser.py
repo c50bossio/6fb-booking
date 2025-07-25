@@ -6,7 +6,7 @@ defining the common interface and validation logic.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
 import re
@@ -77,22 +77,18 @@ class BaseBookingParser(ABC):
     @abstractmethod
     def parse_csv(self, file_path: str) -> ParseResult:
         """Parse CSV export from booking platform"""
-        pass
     
     @abstractmethod
     def parse_json(self, file_path: str) -> ParseResult:
         """Parse JSON data from booking platform API"""
-        pass
     
     @abstractmethod
     def get_field_mapping(self) -> Dict[str, str]:
         """Return mapping of platform fields to standardized fields"""
-        pass
     
     @abstractmethod
     def validate_platform_data(self, raw_data: Dict) -> Tuple[bool, List[str]]:
         """Validate platform-specific data requirements"""
-        pass
     
     def standardize_phone(self, phone: Optional[str]) -> Optional[str]:
         """Standardize phone number format"""

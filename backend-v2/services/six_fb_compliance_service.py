@@ -3,15 +3,13 @@ Six Figure Barber Compliance Service
 Calculates and tracks compliance with 6FB methodology
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_
 
 from models import (
     User, Service, Appointment, Payment, Client,
-    ServiceTemplate, ServicePricingRule, ServiceBookingRule,
-    MarketingCampaign, NotificationPreferences
+    ServicePricingRule, MarketingCampaign, NotificationPreferences
 )
 from models.six_fb_compliance import (
     SixFBComplianceScore, SixFBComplianceCheck, 

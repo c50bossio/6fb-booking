@@ -7,11 +7,9 @@ This module contains optimized versions of analytics queries that were causing p
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_, text
-from decimal import Decimal
+from sqlalchemy import text
 import logging
 
-from models import User, Appointment, Payment, Client, Service
 from schemas import DateRange
 
 logger = logging.getLogger(__name__)

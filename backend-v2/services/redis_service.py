@@ -5,13 +5,11 @@ Redis connection management service with connection pooling and failover capabil
 import redis
 import redis.connection
 import logging
-import asyncio
 from typing import Optional, Any, Dict, List
 from contextlib import contextmanager
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 import pickle
-import time
 from config import settings
 
 logger = logging.getLogger(__name__)

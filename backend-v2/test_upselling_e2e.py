@@ -5,8 +5,6 @@ Tests the full flow from upselling implementation to analytics tracking.
 """
 
 import asyncio
-import json
-from datetime import datetime, timedelta
 import requests
 import time
 
@@ -74,7 +72,7 @@ async def test_upselling_end_to_end():
     try:
         from db import get_db
         from models.upselling import UpsellAttempt, UpsellConversion, UpsellStatus, UpsellChannel
-        from models import User, Appointment
+        from models import User
         from datetime import datetime, timedelta
         
         db = next(get_db())
@@ -377,7 +375,6 @@ const puppeteer = require('puppeteer');
     
     # Run the Puppeteer test
     import subprocess
-    import os
     
     try:
         # Check if puppeteer is available

@@ -4,7 +4,6 @@ Apply secure error handling to all routers to prevent internal detail exposure.
 This script updates routers to use the centralized error handling system.
 """
 
-import os
 import re
 from pathlib import Path
 

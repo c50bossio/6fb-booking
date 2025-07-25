@@ -4,8 +4,6 @@ Setup OAuth credentials for marketing integrations.
 This script helps configure OAuth credentials in the .env file.
 """
 
-import os
-import sys
 from pathlib import Path
 
 def setup_oauth_credentials():

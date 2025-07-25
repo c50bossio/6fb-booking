@@ -9,7 +9,6 @@ import sys
 from datetime import datetime
 from sqlalchemy import create_engine, text
 from tabulate import tabulate
-from typing import List, Dict, Any
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

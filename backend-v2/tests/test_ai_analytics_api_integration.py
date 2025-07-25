@@ -6,15 +6,13 @@ authentication, rate limiting, and response validation.
 """
 
 import pytest
-import json
-from datetime import datetime, timedelta, date
-from typing import Dict, Any
+from datetime import datetime
 from fastapi.testclient import TestClient
 from fastapi import status
 from unittest.mock import Mock, patch
 
 from main import app
-from models.consent import ConsentType, ConsentStatus
+from models.consent import ConsentType
 
 
 class TestAIAnalyticsAPIEndpoints:

@@ -13,8 +13,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from services.keyword_generation_service import KeywordGenerationService
 from services.business_context_service import BusinessContext
-from services.review_service import ReviewService
-from models.review import Review, ReviewSentiment, ReviewPlatform
+from models.review import Review, ReviewSentiment
 
 
 def example_enhanced_review_response_generation():

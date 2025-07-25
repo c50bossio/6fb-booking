@@ -8,14 +8,10 @@ import asyncio
 import json
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 import httpx
-import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import stripe
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
 import os
 import sys
 from pathlib import Path
@@ -23,11 +19,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from main import app
-from db import get_db, Base
-from models.user import User
-from models.appointment import Appointment
-from models.payment import Payment
+from db import Base
 
 
 class TestMetrics:

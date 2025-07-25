@@ -3,7 +3,7 @@ Pydantic schemas for location-related models
 """
 
 from pydantic import BaseModel
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 from datetime import datetime
 from enum import Enum
 

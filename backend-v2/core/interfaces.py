@@ -10,7 +10,6 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Dict, Any, Protocol, TypeVar, Generic
 from datetime import datetime, date, time
 from enum import Enum
-import uuid
 
 # Type variables for generic interfaces
 T = TypeVar('T')
@@ -157,17 +156,14 @@ class IEmailService(ABC):
     @abstractmethod
     async def send_appointment_confirmation(self, appointment: AppointmentDTO, user: UserDTO) -> bool:
         """Send appointment confirmation email"""
-        pass
     
     @abstractmethod
     async def send_appointment_reminder(self, appointment: AppointmentDTO, user: UserDTO) -> bool:
         """Send appointment reminder email"""
-        pass
     
     @abstractmethod
     async def send_password_reset(self, user: UserDTO, reset_token: str) -> bool:
         """Send password reset email"""
-        pass
 
 
 class ISMSService(ABC):
@@ -176,12 +172,10 @@ class ISMSService(ABC):
     @abstractmethod
     async def send_appointment_reminder(self, appointment: AppointmentDTO, phone: str) -> bool:
         """Send appointment reminder SMS"""
-        pass
     
     @abstractmethod
     async def send_verification_code(self, phone: str, code: str) -> bool:
         """Send phone verification code"""
-        pass
 
 
 class IPaymentService(ABC):
@@ -191,22 +185,18 @@ class IPaymentService(ABC):
     async def create_payment_intent(self, amount: float, currency: str = "USD", 
                                   metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Create Stripe payment intent"""
-        pass
     
     @abstractmethod
     async def confirm_payment(self, payment_intent_id: str) -> Dict[str, Any]:
         """Confirm payment intent"""
-        pass
     
     @abstractmethod
     async def refund_payment(self, payment_intent_id: str, amount: Optional[float] = None) -> Dict[str, Any]:
         """Refund payment"""
-        pass
     
     @abstractmethod
     async def process_webhook(self, payload: str, signature: str) -> bool:
         """Process Stripe webhook"""
-        pass
 
 
 class ICalendarService(ABC):
@@ -215,22 +205,18 @@ class ICalendarService(ABC):
     @abstractmethod
     async def create_event(self, appointment: AppointmentDTO) -> Optional[str]:
         """Create calendar event, returns event ID"""
-        pass
     
     @abstractmethod
     async def update_event(self, event_id: str, appointment: AppointmentDTO) -> bool:
         """Update calendar event"""
-        pass
     
     @abstractmethod
     async def delete_event(self, event_id: str) -> bool:
         """Delete calendar event"""
-        pass
     
     @abstractmethod
     async def get_busy_times(self, calendar_id: str, start_date: date, end_date: date) -> List[Dict[str, datetime]]:
         """Get busy times from external calendar"""
-        pass
 
 
 class IAuthService(ABC):
@@ -239,32 +225,26 @@ class IAuthService(ABC):
     @abstractmethod
     async def authenticate_user(self, email: str, password: str) -> Optional[UserDTO]:
         """Authenticate user with email and password"""
-        pass
     
     @abstractmethod
     async def create_access_token(self, user: UserDTO) -> str:
         """Create JWT access token"""
-        pass
     
     @abstractmethod
     async def create_refresh_token(self, user: UserDTO) -> str:
         """Create JWT refresh token"""
-        pass
     
     @abstractmethod
     async def verify_token(self, token: str) -> Optional[UserDTO]:
         """Verify JWT token and return user"""
-        pass
     
     @abstractmethod
     async def hash_password(self, password: str) -> str:
         """Hash password"""
-        pass
     
     @abstractmethod
     async def verify_password(self, password: str, hashed_password: str) -> bool:
         """Verify password against hash"""
-        pass
 
 
 class IBookingService(ABC):
@@ -273,27 +253,22 @@ class IBookingService(ABC):
     @abstractmethod
     async def get_available_slots(self, barber_id: str, date: date) -> List[time]:
         """Get available booking slots"""
-        pass
     
     @abstractmethod
     async def create_appointment(self, appointment_data: Dict[str, Any]) -> AppointmentDTO:
         """Create new appointment"""
-        pass
     
     @abstractmethod
     async def update_appointment(self, appointment_id: str, updates: Dict[str, Any]) -> Optional[AppointmentDTO]:
         """Update existing appointment"""
-        pass
     
     @abstractmethod
     async def cancel_appointment(self, appointment_id: str, reason: Optional[str] = None) -> bool:
         """Cancel appointment"""
-        pass
     
     @abstractmethod
     async def confirm_appointment(self, appointment_id: str) -> bool:
         """Confirm appointment"""
-        pass
 
 
 class IAnalyticsService(ABC):
@@ -302,22 +277,18 @@ class IAnalyticsService(ABC):
     @abstractmethod
     async def get_revenue_metrics(self, user_id: str, start_date: date, end_date: date) -> Dict[str, Any]:
         """Get revenue analytics"""
-        pass
     
     @abstractmethod
     async def get_appointment_metrics(self, user_id: str, start_date: date, end_date: date) -> Dict[str, Any]:
         """Get appointment analytics"""
-        pass
     
     @abstractmethod
     async def get_client_metrics(self, user_id: str, start_date: date, end_date: date) -> Dict[str, Any]:
         """Get client analytics"""
-        pass
     
     @abstractmethod
     async def track_event(self, event_name: str, user_id: str, properties: Dict[str, Any]) -> None:
         """Track analytics event"""
-        pass
 
 
 class ICacheService(ABC):
@@ -326,22 +297,18 @@ class ICacheService(ABC):
     @abstractmethod
     async def get(self, key: str) -> Optional[Any]:
         """Get value from cache"""
-        pass
     
     @abstractmethod
     async def set(self, key: str, value: Any, expire: Optional[int] = None) -> bool:
         """Set value in cache with optional expiration"""
-        pass
     
     @abstractmethod
     async def delete(self, key: str) -> bool:
         """Delete value from cache"""
-        pass
     
     @abstractmethod
     async def exists(self, key: str) -> bool:
         """Check if key exists in cache"""
-        pass
 
 
 class IFileStorageService(ABC):
@@ -350,17 +317,14 @@ class IFileStorageService(ABC):
     @abstractmethod
     async def upload_file(self, file_data: bytes, filename: str, content_type: str) -> str:
         """Upload file and return URL"""
-        pass
     
     @abstractmethod
     async def delete_file(self, file_url: str) -> bool:
         """Delete file"""
-        pass
     
     @abstractmethod
     async def get_file_url(self, filename: str) -> str:
         """Get file URL"""
-        pass
 
 
 class ILoggerService(ABC):
@@ -369,22 +333,18 @@ class ILoggerService(ABC):
     @abstractmethod
     def info(self, message: str, **kwargs) -> None:
         """Log info message"""
-        pass
     
     @abstractmethod
     def warning(self, message: str, **kwargs) -> None:
         """Log warning message"""
-        pass
     
     @abstractmethod
     def error(self, message: str, **kwargs) -> None:
         """Log error message"""
-        pass
     
     @abstractmethod
     def debug(self, message: str, **kwargs) -> None:
         """Log debug message"""
-        pass
 
 
 # Event Interfaces for Event-Driven Architecture
@@ -395,19 +355,16 @@ class IDomainEvent(ABC):
     @abstractmethod
     def event_id(self) -> str:
         """Unique event identifier"""
-        pass
     
     @property
     @abstractmethod
     def occurred_at(self) -> datetime:
         """When the event occurred"""
-        pass
     
     @property
     @abstractmethod
     def event_type(self) -> str:
         """Type of event"""
-        pass
 
 
 class IEventPublisher(ABC):
@@ -416,7 +373,6 @@ class IEventPublisher(ABC):
     @abstractmethod
     async def publish(self, event: IDomainEvent) -> None:
         """Publish domain event"""
-        pass
 
 
 class IEventHandler(ABC, Generic[T]):
@@ -425,7 +381,6 @@ class IEventHandler(ABC, Generic[T]):
     @abstractmethod
     async def handle(self, event: T) -> None:
         """Handle domain event"""
-        pass
 
 
 # Configuration Interfaces
@@ -435,19 +390,15 @@ class IConfiguration(ABC):
     @abstractmethod
     def get(self, key: str, default: Any = None) -> Any:
         """Get configuration value"""
-        pass
     
     @abstractmethod
     def get_database_url(self) -> str:
         """Get database connection URL"""
-        pass
     
     @abstractmethod
     def get_redis_url(self) -> str:
         """Get Redis connection URL"""
-        pass
     
     @abstractmethod
     def is_production(self) -> bool:
         """Check if running in production"""
-        pass

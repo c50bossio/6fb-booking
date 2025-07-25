@@ -5,7 +5,6 @@ Creates essential test data for calendar testing.
 """
 
 import sqlite3
-import json
 from datetime import datetime, timedelta
 import random
 

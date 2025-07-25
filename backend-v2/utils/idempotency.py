@@ -15,10 +15,10 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, Callable, Union
 from functools import wraps
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status, Request, Depends
+from fastapi import HTTPException, status, Request
 from sqlalchemy.exc import IntegrityError
 
 logger = logging.getLogger(__name__)
@@ -186,7 +186,7 @@ def idempotent_operation(
         key_header: Header name for idempotency key
     """
     def decorator(func: Callable) -> Callable:
-        import asyncio
+        pass
         
         @wraps(func)
         def wrapper(*args, **kwargs):

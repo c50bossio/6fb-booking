@@ -1,19 +1,18 @@
 """Service for handling guest bookings and public booking page functionality."""
 
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
+from sqlalchemy import or_, func
 import secrets
 import logging
 
 from models import User, Service, Organization, Appointment
 from models.guest_booking import GuestBooking
-from services.booking_service import get_available_slots, get_available_slots_with_barber_availability
+from services.booking_service import get_available_slots_with_barber_availability
 from services.notification_service import notification_service
 from schemas_new.guest_booking import (
     GuestBookingCreate,
-    GuestBookingResponse,
     PublicAvailabilityResponse,
     PublicAvailabilitySlot,
     PublicServiceInfo,

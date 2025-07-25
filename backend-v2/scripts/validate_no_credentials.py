@@ -9,7 +9,7 @@ import os
 import re
 import json
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict
 import argparse
 
 

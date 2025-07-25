@@ -13,7 +13,7 @@ from datetime import datetime
 from enum import Enum
 
 from db import get_db
-from models import Service, ServiceTemplate, User
+from models import Service, User
 from services.service_template_service import ServiceTemplateService
 from routers.auth import get_current_user
 

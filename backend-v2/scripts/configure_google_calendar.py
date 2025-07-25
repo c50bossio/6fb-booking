@@ -15,11 +15,9 @@ Usage:
     python scripts/configure_google_calendar.py --test-user USER_ID  # Test user integration
 """
 
-import os
 import sys
 import argparse
 import logging
-import json
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -27,10 +25,6 @@ from datetime import datetime, timedelta
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from google.auth.transport import requests as google_requests
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from sqlalchemy.orm import Session
 from config import settings
 from services.google_calendar_service import GoogleCalendarService, CalendarEvent

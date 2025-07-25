@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc
 import logging
 
 from models.cancellation import WaitlistEntry
-from models import Appointment, User, Service, Client
-from services.booking_service import create_booking
+from models import Appointment
 from services.notification_service import notification_service
 
 logger = logging.getLogger(__name__)

@@ -22,11 +22,10 @@ Common Booksy field mappings:
 
 import csv
 import json
-from typing import Dict, List, Any, Tuple
-from datetime import datetime
+from typing import Dict, List, Tuple
 import logging
 
-from .base_parser import BaseBookingParser, ParseResult, ParsedClient
+from .base_parser import BaseBookingParser, ParseResult
 
 logger = logging.getLogger(__name__)
 

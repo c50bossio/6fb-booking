@@ -6,11 +6,9 @@ Implements secure caching and follows established service patterns.
 
 import logging
 import re
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func, distinct
-from functools import lru_cache
+from typing import Dict, List, Optional, Any
+from sqlalchemy.orm import Session
+from sqlalchemy import and_, func, distinct
 from dataclasses import dataclass
 import redis
 import json
@@ -18,8 +16,6 @@ import os
 
 from models import User, Service, Client
 from location_models import BarbershopLocation, BarberLocation
-from models.integration import Integration, IntegrationType
-from utils.encryption import decrypt_data
 
 
 # Configure logging

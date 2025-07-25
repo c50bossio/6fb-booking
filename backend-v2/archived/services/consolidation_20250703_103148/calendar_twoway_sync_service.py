@@ -12,13 +12,13 @@ This service provides:
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 
 from models import User, Appointment
-from services.enhanced_google_calendar_service import enhanced_google_calendar_service, CalendarEvent
+from services.enhanced_google_calendar_service import enhanced_google_calendar_service
 from services.timezone_service import timezone_service
 from utils.encryption import encrypt_data, decrypt_data
 

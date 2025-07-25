@@ -4,10 +4,9 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta, timezone
 import csv
 import io
-import json
 
 from db import get_db
-from models import User, Client, NotificationTemplate
+from models import User
 from schemas import (
     MarketingCampaignCreate, MarketingCampaignUpdate, MarketingCampaignResponse,
     MarketingTemplateCreate, MarketingTemplateUpdate, MarketingTemplateResponse,

@@ -2,10 +2,8 @@
 """Quick check for admin credentials and test authentication."""
 
 import sys
-import os
 sys.path.append('/Users/bossio/6fb-booking/backend-v2')
 
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, text
 from passlib.context import CryptContext
 from datetime import datetime

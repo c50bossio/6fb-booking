@@ -5,17 +5,15 @@ Handles OAuth, product sync, order management, and inventory tracking.
 
 import os
 import httpx
-import asyncio
 from typing import Optional, Dict, Any, List, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 import logging
 
-from models.integration import Integration, IntegrationType, IntegrationStatus
-from models.product import Product, ProductVariant, InventoryItem, Order, OrderItem
+from models.integration import Integration, IntegrationType
+from models.product import Product, ProductVariant, Order, OrderItem
 from services.integration_service import BaseIntegrationService
-from utils.encryption import encrypt_data, decrypt_data
 
 logger = logging.getLogger(__name__)
 

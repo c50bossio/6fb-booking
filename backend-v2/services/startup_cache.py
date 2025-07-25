@@ -3,10 +3,9 @@ Application startup cache management and warming.
 Handles cache initialization, data warming, and graceful shutdown.
 """
 
-import asyncio
 import logging
-from typing import Dict, List, Any, Optional
-from datetime import datetime, timedelta
+from typing import Dict, Any
+from datetime import datetime
 
 from config import settings
 from services.redis_cache import cache_service

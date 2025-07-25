@@ -10,8 +10,6 @@ from services.seo_optimization_service import (
     generate_seo_performance_report
 )
 from services.business_context_service import BusinessContext
-from models.review import Review, ReviewSentiment
-from datetime import datetime
 
 
 def example_basic_optimization(db: Session):

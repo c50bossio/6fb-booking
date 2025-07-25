@@ -7,8 +7,6 @@ Create Date: 2025-07-08 21:58:54.490413
 """
 from typing import Sequence, Union
 
-from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
@@ -20,9 +18,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    pass
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    pass

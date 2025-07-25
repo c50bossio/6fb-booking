@@ -7,9 +7,9 @@ Provides dashboard-specific endpoints including:
 - Overview data for main dashboard
 """
 
-from datetime import datetime, timedelta, date
-from typing import Dict, List, Optional, Any
-from fastapi import APIRouter, Depends, HTTPException, Query
+from datetime import datetime, timedelta
+from typing import Dict, Optional, Any
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 

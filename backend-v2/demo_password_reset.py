@@ -5,13 +5,11 @@ Demo script to show the complete password reset flow
 import sys
 import os
 from pathlib import Path
-from datetime import datetime
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent))
 
-from sqlalchemy.orm import Session
-from db import get_db, engine
+from db import get_db
 from utils.password_reset import create_password_reset_token, send_reset_email
 from utils.auth import get_password_hash
 import models

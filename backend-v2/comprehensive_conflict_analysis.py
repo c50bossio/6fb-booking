@@ -4,15 +4,13 @@ Comprehensive Code Duplication and Conflict Analysis
 Analyzes the 6FB booking system for duplicates, conflicts, and architecture issues
 """
 
-import os
 import json
 import re
 import ast
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List
 from collections import defaultdict
 from dataclasses import dataclass, asdict
-import hashlib
 
 @dataclass
 class ConflictItem:

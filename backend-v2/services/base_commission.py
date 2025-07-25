@@ -5,8 +5,7 @@ Provides a single source of truth for all commission calculations.
 
 from abc import ABC, abstractmethod
 from decimal import Decimal
-from typing import Dict, Any, Optional, List, Union
-from datetime import datetime
+from typing import Dict, Any, List, Union
 from enum import Enum
 import logging
 
@@ -52,12 +51,10 @@ class BaseCommissionCalculator(ABC):
         Returns:
             Dict containing commission breakdown
         """
-        pass
         
     @abstractmethod
     def validate_rate(self, rate: Decimal) -> bool:
         """Validate commission rate for this calculator type"""
-        pass
         
     def _validate_amount(self, amount: Union[Decimal, float]) -> Decimal:
         """Validate and convert amount to Decimal"""

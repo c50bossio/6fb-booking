@@ -13,7 +13,6 @@ Usage:
     python scripts/configure_stripe.py --live  # Production setup
 """
 
-import os
 import sys
 import argparse
 import logging
@@ -25,9 +24,6 @@ sys.path.insert(0, str(project_root))
 
 import stripe
 from config import settings
-from services.stripe_integration_service import StripeIntegrationService
-from services.payment_service import PaymentService
-from db import get_db
 
 logger = logging.getLogger(__name__)
 

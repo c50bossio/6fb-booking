@@ -34,309 +34,250 @@ class BookedBarberException(Exception):
 # Authentication and Authorization Exceptions
 class AuthenticationError(BookedBarberException):
     """Raised when authentication fails"""
-    pass
 
 
 class AuthorizationError(BookedBarberException):
     """Raised when user lacks required permissions"""
-    pass
 
 
 class InvalidTokenError(AuthenticationError):
     """Raised when JWT token is invalid or expired"""
-    pass
 
 
 class UserNotFoundError(AuthenticationError):
     """Raised when user is not found"""
-    pass
 
 
 class InvalidCredentialsError(AuthenticationError):
     """Raised when login credentials are invalid"""
-    pass
 
 
 # Booking-related Exceptions
 class BookingError(BookedBarberException):
     """Base exception for booking-related errors"""
-    pass
 
 
 class AppointmentNotFoundError(BookingError):
     """Raised when appointment is not found"""
-    pass
 
 
 class AppointmentConflictError(BookingError):
     """Raised when appointment time conflicts with existing booking"""
-    pass
 
 
 class InvalidTimeSlotError(BookingError):
     """Raised when requested time slot is invalid or unavailable"""
-    pass
 
 
 class AppointmentAlreadyCancelledError(BookingError):
     """Raised when trying to cancel an already cancelled appointment"""
-    pass
 
 
 class AppointmentTooLateToModifyError(BookingError):
     """Raised when trying to modify appointment too close to start time"""
-    pass
 
 
 # Payment-related Exceptions
 class PaymentError(BookedBarberException):
     """Base exception for payment-related errors"""
-    pass
 
 
 class PaymentNotFoundError(PaymentError):
     """Raised when payment is not found"""
-    pass
 
 
 class PaymentFailedError(PaymentError):
     """Raised when payment processing fails"""
-    pass
 
 
 class RefundError(PaymentError):
     """Raised when refund processing fails"""
-    pass
 
 
 class InsufficientFundsError(PaymentError):
     """Raised when payment method has insufficient funds"""
-    pass
 
 
 class PaymentAlreadyProcessedError(PaymentError):
     """Raised when trying to process an already processed payment"""
-    pass
 
 
 # Service-related Exceptions
 class ServiceError(BookedBarberException):
     """Base exception for service-related errors"""
-    pass
 
 
 class ServiceNotFoundError(ServiceError):
     """Raised when service is not found"""
-    pass
 
 
 class ServiceUnavailableError(ServiceError):
     """Raised when service is temporarily unavailable"""
-    pass
 
 
 class ExternalServiceError(ServiceError):
     """Raised when external service call fails"""
-    pass
 
 
 # User and Business Exceptions
 class UserError(BookedBarberException):
     """Base exception for user-related errors"""
-    pass
 
 
 class UserAlreadyExistsError(UserError):
     """Raised when trying to create user that already exists"""
-    pass
 
 
 class InvalidUserRoleError(UserError):
     """Raised when user role is invalid for operation"""
-    pass
 
 
 class BarberNotFoundError(UserError):
     """Raised when barber is not found"""
-    pass
 
 
 class ClientNotFoundError(UserError):
     """Raised when client is not found"""
-    pass
 
 
 # Validation Exceptions
 class ValidationError(BookedBarberException):
     """Base exception for validation errors"""
-    pass
 
 
 class InvalidEmailError(ValidationError):
     """Raised when email format is invalid"""
-    pass
 
 
 class InvalidPhoneError(ValidationError):
     """Raised when phone number format is invalid"""
-    pass
 
 
 class InvalidDateRangeError(ValidationError):
     """Raised when date range is invalid"""
-    pass
 
 
 class InvalidPriceError(ValidationError):
     """Raised when price value is invalid"""
-    pass
 
 
 class RequiredFieldError(ValidationError):
     """Raised when required field is missing"""
-    pass
 
 
 # Database Exceptions
 class DatabaseError(BookedBarberException):
     """Base exception for database-related errors"""
-    pass
 
 
 class RecordNotFoundError(DatabaseError):
     """Raised when database record is not found"""
-    pass
 
 
 class DuplicateRecordError(DatabaseError):
     """Raised when trying to create duplicate record"""
-    pass
 
 
 class DatabaseConnectionError(DatabaseError):
     """Raised when database connection fails"""
-    pass
 
 
 class TransactionError(DatabaseError):
     """Raised when database transaction fails"""
-    pass
 
 
 # Configuration Exceptions
 class ConfigurationError(BookedBarberException):
     """Base exception for configuration-related errors"""
-    pass
 
 
 class MissingConfigurationError(ConfigurationError):
     """Raised when required configuration is missing"""
-    pass
 
 
 class InvalidConfigurationError(ConfigurationError):
     """Raised when configuration value is invalid"""
-    pass
 
 
 # Rate Limiting Exceptions
 class RateLimitError(BookedBarberException):
     """Raised when rate limit is exceeded"""
-    pass
 
 
 class TooManyRequestsError(RateLimitError):
     """Raised when too many requests are made"""
-    pass
 
 
 # File and Storage Exceptions
 class FileError(BookedBarberException):
     """Base exception for file-related errors"""
-    pass
 
 
 class FileNotFoundError(FileError):
     """Raised when file is not found"""
-    pass
 
 
 class InvalidFileTypeError(FileError):
     """Raised when file type is not allowed"""
-    pass
 
 
 class FileSizeExceededError(FileError):
     """Raised when file size exceeds limit"""
-    pass
 
 
 class StorageError(FileError):
     """Raised when file storage operation fails"""
-    pass
 
 
 # Integration Exceptions
 class IntegrationError(BookedBarberException):
     """Base exception for third-party integration errors"""
-    pass
 
 
 class CalendarIntegrationError(IntegrationError):
     """Raised when calendar integration fails"""
-    pass
 
 
 class EmailServiceError(IntegrationError):
     """Raised when email service fails"""
-    pass
 
 
 class SMSServiceError(IntegrationError):
     """Raised when SMS service fails"""
-    pass
 
 
 class StripeIntegrationError(IntegrationError):
     """Raised when Stripe integration fails"""
-    pass
 
 
 # Cache Exceptions
 class CacheError(BookedBarberException):
     """Base exception for cache-related errors"""
-    pass
 
 
 class CacheConnectionError(CacheError):
     """Raised when cache connection fails"""
-    pass
 
 
 class CacheKeyError(CacheError):
     """Raised when cache key is invalid"""
-    pass
 
 
 # Business Logic Exceptions
 class BusinessRuleError(BookedBarberException):
     """Base exception for business rule violations"""
-    pass
 
 
 class SixFigureBarberRuleError(BusinessRuleError):
     """Raised when Six Figure Barber methodology rule is violated"""
-    pass
 
 
 class WorkingHoursError(BusinessRuleError):
     """Raised when operation is outside working hours"""
-    pass
 
 
 class CapacityExceededError(BusinessRuleError):
     """Raised when capacity limits are exceeded"""
-    pass
 
 
 # Exception Factory Functions

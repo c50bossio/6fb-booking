@@ -5,16 +5,14 @@ Import Validation Script
 Checks that all imports work correctly after code consolidation.
 Identifies broken imports, circular dependencies, and import optimization opportunities.
 """
-import os
 import sys
 import ast
 import importlib
-import traceback
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List, Optional
 import argparse
 import json
-from collections import defaultdict, deque
+from collections import defaultdict
 
 
 class ImportValidator:

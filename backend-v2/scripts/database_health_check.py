@@ -19,20 +19,18 @@ import time
 import json
 import argparse
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 import concurrent.futures
 
 # Add the backend directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import create_engine, text, inspect
+from sqlalchemy import text, inspect
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import OperationalError
 import logging
 
 from config.database_production import DatabaseHealthChecker, create_optimized_engine
-from models import Appointment, Payment, User, Base
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

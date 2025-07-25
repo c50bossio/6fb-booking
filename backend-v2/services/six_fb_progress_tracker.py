@@ -13,10 +13,9 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_
 import logging
 
-from models import User, Appointment, Payment, Client, Service
+from models import Appointment, Payment, Client
 from services.analytics_service import AnalyticsService
 
 logger = logging.getLogger(__name__)

@@ -5,7 +5,7 @@ Provides common functionality for OAuth flows, token management, and health moni
 
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, Any, List, Tuple
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 import secrets
@@ -13,16 +13,11 @@ import json
 import logging
 
 from models.integration import Integration, IntegrationType, IntegrationStatus
-from models import User
 from schemas_new.integration import (
     IntegrationCreate, 
     IntegrationUpdate, 
-    IntegrationResponse,
-    OAuthInitiateRequest,
-    OAuthCallbackRequest,
     IntegrationHealthCheck
 )
-from utils.encryption import encrypt_data, decrypt_data
 
 
 logger = logging.getLogger(__name__)
@@ -41,43 +36,36 @@ class BaseIntegrationService(ABC):
     @abstractmethod
     def integration_type(self) -> IntegrationType:
         """Return the integration type this service handles"""
-        pass
     
     @property
     @abstractmethod
     def oauth_authorize_url(self) -> str:
         """Return the OAuth authorization URL for this integration"""
-        pass
     
     @property
     @abstractmethod
     def oauth_token_url(self) -> str:
         """Return the OAuth token exchange URL for this integration"""
-        pass
     
     @property
     @abstractmethod
     def required_scopes(self) -> List[str]:
         """Return the required OAuth scopes for this integration"""
-        pass
     
     @property
     @abstractmethod
     def client_id(self) -> str:
         """Return the OAuth client ID for this integration"""
-        pass
     
     @property
     @abstractmethod
     def client_secret(self) -> str:
         """Return the OAuth client secret for this integration"""
-        pass
     
     @property
     @abstractmethod
     def default_redirect_uri(self) -> str:
         """Return the default redirect URI for OAuth callback"""
-        pass
     
     @abstractmethod
     async def exchange_code_for_tokens(self, code: str, redirect_uri: str) -> Dict[str, Any]:
@@ -85,7 +73,6 @@ class BaseIntegrationService(ABC):
         Exchange authorization code for access and refresh tokens.
         Must be implemented by each integration service.
         """
-        pass
     
     @abstractmethod
     async def refresh_access_token(self, refresh_token: str) -> Dict[str, Any]:
@@ -93,7 +80,6 @@ class BaseIntegrationService(ABC):
         Refresh the access token using the refresh token.
         Must be implemented by each integration service.
         """
-        pass
     
     @abstractmethod
     async def verify_connection(self, integration: Integration) -> Tuple[bool, Optional[str]]:
@@ -101,7 +87,6 @@ class BaseIntegrationService(ABC):
         Verify that the integration connection is valid.
         Returns (is_valid, error_message).
         """
-        pass
     
     def create_integration(self, user_id: int, data: IntegrationCreate) -> Integration:
         """Create a new integration record"""

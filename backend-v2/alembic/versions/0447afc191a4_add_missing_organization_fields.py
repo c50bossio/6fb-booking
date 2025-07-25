@@ -79,4 +79,3 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # Don't drop columns in downgrade as they might be used
-    pass

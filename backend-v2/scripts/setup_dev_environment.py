@@ -6,9 +6,7 @@ This script helps developers set up a complete development environment
 with proper secrets, database initialization, and service validation.
 """
 
-import os
 import sys
-import secrets
 import subprocess
 from pathlib import Path
 
@@ -123,7 +121,7 @@ BACKEND_URL=http://localhost:8000
         
         try:
             # Import database components
-            from database import SessionLocal, engine
+            from database import SessionLocal
             from models import User
             
             # Test connection

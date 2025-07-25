@@ -5,12 +5,9 @@ Identifies common auth issues and provides solutions
 """
 
 import asyncio
-import json
-import sys
 from datetime import datetime, timezone
 from config import settings
 from utils.session_manager import session_manager
-from utils.auth_enhanced import decode_token_with_retry
 import redis
 import logging
 

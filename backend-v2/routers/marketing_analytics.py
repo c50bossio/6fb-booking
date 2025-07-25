@@ -21,7 +21,7 @@ from models import User
 from models.organization import UserOrganization
 from services.marketing_analytics_service import MarketingAnalyticsService
 from utils.error_handling import safe_endpoint
-from utils.role_permissions import Permission, get_permission_checker
+from utils.role_permissions import get_permission_checker
 from utils.marketing_rate_limit import check_marketing_rate_limit
 
 router = APIRouter(prefix="/marketing/analytics", tags=["marketing-analytics"])

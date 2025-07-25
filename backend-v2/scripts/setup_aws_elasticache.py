@@ -22,13 +22,11 @@ Requirements:
 
 import boto3
 import click
-import json
 import time
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
-from colorama import init, Fore, Style, Back
-import os
+from colorama import init, Fore, Style
 
 # Initialize colorama for cross-platform colored output
 init(autoreset=True)

@@ -10,17 +10,16 @@ This service provides comprehensive analytics functionality including:
 - Predictive insights and business intelligence
 """
 
-from datetime import datetime, timedelta, date
-from typing import Dict, List, Optional, Tuple, Any
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_, case, extract
+from sqlalchemy import func, and_
 from sqlalchemy.sql import text
-import calendar
 import logging
 
 from models import User, Appointment, Payment, Client, Service, BarberAvailability
 from schemas import DateRange
-from utils.cache_decorators import cache_result, cache_analytics, cache_user_data, invalidate_user_cache
+from utils.cache_decorators import cache_result, cache_analytics
 
 logger = logging.getLogger(__name__)
 
@@ -1647,8 +1646,7 @@ class AnalyticsService:
         """Get comprehensive AI agent analytics with business intelligence"""
         
         try:
-            from models.agent import AgentInstance, AgentConversation, ConversationStatus, AgentStatus
-            from models import User
+            from models.agent import AgentInstance, AgentConversation
             
             # Build base query filters
             base_filters = [
@@ -1708,7 +1706,7 @@ class AnalyticsService:
     def _get_agent_revenue_metrics(self, base_filters: List) -> Dict[str, Any]:
         """Calculate agent revenue metrics"""
         try:
-            from models.agent import AgentInstance, AgentConversation, ConversationStatus
+            pass
             
             # Mock data for development - replace with real queries when agent system is active
             mock_revenue_data = {

@@ -8,7 +8,6 @@ import asyncio
 import json
 import subprocess
 import sys
-import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
@@ -76,8 +75,6 @@ class PerformanceBenchmarkRunner:
         
         # Check Python dependencies
         try:
-            import aiohttp
-            import psutil
             prerequisites["python_dependencies"] = True
             logger.info("✅ Python dependencies: Available")
         except ImportError as e:

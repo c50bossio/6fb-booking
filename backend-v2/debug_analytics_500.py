@@ -3,7 +3,6 @@
 Debug script to test analytics endpoints for 500 errors
 """
 import requests
-import json
 import traceback
 
 def test_analytics_endpoints():

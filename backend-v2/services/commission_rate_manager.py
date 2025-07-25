@@ -6,12 +6,12 @@ Provides centralized management of commission rates for different entities and t
 from sqlalchemy.orm import Session
 from typing import Dict, Optional, List, Any
 from decimal import Decimal
-from datetime import datetime, timedelta
+from datetime import datetime
 from dataclasses import dataclass
 import logging
 
 from models import User
-from models.product import Product, ProductVariant
+from models.product import Product
 from services.base_commission import CommissionType, UnifiedCommissionService
 
 logger = logging.getLogger(__name__)

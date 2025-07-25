@@ -8,7 +8,6 @@ import requests
 import time
 import websocket
 from datetime import datetime
-from typing import Dict, List, Optional, Any
 import threading
 
 class RegistrationDebugger:

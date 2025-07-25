@@ -22,12 +22,12 @@ from models.consent import (
 from schemas_new.privacy import (
     CookiePreferences, CookieConsentRequest, CookieConsentResponse,
     ConsentUpdate, ConsentResponse, BulkConsentUpdate,
-    DataExportRequest as DataExportRequestSchema, DataExportResponse,
-    DataExportStatusResponse, AccountDeletionRequest, AccountDeletionResponse,
-    PrivacySettings, ConsentAuditEntry, ConsentAuditLog,
-    DataProcessingActivity, ConsentType, ConsentStatus, ExportStatus
+    DataExportResponse, DataExportStatusResponse,
+    AccountDeletionRequest, AccountDeletionResponse, PrivacySettings,
+    ConsentAuditEntry, ConsentAuditLog, ConsentType,
+    ConsentStatus, ExportStatus
 )
-from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
+from utils.error_handling import AppError
 
 logger = logging.getLogger(__name__)
 

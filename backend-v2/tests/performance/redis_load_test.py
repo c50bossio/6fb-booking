@@ -25,18 +25,15 @@ Requirements:
 import redis
 import click
 import time
-import threading
 import json
 import statistics
 import random
-import string
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from colorama import init, Fore, Style
 from dataclasses import dataclass
-import queue
 
 # Initialize colorama
 init(autoreset=True)

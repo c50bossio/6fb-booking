@@ -7,7 +7,6 @@ import socket
 import subprocess
 import click
 from colorama import init, Fore
-import dns.resolver
 import time
 
 init(autoreset=True)

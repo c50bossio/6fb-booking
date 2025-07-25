@@ -5,9 +5,8 @@ Tests all appointment endpoints and verifies data accessibility for the calendar
 """
 
 import requests
-import json
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 
 # API configuration
 BASE_URL = "http://localhost:8000"

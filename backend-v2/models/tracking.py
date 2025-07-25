@@ -9,7 +9,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from datetime import datetime
 import enum
 
 from db import Base
@@ -337,4 +336,3 @@ def update_user_model():
     # Add lifetime value column if not exists
     lifetime_value = Column(Float, default=0.0)
     """
-    pass

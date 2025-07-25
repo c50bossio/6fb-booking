@@ -4,17 +4,16 @@ Provides comprehensive upselling attempt and conversion tracking following Six F
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import desc, func, and_, or_
+from sqlalchemy.orm import Session
+from sqlalchemy import desc, and_
 from typing import List, Optional, Dict, Any
-from datetime import date, datetime, timedelta
-from pydantic import BaseModel, Field
+from datetime import datetime, timedelta
+from pydantic import BaseModel
 
 from db import get_db
 from utils.auth import get_current_user
-from models import User, Appointment
-from models.upselling import UpsellAttempt, UpsellConversion, UpsellAnalytics, UpsellStatus, UpsellChannel
+from models import User
+from models.upselling import UpsellAttempt, UpsellConversion, UpsellStatus, UpsellChannel
 from services.upselling_automation_service import UpsellAutomationService
 import logging
 

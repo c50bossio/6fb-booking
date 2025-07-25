@@ -1,12 +1,8 @@
 from datetime import datetime, time, timedelta, date
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
 import models
-import pytz
 import logging
-from dateutil.relativedelta import relativedelta
-from calendar import monthrange
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

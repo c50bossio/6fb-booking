@@ -1,11 +1,11 @@
 """
 Client management service with analytics and engagement tracking.
 """
-from datetime import datetime, timedelta, date, timezone
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc, asc
-from models import Client, Appointment, User, Payment
+from sqlalchemy import or_, func
+from models import Client, Appointment, User
 import logging
 
 # Configure logging

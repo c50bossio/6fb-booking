@@ -2,11 +2,10 @@
 Tests for client service functionality.
 """
 import pytest
-from datetime import datetime, timedelta, date, timezone
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from services import client_service
 from models import Client, User, Appointment
-from db import get_db
 
 
 class TestClientService:

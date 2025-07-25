@@ -8,7 +8,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import requests
 import json
-from datetime import datetime
 
 # API configuration
 API_URL = "http://localhost:8000"

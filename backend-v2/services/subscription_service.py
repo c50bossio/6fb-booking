@@ -5,12 +5,11 @@ This service handles subscription creation, updates, trial management,
 and pricing calculation based on the number of chairs in an organization.
 """
 
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 import logging
 import stripe
-from decimal import Decimal
 
 from models.organization import Organization, BillingPlan
 from config import settings

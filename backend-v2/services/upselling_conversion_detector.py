@@ -8,11 +8,10 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, desc
+from sqlalchemy import and_, desc
 
-from models import User, Appointment
+from models import Appointment
 from models.upselling import UpsellAttempt, UpsellConversion, UpsellStatus, UpsellChannel
-from db import get_db
 
 logger = logging.getLogger(__name__)
 

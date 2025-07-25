@@ -31,19 +31,14 @@ Requirements:
     pip install redis click colorama tabulate
 """
 
-import os
-import sys
-import json
 import time
 import redis
 import click
-import threading
-from typing import Dict, List, Optional, Any, Tuple, Set
+from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from pathlib import Path
 from colorama import init, Fore, Style
-from tabulate import tabulate
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Initialize colorama

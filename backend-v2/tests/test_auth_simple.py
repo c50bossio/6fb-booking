@@ -2,7 +2,6 @@
 Simple authentication test to verify basic functionality
 """
 
-import pytest
 from sqlalchemy.orm import Session
 from models import User
 from utils.auth import get_password_hash

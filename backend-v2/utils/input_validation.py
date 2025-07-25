@@ -4,12 +4,11 @@ Prevents injection attacks, data corruption, and resource exhaustion.
 """
 
 import re
-import os
 import magic
-from typing import Optional, List, Dict, Any, Union
-from datetime import datetime, date, timedelta
+from typing import Optional, List, Any
+from datetime import datetime, date
 from decimal import Decimal, InvalidOperation
-from pydantic import BaseModel, validator, EmailStr, constr, conint, condecimal
+from pydantic import BaseModel, validator, constr, conint, condecimal
 from fastapi import HTTPException, UploadFile, status
 import bleach
 from email_validator import validate_email, EmailNotValidError

@@ -166,7 +166,6 @@ def health_check():
 
 # Import tasks to register them (must be after celery_app definition)
 try:
-    import tasks.agent_tasks
     logger.info("Agent tasks imported successfully")
 except ImportError as e:
     logger.warning(f"Failed to import agent tasks: {e}")

@@ -13,15 +13,13 @@ Usage:
 import os
 import sys
 import argparse
-import json
 import asyncio
-from typing import Dict, Any, Optional
 from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from config.cdn_config import get_cdn_config, CDN_CONFIGS
+from config.cdn_config import get_cdn_config
 from services.cdn_service import CDNService
 
 

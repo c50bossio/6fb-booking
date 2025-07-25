@@ -3,8 +3,7 @@ AI Agent Pricing Service
 Handles tiered token pricing, subscription management, and billing calculations
 """
 
-from typing import Dict, Tuple, Optional
-from decimal import Decimal, ROUND_HALF_UP
+from typing import Dict, Optional
 from enum import Enum
 from dataclasses import dataclass
 from models.agent import SubscriptionTier

@@ -9,24 +9,20 @@ This engine makes the AI Agent smarter over time by:
 5. Running A/B tests for continuous improvement
 """
 
-import asyncio
 import logging
 import hashlib
 import json
 import statistics
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Any
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc, func, text
+from sqlalchemy import func
 
 from models.ai_memory import (
-    AIMemoryRecord, AILearningPattern, AIPerformanceMetrics,
-    AIExperiment, AIKnowledgeBase, LearningEventType
+    AIMemoryRecord, AILearningPattern, LearningEventType
 )
-from models.upselling import UpsellAttempt, UpsellConversion
-from models import User, Appointment
-from db import SessionLocal
+from models.upselling import UpsellAttempt
 
 logger = logging.getLogger(__name__)
 

@@ -7,13 +7,11 @@ import os
 import logging
 import asyncio
 from typing import Dict, Any, Optional, List, Union
-from datetime import datetime, timedelta
-from urllib.parse import urljoin, urlparse
-import hashlib
-import json
+from datetime import datetime
+from urllib.parse import urljoin
 
 import aiohttp
-from config.cdn_config import get_cdn_config, CDNConfig
+from config.cdn_config import get_cdn_config
 from services.redis_service import cache_service
 
 logger = logging.getLogger(__name__)

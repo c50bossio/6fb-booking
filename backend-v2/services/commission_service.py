@@ -7,11 +7,11 @@ Updated to use the unified commission framework.
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
 from decimal import Decimal
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from utils.audit_logger_bypass import get_audit_logger
 
-from models import User, Payment
+from models import Payment
 from models.product import Order, OrderItem, POSTransaction
 from services.payment_service import PaymentService
 from services.base_commission import UnifiedCommissionService, CommissionType

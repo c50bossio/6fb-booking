@@ -10,10 +10,8 @@ Shows error rates, performance metrics, and system health in real-time.
 import sys
 import os
 import time
-import json
-import logging
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional
+from datetime import datetime
+from typing import Dict, Any
 
 # Add current directory to path
 sys.path.append('.')
@@ -22,9 +20,6 @@ try:
     import sentry_sdk
     from config.sentry import configure_sentry
     from services.sentry_monitoring import (
-        database_monitor,
-        celery_monitor,
-        redis_monitor,
         business_monitor
     )
 except ImportError as e:

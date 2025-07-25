@@ -1,8 +1,7 @@
-from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Path, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import date, datetime, time, timedelta
+from typing import Optional
+from datetime import date, time
 import logging
 import uuid
 import schemas
@@ -10,8 +9,6 @@ import models
 from db import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
-from utils.input_validation import validate_datetime, ValidationError as InputValidationError
-from schemas_new.validation import AppointmentCreateRequest
 import time as time_module
 
 """

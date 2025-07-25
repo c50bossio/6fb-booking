@@ -5,10 +5,7 @@ Tests email/SMS triggers and workflow automation.
 """
 
 import asyncio
-from datetime import datetime
-from sqlalchemy.orm import Session
 from db import get_db
-from models import User
 from models.upselling import UpsellAttempt, UpsellStatus, UpsellChannel
 from services.upselling_automation_service import UpsellAutomationService
 

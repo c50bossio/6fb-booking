@@ -5,14 +5,14 @@ based on Six Figure Barber methodology and client relationship patterns.
 """
 
 from datetime import datetime, timedelta, date
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
 import logging
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc
+from sqlalchemy import and_
 
-from models import Appointment, User, Client, Service
+from models import Appointment
 
 logger = logging.getLogger(__name__)
 

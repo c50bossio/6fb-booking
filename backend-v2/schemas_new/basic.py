@@ -47,7 +47,6 @@ class User(UserBase):
 
 class UserResponse(User):
     """Extended user response"""
-    pass
 
 
 class TimeSlot(BaseModel):

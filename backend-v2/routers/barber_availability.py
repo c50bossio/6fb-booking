@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import date, time, datetime
+from datetime import date, time
 import schemas
 import models
 from db import get_db
 from routers.auth import get_current_user
-from utils.auth import require_admin_role, require_barber_or_admin
+from utils.auth import require_barber_or_admin
 from services import barber_availability_service
 
 router = APIRouter(

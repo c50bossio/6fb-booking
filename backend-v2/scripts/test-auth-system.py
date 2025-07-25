@@ -5,19 +5,13 @@ Comprehensive testing of the enhanced authentication system
 """
 
 import asyncio
-import json
 import logging
 import sys
-import time
-from typing import Dict, Any, Optional
 import httpx
-import redis
-from sqlalchemy.orm import Session
 from db import get_db
 from utils.auth_enhanced import authenticate_user_enhanced, create_access_token, decode_token_with_retry
 from utils.session_manager import session_manager
 from models import User
-from config import settings
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

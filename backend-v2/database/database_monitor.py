@@ -1,7 +1,7 @@
 import logging
 import time
 import threading
-from typing import Dict, List, Optional
+from typing import Optional
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 

@@ -9,8 +9,7 @@ from sqlalchemy.orm import Session
 from dependencies import get_db, get_current_user
 from models import User
 from utils.authorization import verify_location_access
-from location_models import BarbershopLocation, ChairInventory, CompensationPlan, LocationStatus, CompensationModel
-from schemas import User as UserSchema
+from location_models import BarbershopLocation
 from location_schemas import (
     LocationCreate,
     LocationUpdate,

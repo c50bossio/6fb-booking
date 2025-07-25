@@ -10,7 +10,6 @@ Usage:
     python scripts/test_all_configurations.py
 """
 
-import os
 import sys
 import logging
 from pathlib import Path
@@ -22,7 +21,6 @@ sys.path.insert(0, str(project_root))
 
 from config import settings
 from db import get_db
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +36,9 @@ def test_stripe_integration():
             return False
         
         # Test PaymentService
-        from services.payment_service import PaymentService
         print("   ✅ PaymentService imported successfully")
         
         # Test StripeIntegrationService
-        from services.stripe_integration_service import StripeIntegrationService
         print("   ✅ StripeIntegrationService imported successfully")
         
         # Test Stripe API connection

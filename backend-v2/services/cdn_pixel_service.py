@@ -5,7 +5,7 @@ Generates and serves tracking pixels with CDN caching support.
 
 import hashlib
 import json
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 from datetime import datetime, timedelta
 import logging
 
@@ -248,19 +248,16 @@ document.addEventListener('click', function(e) {{
         """Purge CloudFlare cache for organization pixel."""
         # Implementation would use CloudFlare API
         # This is a placeholder
-        pass
     
     async def _invalidate_cloudfront_cache(self, organization_id: int) -> None:
         """Invalidate CloudFront cache for organization pixel."""
         # Implementation would use AWS SDK
         # This is a placeholder
-        pass
     
     async def _purge_fastly_cache(self, organization_id: int) -> None:
         """Purge Fastly cache for organization pixel."""
         # Implementation would use Fastly API
         # This is a placeholder
-        pass
     
     def get_pixel_analytics(self, organization_id: int) -> Dict[str, Any]:
         """

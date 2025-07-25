@@ -5,7 +5,6 @@ Provides caching for appointment-related expensive operations like
 availability calculations and slot generation.
 """
 
-import json
 import logging
 from typing import List, Dict, Any, Optional, Set
 from datetime import datetime, date, time, timedelta
@@ -13,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from services.redis_service import cache_service
 from utils.cache_decorators import cache_result, invalidate_pattern
-from models import Appointment, BarberAvailability, User
+from models import Appointment, BarberAvailability
 
 logger = logging.getLogger(__name__)
 

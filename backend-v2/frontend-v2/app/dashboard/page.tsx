@@ -112,6 +112,7 @@ function DashboardContent() {
       try {
         // Check authentication first
         const userData = await getProfile()
+        console.log('Dashboard user data:', {
           role: userData.role,
           unified_role: userData.unified_role,
           is_system_admin: userData.is_system_admin,
@@ -311,6 +312,7 @@ function DashboardContent() {
   }
 
   // Debug logging for dashboard rendering
+  console.log('Dashboard render debug:', {
     userRole: user?.role,
     userUnifiedRole: user?.unified_role,
     shouldShowAdvancedDashboard: user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'platform_admin',

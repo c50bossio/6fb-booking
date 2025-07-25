@@ -9,9 +9,8 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 import jwt
 
-from main import app
 from models import User, PasswordResetToken
-from utils.auth import create_access_token, create_refresh_token, get_password_hash
+from utils.auth import create_access_token, create_refresh_token
 from utils.auth import SECRET_KEY, ALGORITHM
 
 

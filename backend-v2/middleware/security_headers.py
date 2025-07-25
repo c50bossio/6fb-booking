@@ -1,8 +1,7 @@
 
-from fastapi import Request, Response
+from fastapi import Request
 from fastapi.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
-import time
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Comprehensive security headers middleware"""

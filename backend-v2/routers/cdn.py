@@ -4,7 +4,7 @@ Provides CDN configuration, analytics, cache management, and health monitoring.
 """
 
 from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks

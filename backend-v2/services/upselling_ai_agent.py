@@ -11,24 +11,21 @@ This AI agent automatically:
 Built for Six Figure Barber methodology compliance.
 """
 
-import asyncio
 import logging
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
 from dataclasses import dataclass, asdict
 from enum import Enum
-import json
 import statistics
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc, func
+from sqlalchemy import desc
 
 from models import User, Appointment, Client
-from models.upselling import UpsellAttempt, UpsellConversion, UpsellAnalytics
+from models.upselling import UpsellAttempt
 from services.notification_service import NotificationService
 from services.upselling_conversion_detector import ServiceMatcher
 from services.ai_learning_engine import get_learning_engine, LearningEvent
 from models.ai_memory import LearningEventType
-from config import settings
 
 logger = logging.getLogger(__name__)
 

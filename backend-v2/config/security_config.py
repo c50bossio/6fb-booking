@@ -3,9 +3,7 @@ Security Configuration for BookedBarber V2 Production
 Hardens existing services with production security settings
 """
 
-import os
-from typing import Dict, List, Optional
-from datetime import timedelta
+from typing import Dict, List
 
 class SecurityConfig:
     """Production security configuration for existing services"""

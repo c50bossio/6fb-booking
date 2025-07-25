@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from db import Base
 from datetime import datetime, timedelta, time, timezone, date
 import enum
-from utils.encryption import EncryptedString, EncryptedText, SearchableEncryptedString
+from utils.encryption import EncryptedText, SearchableEncryptedString
 
 # Helper function for UTC datetime (replaces deprecated utcnow())
 def utcnow():

@@ -4,7 +4,7 @@ Booking and appointment schemas for the API.
 
 from pydantic import BaseModel, Field, validator
 from datetime import date as Date
-from typing import Optional, List
+from typing import Optional
 
 class AppointmentReschedule(BaseModel):
     """Reschedule appointment to new date/time"""

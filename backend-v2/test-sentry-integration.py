@@ -14,9 +14,7 @@ This script tests all aspects of the Sentry integration:
 import sys
 import os
 import time
-import logging
 from datetime import datetime
-from typing import Dict, Any
 
 # Add current directory to path
 sys.path.append('.')

@@ -9,7 +9,6 @@ import requests
 import websocket
 import time
 import threading
-from urllib.parse import quote
 
 def test_calendar_view_switching():
     """Test calendar view switching and capture any errors"""

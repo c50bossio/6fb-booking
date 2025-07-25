@@ -13,13 +13,11 @@ import psutil
 import sqlite3
 import subprocess
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 from pathlib import Path
 import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
 
 @dataclass
 class PerformanceMetrics:

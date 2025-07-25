@@ -13,10 +13,9 @@ Provides comprehensive logging setup with:
 import logging
 import logging.handlers
 import json
-import os
 import sys
 from datetime import datetime
-from typing import Dict, Any, Union
+from typing import Dict, Any
 from pathlib import Path
 
 # Data masking utility functions

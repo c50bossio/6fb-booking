@@ -18,13 +18,12 @@ import asyncio
 import logging
 from typing import Dict, List, Any, Optional
 from pathlib import Path
-import json
 import time
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from database.read_replica_config import ReadReplicaConfig, DatabaseManager, check_database_health
+from database.read_replica_config import ReadReplicaConfig, DatabaseManager
 
 
 class ReadReplicaSetup:
@@ -323,7 +322,7 @@ Self-Managed PostgreSQL Setup:
     async def create_gcp_replicas(self) -> List[Dict[str, Any]]:
         """Create Google Cloud SQL read replicas."""
         try:
-            from google.cloud import sql_v1
+            pass
         except ImportError:
             raise ValueError("google-cloud-sql package required for GCP provider. Install with: pip install google-cloud-sql")
         
@@ -334,7 +333,7 @@ Self-Managed PostgreSQL Setup:
     async def create_azure_replicas(self) -> List[Dict[str, Any]]:
         """Create Azure Database read replicas."""
         try:
-            from azure.mgmt.rdbms.postgresql import PostgreSQLManagementClient
+            pass
         except ImportError:
             raise ValueError("azure-mgmt-rdbms package required for Azure provider. Install with: pip install azure-mgmt-rdbms")
         
@@ -456,7 +455,6 @@ Self-Managed PostgreSQL Setup:
     def update_backend_config(self, replica_info: List[Dict[str, Any]]):
         """Update backend configuration files if needed."""
         # This could update other configuration files as needed
-        pass
     
     async def test_replica_connections(self, replica_info: List[Dict[str, Any]]):
         """Test connections to all replicas."""

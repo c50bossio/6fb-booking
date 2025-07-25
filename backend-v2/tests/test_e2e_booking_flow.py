@@ -14,10 +14,8 @@ Tests cover:
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta, timezone, time
-from unittest.mock import Mock, patch, AsyncMock
-from typing import Dict, Any, List
-from decimal import Decimal
+from datetime import datetime, timedelta, timezone
+from unittest.mock import Mock, patch
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -25,12 +23,9 @@ from httpx import AsyncClient
 
 from main import app
 from tests.factories import (
-    UserFactory, ClientFactory, ServiceFactory, AppointmentFactory,
-    create_full_test_scenario
+    ServiceFactory, AppointmentFactory, create_full_test_scenario
 )
-from models import User, Client, Service, Appointment, Payment, BookingRule
-from services.booking_service import BookingService
-from services.payment_service import PaymentService
+from models import Appointment, Payment, BookingRule
 from services.notification_service import NotificationService
 from services.google_calendar_service import GoogleCalendarService
 

@@ -5,15 +5,13 @@ This module demonstrates how to use the booking validation system
 in API endpoints to ensure data integrity and provide clear feedback.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import datetime, date, time
-import pytz
+from datetime import datetime, time
 
 from db import get_db
 from dependencies_v2 import require_user
-from models import User, Appointment, Service, Client
+from models import User, Appointment, Service
 from schemas_new.booking_validation import (
     EnhancedAppointmentCreate,
     AppointmentUpdate,

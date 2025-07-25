@@ -5,13 +5,12 @@ Health check endpoints for monitoring service status
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from typing import Dict, Any
-import redis
 import psutil
 import time
 import os
 from datetime import datetime, timezone
 
-from db import get_db, engine
+from db import get_db
 from services.redis_service import cache_service
 from config import settings
 
@@ -347,7 +346,6 @@ async def _check_sendgrid_health() -> Dict[str, Any]:
         
         # Import SendGrid here to avoid import errors
         import sendgrid
-        from sendgrid.helpers.mail import Mail
         
         sg = sendgrid.SendGridAPIClient(api_key=settings.sendgrid_api_key)
         

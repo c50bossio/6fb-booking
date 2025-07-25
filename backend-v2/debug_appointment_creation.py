@@ -86,7 +86,6 @@ def test_appointment_creation():
         
         # 5. Check frontend API endpoint behavior
         print("\n🔍 Testing appointments API endpoint logic...")
-        from routers.appointments import create_appointment
         from schemas import AppointmentCreate
         
         try:
@@ -160,7 +159,6 @@ def test_frontend_api_call():
     print("=" * 50)
     
     import requests
-    import json
     
     # Get token first
     try:

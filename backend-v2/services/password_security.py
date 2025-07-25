@@ -4,11 +4,9 @@ Enhanced Password Security Service
 Provides comprehensive password validation, strength checking, and security policies.
 """
 
-import re
 import string
 import secrets
-from typing import Dict, List, Optional, Tuple
-from datetime import datetime, timedelta
+from typing import Dict, List, Optional
 import logging
 from dataclasses import dataclass
 

@@ -15,7 +15,6 @@ Usage:
     python scripts/configure_sendgrid.py --test-email your@email.com  # Send test email
 """
 
-import os
 import sys
 import argparse
 import logging
@@ -31,7 +30,6 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from config import settings
 from services.notification_service import NotificationService
-from db import get_db
 
 logger = logging.getLogger(__name__)
 

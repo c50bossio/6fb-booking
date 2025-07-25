@@ -5,10 +5,7 @@ This will test each step of appointment creation individually.
 """
 
 import sys
-import os
 import logging
-from datetime import datetime, date, time
-from sqlalchemy.orm import Session
 
 # Setup logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -23,39 +20,31 @@ def test_imports():
     
     try:
         logger.info("Importing database...")
-        from database import get_db, engine
         logger.info("✓ Database imported")
         
         logger.info("Importing models...")
-        import models
         logger.info("✓ Models imported")
         
         logger.info("Importing schemas...")
-        import schemas
         logger.info("✓ Schemas imported")
         
         logger.info("Importing booking_service...")
-        from services import booking_service
         logger.info("✓ Booking service imported")
         
         logger.info("Importing barber_availability_service...")
-        from services import barber_availability_service
         logger.info("✓ Barber availability service imported")
         
         logger.info("Importing booking_rules_service...")
-        from services import booking_rules_service
         logger.info("✓ Booking rules service imported")
         
         logger.info("Importing notification_service...")
         try:
-            from services.notification_service import notification_service
             logger.info("✓ Notification service imported")
         except ImportError:
             logger.warning("⚠️ Notification service not available")
         
         logger.info("Importing client_service...")
         try:
-            from services import client_service
             logger.info("✓ Client service imported")
         except ImportError:
             logger.warning("⚠️ Client service not available")

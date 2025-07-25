@@ -3,13 +3,11 @@
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc
-import json
 import logging
 from cachetools import TTLCache
 import secrets
 
-from models import User, Service, Organization
+from models import Organization
 from models.integration import Integration, IntegrationType
 from schemas_new.landing_page import (
     LandingPageConfig,
@@ -17,9 +15,7 @@ from schemas_new.landing_page import (
     TestimonialData,
     ServicePreview,
     LandingPageTrackingEvent,
-    LandingPageAnalytics,
-    LandingPagePresets,
-    BackgroundPreset
+    LandingPagePresets
 )
 from services.guest_booking_service import GuestBookingService
 from services.gmb_service import GMBService

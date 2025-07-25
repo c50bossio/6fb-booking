@@ -17,7 +17,6 @@ import sys
 import time
 import json
 import argparse
-import threading
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass

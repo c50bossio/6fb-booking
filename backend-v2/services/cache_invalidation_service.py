@@ -3,7 +3,7 @@ Cache invalidation strategies and managers for the booking system.
 """
 
 import logging
-from typing import List, Optional, Dict, Any, Set
+from typing import List, Optional, Dict, Any
 from datetime import datetime, date
 from enum import Enum
 from services.redis_service import cache_service

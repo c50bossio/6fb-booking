@@ -12,13 +12,13 @@ Provides intelligent, autonomous upselling capabilities:
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 from db import get_db
 from models import User
 from dependencies import get_current_user
-from services.upselling_ai_agent import get_ai_agent, UpsellOpportunity, AIInsights
+from services.upselling_ai_agent import get_ai_agent
 from utils.error_handling import safe_endpoint
 import logging
 

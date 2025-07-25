@@ -6,9 +6,7 @@ Tests core functionality directly
 
 import sqlite3
 import requests
-import json
 import time
-from datetime import datetime
 
 def test_database_direct():
     """Direct database testing"""

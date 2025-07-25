@@ -8,7 +8,7 @@ import re
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc, asc
+from sqlalchemy import or_, desc, asc
 from fastapi import HTTPException
 
 from models.review import (
@@ -16,8 +16,7 @@ from models.review import (
     ReviewSentiment, ReviewResponseStatus
 )
 from schemas_new.review import (
-    ReviewFilters, ReviewAnalytics, ReviewTemplateGenerateRequest,
-    AutoResponseConfig, AutoResponseStats
+    ReviewFilters, ReviewAnalytics, AutoResponseStats
 )
 from services.business_context_service import BusinessContextService, BusinessContext
 

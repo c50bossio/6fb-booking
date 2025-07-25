@@ -5,16 +5,13 @@ Detects and alerts on suspicious login patterns to enhance security.
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 import ipaddress
-import hashlib
 from dataclasses import dataclass
-import re
 
-from models import User
 from models.mfa import MFAEvent
 from utils.audit_logger_bypass import get_audit_logger
 

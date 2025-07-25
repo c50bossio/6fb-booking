@@ -20,19 +20,15 @@ from datetime import datetime, timedelta, timezone
 import webbrowser
 import time
 import requests
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from passlib.context import CryptContext
-import subprocess
-import json
 
 # Add the backend directory to the Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import our models and utilities
-from db import Base, engine, SessionLocal
+from db import SessionLocal
 from models import User, Appointment, Service, Client
-from utils.auth import get_password_hash, authenticate_user
+from utils.auth import get_password_hash
 
 # API base URL
 API_BASE_URL = "http://localhost:8000"

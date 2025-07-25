@@ -5,13 +5,12 @@ Test Coverage Validation Script
 Ensures test coverage meets minimum requirements across all modules.
 Identifies areas lacking test coverage and validates test quality.
 """
-import os
 import sys
 import subprocess
 import json
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional
 import argparse
 import xml.etree.ElementTree as ET
 

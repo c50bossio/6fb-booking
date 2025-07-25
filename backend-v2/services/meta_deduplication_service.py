@@ -9,12 +9,8 @@ import json
 import logging
 import hashlib
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Set, Optional, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from typing import Dict, List
 
-from models import User
-from models.integration import Integration, IntegrationType
 from services.redis_service import redis_service
 
 # Configure logging

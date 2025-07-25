@@ -18,10 +18,9 @@ import json
 import logging
 import time
 from datetime import datetime, timezone
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Any, Optional
 from psycopg2.extras import RealDictCursor
 import argparse
-from collections import defaultdict
 
 
 # Configure logging

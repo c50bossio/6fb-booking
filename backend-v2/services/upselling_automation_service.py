@@ -4,17 +4,14 @@ Handles automated workflows when upselling opportunities are implemented.
 Triggers email/SMS communication, calendar reminders, and follow-up sequences.
 """
 
-import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
-from models import User, Appointment, Client
+from models import User
 from models.upselling import UpsellAttempt, UpsellStatus, UpsellChannel
 from services.notification_service import NotificationService
-from db import get_db
 from config import settings
 
 logger = logging.getLogger(__name__)

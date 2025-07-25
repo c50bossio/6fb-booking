@@ -16,9 +16,9 @@ import sqlite3
 import psycopg2
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Dict, List, Tuple, Any, Optional
-from psycopg2.extras import RealDictCursor, execute_values
+from datetime import datetime
+from typing import Dict, List, Any
+from psycopg2.extras import execute_values
 from tqdm import tqdm
 import argparse
 

@@ -10,10 +10,8 @@ import os
 import sys
 import sqlite3
 import json
-import shutil
 import logging
 from datetime import datetime
-from typing import Dict, Any, List
 import argparse
 
 

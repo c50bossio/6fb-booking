@@ -3,7 +3,7 @@ API router for managing third-party integrations.
 Handles OAuth flows, health checks, and integration CRUD operations.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
@@ -11,14 +11,12 @@ from datetime import datetime
 from db import get_db
 from dependencies import get_current_user
 from models import User
-from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
+from utils.error_handling import AppError, ValidationError
 from models.integration import IntegrationType as IntegrationTypeModel, IntegrationStatus
 from schemas_new.integration import (
-    IntegrationCreate,
     IntegrationUpdate,
     IntegrationResponse,
     OAuthInitiateRequest,
-    OAuthCallbackRequest,
     OAuthCallbackResponse,
     IntegrationHealthCheck,
     IntegrationHealthSummary,
@@ -27,7 +25,7 @@ from schemas_new.integration import (
     IntegrationTokenRefreshResponse,
     IntegrationType
 )
-from services.integration_service import IntegrationServiceFactory, BaseIntegrationService
+from services.integration_service import IntegrationServiceFactory
 import logging
 
 logger = logging.getLogger(__name__)

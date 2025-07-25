@@ -6,18 +6,12 @@ Enhanced error monitoring and alerting for marketing integrations
 with Sentry integration and custom error tracking.
 """
 
-import json
 import logging
 from datetime import datetime
 from typing import Any, Dict, Optional
 from functools import wraps
-import sentry_sdk
 from sentry_sdk import capture_exception, capture_message, set_context, set_tag
-from sqlalchemy.orm import Session
 
-from models import User, Organization
-from models.tracking import ConversionEvent
-from services.sentry_monitoring import capture_with_context
 
 logger = logging.getLogger(__name__)
 

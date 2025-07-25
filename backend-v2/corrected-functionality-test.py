@@ -6,7 +6,6 @@ Tests all navigation items with the correct endpoints and identifies broken func
 
 import requests
 import json
-import time
 from datetime import datetime
 
 # Test configuration

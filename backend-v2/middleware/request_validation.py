@@ -2,7 +2,7 @@
 Request validation middleware to enforce size limits and validate JSON depth.
 """
 
-from fastapi import Request, HTTPException, status
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 import json

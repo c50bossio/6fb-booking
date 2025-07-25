@@ -9,7 +9,7 @@ This demonstrates how to:
 3. Send it via the notification service
 """
 
-from typing import Dict, Optional
+from typing import Dict
 import os
 import subprocess
 from datetime import datetime, timedelta

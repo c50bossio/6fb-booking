@@ -4,12 +4,11 @@ Feature Discovery Tool - Analyzes the entire codebase to populate the feature re
 This helps prevent duplication by cataloging all existing features
 """
 
-import os
 import re
 import ast
 import json
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import List, Tuple
 from datetime import datetime
 import sys
 

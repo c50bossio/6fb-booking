@@ -13,8 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from db import get_db
-from datetime import datetime, timedelta
-from typing import Dict, Any, List
+from datetime import datetime
 import psutil
 import os
 import sys

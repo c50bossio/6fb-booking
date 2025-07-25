@@ -11,7 +11,6 @@ import time
 from datetime import datetime, timedelta
 import httpx
 import stripe
-from typing import Dict, List, Optional
 import sys
 from pathlib import Path
 

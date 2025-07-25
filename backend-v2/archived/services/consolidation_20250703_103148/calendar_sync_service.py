@@ -10,13 +10,12 @@ This service provides:
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
+from typing import Dict, Any, List
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
 from models import User, Appointment
 from services.google_calendar_service import GoogleCalendarService, GoogleCalendarError
-from utils.timezone import get_user_timezone
 
 logger = logging.getLogger(__name__)
 
@@ -397,4 +396,3 @@ def register_sync_hooks():
     # This would be integrated with your booking service
     # to automatically trigger sync operations when appointments
     # are created, updated, or deleted.
-    pass

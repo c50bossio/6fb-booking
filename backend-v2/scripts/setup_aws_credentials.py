@@ -11,14 +11,11 @@ Usage:
     python scripts/setup_aws_credentials.py --test-credentials
 """
 
-import os
-import sys
-import json
 import boto3
 import click
 from pathlib import Path
 from colorama import init, Fore, Style
-from botocore.exceptions import ClientError, NoCredentialsError, ProfileNotFound
+from botocore.exceptions import ClientError, NoCredentialsError
 
 # Initialize colorama
 init(autoreset=True)

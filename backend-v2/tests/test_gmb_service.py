@@ -3,7 +3,7 @@ Tests for Google My Business service
 """
 
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock, patch
 from sqlalchemy.orm import Session
 
 from services.gmb_service import GMBService

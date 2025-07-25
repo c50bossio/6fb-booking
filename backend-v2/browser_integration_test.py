@@ -5,7 +5,6 @@ Uses browser automation to perform comprehensive testing including authenticatio
 """
 
 import requests
-import time
 import json
 from datetime import datetime
 import subprocess

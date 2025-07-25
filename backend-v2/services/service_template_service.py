@@ -7,11 +7,10 @@ that enable plug-and-play onboarding for new barbers.
 
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
-from models import ServiceTemplate, ServiceTemplateCategory, UserServiceTemplate, Service, User
+from sqlalchemy import or_
+from models import ServiceTemplate, UserServiceTemplate, Service
 from schemas import (
-    ServiceTemplateCreate, ServiceTemplateUpdate, ServiceTemplateResponse,
-    ServiceTemplateApplyRequest, ServiceTemplateApplyResponse,
+    ServiceTemplateCreate, ServiceTemplateApplyRequest, ServiceTemplateApplyResponse,
     ServiceTemplateFilterRequest, ServiceCategoryEnum
 )
 import logging

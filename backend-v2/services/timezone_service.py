@@ -5,10 +5,9 @@ Handles timezone conversions, validations, and caching.
 
 import pytz
 import logging
-from datetime import datetime, time, date, timedelta
-from typing import List, Optional, Dict, Any, Tuple
+from datetime import datetime, date, timedelta
+from typing import Optional, Dict, Any, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
 import models
 from utils.timezone import validate_timezone, get_common_timezones
 import json

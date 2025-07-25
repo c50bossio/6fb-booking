@@ -5,7 +5,7 @@ Debug script to check barber availability data and setup.
 
 import sys
 import logging
-from datetime import date, time, datetime, timedelta
+from datetime import time, timedelta
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

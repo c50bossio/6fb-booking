@@ -10,8 +10,6 @@ from typing import Dict, Optional, Any
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.pool import QueuePool
-import psycopg2
-from psycopg2 import sql
 from config import settings
 
 logger = logging.getLogger(__name__)

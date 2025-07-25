@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, func, and_, or_
+from sqlalchemy import desc, func, or_
 from typing import Optional, List
 from datetime import datetime
 import logging

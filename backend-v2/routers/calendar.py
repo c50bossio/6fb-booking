@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from typing import Optional, List
-from datetime import datetime, timedelta
+from typing import Optional
+from datetime import datetime
 import json
 from google.auth.transport import requests as google_requests
 from google.oauth2.credentials import Credentials
@@ -14,7 +14,7 @@ from dependencies import get_db, get_current_user
 from models import User, Appointment
 from config import settings
 import schemas
-from services.google_calendar_service import GoogleCalendarService, CalendarEvent, GoogleCalendarError
+from services.google_calendar_service import GoogleCalendarService, GoogleCalendarError
 
 router = APIRouter(prefix="/api/calendar", tags=["calendar"])
 

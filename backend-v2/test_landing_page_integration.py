@@ -10,12 +10,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import json
 from datetime import datetime
-from unittest.mock import Mock, MagicMock
 
 # Mock database session
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 # Import our landing page components
 from schemas_new.landing_page import (

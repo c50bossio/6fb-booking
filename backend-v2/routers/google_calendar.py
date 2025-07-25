@@ -3,16 +3,16 @@ Google Calendar Integration Router for BookedBarber V2
 Enhanced router that integrates GoogleCalendarSettings and provides V1 feature parity
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from db import get_db
 from dependencies import get_current_user
-from services.google_calendar_service import GoogleCalendarService, GoogleCalendarError
+from services.google_calendar_service import GoogleCalendarService
 from models import User, Appointment, GoogleCalendarSettings, GoogleCalendarSyncLog
 import logging
 import os

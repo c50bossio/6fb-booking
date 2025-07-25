@@ -11,7 +11,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import text
-from db import SessionLocal, engine
+from db import engine
 import time
 
 def apply_performance_indexes():

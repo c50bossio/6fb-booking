@@ -8,9 +8,8 @@ different booking schemas to enforce complex business rules.
 from datetime import datetime, date, time, timedelta
 from typing import Optional, List, Dict, Any, Tuple
 import pytz
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, not_
+from sqlalchemy import and_, or_
 
 
 class BusinessHoursValidator:

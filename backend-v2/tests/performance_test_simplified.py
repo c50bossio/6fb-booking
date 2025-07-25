@@ -7,14 +7,10 @@ import time
 import psutil
 import json
 import statistics
-import threading
 from datetime import datetime
 import requests
 from typing import Dict, List
-import gc
-import subprocess
 import os
-import sys
 
 class SystemPerformanceAnalyzer:
     """Analyze system performance without requiring backend"""

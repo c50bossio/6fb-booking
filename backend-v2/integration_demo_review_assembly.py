@@ -11,7 +11,6 @@ from datetime import datetime
 # Add backend-v2 to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from sqlalchemy.orm import Session
 from db import SessionLocal
 from models import User
 from models.review import Review, ReviewPlatform, ReviewSentiment, ReviewResponseStatus

@@ -3,13 +3,13 @@ Specific caching services for the booking system with TTL management and fallbac
 """
 
 import logging
-from typing import List, Optional, Dict, Any, Tuple
-from datetime import datetime, date, time, timedelta
+from typing import List, Optional, Dict, Any
+from datetime import datetime, date
 from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from services.redis_service import cache_service
-from services.cache_invalidation_service import CacheKeyGenerator, cache_invalidation_manager
+from services.cache_invalidation_service import CacheKeyGenerator
 import models
 
 logger = logging.getLogger(__name__)

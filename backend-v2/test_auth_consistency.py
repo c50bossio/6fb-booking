@@ -6,9 +6,7 @@ Tests login/logout flow multiple times to identify inconsistencies
 
 import asyncio
 import aiohttp
-import json
 import time
-from datetime import datetime
 
 class AuthConsistencyTester:
     def __init__(self):

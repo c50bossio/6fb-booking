@@ -1,11 +1,7 @@
-from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, BackgroundTasks, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
-import json
-import csv
-import io
+from typing import Optional, Dict, Any
+from datetime import datetime
 import uuid
 from enum import Enum
 
@@ -15,9 +11,7 @@ from db import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role
 from services.import_service import ImportService
-from services import client_service
 from utils.input_validation import validate_file_upload, ValidationError as InputValidationError
-from schemas_new.validation import FileUploadRequest
 
 router = APIRouter(
     prefix="/imports",

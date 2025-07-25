@@ -11,13 +11,11 @@ Provides comprehensive webhook security including:
 
 import hmac
 import hashlib
-import time
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List, Set, Any
+from typing import Dict, Optional, List, Any
 from dataclasses import dataclass
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 import json
 from utils.security_logging import get_security_logger, SecurityEventType
 

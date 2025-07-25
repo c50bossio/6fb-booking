@@ -6,7 +6,6 @@ device trust management, and security event logging.
 """
 
 import secrets
-import string
 import hashlib
 import qrcode
 import io
@@ -14,7 +13,7 @@ import base64
 from typing import Optional, Dict, Any, List, Tuple
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 import pyotp
 import logging
 
@@ -22,7 +21,6 @@ from models.mfa import UserMFASecret, MFABackupCode, MFADeviceTrust, MFAEvent
 from models import User
 from utils.encryption import encrypt_data, decrypt_data
 from utils.logging_config import get_audit_logger
-from config import settings
 
 logger = logging.getLogger(__name__)
 audit_logger = get_audit_logger()

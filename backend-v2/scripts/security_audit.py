@@ -4,20 +4,16 @@ Security Audit Script for BookedBarber V2
 Audits existing services for security compliance
 """
 
-import os
 import sys
 import json
 import subprocess
-import importlib
 from pathlib import Path
-from typing import Dict, List, Tuple
-import configparser
+from typing import Dict
 from datetime import datetime
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from config.security_config import SecurityConfig
 
 class SecurityAuditor:
     """Comprehensive security audit for existing BookedBarber V2 services"""

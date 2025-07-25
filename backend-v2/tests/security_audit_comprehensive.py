@@ -17,21 +17,13 @@ Areas of Testing:
 8. Input Validation
 """
 
-import asyncio
 import json
 import requests
-import hashlib
 import time
-import base64
 import jwt
-import random
-import string
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+from datetime import datetime
+from typing import List
 from dataclasses import dataclass
-import os
-import urllib.parse
-from pathlib import Path
 
 # Configuration
 BASE_URL = "http://localhost:8000"

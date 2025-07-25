@@ -7,7 +7,7 @@ Validates environment variables and configuration for deployment readiness
 import os
 import sys
 import json
-from typing import Dict, List, Tuple, Any
+from typing import Dict, Any
 from datetime import datetime
 import re
 

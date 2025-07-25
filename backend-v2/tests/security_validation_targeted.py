@@ -14,14 +14,12 @@ Areas of Testing:
 5. File Permission Security
 """
 
-import os
 import json
 import subprocess
-import hashlib
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import List
 from dataclasses import dataclass
 
 # Configuration

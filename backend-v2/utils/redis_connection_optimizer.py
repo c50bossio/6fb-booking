@@ -26,14 +26,13 @@ Usage:
 import logging
 import time
 import statistics
-from typing import Dict, List, Optional, Tuple, NamedTuple
+from typing import Dict, List, Optional, NamedTuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
 
 from services.redis_service import cache_service, RedisConnectionManager
 from config.redis_config import get_redis_config
-from services.aws_monitoring_service import redis_monitor
 
 logger = logging.getLogger(__name__)
 

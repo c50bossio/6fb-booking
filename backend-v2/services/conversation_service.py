@@ -2,17 +2,13 @@
 Conversation Service - Manages AI-powered conversations with clients
 """
 
-import json
 import logging
-import asyncio
-from datetime import datetime, timezone
-from typing import List, Dict, Any, Optional, Tuple
+from datetime import datetime
+from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
 from models import (
-    AgentConversation, AgentInstance, Client, ConversationStatus,
-    AgentType, Appointment, Payment
+    AgentConversation, AgentInstance, ConversationStatus, AgentType
 )
 from services.ai_providers import AIProviderManager
 from services.notification_service import notification_service

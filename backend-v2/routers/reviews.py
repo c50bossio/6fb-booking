@@ -6,7 +6,7 @@ Handles review CRUD, responses, templates, analytics, and GMB integration.
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from db import get_db
 from models import User
@@ -30,7 +30,6 @@ from schemas_new.review import (
     ReviewTemplateGenerateResponse,
     BulkResponseRequest,
     BulkResponseResponse,
-    AutoResponseConfig,
     AutoResponseStats
 )
 from services.review_service import ReviewService

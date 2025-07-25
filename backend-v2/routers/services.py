@@ -1,17 +1,13 @@
-from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from datetime import datetime, date, time, timezone
-import enum
 
 from db import get_db
 from models import Service, ServiceCategoryEnum, ServicePricingRule, ServiceBookingRule, barber_services
 from schemas import ServiceCreate, ServiceUpdate, ServiceResponse, ServicePricingRuleCreate, ServiceBookingRuleCreate
-from utils.auth import get_current_user, verify_admin_or_barber
+from utils.auth import verify_admin_or_barber
 from dependencies import get_current_active_user
-from utils.input_validation import validate_string, validate_integer, ValidationError as InputValidationError
-from schemas_new.validation import ServiceCreateRequest, ListFilterRequest
 from services.cache_invalidation import cache_invalidator
 
 router = APIRouter(

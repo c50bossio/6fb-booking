@@ -178,7 +178,7 @@ def send_appointment_reminders(self):
     Send appointment reminders for upcoming appointments
     """
     try:
-        from models import Appointment, User, NotificationPreference
+        from models import Appointment, NotificationPreference
         from sqlalchemy import and_
         
         with get_db_session() as db:

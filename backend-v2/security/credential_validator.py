@@ -16,7 +16,7 @@ import sys
 import json
 import logging
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from datetime import datetime
 
 # Configure logging

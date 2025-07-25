@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import date, datetime, time, timedelta
+from typing import Optional
+from datetime import date, datetime, time
 import warnings
 import schemas
 import models

@@ -3,7 +3,6 @@ MJML Template Compiler for BookedBarber
 Compiles MJML templates to responsive HTML emails
 """
 import os
-import tempfile
 from typing import Dict, Any, Optional
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import logging

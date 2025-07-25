@@ -4,12 +4,10 @@ System Integration Test Suite
 This test suite ensures that all consolidated services, credential management,
 and API endpoints work together properly after the parallel refactoring efforts.
 """
-import asyncio
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import Dict, Any, List
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -22,7 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 from main import app
 from db import get_db, Base
-from models import User, Appointment, Payment, Location, Service
+from models import User, Appointment, Location, Service
 from services.booking_service import BookingService
 from services.payment_service import PaymentService
 from services.notification_service import NotificationService

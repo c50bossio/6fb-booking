@@ -16,14 +16,11 @@ Usage:
 
 import sys
 import os
-import asyncio
-import json
-import uuid
 import time
 import hmac
 import hashlib
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any
 
 # Add the backend-v2 directory to the path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -31,9 +28,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 # Import our modules
 from services.payment_security import PaymentSecurity
 from services.webhook_security import WebhookSecurityService
-from utils.idempotency import IdempotencyManager, IdempotencyKeyGenerator
+from utils.idempotency import IdempotencyKeyGenerator
 from utils.security_logging import SecurityEventType, SecuritySeverity, get_security_logger
-from models.idempotency import IdempotencyKey
 
 
 class SecurityAuditValidator:

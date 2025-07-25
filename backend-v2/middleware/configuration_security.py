@@ -4,10 +4,9 @@ Validates and enforces security configuration at runtime
 """
 
 import logging
-import os
-from typing import Dict, List, Optional
+from typing import Dict, List
 from datetime import datetime, timedelta
-from fastapi import Request, Response, HTTPException
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from config import settings

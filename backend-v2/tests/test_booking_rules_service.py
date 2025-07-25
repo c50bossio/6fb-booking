@@ -13,8 +13,7 @@ Tests cover:
 
 import pytest
 from datetime import datetime, date, time, timedelta, timezone
-from unittest.mock import Mock, patch
-from typing import List, Dict, Any
+from unittest.mock import patch
 
 from services.booking_rules_service import (
     validate_booking_against_rules,
@@ -32,12 +31,10 @@ from services.booking_rules_service import (
     _rule_applies_to_booking
 )
 from tests.factories import (
-    UserFactory, ClientFactory, AppointmentFactory, ServiceFactory,
-    create_test_user, create_test_client, create_test_service
+    UserFactory, ClientFactory, AppointmentFactory, ServiceFactory
 )
 from models import (
-    User, Client, Service, Appointment, BookingRule, ServiceBookingRule, 
-    BookingSettings
+    BookingRule, ServiceBookingRule, BookingSettings
 )
 from sqlalchemy.orm import Session
 

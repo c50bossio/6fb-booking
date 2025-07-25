@@ -5,7 +5,6 @@ Creates branded short links and tracks clicks
 
 import string
 import random
-import hashlib
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from urllib.parse import urljoin

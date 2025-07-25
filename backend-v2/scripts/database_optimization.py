@@ -27,7 +27,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
-import subprocess
 
 # Add the backend directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -38,9 +37,6 @@ from sqlalchemy.pool import QueuePool, StaticPool
 from sqlalchemy.engine import Engine
 import psutil
 
-from db import get_db, engine
-from models import Appointment, Payment, User
-import models
 
 # Configure logging
 logging.basicConfig(

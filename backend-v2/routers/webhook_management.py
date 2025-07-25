@@ -3,7 +3,6 @@ Webhook management endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
 from typing import List, Optional
 from datetime import datetime, timedelta
 import logging
@@ -11,9 +10,9 @@ import logging
 from db import get_db
 from dependencies import get_current_admin_user
 from models import User
-from models import WebhookEndpoint, WebhookLog, WebhookEventType, WebhookAuthType, WebhookStatus
+from models import WebhookEndpoint, WebhookLog, WebhookEventType, WebhookStatus
 from services.webhook_service import webhook_service
-from schemas import WebhookEndpointCreate, WebhookEndpointUpdate, WebhookEndpointResponse, WebhookLogResponse, WebhookTestRequest, WebhookListParams
+from schemas import WebhookEndpointCreate, WebhookEndpointUpdate, WebhookEndpointResponse, WebhookLogResponse, WebhookTestRequest
 
 logger = logging.getLogger(__name__)
 

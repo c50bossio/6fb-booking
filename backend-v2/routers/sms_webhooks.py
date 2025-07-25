@@ -9,9 +9,8 @@ from db import get_db
 from config import settings
 from models import (
     SMSConversation, SMSMessage, SMSMessageDirection, 
-    SMSMessageStatus, User, Client
+    SMSMessageStatus, Client
 )
-from services.notification_service import notification_service
 
 logger = logging.getLogger(__name__)
 

@@ -4,16 +4,16 @@ Global Search API endpoints for BookedBarber V2.
 Provides unified search across appointments, clients, services, and other entities.
 """
 
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func, text
+from sqlalchemy import or_, func
 from pydantic import BaseModel
 from datetime import datetime
 
 from db import get_db
 from dependencies import get_current_user
-from models import User, Appointment, Service, Client
+from models import User, Appointment, Service
 from utils.role_permissions import Permission, get_permission_checker, PermissionChecker
 
 

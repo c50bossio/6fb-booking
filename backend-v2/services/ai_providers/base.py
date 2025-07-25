@@ -3,7 +3,7 @@ Base interface for AI providers
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 
 class AIProviderInterface(ABC):
@@ -33,22 +33,18 @@ class AIProviderInterface(ABC):
                 - model: Model used
                 - provider: Provider name
         """
-        pass
     
     @abstractmethod
     async def count_tokens(self, text: str) -> int:
         """Count tokens in a text string"""
-        pass
     
     @abstractmethod
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about available models and pricing"""
-        pass
     
     @abstractmethod
     def validate_api_key(self) -> bool:
         """Validate that the API key is working"""
-        pass
     
     def format_messages(self, messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
         """Format messages for the specific provider (can be overridden)"""

@@ -7,8 +7,7 @@ Tests all configured integrations and reports their status
 import os
 import sys
 from datetime import datetime
-from typing import Dict, List, Tuple
-import httpx
+from typing import Dict, Tuple
 from dotenv import load_dotenv
 from colorama import init, Fore, Style
 

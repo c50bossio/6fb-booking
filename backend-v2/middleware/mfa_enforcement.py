@@ -4,12 +4,10 @@ Multi-Factor Authentication (MFA) Enforcement Middleware
 Enforces MFA verification for sensitive admin routes and operations.
 """
 
-import json
-import time
 import logging
-from typing import Optional, Dict, Set
+from typing import Optional, Dict
 from datetime import datetime, timedelta
-from fastapi import Request, HTTPException, status
+from fastapi import Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -20,7 +18,6 @@ from config import settings
 from db import SessionLocal
 from models import User
 from models.mfa import UserMFASecret, MFAEvent
-from services.mfa_service import MFAService
 
 logger = logging.getLogger(__name__)
 

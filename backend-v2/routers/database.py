@@ -4,11 +4,11 @@ Provides health checks, performance metrics, and read replica management.
 """
 
 from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from database.read_replica_config import get_db_manager, check_database_health, get_database_stats
 from dependencies_v2 import get_pool_health, pool_monitor

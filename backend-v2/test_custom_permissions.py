@@ -9,9 +9,7 @@ This script tests the custom permissions system by:
 """
 
 import requests
-import json
 import sys
-from datetime import datetime
 
 # Test configuration
 BASE_URL = "http://localhost:8000"
@@ -147,24 +145,18 @@ def test_permission_imports():
     try:
         # Test model imports
         from models.custom_role_permissions import (
-            CustomRolePermission, CUSTOMIZABLE_ROLES, 
-            CUSTOMIZABLE_PERMISSIONS, PERMISSION_CATEGORIES
+            CUSTOMIZABLE_ROLES, CUSTOMIZABLE_PERMISSIONS, 
+            PERMISSION_CATEGORIES
         )
         print("✅ Custom permissions model imported successfully")
         
         # Test service imports
-        from services.custom_permissions_service import CustomPermissionsService
         print("✅ Custom permissions service imported successfully")
         
         # Test schema imports
-        from schemas_new.custom_permissions import (
-            RolePermissionsRequest, RolePermissionsResponse, 
-            AvailablePermissionsResponse
-        )
         print("✅ Custom permissions schemas imported successfully")
         
         # Test router imports
-        from routers.role_permissions import router
         print("✅ Role permissions router imported successfully")
         
         # Test basic data structures

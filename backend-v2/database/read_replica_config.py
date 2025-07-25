@@ -7,7 +7,7 @@ supporting 10,000+ concurrent users with optimized query routing.
 
 import os
 import logging
-from typing import Dict, List, Optional, Union, Literal
+from typing import Dict, List, Optional
 from enum import Enum
 from sqlalchemy import create_engine, pool, event
 from sqlalchemy.orm import sessionmaker, Session

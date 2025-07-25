@@ -3,12 +3,9 @@
 Simple Calendar Demo - Direct Database Setup
 """
 import os
-import sys
-import time
 import webbrowser
-import json
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 from passlib.context import CryptContext
 
 # Test credentials

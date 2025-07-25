@@ -5,8 +5,7 @@ This model stores idempotency keys and their associated responses to prevent
 duplicate operations in critical financial processes.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, JSON, Index, UniqueConstraint
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, DateTime, JSON, Index, UniqueConstraint
 from datetime import datetime
 import enum
 

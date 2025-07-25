@@ -5,14 +5,13 @@ This file shows best practices for using the factory patterns to create
 consistent, maintainable test data.
 """
 
-import pytest
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from tests.factories import (
     UserFactory, ClientFactory, AppointmentFactory, 
     ServiceFactory, PaymentFactory, NotificationFactory,
-    AvailabilityFactory, create_full_test_scenario
+    create_full_test_scenario
 )
 from models import User, Client, Appointment, Service
 

@@ -6,7 +6,6 @@ This script identifies and archives duplicate service files to reduce code bloat
 while maintaining the working service implementations.
 """
 
-import os
 import shutil
 from pathlib import Path
 from datetime import datetime

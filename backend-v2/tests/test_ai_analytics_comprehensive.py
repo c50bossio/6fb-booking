@@ -12,23 +12,16 @@ Tests the revolutionary cross-user AI analytics system including:
 
 import pytest
 import numpy as np
-import json
 from datetime import datetime, timedelta, date
 from typing import Dict, List, Any
 from unittest.mock import Mock, patch
 from sqlalchemy.orm import Session
-from fastapi.testclient import TestClient
-from fastapi import status
 
-from main import app
-from db import get_db
 from models import (
-    User, Appointment, Payment, Service, Client, 
-    PerformanceBenchmark, CrossUserMetric, BenchmarkCategory, BusinessSegment
+    PerformanceBenchmark, BusinessSegment
 )
 from models.consent import (
-    UserConsent, ConsentType, ConsentStatus, CookieConsent, 
-    DataProcessingLog, DataExportRequest, LegalConsentAudit
+    UserConsent, ConsentType, ConsentStatus
 )
 from services.ai_benchmarking_service import AIBenchmarkingService, BenchmarkResult
 from services.predictive_modeling_service import PredictiveModelingService, PredictionResult

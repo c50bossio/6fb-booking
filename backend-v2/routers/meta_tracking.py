@@ -22,7 +22,7 @@ except ImportError:
 try:
     from utils.rate_limiting import rate_limit
 except ImportError:
-    from utils.rate_limiter import RateLimiter
+    pass
     # Create a simple rate limit decorator if not available
     def rate_limit(calls: int, period: int):
         def decorator(func):

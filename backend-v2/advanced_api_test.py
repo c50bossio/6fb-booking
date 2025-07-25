@@ -8,9 +8,7 @@ import requests
 import json
 import time
 from datetime import datetime, date, timedelta
-from typing import Dict, List, Optional, Any
-import sys
-import os
+from typing import Dict, Optional
 
 # API Base Configuration
 BASE_URL = "http://localhost:8001"

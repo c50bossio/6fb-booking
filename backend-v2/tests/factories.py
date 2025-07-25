@@ -10,15 +10,13 @@ with sensible defaults while allowing customization. This ensures:
 """
 
 from datetime import datetime, timedelta, timezone, date, time
-from typing import Optional, Dict, Any, List
-from decimal import Decimal
+from typing import List
 import random
 import string
 
 from models import (
     User, Client, Appointment, Service, Payment, 
-    NotificationTemplate, NotificationQueue, NotificationPreference,
-    BarberAvailability, ServiceBookingRule, ServicePricingRule
+    NotificationTemplate, NotificationPreference, BarberAvailability
 )
 from schemas import (
     UserCreate, ClientCreate, AppointmentCreate, ServiceCreate

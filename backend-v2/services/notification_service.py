@@ -1,7 +1,6 @@
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 import logging
-import asyncio
 import json
 from jinja2 import Template, Environment, FileSystemLoader
 from sendgrid import SendGridAPIClient
@@ -10,9 +9,7 @@ from twilio.rest import Client as TwilioClient
 from twilio.base.exceptions import TwilioRestException
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
-from contextlib import asynccontextmanager
 import redis
-import celery
 from pathlib import Path
 
 from config import settings
@@ -20,8 +17,7 @@ from models import (
     User, Appointment, NotificationTemplate, NotificationPreference,
     NotificationQueue, NotificationStatus, Client, NotificationPreferences
 )
-from db import get_db
-from utils.url_shortener import create_appointment_short_url, create_booking_short_url
+from utils.url_shortener import create_appointment_short_url
 
 logger = logging.getLogger(__name__)
 

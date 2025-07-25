@@ -17,19 +17,16 @@ import hashlib
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Tuple
 from dataclasses import dataclass
-from urllib.parse import urlencode
 
 from google.auth.transport import requests as google_requests
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 
 from models import User, Appointment
 from config import settings
-from services.timezone_service import timezone_service
-from services.notification_service import notification_service
 
 logger = logging.getLogger(__name__)
 

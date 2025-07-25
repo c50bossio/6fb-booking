@@ -9,7 +9,7 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 # Add utils to path
 sys.path.append(str(Path(__file__).parent))

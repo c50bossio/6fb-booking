@@ -9,12 +9,11 @@ This module tests the Stripe service integration including:
 """
 
 import pytest
-from unittest.mock import patch, Mock, MagicMock
-from datetime import datetime, timezone, timedelta
+from unittest.mock import patch
 from sqlalchemy.orm import Session
 
 from services.stripe_service import StripeSubscriptionService
-from models import User, Organization, UserOrganization
+from models import User, Organization
 from models.organization import OrganizationType
 
 

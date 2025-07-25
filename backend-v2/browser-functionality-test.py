@@ -6,7 +6,6 @@ Tests all navigation items and identifies broken functionality
 
 import requests
 import json
-import time
 from datetime import datetime
 
 # Test configuration

@@ -7,7 +7,7 @@ treating each organization as a location for multi-shop support.
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime
 
 from db import get_db
@@ -440,8 +440,8 @@ async def get_location_stats(
                 )
         
         # Calculate statistics
-        from datetime import datetime, date, timedelta
-        from sqlalchemy import func, and_
+        from datetime import date, timedelta
+        from sqlalchemy import func
         from models import Appointment, Payment
         
         # Get current date boundaries

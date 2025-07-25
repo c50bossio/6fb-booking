@@ -15,7 +15,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.orm import Session
 from typing import Callable
 import logging
-import json
 from datetime import datetime, timedelta
 
 # Setup logging

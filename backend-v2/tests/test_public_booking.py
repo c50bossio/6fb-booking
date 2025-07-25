@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from fastapi.testclient import TestClient
 
 from models import User, Service, Organization
-from models.guest_booking import GuestBooking
 from models.organization import UserOrganization
 from services.guest_booking_service import guestBookingService
 

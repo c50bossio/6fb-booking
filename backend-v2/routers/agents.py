@@ -11,12 +11,10 @@ import logging
 from db import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role
-from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 from schemas_new.agent import (
     AgentCreate, AgentResponse, AgentInstanceCreate, AgentInstanceUpdate,
-    AgentInstanceResponse, ConversationResponse, AgentAnalytics,
-    SubscriptionCreate, SubscriptionUpdate, SubscriptionResponse,
-    TemplateCreate, TemplateResponse
+    AgentInstanceResponse, ConversationResponse, SubscriptionCreate,
+    SubscriptionResponse
 )
 from models import (
     User, Agent, AgentInstance, AgentConversation, AgentSubscription,

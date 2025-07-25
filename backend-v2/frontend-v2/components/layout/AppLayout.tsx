@@ -56,6 +56,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       const hasUserRole = localStorage.getItem('user_role')
       
       if (process.env.NODE_ENV === 'development') {
+        console.log('Auth check debug:', {
           pathname,
           hasToken: !!hasToken,
           hasUserRole: !!hasUserRole,
@@ -79,6 +80,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         
         // Enhanced error logging for debugging
         if (process.env.NODE_ENV === 'development') {
+          console.log('Auth error debug:', {
             status: err.status,
             message: err.message,
             hasToken: !!hasToken,

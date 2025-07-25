@@ -11,9 +11,8 @@ This service implements advanced analytics features including:
 
 import numpy as np
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_, case, extract
 from services.analytics_service import AnalyticsService
 from schemas import DateRange
 import math

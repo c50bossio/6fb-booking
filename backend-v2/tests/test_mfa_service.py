@@ -9,7 +9,7 @@ import pyotp
 import hashlib
 
 from services.mfa_service import MFAService
-from models.mfa import UserMFASecret, MFABackupCode, MFADeviceTrust, MFAEvent
+from models.mfa import UserMFASecret, MFABackupCode, MFADeviceTrust
 from models import User
 
 

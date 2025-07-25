@@ -14,7 +14,6 @@ from sqlalchemy.orm import Session
 
 from models import WebhookEndpoint, WebhookLog, WebhookStatus, WebhookAuthType, WebhookEventType
 from utils.encryption import encrypt_data, decrypt_data
-from config import settings
 
 logger = logging.getLogger(__name__)
 

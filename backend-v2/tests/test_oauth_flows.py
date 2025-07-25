@@ -4,7 +4,6 @@ Tests for OAuth flows across different integrations
 
 import pytest
 import json
-from unittest.mock import Mock, patch
 from sqlalchemy.orm import Session
 
 from services.integration_service import BaseIntegrationService

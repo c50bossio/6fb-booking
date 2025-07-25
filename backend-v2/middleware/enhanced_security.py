@@ -7,10 +7,8 @@ from fastapi import Request, Response, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 import time
 import redis
-import json
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 import logging
-from datetime import datetime, timedelta
 import hashlib
 import secrets
 

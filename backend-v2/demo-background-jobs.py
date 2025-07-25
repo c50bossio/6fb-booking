@@ -6,7 +6,7 @@ Demonstrates how to queue and process background tasks
 
 import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # Add current directory to path
 sys.path.append('.')

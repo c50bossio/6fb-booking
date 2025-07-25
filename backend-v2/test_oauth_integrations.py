@@ -5,10 +5,9 @@ Tests GMB, Meta, and other OAuth providers.
 """
 
 import requests
-import json
 import time
-from typing import Dict, Optional
-from urllib.parse import urlparse, parse_qs
+from typing import Optional
+from urllib.parse import urlparse
 
 # Configuration
 BASE_URL = "http://localhost:8000"

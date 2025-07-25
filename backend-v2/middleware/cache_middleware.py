@@ -6,7 +6,7 @@ Provides automatic request/response caching with intelligent cache management.
 import json
 import hashlib
 import logging
-from typing import Any, Dict, List, Optional, Set, Callable
+from typing import List, Optional, Callable
 from datetime import datetime
 
 from fastapi import Request, Response

@@ -11,16 +11,13 @@ Tests cover:
 
 import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, Any, List
+from unittest.mock import Mock, patch
 
 from services.calendar_sync_service import CalendarSyncService
 from services.google_calendar_service import GoogleCalendarError, FreeBusyResponse
 from tests.factories import (
-    UserFactory, ClientFactory, AppointmentFactory, ServiceFactory,
-    create_test_user, create_test_client, create_test_appointment
+    UserFactory, ClientFactory, AppointmentFactory
 )
-from models import User, Appointment, Client
 from sqlalchemy.orm import Session
 
 

@@ -4,10 +4,8 @@ Database Connection Pool Monitoring Service
 Monitors connection pool health and performance metrics.
 """
 
-from typing import Dict, Any, Optional
-from sqlalchemy import text, create_engine
-from sqlalchemy.orm import Session
-from sqlalchemy.pool import Pool
+from typing import Dict, Any
+from sqlalchemy import text
 import logging
 from datetime import datetime
 import psutil

@@ -4,10 +4,8 @@ Handles automated review response generation with SEO optimization,
 sentiment analysis, and intelligent template selection.
 """
 
-import os
 import logging
 from typing import Dict, List, Optional, Tuple, Any
-from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -18,7 +16,6 @@ from models.review import (
 from models import User
 from services.gmb_service import GMBService
 from services.notification_service import NotificationService
-import asyncio
 
 # Configure logging
 logger = logging.getLogger(__name__)

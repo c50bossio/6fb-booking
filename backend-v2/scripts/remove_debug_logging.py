@@ -3,7 +3,6 @@
 
 import re
 import os
-import sys
 
 def clean_debug_logging(file_path):
     """Remove debug logging from a Python file."""

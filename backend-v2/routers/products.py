@@ -14,21 +14,18 @@ from models.product import Product, ProductVariant, InventoryItem, Order, POSTra
 from models.integration import Integration, IntegrationType
 from schemas_new.product import (
     ProductCreate, ProductUpdate, ProductResponse, ProductCatalogFilter, ProductCatalogResponse,
-    ProductVariantCreate, ProductVariantUpdate, ProductVariantResponse,
-    InventoryItemCreate, InventoryItemUpdate, InventoryItemResponse, InventoryReport,
-    OrderCreate, OrderUpdate, OrderResponse,
-    POSTransactionCreate, POSTransactionResponse,
-    ShopifyOAuthRequest, ShopifyCallbackRequest, ShopifyProductSyncRequest, ShopifyProductSyncResponse,
-    SalesReport
+    ProductVariantCreate, ProductVariantResponse, InventoryItemCreate,
+    InventoryItemResponse, InventoryReport, OrderCreate, OrderResponse,
+    POSTransactionCreate, POSTransactionResponse, ShopifyOAuthRequest,
+    ShopifyCallbackRequest, ShopifyProductSyncRequest,
+    ShopifyProductSyncResponse
 )
 from services.shopify_integration_service import ShopifyIntegrationService
-from services.integration_service import IntegrationServiceFactory
 from utils.auth import get_current_user
 from utils.authorization import verify_location_access
 from utils.sanitization import sanitize_html, sanitize_plain_text, sanitize_decimal
 from schemas_new.commission import (
-    CommissionReportBarber, CommissionReportAdmin, 
-    PayoutPreviewBarber, PayoutPreviewAdmin,
+    PayoutPreviewBarber, PayoutPreviewAdmin, 
     filter_commission_response
 )
 import logging

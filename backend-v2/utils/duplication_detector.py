@@ -3,12 +3,10 @@ Duplication Detection System for BookedBarber.com Migration
 Prevents duplicate features, code, and conflicts during migration
 """
 
-import os
 import ast
 import json
-import hashlib
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List, Tuple
 from collections import defaultdict
 
 

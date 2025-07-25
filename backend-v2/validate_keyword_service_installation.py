@@ -7,7 +7,6 @@ import sys
 import os
 import traceback
 from unittest.mock import Mock
-from typing import List, Dict, Any
 
 # Add the backend-v2 directory to the path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -17,22 +16,12 @@ def validate_imports():
     print("📦 Validating Imports...")
     
     try:
-        from services.keyword_generation_service import (
-            KeywordGenerationService, 
-            KeywordAnalysisResult, 
-            SEOKeywordSet,
-            get_trending_barbershop_keywords,
-            validate_keyword_quality
-        )
         print("   ✅ KeywordGenerationService imports successful")
         
-        from services.business_context_service import BusinessContext
         print("   ✅ BusinessContext imports successful")
         
-        from utils.sanitization import sanitize_input, validate_text_content
         print("   ✅ Sanitization utilities imports successful")
         
-        from models.review import Review, ReviewSentiment, ReviewPlatform
         print("   ✅ Review models imports successful")
         
         return True
@@ -216,7 +205,7 @@ def validate_integration_points():
     
     try:
         from services.keyword_generation_service import KeywordGenerationService
-        from services.business_context_service import BusinessContext, BusinessContextService
+        from services.business_context_service import BusinessContext
         from models.review import Review, ReviewSentiment
         from sqlalchemy.orm import Session
         

@@ -5,7 +5,6 @@ Enables barbershops to deploy automated agents for various business tasks
 
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Boolean, Text, JSON, Enum as SQLEnum, Index
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
 import enum
 from datetime import datetime, timezone

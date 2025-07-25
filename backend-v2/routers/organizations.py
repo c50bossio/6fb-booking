@@ -15,8 +15,7 @@ from datetime import datetime, timedelta
 
 from db import get_db
 from models import User, Organization, UserOrganization, Appointment, Payment
-from models.organization import BillingPlan, UserRole, OrganizationType
-from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
+from models.organization import UserRole
 from schemas import (
     OrganizationCreate, OrganizationUpdate, OrganizationResponse, OrganizationWithUsers,
     UserOrganizationCreate, UserOrganizationUpdate, UserOrganizationResponse,
@@ -24,7 +23,6 @@ from schemas import (
 )
 from schemas_new.landing_page import LandingPageConfig
 from routers.auth import get_current_user
-from utils.permissions import require_organization_permission, require_role
 
 router = APIRouter(prefix="/organizations", tags=["organizations"])
 

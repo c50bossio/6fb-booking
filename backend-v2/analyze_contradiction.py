@@ -5,7 +5,6 @@ but also say "0 slots available for June 28th"?
 """
 
 import requests
-import json
 from datetime import datetime, time
 
 def analyze_booking_contradiction():

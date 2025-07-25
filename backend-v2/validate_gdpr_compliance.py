@@ -14,20 +14,18 @@ import json
 import logging
 import argparse
 import sys
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
+from datetime import datetime
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
-from pathlib import Path
 
 import httpx
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Import our models and dependencies
-from db import Base
 from models.consent import (
     UserConsent, CookieConsent, DataProcessingLog, DataExportRequest, LegalConsentAudit,
-    ConsentType, ConsentStatus, DataProcessingPurpose, ExportStatus
+    ConsentType, ConsentStatus, ExportStatus
 )
 from models import User
 

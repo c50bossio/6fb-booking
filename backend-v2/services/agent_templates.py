@@ -2,7 +2,7 @@
 Agent Templates - Predefined configurations for different agent types
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any
 from models import AgentType
 
 

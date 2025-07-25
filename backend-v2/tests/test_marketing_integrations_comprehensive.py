@@ -4,18 +4,13 @@ Tests OAuth flows, health checks, CRUD operations, and error handling
 """
 
 import pytest
-import json
-from httpx import AsyncClient
 from sqlalchemy.orm import Session
 from unittest.mock import Mock, patch, AsyncMock
 from datetime import datetime, timedelta
-from typing import Dict, Any
 
 from models.integration import Integration, IntegrationType, IntegrationStatus
 from models.review import Review, ReviewPlatform, ReviewSentiment
 from models import User
-from schemas_new.integration import IntegrationType as IntegrationTypeSchema
-from schemas_new.review import ReviewSentiment as ReviewSentimentSchema
 
 
 @pytest.mark.asyncio

@@ -9,16 +9,15 @@ import json
 import logging
 import hashlib
 import hmac
-from typing import Dict, List, Optional, Tuple, Any, Union
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal
+from typing import Dict, List, Optional, Tuple, Any
+from datetime import datetime, timedelta
 import httpx
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from urllib.parse import urlencode, quote
+from urllib.parse import urlencode
 
-from models.integration import Integration, IntegrationType, IntegrationStatus
-from models import User, Appointment, Payment, Client
+from models.integration import Integration
+from models import Appointment, Client
 from location_models import BarbershopLocation
 from utils.encryption import encrypt_text, decrypt_text
 

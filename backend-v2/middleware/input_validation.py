@@ -2,7 +2,7 @@
 import re
 import html
 import bleach
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from fastapi import HTTPException, status
 from pydantic import BaseModel, validator
 import logging

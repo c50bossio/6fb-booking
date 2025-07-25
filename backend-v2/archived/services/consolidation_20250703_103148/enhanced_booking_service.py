@@ -4,15 +4,14 @@ This service replaces the existing booking service with proper timezone support.
 """
 
 from datetime import datetime, time, timedelta, date
-from typing import List, Optional, Dict, Any
+from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 import models
 import pytz
 import logging
 from services import barber_availability_service
 from services.timezone_service import timezone_service
-from config import settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

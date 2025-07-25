@@ -11,7 +11,7 @@ from slowapi.util import get_remote_address
 import time
 import hashlib
 import logging
-from utils.rate_limit import limiter, RATE_LIMITS
+from utils.rate_limit import limiter
 
 logger = logging.getLogger(__name__)
 

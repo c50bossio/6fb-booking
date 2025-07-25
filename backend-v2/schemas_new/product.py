@@ -6,13 +6,11 @@ from pydantic import BaseModel, Field, validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
 
 from models.product import ProductType, ProductStatus, OrderStatus, OrderSource
 from utils.validators import (
     currency_validator,
-    financial_amount_validator,
-    normalize_currency
+    financial_amount_validator
 )
 
 

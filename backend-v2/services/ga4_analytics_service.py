@@ -9,17 +9,13 @@ This service provides comprehensive GA4 integration including:
 - Real-time event validation and error handling
 """
 
-import os
 import json
 import time
 import uuid
 import hashlib
-import asyncio
 import aiohttp
 import logging
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any, Union
-from urllib.parse import urlencode
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 
 from config import settings

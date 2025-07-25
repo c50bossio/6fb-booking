@@ -1,11 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
-from typing import Optional, Dict, Any, List
-from datetime import datetime, timedelta
-import secrets
-import hashlib
+from typing import Dict, Any, List
+from datetime import datetime
 import logging
 
 from db import get_db
@@ -16,7 +13,6 @@ from models import (
 from models import User
 from utils.auth import get_current_user
 from schemas import NotificationPreferencesResponse, NotificationPreferencesUpdate
-import pytz
 
 logger = logging.getLogger(__name__)
 

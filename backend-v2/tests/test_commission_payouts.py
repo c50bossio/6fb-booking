@@ -4,20 +4,19 @@ Tests unified commission framework, payout processing, and commission analytics.
 """
 
 import pytest
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from decimal import Decimal
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from db import Base
 from models import User, Payment, Appointment, Payout
-from models.product import Order, OrderItem, POSTransaction, Product
+from models.product import Order, OrderItem, POSTransaction
 from services.base_commission import UnifiedCommissionService, CommissionType
 from services.commission_service import CommissionService
 from services.commission_rate_manager import CommissionRateManager
 from services.payment_service import PaymentService
-from schemas import PayoutCreate
 
 
 @pytest.fixture

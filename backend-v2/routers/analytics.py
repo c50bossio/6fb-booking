@@ -18,7 +18,7 @@ import logging
 
 from db import get_db
 from dependencies import get_current_user
-from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
+from utils.error_handling import safe_endpoint
 from models import User
 from schemas import DateRange
 from services.analytics_service import AnalyticsService
@@ -544,7 +544,7 @@ async def get_six_fb_milestones_by_type(
         raise HTTPException(status_code=400, detail=f"Invalid milestone type. Must be one of: {', '.join(valid_types)}")
     
     try:
-        from services.six_fb_progress_tracker import SixFBProgressTracker, MilestoneType
+        from services.six_fb_progress_tracker import SixFBProgressTracker
         
         progress_tracker = SixFBProgressTracker(db, target_user_id, target_annual_income)
         all_milestones = progress_tracker.get_milestone_progress()
