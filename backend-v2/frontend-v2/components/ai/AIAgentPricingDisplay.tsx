@@ -5,14 +5,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { 
-  CheckIcon, 
-  CurrencyDollarIcon, 
-  SparklesIcon,
-  TrendingUpIcon,
-  BoltIcon,
-  StarIcon
-} from '@heroicons/react/24/outline'
+import CheckIcon from '@heroicons/react/24/outline/CheckIcon'
+import CurrencyDollarIcon from '@heroicons/react/24/outline/CurrencyDollarIcon'
+import SparklesIcon from '@heroicons/react/24/outline/SparklesIcon'
+import ArrowTrendingUpIcon from '@heroicons/react/24/outline/ArrowTrendingUpIcon'
+import BoltIcon from '@heroicons/react/24/outline/BoltIcon'
+import StarIcon from '@heroicons/react/24/outline/StarIcon'
 
 interface PricingTier {
   id: string
@@ -177,7 +175,7 @@ const UsageEstimator: React.FC = () => {
     <Card variant="secondary" className="mt-6">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
-          <TrendingUpIcon className="w-5 h-5 text-primary-600" />
+          <ArrowTrendingUpIcon className="w-5 h-5 text-primary-600" />
           Usage Cost Estimator
         </CardTitle>
       </CardHeader>
@@ -258,7 +256,7 @@ export function AIAgentPricingDisplay({
             <span>67% lower base cost</span>
           </div>
           <div className="flex items-center space-x-1">
-            <TrendingUpIcon className="w-4 h-4 text-blue-500" />
+            <ArrowTrendingUpIcon className="w-4 h-4 text-blue-500" />
             <span>Usage-based scaling</span>
           </div>
           <div className="flex items-center space-x-1">
@@ -391,7 +389,7 @@ export function AIAgentPricingDisplay({
             
             <div className="space-y-2">
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mx-auto">
-                <TrendingUpIcon className="w-6 h-6 text-purple-600" />
+                <ArrowTrendingUpIcon className="w-6 h-6 text-purple-600" />
               </div>
               <h4 className="font-semibold text-gray-900 dark:text-white">Volume Discounts</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">

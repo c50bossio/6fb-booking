@@ -1,227 +1,190 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { format } from 'date-fns'
-import { getMyBookings, type BookingResponse, type BookingListResponse } from '@/lib/api'
+import { getMyBookings, getUsers, type BookingResponse } from '@/lib/api'
+import FreshaInspiredCalendar from '@/components/FreshaInspiredCalendar'
 
 /**
- * CLEAN CALENDAR IMPLEMENTATION
+ * FRESHA-INSPIRED CALENDAR PAGE
  * 
- * This is a minimal, reliable calendar without:
- * - Complex performance monitoring
- * - Multiple interconnected hooks
- * - Console overrides that cause stack overflow
- * - Memory monitoring that triggers cascading updates
+ * Premium calendar implementation inspired by Fresha's professional design.
+ * Features staff-centric layout, professional appointment blocks, and sophisticated visuals.
  */
 
-interface CalendarView {
-  view: 'day' | 'week' | 'month'
-  selectedDate: Date
+interface Barber {
+  id: number
+  name?: string
+  first_name?: string
+  last_name?: string
+  email: string
+  avatar?: string
+  role?: string
 }
 
-export default function CleanCalendarPage() {
-  console.log('🔥 CALENDAR PAGE LOADED - THIS IS THE CORRECT FILE')
-  // Simple, stable state management
-  const [view, setView] = useState<CalendarView>({
-    view: 'week',
-    selectedDate: new Date()
-  })
-  const [bookings, setBookings] = useState<BookingResponse[]>([])
+export default function FreshaCalendarPage() {
+  // Calendar state
+  const [view, setView] = useState<'day' | 'week' | 'month'>('day')
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [selectedBarberId, setSelectedBarberId] = useState<number | null>(null)
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null)
+  
+  // Data state
+  const [appointments, setAppointments] = useState<BookingResponse[]>([])
+  const [barbers, setBarbers] = useState<Barber[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Load bookings - simple, no complex caching
+  // Load appointments and barbers
   useEffect(() => {
-    const loadBookings = async () => {
+    const loadData = async () => {
       try {
         setLoading(true)
         setError(null)
-        const response = await getMyBookings()
-        // Extract bookings array from the response object, ensure it's always an array
-        const bookingsArray = response?.bookings || []
-        setBookings(Array.isArray(bookingsArray) ? bookingsArray : [])
+        
+        // Load appointments
+        const bookingsResponse = await getMyBookings()
+        const appointmentsArray = bookingsResponse?.bookings || []
+        setAppointments(Array.isArray(appointmentsArray) ? appointmentsArray : [])
+        
+        // Load barbers/staff
+        try {
+          const usersResponse = await getUsers()
+          const barbersArray = usersResponse?.users || []
+          // Filter for barbers or include all users if no specific role filtering
+          const filteredBarbers = Array.isArray(barbersArray) 
+            ? barbersArray.filter(user => 
+                user.role === 'barber' || 
+                user.role === 'admin' || 
+                user.unified_role === 'barber' || 
+                user.unified_role === 'shop_owner' ||
+                user.unified_role === 'individual_barber'
+              )
+            : []
+          
+          // If no barbers found, create mock barber data based on appointments
+          if (filteredBarbers.length === 0 && appointmentsArray.length > 0) {
+            const uniqueBarberIds = [...new Set(appointmentsArray.map(apt => apt.barber_id))]
+            const mockBarbers = uniqueBarberIds.map(barberId => ({
+              id: barberId,
+              name: `Barber ${barberId}`,
+              email: `barber${barberId}@example.com`,
+              role: 'barber'
+            }))
+            setBarbers(mockBarbers)
+          } else {
+            setBarbers(filteredBarbers)
+          }
+        } catch (usersError) {
+          // If users endpoint fails, create mock barber data
+          if (appointmentsArray.length > 0) {
+            const uniqueBarberIds = [...new Set(appointmentsArray.map(apt => apt.barber_id))]
+            const mockBarbers = uniqueBarberIds.map(barberId => ({
+              id: barberId,
+              name: `Barber ${barberId}`,
+              email: `barber${barberId}@example.com`,
+              role: 'barber'
+            }))
+            setBarbers(mockBarbers)
+          } else {
+            // Default mock barber for empty state
+            setBarbers([{
+              id: 1,
+              name: 'John Doe',
+              email: 'john@example.com',
+              role: 'barber'
+            }])
+          }
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load bookings')
-        setBookings([])
+        setError(err instanceof Error ? err.message : 'Failed to load calendar data')
+        // Set default barber for error state
+        setBarbers([{
+          id: 1,
+          name: 'Demo Barber',
+          email: 'demo@example.com',
+          role: 'barber'
+        }])
       } finally {
         setLoading(false)
       }
     }
 
-    loadBookings()
-  }, []) // No complex dependencies
+    loadData()
+  }, [])
 
-  // Simple date navigation
-  const navigateDate = (direction: 'prev' | 'next') => {
-    const newDate = new Date(view.selectedDate)
-    
-    if (view.view === 'day') {
-      newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1))
-    } else if (view.view === 'week') {
-      newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7))
-    } else {
-      newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1))
-    }
-    
-    setView(prev => ({ ...prev, selectedDate: newDate }))
+  // Event handlers
+  const handleDateChange = (date: Date) => {
+    setCurrentDate(date)
   }
 
-  // Simple view switching
-  const switchView = (newView: 'day' | 'week' | 'month') => {
-    setView(prev => ({ ...prev, view: newView }))
+  const handleViewChange = (newView: 'day' | 'week' | 'month') => {
+    setView(newView)
   }
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
+  const handleAppointmentClick = (appointment: BookingResponse) => {
+    setSelectedAppointmentId(appointment.id)
+    console.log('Appointment clicked:', appointment)
+    // TODO: Open appointment details modal
   }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="p-6">
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-6">
-            <div className="text-red-600 font-semibold mb-2">Calendar Error</div>
-            <div className="text-red-700">{error}</div>
-            <Button 
-              onClick={() => window.location.reload()} 
-              className="mt-4"
-              variant="outline"
-            >
-              Reload Page
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  const handleTimeSlotClick = (date: Date, barberId?: number, hour?: number, minute?: number) => {
+    console.log('Time slot clicked:', { date, barberId, hour, minute })
+    // TODO: Open new appointment modal
+  }
+
+  const handleBarberSelect = (barberId: number) => {
+    setSelectedBarberId(selectedBarberId === barberId ? null : barberId)
+  }
+
+  const handleNewAppointment = () => {
+    console.log('New appointment clicked')
+    // TODO: Open new appointment modal
+  }
+
+  const handleRefresh = () => {
+    window.location.reload()
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Calendar - {format(view.selectedDate, 'MMMM yyyy')}
-        </h1>
-        
-        {/* View Controls */}
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border">
-            {(['day', 'week', 'month'] as const).map((viewType) => (
-              <Button
-                key={viewType}
-                onClick={() => switchView(viewType)}
-                variant={view.view === viewType ? 'default' : 'ghost'}
-                size="sm"
-                className="capitalize"
-              >
-                {viewType}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex items-center justify-between mb-6">
-        <Button onClick={() => navigateDate('prev')} variant="outline">
-          ← Previous
-        </Button>
-        
-        <div className="text-lg font-semibold">
-          {view.view === 'day' && format(view.selectedDate, 'EEEE, MMMM d, yyyy')}
-          {view.view === 'week' && `Week of ${format(view.selectedDate, 'MMM d, yyyy')}`}
-          {view.view === 'month' && format(view.selectedDate, 'MMMM yyyy')}
-        </div>
-        
-        <Button onClick={() => navigateDate('next')} variant="outline">
-          Next →
-        </Button>
-      </div>
-
-      {/* Calendar Content */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">
-              Your Appointments ({Array.isArray(bookings) ? bookings.length : 0})
-            </h2>
-            <Button size="sm">
-              + New Appointment
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {!Array.isArray(bookings) || bookings.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <div className="text-lg mb-2">No appointments scheduled</div>
-              <div>Book your first appointment to get started</div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {(Array.isArray(bookings) ? bookings : []).slice(0, 10).map((booking) => (
-                <div 
-                  key={booking.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                >
-                  <div>
-                    <div className="font-semibold">{booking.service_name}</div>
-                    <div className="text-sm text-gray-600">
-                      {format(new Date(booking.start_time), 'MMM d, yyyy • h:mm a')}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                      booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {booking.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Simple Stats */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{Array.isArray(bookings) ? bookings.length : 0}</div>
-            <div className="text-sm text-gray-600">Total Appointments</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {Array.isArray(bookings) ? bookings.filter(b => b.status === 'confirmed').length : 0}
-            </div>
-            <div className="text-sm text-gray-600">Confirmed</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {Array.isArray(bookings) ? bookings.filter(b => b.status === 'pending').length : 0}
-            </div>
-            <div className="text-sm text-gray-600">Pending</div>
-          </CardContent>
-        </Card>
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* Main Calendar - Full Height */}
+      <div className="flex-1 overflow-hidden">
+        <FreshaInspiredCalendar
+          // Data
+          barbers={barbers}
+          appointments={appointments}
+          currentDate={currentDate}
+          
+          // View configuration
+          view={view}
+          startHour={8}
+          endHour={19}
+          slotDuration={60}
+          
+          // Display options
+          showRevenue={true}
+          showAppointmentCount={true}
+          colorScheme="service-based"
+          
+          // Event handlers
+          onDateChange={handleDateChange}
+          onViewChange={handleViewChange}
+          onAppointmentClick={handleAppointmentClick}
+          onTimeSlotClick={handleTimeSlotClick}
+          onBarberSelect={handleBarberSelect}
+          onNewAppointment={handleNewAppointment}
+          onRefresh={handleRefresh}
+          
+          // Selection state
+          selectedBarberId={selectedBarberId}
+          selectedAppointmentId={selectedAppointmentId}
+          
+          // Loading state
+          isLoading={loading}
+          error={error}
+          
+          className="h-full"
+        />
       </div>
     </div>
   )

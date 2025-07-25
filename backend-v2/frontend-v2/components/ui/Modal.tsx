@@ -41,6 +41,7 @@ const modalVariants = cva(
         center: '',
         bottom: 'rounded-t-ios-2xl rounded-b-none',
         top: 'rounded-b-ios-2xl rounded-t-none',
+        'header-aware': '', // No special border radius for header-aware position
       },
       overflow: {
         hidden: 'overflow-hidden',
@@ -66,7 +67,7 @@ const overlayVariants = cva(
         bottom: 'items-end justify-center',
         top: 'items-start justify-center pt-4',
         'adaptive': 'items-start justify-center p-4',
-        'header-aware': 'items-start justify-center pt-20', // Account for header height
+        'header-aware': 'items-start justify-center pt-24', // Account for header height + margin
       },
     },
     defaultVariants: {

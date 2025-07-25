@@ -4,7 +4,10 @@ import * as React from 'react'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { ExclamationTriangleIcon, TrashIcon, CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import ExclamationTriangleIcon from '@heroicons/react/24/outline/ExclamationTriangleIcon'
+import TrashIcon from '@heroicons/react/24/outline/TrashIcon'
+import CheckCircleIcon from '@heroicons/react/24/outline/CheckCircleIcon'
+import InformationCircleIcon from '@heroicons/react/24/outline/InformationCircleIcon'
 
 const AlertDialog = AlertDialogPrimitive.Root
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger

@@ -260,7 +260,7 @@ ${businessName}`
       onClose={onClose}
       title="Share Booking"
       size="3xl"
-      position="adaptive"
+      position="header-aware"
       variant="default"
       closeOnOverlayClick={true}
       closeOnEscape={true}
