@@ -63,6 +63,25 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
 
     // Build the right icon
     const renderRightIcon = () => {
+      // For password fields with toggle enabled, prioritize the toggle over validation states
+      if (type === 'password' && showPasswordToggle) {
+        return (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="focus:outline-none text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            tabIndex={-1}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        );
+      }
+      
       if (showValidating) {
         return <Loader2 className="h-4 w-4 animate-spin text-gray-400" />;
       }
@@ -73,23 +92,6 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
       
       if (showSuccessState) {
         return <Check className="h-4 w-4 text-green-500" />;
-      }
-      
-      if (type === 'password' && showPasswordToggle) {
-        return (
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="focus:outline-none text-gray-400 hover:text-gray-600"
-            tabIndex={-1}
-          >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </button>
-        );
       }
       
       return rightIcon;

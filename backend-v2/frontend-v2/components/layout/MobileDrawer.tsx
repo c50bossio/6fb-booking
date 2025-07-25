@@ -125,7 +125,7 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
   
   // Handle sign out
   const handleSignOut = async () => {
-    await fetch('/api/v1/auth/logout', { method: 'POST' })
+    await fetch('/api/v2/auth/logout', { method: 'POST' })
     localStorage.removeItem('token')
     localStorage.removeItem('refresh_token')
     router.push('/login')
@@ -146,14 +146,19 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
             } else {
               handleNavigate(item.href)
             }
+            // Add haptic feedback for mobile
+            if (navigator.vibrate && 'ontouchstart' in window) {
+              navigator.vibrate(1)
+            }
           }}
           className={`
-            w-full flex items-center justify-between px-4 py-3 rounded-xl
-            transition-all duration-200 ease-out
+            w-full flex items-center justify-between px-4 py-4 rounded-xl
+            transition-all duration-200 ease-out min-h-[48px] touch-manipulation
+            active:scale-95 transform-gpu will-change-transform
             ${level > 0 ? 'ml-4' : ''}
             ${active 
-              ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400' 
-              : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300'
+              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-500' 
+              : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:shadow-sm'
             }
           `}
         >
@@ -237,10 +242,16 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
             <div className="flex items-center justify-between mb-4">
               <Logo size="sm" href="#" />
               <button
-                onClick={onClose}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => {
+                  onClose()
+                  // Add haptic feedback for mobile
+                  if (navigator.vibrate && 'ontouchstart' in window) {
+                    navigator.vibrate(1)
+                  }
+                }}
+                className="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ease-out min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transform-gpu"
               >
-                <XMarkIcon className="w-5 h-5 text-gray-500" />
+                <XMarkIcon className="w-5 h-5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
               </button>
             </div>
             
@@ -291,14 +302,21 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
                 {quickActions.slice(0, 4).map((action) => (
                   <button
                     key={action.name}
-                    onClick={() => handleNavigate(action.href)}
+                    onClick={() => {
+                      handleNavigate(action.href)
+                      // Add haptic feedback for mobile
+                      if (navigator.vibrate && 'ontouchstart' in window) {
+                        navigator.vibrate(1)
+                      }
+                    }}
                     className={`
-                      p-3 rounded-lg text-center
+                      p-4 rounded-lg text-center min-h-[64px] touch-manipulation
+                      transform-gpu will-change-transform shadow-sm hover:shadow-md
                       ${action.color === 'primary' 
-                        ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400' 
+                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' 
                         : 'bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300'
                       }
-                      hover:scale-95 active:scale-90 transition-transform duration-200
+                      hover:scale-95 active:scale-90 transition-all duration-200 ease-out
                     `}
                   >
                     {action.icon && (
@@ -321,11 +339,19 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
           {/* Footer with sign out */}
           <div className="px-4 py-4 border-t border-gray-200/50 dark:border-gray-700/50 safe-area-inset-bottom">
             <button
-              onClick={handleSignOut}
+              onClick={() => {
+                handleSignOut()
+                // Add haptic feedback for mobile
+                if (navigator.vibrate && 'ontouchstart' in window) {
+                  navigator.vibrate(2) // Slightly longer vibration for important action
+                }
+              }}
               className={`
-                w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-xl
+                w-full flex items-center justify-center space-x-2 px-4 py-4 rounded-xl
                 bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300
-                hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors
+                hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ease-out
+                min-h-[52px] touch-manipulation active:scale-95 transform-gpu will-change-transform
+                shadow-sm hover:shadow-md
               `}
             >
               <ArrowRightOnRectangleIcon className="w-5 h-5" />

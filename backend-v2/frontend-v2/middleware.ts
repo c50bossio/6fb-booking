@@ -166,12 +166,33 @@ export function middleware(request: NextRequest) {
   // ==================== DEVELOPMENT DEBUGGING ====================
   
   if (process.env.NODE_ENV === 'development') {
+    // Enhanced debugging with role and token info
+    const userRoleCookie = request.cookies.get('user_role')?.value
+    const tokenCookie = request.cookies.get('token')?.value
+    
     // Add debug headers
     response.headers.set('X-Debug-Route', path)
     response.headers.set('X-Debug-Auth', hasToken ? 'true' : 'false')
+    response.headers.set('X-Debug-Role', userRoleCookie || 'none')
+    response.headers.set('X-Debug-Token-Present', tokenCookie ? 'true' : 'false')
     
-    // Log all requests for debugging
-    console.log(`📍 ${request.method} ${path} [${hasToken ? 'AUTH' : 'ANON'}]`)
+    // Enhanced logging for authentication debugging
+    if (path.includes('/calendar') || path.includes('/dashboard')) {
+      console.log(`🔍 ${request.method} ${path} [${hasToken ? 'AUTH' : 'ANON'}] Role: ${userRoleCookie || 'none'}`)
+      
+      if (tokenCookie) {
+        try {
+          // Quick JWT payload inspection for debugging
+          const payload = JSON.parse(Buffer.from(tokenCookie.split('.')[1], 'base64').toString())
+          console.log(`🔑 Token Info: sub=${payload.sub}, role=${payload.role || 'missing'}, exp=${payload.exp}`)
+        } catch (e) {
+          console.log(`⚠️ Token parsing failed: ${e}`)
+        }
+      }
+    } else {
+      // Normal logging for other routes
+      console.log(`📍 ${request.method} ${path} [${hasToken ? 'AUTH' : 'ANON'}]`)
+    }
   }
 
   return response

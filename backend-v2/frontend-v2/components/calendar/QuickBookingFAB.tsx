@@ -20,19 +20,27 @@ export default function QuickBookingFAB({ onBookingComplete }: QuickBookingFABPr
 
   return (
     <>
-      {/* FAB Button */}
+      {/* FAB Button - Enhanced with design system tokens */}
       <button
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transform transition-all duration-200 ${
-          isOpen 
-            ? 'bg-gray-700 text-white rotate-45 scale-110' 
-            : 'bg-primary-600 text-white hover:bg-primary-700 hover:scale-110'
-        }`}
+        className={`
+          fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg 
+          flex items-center justify-center transform transition-all duration-200
+          ${isOpen 
+            ? 'bg-gray-700 dark:bg-gray-600 text-white rotate-45 scale-110' 
+            : 'bg-teal-500 dark:bg-teal-600 text-white hover:bg-teal-600 dark:hover:bg-teal-700 hover:scale-110'
+          }
+          focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2
+          active:scale-95
+        `}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close quick booking menu" : "Open quick booking menu"}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
       >
         {isOpen ? (
-          <X className="w-6 h-6" />
+          <X className="w-6 h-6" aria-hidden="true" />
         ) : (
-          <Zap className="w-6 h-6" />
+          <Zap className="w-6 h-6" aria-hidden="true" />
         )}
       </button>
 
@@ -43,6 +51,7 @@ export default function QuickBookingFAB({ onBookingComplete }: QuickBookingFABPr
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
             onClick={() => setIsOpen(false)}
+            aria-hidden="true"
           />
 
           {/* Bottom Sheet */}
@@ -50,6 +59,10 @@ export default function QuickBookingFAB({ onBookingComplete }: QuickBookingFABPr
             className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 rounded-t-2xl shadow-xl max-h-[80vh] overflow-hidden transform transition-transform duration-300 ${
               isOpen ? 'translate-y-0' : 'translate-y-full'
             }`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quick-booking-title"
+            aria-describedby="quick-booking-description"
           >
             {/* Handle */}
             <div className="flex justify-center pt-2 pb-1">

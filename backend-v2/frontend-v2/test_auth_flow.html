@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Flow Test</title>
+</head>
+<body>
+    <h1>Authentication Flow Test</h1>
+    <div id="status"></div>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testDashboard()">Test Dashboard Access</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    
+    <script>
+        function updateStatus(message) {
+            document.getElementById('status').innerHTML += '<p>' + message + '</p>';
+        }
+        
+        async function testLogin() {
+            updateStatus('Testing login...');
+            try {
+                const response = await fetch('http://localhost:8000/api/v2/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@bookedbarber.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                updateStatus('Login response: ' + JSON.stringify(data, null, 2));
+                
+                if (data.access_token) {
+                    localStorage.setItem('token', data.access_token);
+                    updateStatus('Token stored in localStorage');
+                } else {
+                    updateStatus('No access_token in response');
+                }
+            } catch (error) {
+                updateStatus('Login error: ' + error.message);
+            }
+        }
+        
+        async function testDashboard() {
+            updateStatus('Testing dashboard access...');
+            const token = localStorage.getItem('token');
+            updateStatus('Token from localStorage: ' + (token ? 'EXISTS' : 'NOT FOUND'));
+            
+            if (!token) {
+                updateStatus('No token found, cannot test dashboard');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v2/auth/me', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                const data = await response.json();
+                updateStatus('Dashboard auth check: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                updateStatus('Dashboard test error: ' + error.message);
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            updateStatus('localStorage cleared');
+        }
+        
+        // Check current auth state
+        window.onload = function() {
+            const token = localStorage.getItem('token');
+            updateStatus('Page loaded. Token exists: ' + (token ? 'YES' : 'NO'));
+        }
+    </script>
+</body>
+</html>

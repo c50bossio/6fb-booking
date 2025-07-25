@@ -1,331 +1,452 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { api } from '@/lib/api-client-sentry'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
+import { AnalyticsLayout, AnalyticsSectionLayout } from '@/components/analytics/AnalyticsLayout'
+import { DateRangeSelector } from '@/components/analytics/shared/DateRangeSelector'
+import { AnalyticsCard } from '@/components/analytics/shared/AnalyticsCard'
 import { Button } from '@/components/ui/button'
-import { CalendarDays, TrendingUp, DollarSign, Users, ArrowUp, ArrowDown, Loader2 } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { 
+  SparklesIcon, 
+  CurrencyDollarIcon, 
+  ArrowTrendingUpIcon, 
+  ClockIcon,
+  UserGroupIcon,
+  ChartBarIcon,
+  ArrowUpIcon,
+  ArrowDownIcon
+} from '@heroicons/react/24/outline'
+import { useToast } from '@/hooks/useToast'
+// Use simple fetch for API calls to avoid module import issues
 
-interface UpsellAttempt {
-    id: string
-    service_name: string
-    original_service: string
-    status: 'pending' | 'converted' | 'declined' | 'expired'
-    created_at: string
-    conversion_date?: string
-    revenue_impact?: number
-    channel: 'email' | 'sms' | 'in_person'
+interface UpsellingSummary {
+  total_attempts: number
+  implemented_attempts: number
+  total_conversions: number
+  implementation_rate: number
+  conversion_rate: number
+  overall_success_rate: number
 }
 
-interface UpsellAnalytics {
-    total_attempts: number
+interface UpsellingRevenue {
+  potential_revenue: number
+  actual_revenue: number
+  revenue_realization_rate: number
+  avg_potential_revenue: number
+  avg_actual_revenue: number
+}
+
+interface UpsellingPerformance {
+  avg_time_to_conversion_hours: number
+  top_services: Array<{
+    service: string
     conversions: number
-    conversion_rate: number
-    total_revenue: number
-    average_revenue_per_conversion: number
-    top_converting_services: Array<{
-        service_name: string
-        conversions: number
-        revenue: number
-    }>
-    trends: Array<{
-        date: string
-        attempts: number
-        conversions: number
-        revenue: number
-    }>
+    revenue: number
+  }>
 }
 
-export default function UpsellAnalyticsPage() {
-    const { user } = useAuth()
-    const [analytics, setAnalytics] = useState<UpsellAnalytics | null>(null)
-    const [recentAttempts, setRecentAttempts] = useState<UpsellAttempt[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [dateRange, setDateRange] = useState('30d')
+interface UpsellingOverview {
+  date_range: {
+    start: string
+    end: string
+  }
+  summary: UpsellingSummary
+  revenue: UpsellingRevenue
+  performance: UpsellingPerformance
+  barber_id?: number
+  generated_at: string
+}
 
-    useEffect(() => {
-        if (user) {
-            loadAnalytics()
-        }
-    }, [user, dateRange])
+interface PerformanceData {
+  group_name: string
+  group_id: string
+  metrics: {
+    total_attempts: number
+    implemented_attempts: number
+    conversions: number
+    implementation_rate: number
+    conversion_rate: number
+    overall_success_rate: number
+  }
+  revenue: {
+    potential_revenue: number
+    actual_revenue: number
+    revenue_realization_rate: number
+    avg_potential: number
+    avg_actual: number
+  }
+}
 
-    const loadAnalytics = async () => {
-        try {
-            setLoading(true)
-            setError(null)
+export default function UpsellingAnalyticsPage() {
+  const [overviewData, setOverviewData] = useState<UpsellingOverview | null>(null)
+  const [performanceData, setPerformanceData] = useState<PerformanceData[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [dateRange, setDateRange] = useState({
+    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+    end: new Date()
+  })
+  const [groupBy, setGroupBy] = useState<'barber' | 'service' | 'channel'>('barber')
+  
+  const { error: showError } = useToast()
 
-            // Load analytics overview
-            const overviewResponse = await api.get('/api/v2/analytics/upselling/overview', {
-                params: { period: dateRange }
-            })
-            
-            setAnalytics(overviewResponse.data)
-
-            // Load recent attempts
-            const attemptsResponse = await api.get('/api/v2/analytics/upselling/attempts', {
-                params: { limit: 10 }
-            })
-            
-            setRecentAttempts(attemptsResponse.data.attempts || [])
-
-        } catch (err: any) {
-            console.error('Failed to load upselling analytics:', err)
-            setError(err.message || 'Failed to load analytics data')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount)
-    }
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+  const fetchUpsellingData = async () => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      const startDate = dateRange.start.toISOString().split('T')[0]
+      const endDate = dateRange.end.toISOString().split('T')[0]
+      
+      // Simple fetch wrapper with error handling
+      const apiGet = async (url: string) => {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add auth header if available
+            ...(typeof window !== 'undefined' && localStorage.getItem('token') ? {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            } : {})
+          }
         })
-    }
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'converted': return 'bg-green-100 text-green-800'
-            case 'pending': return 'bg-yellow-100 text-yellow-800'
-            case 'declined': return 'bg-red-100 text-red-800'
-            case 'expired': return 'bg-gray-100 text-gray-800'
-            default: return 'bg-gray-100 text-gray-800'
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
+        
+        return response.json()
+      }
+      
+      // Fetch overview data
+      const overviewData = await apiGet(`/api/v2/upselling/overview?start_date=${startDate}&end_date=${endDate}`)
+      setOverviewData(overviewData)
+      
+      // Fetch performance data
+      const performanceData = await apiGet(`/api/v2/upselling/performance?start_date=${startDate}&end_date=${endDate}&group_by=${groupBy}`)
+      setPerformanceData(performanceData.performance_data || [])
+      
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to load upselling analytics'
+      setError(errorMessage)
+      showError('Error loading analytics', {
+        description: errorMessage
+      })
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    if (loading) {
-        return (
-            <div className="container mx-auto p-6 max-w-7xl">
-                <div className="flex items-center justify-center min-h-[400px]">
-                    <div className="flex items-center space-x-2">
-                        <Loader2 className="h-6 w-6 animate-spin" />
-                        <span>Loading upselling analytics...</span>
-                    </div>
-                </div>
-            </div>
-        )
+  useEffect(() => {
+    fetchUpsellingData()
+  }, [dateRange, groupBy])
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount)
+  }
+
+  const formatPercentage = (value: number) => {
+    return `${value.toFixed(1)}%`
+  }
+
+  const getTrendIcon = (value: number, threshold: number = 50) => {
+    if (value >= threshold) {
+      return <ArrowUpIcon className="w-4 h-4 text-green-500" />
     }
+    return <ArrowDownIcon className="w-4 h-4 text-red-500" />
+  }
 
-    if (error) {
-        return (
-            <div className="container mx-auto p-6 max-w-7xl">
-                <Alert className="max-w-lg mx-auto">
-                    <AlertDescription>
-                        Failed to Load Analytics: {error}
-                    </AlertDescription>
-                </Alert>
-                <div className="text-center mt-4">
-                    <Button onClick={loadAnalytics} variant="outline">
-                        Try Again
-                    </Button>
-                </div>
-            </div>
-        )
+  const getTrendColor = (value: number, threshold: number = 50) => {
+    if (value >= threshold) {
+      return 'text-green-600'
     }
+    return 'text-red-600'
+  }
 
+  if (isLoading) {
     return (
-        <div className="container mx-auto p-6 max-w-7xl">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold">Upselling Analytics</h1>
-                    <p className="text-muted-foreground mt-2">
-                        Track conversion rates and revenue from upselling campaigns
-                    </p>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                    <select 
-                        value={dateRange} 
-                        onChange={(e) => setDateRange(e.target.value)}
-                        className="px-3 py-2 border rounded-lg"
-                    >
-                        <option value="7d">Last 7 days</option>
-                        <option value="30d">Last 30 days</option>
-                        <option value="90d">Last 3 months</option>
-                    </select>
-                </div>
-            </div>
-
-            {/* Key Metrics */}
-            {analytics && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Attempts</CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{analytics.total_attempts}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Upselling opportunities created
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {(analytics.conversion_rate * 100).toFixed(1)}%
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                {analytics.conversions} conversions
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {formatCurrency(analytics.total_revenue)}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                From upselling conversions
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Avg Revenue</CardTitle>
-                            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {formatCurrency(analytics.average_revenue_per_conversion)}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                Per conversion
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Top Converting Services */}
-                {analytics && analytics.top_converting_services.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Top Converting Services</CardTitle>
-                            <CardDescription>
-                                Services with highest conversion rates
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {analytics.top_converting_services.map((service, index) => (
-                                    <div key={index} className="flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium">{service.service_name}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {service.conversions} conversions
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-medium">
-                                                {formatCurrency(service.revenue)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Recent Attempts */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Recent Upsell Attempts</CardTitle>
-                        <CardDescription>
-                            Latest upselling activities and their status
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {recentAttempts.length === 0 ? (
-                                <p className="text-muted-foreground text-center py-4">
-                                    No recent upselling attempts
-                                </p>
-                            ) : (
-                                recentAttempts.map((attempt) => (
-                                    <div key={attempt.id} className="flex items-center justify-between border-b pb-3">
-                                        <div className="flex-1">
-                                            <p className="font-medium">{attempt.service_name}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                from {attempt.original_service}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {formatDate(attempt.created_at)} • {attempt.channel}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <Badge className={getStatusColor(attempt.status)}>
-                                                {attempt.status}
-                                            </Badge>
-                                            {attempt.revenue_impact && (
-                                                <span className="text-sm font-medium text-green-600">
-                                                    {formatCurrency(attempt.revenue_impact)}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Performance Trends */}
-            {analytics && analytics.trends.length > 0 && (
-                <Card className="mt-8">
-                    <CardHeader>
-                        <CardTitle>Performance Trends</CardTitle>
-                        <CardDescription>
-                            Daily performance over the selected period
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {analytics.trends.map((trend, index) => (
-                                <div key={index} className="flex items-center justify-between border-b pb-2">
-                                    <div>
-                                        <p className="font-medium">{formatDate(trend.date)}</p>
-                                    </div>
-                                    <div className="flex items-center space-x-6 text-sm">
-                                        <span>{trend.attempts} attempts</span>
-                                        <span className="text-green-600">{trend.conversions} conversions</span>
-                                        <span className="font-medium">{formatCurrency(trend.revenue)}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
+      <AnalyticsLayout title="Upselling Analytics" description="Revenue optimization and conversion tracking">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-20"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
+      </AnalyticsLayout>
     )
+  }
+
+  if (error || !overviewData) {
+    return (
+      <AnalyticsLayout title="Upselling Analytics" description="Revenue optimization and conversion tracking">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <SparklesIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-600 mb-2">
+              {error ? 'Failed to Load Analytics' : 'No Data Available'}
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              {error || 'No upselling data found for the selected period.'}
+            </p>
+            <Button onClick={fetchUpsellingData} variant="primary">
+              Retry
+            </Button>
+          </div>
+        </div>
+      </AnalyticsLayout>
+    )
+  }
+
+  return (
+    <AnalyticsLayout 
+      title="Upselling Analytics" 
+      description="Revenue optimization and conversion tracking based on Six Figure Barber methodology"
+    >
+      <AnalyticsSectionLayout
+        sectionTitle="Upselling Performance Dashboard"
+        sectionDescription="Track conversion rates, revenue impact, and optimization opportunities"
+        filters={
+          <div className="flex flex-col sm:flex-row gap-4">
+            <DateRangeSelector
+              startDate={dateRange.start}
+              endDate={dateRange.end}
+              onChange={(start, end) => setDateRange({ start, end })}
+            />
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">Group by:</label>
+              <select
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value as 'barber' | 'service' | 'channel')}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="barber">Barber</option>
+                <option value="service">Service</option>
+                <option value="channel">Channel</option>
+              </select>
+            </div>
+          </div>
+        }
+      >
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <AnalyticsCard
+            title="Total Attempts"
+            value={overviewData.summary.total_attempts.toString()}
+            icon={<SparklesIcon className="w-5 h-5" />}
+            trend={{
+              value: overviewData.summary.implementation_rate,
+              label: `${formatPercentage(overviewData.summary.implementation_rate)} implemented`
+            }}
+            color="blue"
+          />
+          
+          <AnalyticsCard
+            title="Conversion Rate"
+            value={formatPercentage(overviewData.summary.overall_success_rate)}
+            icon={<ArrowTrendingUpIcon className="w-5 h-5" />}
+            trend={{
+              value: overviewData.summary.conversion_rate,
+              label: `${formatPercentage(overviewData.summary.conversion_rate)} of implementations`
+            }}
+            color={overviewData.summary.overall_success_rate >= 25 ? "green" : "red"}
+          />
+          
+          <AnalyticsCard
+            title="Revenue Generated"
+            value={formatCurrency(overviewData.revenue.actual_revenue)}
+            icon={<CurrencyDollarIcon className="w-5 h-5" />}
+            trend={{
+              value: overviewData.revenue.revenue_realization_rate,
+              label: `${formatPercentage(overviewData.revenue.revenue_realization_rate)} of potential`
+            }}
+            color="green"
+          />
+          
+          <AnalyticsCard
+            title="Avg. Time to Convert"
+            value={`${overviewData.performance.avg_time_to_conversion_hours.toFixed(1)}h`}
+            icon={<ClockIcon className="w-5 h-5" />}
+            trend={{
+              value: overviewData.summary.total_conversions,
+              label: `${overviewData.summary.total_conversions} total conversions`
+            }}
+            color="purple"
+          />
+        </div>
+
+        {/* Detailed Revenue Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
+                Revenue Impact Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Potential Revenue</p>
+                  <p className="text-lg font-bold text-green-700">
+                    {formatCurrency(overviewData.revenue.potential_revenue)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-600">Avg. per Attempt</p>
+                  <p className="text-lg font-bold text-green-700">
+                    {formatCurrency(overviewData.revenue.avg_potential_revenue)}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Actual Revenue</p>
+                  <p className="text-lg font-bold text-blue-700">
+                    {formatCurrency(overviewData.revenue.actual_revenue)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-600">Avg. per Conversion</p>
+                  <p className="text-lg font-bold text-blue-700">
+                    {formatCurrency(overviewData.revenue.avg_actual_revenue)}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="border-t pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Revenue Realization Rate</span>
+                  <div className="flex items-center gap-1">
+                    {getTrendIcon(overviewData.revenue.revenue_realization_rate, 75)}
+                    <span className={`font-bold ${getTrendColor(overviewData.revenue.revenue_realization_rate, 75)}`}>
+                      {formatPercentage(overviewData.revenue.revenue_realization_rate)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ChartBarIcon className="w-5 h-5 text-purple-600" />
+                Top Performing Services
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {overviewData.performance.top_services.slice(0, 5).map((service, index) => (
+                  <div key={service.service} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                        index === 0 ? 'bg-yellow-500' : 
+                        index === 1 ? 'bg-gray-400' :
+                        index === 2 ? 'bg-orange-600' : 'bg-gray-300'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{service.service}</p>
+                        <p className="text-sm text-gray-500">{service.conversions} conversions</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">{formatCurrency(service.revenue)}</p>
+                    </div>
+                  </div>
+                ))}
+                
+                {overviewData.performance.top_services.length === 0 && (
+                  <div className="text-center py-6 text-gray-500">
+                    <SparklesIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                    <p>No conversions yet</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Performance Breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserGroupIcon className="w-5 h-5 text-blue-600" />
+              Performance by {groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-2 font-medium text-gray-600">{groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</th>
+                    <th className="text-center py-3 px-2 font-medium text-gray-600">Attempts</th>
+                    <th className="text-center py-3 px-2 font-medium text-gray-600">Conversions</th>
+                    <th className="text-center py-3 px-2 font-medium text-gray-600">Success Rate</th>
+                    <th className="text-center py-3 px-2 font-medium text-gray-600">Revenue</th>
+                    <th className="text-center py-3 px-2 font-medium text-gray-600">Avg. Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {performanceData.map((item, index) => (
+                    <tr key={item.group_id} className="border-b border-gray-100">
+                      <td className="py-3 px-2">
+                        <div className="font-medium text-gray-900">{item.group_name}</div>
+                      </td>
+                      <td className="text-center py-3 px-2">
+                        <div className="font-medium">{item.metrics.total_attempts}</div>
+                        <div className="text-xs text-gray-500">
+                          {item.metrics.implemented_attempts} implemented
+                        </div>
+                      </td>
+                      <td className="text-center py-3 px-2">
+                        <div className="font-medium">{item.metrics.conversions}</div>
+                      </td>
+                      <td className="text-center py-3 px-2">
+                        <div className={`font-medium flex items-center justify-center gap-1 ${getTrendColor(item.metrics.overall_success_rate, 25)}`}>
+                          {getTrendIcon(item.metrics.overall_success_rate, 25)}
+                          {formatPercentage(item.metrics.overall_success_rate)}
+                        </div>
+                      </td>
+                      <td className="text-center py-3 px-2">
+                        <div className="font-medium text-green-600">
+                          {formatCurrency(item.revenue.actual_revenue)}
+                        </div>
+                      </td>
+                      <td className="text-center py-3 px-2">
+                        <div className="font-medium">
+                          {formatCurrency(item.revenue.avg_actual)}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              {performanceData.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <SparklesIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <p>No performance data available</p>
+                  <p className="text-sm">Try adjusting your date range or filters</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </AnalyticsSectionLayout>
+    </AnalyticsLayout>
+  )
 }

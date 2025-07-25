@@ -19,6 +19,7 @@ import {
   LinkAnalytics,
   ServiceInfo,
   BarberInfo,
+  LocationInfo,
   BookingConstraints,
   ValidationError,
   VALIDATION_CONSTANTS,
@@ -39,6 +40,7 @@ export class BookingLinkGenerator {
   private urlShortener?: URLShortener
   private services: ServiceInfo[] = []
   private barbers: BarberInfo[] = []
+  private locations: LocationInfo[] = []
 
   constructor(
     baseUrl: string = DEFAULT_BOOKING_CONFIG.baseUrl,
@@ -68,6 +70,13 @@ export class BookingLinkGenerator {
    */
   setBarbers(barbers: BarberInfo[]): void {
     this.barbers = barbers
+  }
+
+  /**
+   * Set available locations for validation
+   */
+  setLocations(locations: LocationInfo[]): void {
+    this.locations = locations
   }
 
   /**
@@ -120,6 +129,35 @@ export class BookingLinkGenerator {
     this.baseUrl = originalBaseUrl
     
     return url
+  }
+
+  /**
+   * Generate a booking URL for enterprise with location hierarchy
+   */
+  generateEnterpriseURL(
+    organizationSlug: string,
+    locationSlug?: string,
+    barberSlug?: string,
+    params: BookingLinkParams = {},
+    options: URLGenerationOptions = {}
+  ): string {
+    // Build hierarchical parameters
+    const hierarchicalParams: BookingLinkParams = {
+      ...params,
+      organizationSlug,
+    }
+
+    // Add location if specified
+    if (locationSlug) {
+      hierarchicalParams.location = locationSlug
+    }
+
+    // Add barber if specified
+    if (barberSlug) {
+      hierarchicalParams.barber = barberSlug
+    }
+
+    return this.generateOrganizationURL(organizationSlug, hierarchicalParams, options)
   }
 
   /**

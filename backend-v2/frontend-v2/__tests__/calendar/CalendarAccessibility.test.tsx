@@ -2,14 +2,14 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe, toHaveNoViolations } from 'jest-axe'
-import AccessibleCalendar from '@/components/calendar/AccessibleCalendar'
+import { Calendar } from '@/components/ui/calendar'
 import { format, addDays } from 'date-fns'
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations)
 
 describe('Calendar Accessibility Tests', () => {
-  const mockOnDateSelect = jest.fn()
+  const mockOnSelect = jest.fn()
   const mockOnTimeSlotClick = jest.fn()
   const today = new Date()
   
@@ -20,10 +20,10 @@ describe('Calendar Accessibility Tests', () => {
   describe('WCAG Compliance', () => {
     it('should have no accessibility violations', async () => {
       const { container } = render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -33,10 +33,10 @@ describe('Calendar Accessibility Tests', () => {
 
     it('should have proper ARIA roles', () => {
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -47,10 +47,10 @@ describe('Calendar Accessibility Tests', () => {
 
     it('should have descriptive labels', () => {
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -65,10 +65,10 @@ describe('Calendar Accessibility Tests', () => {
       const user = userEvent.setup()
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -77,7 +77,7 @@ describe('Calendar Accessibility Tests', () => {
 
       // Navigate right
       await user.keyboard('{ArrowRight}')
-      expect(mockOnDateSelect).toHaveBeenCalledWith(
+      expect(mockOnSelect).toHaveBeenCalledWith(
         expect.objectContaining({
           getDate: expect.any(Function)
         })
@@ -85,17 +85,17 @@ describe('Calendar Accessibility Tests', () => {
 
       // Navigate down (next week)
       await user.keyboard('{ArrowDown}')
-      expect(mockOnDateSelect).toHaveBeenCalledTimes(2)
+      expect(mockOnSelect).toHaveBeenCalledTimes(2)
     })
 
     it('should navigate to month boundaries with Home/End', async () => {
       const user = userEvent.setup()
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -104,21 +104,21 @@ describe('Calendar Accessibility Tests', () => {
 
       // Go to start of week
       await user.keyboard('{Home}')
-      expect(mockOnDateSelect).toHaveBeenCalled()
+      expect(mockOnSelect).toHaveBeenCalled()
 
       // Go to end of week
       await user.keyboard('{End}')
-      expect(mockOnDateSelect).toHaveBeenCalledTimes(2)
+      expect(mockOnSelect).toHaveBeenCalledTimes(2)
     })
 
     it('should change months with PageUp/PageDown', async () => {
       const user = userEvent.setup()
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -145,11 +145,11 @@ describe('Calendar Accessibility Tests', () => {
       const user = userEvent.setup()
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
           onTimeSlotClick={mockOnTimeSlotClick}
-          bookingDates={[]}
         />
       )
 
@@ -171,10 +171,10 @@ describe('Calendar Accessibility Tests', () => {
       const user = userEvent.setup()
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -197,10 +197,10 @@ describe('Calendar Accessibility Tests', () => {
       const bookingDate = addDays(today, 3)
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[bookingDate, bookingDate]} // 2 appointments on same day
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -215,10 +215,10 @@ describe('Calendar Accessibility Tests', () => {
       const yesterday = addDays(today, -1)
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -236,10 +236,10 @@ describe('Calendar Accessibility Tests', () => {
       const user = userEvent.setup()
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -263,10 +263,10 @@ describe('Calendar Accessibility Tests', () => {
       const user = userEvent.setup()
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -288,10 +288,10 @@ describe('Calendar Accessibility Tests', () => {
   describe('Visual Accessibility', () => {
     it('should have sufficient color contrast indicators', () => {
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[addDays(today, 2)]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -316,10 +316,10 @@ describe('Calendar Accessibility Tests', () => {
       })
 
       const { container } = render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -332,10 +332,10 @@ describe('Calendar Accessibility Tests', () => {
   describe('Mobile Accessibility', () => {
     it('should have adequate touch targets', () => {
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 
@@ -357,10 +357,10 @@ describe('Calendar Accessibility Tests', () => {
       const maxDate = addDays(today, 30)
       
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
           minDate={minDate}
           maxDate={maxDate}
         />
@@ -382,10 +382,10 @@ describe('Calendar Accessibility Tests', () => {
   describe('Internationalization', () => {
     it('should use proper date formatting for screen readers', () => {
       render(
-        <AccessibleCalendar
-          selectedDate={today}
-          onDateSelect={mockOnDateSelect}
-          bookingDates={[]}
+        <Calendar
+          mode="single"
+          selected={today}
+          onSelect={mockOnSelect}
         />
       )
 

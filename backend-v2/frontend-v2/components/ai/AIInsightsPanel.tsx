@@ -73,7 +73,7 @@ export default function AIInsightsPanel({ userId, className = '', onInsightClick
       setLoading(true)
       
       // Load coaching insights
-      const coachingResponse = await fetch('/api/v1/ai-analytics/insights/coaching', {
+      const coachingResponse = await fetch('/api/v2/ai-analytics/insights/coaching', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
       
@@ -108,7 +108,7 @@ export default function AIInsightsPanel({ userId, className = '', onInsightClick
       
       for (const metric of metrics) {
         try {
-          const response = await fetch(`/api/v1/ai-analytics/benchmarks/${metric}`, {
+          const response = await fetch(`/api/v2/ai-analytics/benchmarks/${metric}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
           })
           
@@ -194,7 +194,7 @@ export default function AIInsightsPanel({ userId, className = '', onInsightClick
 
   const enableAIInsights = async () => {
     try {
-      const response = await fetch('/api/v1/ai-analytics/consent', {
+      const response = await fetch('/api/v2/ai-analytics/consent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

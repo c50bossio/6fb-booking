@@ -5,7 +5,7 @@
  * ensuring consistency with backend permission logic.
  */
 
-import React from 'react';
+import React from 'react'
 import { User, UnifiedUserRole } from './api'
 
 /**

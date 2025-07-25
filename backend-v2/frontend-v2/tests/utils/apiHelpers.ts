@@ -99,7 +99,7 @@ export class APIHelpers {
    * Authentication endpoints
    */
   async login(email: string, password: string): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/auth/login', {
+    return this.makeRequest('POST', '/api/v2/auth/login', {
       email,
       password,
     });
@@ -113,32 +113,32 @@ export class APIHelpers {
     phone?: string;
     role?: string;
   }): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/auth/register', userData);
+    return this.makeRequest('POST', '/api/v2/auth/register', userData);
   }
 
   async refreshToken(refreshToken: string): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/auth/refresh', {
+    return this.makeRequest('POST', '/api/v2/auth/refresh', {
       refresh_token: refreshToken,
     });
   }
 
   async logout(): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/auth/logout');
+    return this.makeRequest('POST', '/api/v2/auth/logout');
   }
 
   /**
    * User management endpoints
    */
   async getCurrentUser(): Promise<APIResponse> {
-    return this.makeRequest('GET', '/api/v1/users/me');
+    return this.makeRequest('GET', '/api/v2/users/me');
   }
 
   async updateProfile(userData: Record<string, any>): Promise<APIResponse> {
-    return this.makeRequest('PUT', '/api/v1/users/me', userData);
+    return this.makeRequest('PUT', '/api/v2/users/me', userData);
   }
 
   async changePassword(oldPassword: string, newPassword: string): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/users/change-password', {
+    return this.makeRequest('POST', '/api/v2/users/change-password', {
       old_password: oldPassword,
       new_password: newPassword,
     });
@@ -151,7 +151,7 @@ export class APIHelpers {
     const params = new URLSearchParams({ date });
     if (serviceId) params.append('service_id', serviceId);
     
-    return this.makeRequest('GET', `/api/v1/appointments/slots?${params}`);
+    return this.makeRequest('GET', `/api/v2/appointments/slots?${params}`);
   }
 
   async createBooking(bookingData: {
@@ -166,7 +166,7 @@ export class APIHelpers {
     price?: number;
     notes?: string;
   }): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/appointments', bookingData);
+    return this.makeRequest('POST', '/api/v2/appointments', bookingData);
   }
 
   async getBookings(params?: {
@@ -185,15 +185,15 @@ export class APIHelpers {
       });
     }
     
-    return this.makeRequest('GET', `/api/v1/appointments?${queryParams}`);
+    return this.makeRequest('GET', `/api/v2/appointments?${queryParams}`);
   }
 
   async updateBooking(bookingId: string, updateData: Record<string, any>): Promise<APIResponse> {
-    return this.makeRequest('PUT', `/api/v1/appointments/${bookingId}`, updateData);
+    return this.makeRequest('PUT', `/api/v2/appointments/${bookingId}`, updateData);
   }
 
   async cancelBooking(bookingId: string, reason?: string): Promise<APIResponse> {
-    return this.makeRequest('POST', `/api/v1/appointments/${bookingId}/cancel`, {
+    return this.makeRequest('POST', `/api/v2/appointments/${bookingId}/cancel`, {
       reason,
     });
   }
@@ -202,25 +202,25 @@ export class APIHelpers {
    * Payment endpoints
    */
   async createPaymentIntent(amount: number, bookingId: string): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/payments/create-intent', {
+    return this.makeRequest('POST', '/api/v2/payments/create-intent', {
       amount,
       booking_id: bookingId,
     });
   }
 
   async confirmPayment(paymentIntentId: string): Promise<APIResponse> {
-    return this.makeRequest('POST', `/api/v1/payments/${paymentIntentId}/confirm`);
+    return this.makeRequest('POST', `/api/v2/payments/${paymentIntentId}/confirm`);
   }
 
   async getPaymentHistory(): Promise<APIResponse> {
-    return this.makeRequest('GET', '/api/v1/payments/history');
+    return this.makeRequest('GET', '/api/v2/payments/history');
   }
 
   /**
    * Service endpoints
    */
   async getServices(): Promise<APIResponse> {
-    return this.makeRequest('GET', '/api/v1/services');
+    return this.makeRequest('GET', '/api/v2/services');
   }
 
   async createService(serviceData: {
@@ -230,7 +230,7 @@ export class APIHelpers {
     price: number;
     category?: string;
   }): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/services', serviceData);
+    return this.makeRequest('POST', '/api/v2/services', serviceData);
   }
 
   /**
@@ -250,7 +250,7 @@ export class APIHelpers {
       });
     }
     
-    return this.makeRequest('GET', `/api/v1/analytics?${queryParams}`);
+    return this.makeRequest('GET', `/api/v2/analytics?${queryParams}`);
   }
 
   /**
@@ -271,15 +271,15 @@ export class APIHelpers {
       });
     }
     
-    return this.makeRequest('GET', `/api/v1/admin/users?${queryParams}`);
+    return this.makeRequest('GET', `/api/v2/admin/users?${queryParams}`);
   }
 
   async updateUserRole(userId: string, role: string): Promise<APIResponse> {
-    return this.makeRequest('PUT', `/api/v1/admin/users/${userId}/role`, { role });
+    return this.makeRequest('PUT', `/api/v2/admin/users/${userId}/role`, { role });
   }
 
   async deactivateUser(userId: string): Promise<APIResponse> {
-    return this.makeRequest('POST', `/api/v1/admin/users/${userId}/deactivate`);
+    return this.makeRequest('POST', `/api/v2/admin/users/${userId}/deactivate`);
   }
 
   /**
@@ -293,15 +293,15 @@ export class APIHelpers {
     role: string;
     phone?: string;
   }): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/test/users', userData);
+    return this.makeRequest('POST', '/api/v2/test/users', userData);
   }
 
   async createTestBooking(bookingData: Record<string, any>): Promise<APIResponse> {
-    return this.makeRequest('POST', '/api/v1/test/bookings', bookingData);
+    return this.makeRequest('POST', '/api/v2/test/bookings', bookingData);
   }
 
   async cleanupTestData(): Promise<APIResponse> {
-    return this.makeRequest('DELETE', '/api/v1/test/cleanup');
+    return this.makeRequest('DELETE', '/api/v2/test/cleanup');
   }
 
   /**

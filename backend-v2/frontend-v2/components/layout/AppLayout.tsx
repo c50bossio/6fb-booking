@@ -41,7 +41,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     setMounted(true)
   }, [])
 
-  // Simplified auth - only load user once, no complex route checking
+  // Enhanced auth with role synchronization and better debugging
   useEffect(() => {
     const loadUser = async () => {
       const routeIsProtected = isProtectedRoute(pathname)
@@ -51,12 +51,44 @@ export function AppLayout({ children }: AppLayoutProps) {
         return
       }
 
+      // Check if we have authentication data in storage
+      const hasToken = localStorage.getItem('token')
+      const hasUserRole = localStorage.getItem('user_role')
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 AppLayout Auth Check:', {
+          pathname,
+          hasToken: !!hasToken,
+          hasUserRole: !!hasUserRole,
+          isProtected: routeIsProtected
+        })
+      }
+
       try {
         const userData = await getProfile()
         setUser(userData)
         setError(null)
+        
+        // Sync user role with localStorage if missing
+        if (userData && !hasUserRole) {
+          const userRole = userData.role || 'barber'
+          localStorage.setItem('user_role', userRole)
+          document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+          console.log('🔄 AppLayout: Synced user role to storage:', userRole)
+        }
+        
       } catch (err: any) {
-        console.log('AppLayout: Auth failed for protected route:', pathname)
+        console.log('AppLayout: Auth failed for protected route:', pathname, err.message)
+        
+        // Enhanced error logging for debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🚫 Auth Error Details:', {
+            status: err.status,
+            message: err.message,
+            hasToken: !!hasToken,
+            tokenPreview: hasToken ? hasToken.substring(0, 10) + '...' : 'none'
+          })
+        }
         
         // Don't provide fake user data - leave as null for proper state management
         setUser(null)

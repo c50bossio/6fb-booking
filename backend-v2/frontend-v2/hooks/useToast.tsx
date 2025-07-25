@@ -35,7 +35,7 @@ const TOAST_ICONS = {
   info: <InformationCircleIcon className="w-5 h-5 text-blue-600" />
 }
 
-// Custom toast component
+// Enhanced custom toast component with design system
 function CustomToast({
   type,
   title,
@@ -48,10 +48,10 @@ function CustomToast({
   action?: ToastOptions['action']
 }) {
   const bgColors = {
-    success: 'bg-green-50 dark:bg-green-900/20',
-    error: 'bg-red-50 dark:bg-red-900/20',
-    warning: 'bg-yellow-50 dark:bg-yellow-900/20',
-    info: 'bg-blue-50 dark:bg-blue-900/20'
+    success: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+    error: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+    warning: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
+    info: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
   }
   
   const textColors = {
@@ -62,23 +62,33 @@ function CustomToast({
   }
   
   return (
-    <div className={`flex items-start gap-3 p-4 rounded-lg ${bgColors[type]}`}>
+    <div className={`
+      flex items-start gap-3 p-4 rounded-lg border shadow-sm backdrop-blur-sm
+      transition-all duration-200 ease-out hover:shadow-md transform-gpu
+      ${bgColors[type]}
+    `}>
       <div className="flex-shrink-0 mt-0.5">
-        {TOAST_ICONS[type]}
+        <div className="animate-in fade-in duration-200">
+          {TOAST_ICONS[type]}
+        </div>
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium ${textColors[type]}`}>
+        <p className={`text-sm font-medium ${textColors[type]} animate-in slide-in-from-left duration-300`}>
           {title}
         </p>
         {description && (
-          <p className={`mt-1 text-sm ${textColors[type]} opacity-90`}>
+          <p className={`mt-1 text-sm ${textColors[type]} opacity-90 animate-in slide-in-from-left duration-300 delay-75`}>
             {description}
           </p>
         )}
         {action && (
           <button
             onClick={action.onClick}
-            className={`mt-2 text-sm font-medium ${textColors[type]} hover:underline`}
+            className={`
+              mt-2 text-sm font-medium ${textColors[type]} 
+              hover:underline transition-all duration-200 ease-out
+              hover:scale-105 active:scale-95 transform-gpu
+            `}
           >
             {action.label}
           </button>

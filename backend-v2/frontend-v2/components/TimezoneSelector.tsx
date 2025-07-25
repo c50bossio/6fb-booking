@@ -64,7 +64,7 @@ export default function TimezoneSelector({
       setLoading(true)
       setError(null)
       try {
-        const response = await fetch('/api/v1/users/timezone/allowed')
+        const response = await fetch('/api/v2/users/timezone/allowed')
         if (response.ok) {
           const data = await response.json()
           if (data.allowed_timezones && data.allowed_timezones.length > 0) {
@@ -72,7 +72,7 @@ export default function TimezoneSelector({
           }
         } else {
           // Try common timezones endpoint as fallback
-          const commonResponse = await fetch('/api/v1/timezones/common')
+          const commonResponse = await fetch('/api/v2/timezones/common')
           if (commonResponse.ok) {
             const commonData = await commonResponse.json()
             if (commonData.timezones) {
@@ -164,7 +164,7 @@ export default function TimezoneSelector({
       const detected = detectBrowserTimezone()
       if (detected) {
         // Validate with backend
-        const response = await fetch('/api/v1/users/me/timezone/detect', {
+        const response = await fetch('/api/v2/users/me/timezone/detect', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

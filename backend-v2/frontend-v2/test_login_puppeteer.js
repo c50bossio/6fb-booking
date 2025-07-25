@@ -41,7 +41,7 @@ async function testLogin() {
         
         // Monitor API requests
         page.on('request', request => {
-            if (request.url().includes('/api/v1/auth/login')) {
+            if (request.url().includes('/api/v2/auth/login')) {
                 console.log('\n🌐 Login API Request:');
                 console.log('   Method:', request.method());
                 console.log('   URL:', request.url());
@@ -61,7 +61,7 @@ async function testLogin() {
         });
         
         page.on('response', response => {
-            if (response.url().includes('/api/v1/auth/login')) {
+            if (response.url().includes('/api/v2/auth/login')) {
                 console.log('\n🌐 Login API Response:');
                 console.log('   Status:', response.status());
                 console.log('   URL:', response.url());

@@ -115,6 +115,8 @@ BookedBarber V2 is a comprehensive business management platform designed specifi
 - **Testing**: Jest and React Testing Library
 
 ### Infrastructure & DevOps
+- **Containerization**: Docker & Docker Compose for development and deployment
+- **Orchestration**: Kubernetes with Helm charts for production scaling
 - **Hosting**: Render (primary), Railway, Vercel compatible
 - **Monitoring**: Sentry for error tracking and performance monitoring
 - **Communications**: SendGrid (email), Twilio (SMS)
@@ -146,12 +148,41 @@ BookedBarber V2 is a comprehensive business management platform designed specifi
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.9+
-- Node.js 18+
-- PostgreSQL 13+ (or SQLite for development)
+- **Docker** & **Docker Compose** (recommended - simplest setup)
 - Git
+- *Alternative*: Python 3.9+, Node.js 18+, PostgreSQL 13+ (for manual setup)
 
-### Installation
+### 🐳 Docker Setup (Recommended)
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/bookedbarber-v2.git
+   cd bookedbarber-v2/backend-v2
+   ```
+
+2. **Quick Development Setup**
+   ```bash
+   # Start with SQLite (fastest for development)
+   ./docker-dev-start.sh
+   ```
+
+3. **Full Production Setup**
+   ```bash
+   # Start with PostgreSQL, Redis, and Nginx
+   ./docker-start.sh
+   ```
+
+4. **Access the application**
+   - **Frontend**: http://localhost:3000
+   - **Backend API**: http://localhost:8000
+   - **API Documentation**: http://localhost:8000/docs
+   - **Database**: postgresql://localhost:5432 (production setup)
+   - **Redis Cache**: redis://localhost:6379 (production setup)
+
+### 📋 Manual Setup (Alternative)
+
+<details>
+<summary>Click to expand manual installation steps</summary>
 
 1. **Clone the repository**
    ```bash
@@ -201,6 +232,12 @@ BookedBarber V2 is a comprehensive business management platform designed specifi
    - API Docs: http://localhost:8000/docs
    - Staging Frontend: http://localhost:3001 (when running staging environment)
    - Staging Backend: http://localhost:8001 (when running staging environment)
+
+</details>
+
+### 🧪 Test Credentials (Docker Setup)
+- **Email**: `admin@bookedbarber.com`
+- **Password**: `admin123`
 
 ### Testing & Quality Assurance
 

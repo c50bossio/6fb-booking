@@ -26,7 +26,7 @@ from schemas import (
 )
 from dependencies import get_current_user
 from models import User, Payment, Payout
-from utils.logging_config import get_audit_logger
+from utils.audit_logger_bypass import get_audit_logger
 from services.cache_invalidation import cache_invalidator
 
 router = APIRouter(

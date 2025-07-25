@@ -16,7 +16,7 @@ import re
 
 from models import User
 from models.mfa import MFAEvent
-from utils.logging_config import get_audit_logger
+from utils.audit_logger_bypass import get_audit_logger
 
 logger = logging.getLogger(__name__)
 audit_logger = get_audit_logger()

@@ -313,9 +313,9 @@ describe('RequestBatcher', () => {
       })
 
       const requests = [
-        { endpoint: '/api/v1/bookings/', priority: 8 },
-        { endpoint: '/api/v1/dashboard/metrics', priority: 6 },
-        { endpoint: '/api/v1/analytics/dashboard/1', priority: 5 }
+        { endpoint: '/api/v2/bookings/', priority: 8 },
+        { endpoint: '/api/v2/dashboard/metrics', priority: 6 },
+        { endpoint: '/api/v2/analytics/dashboard/1', priority: 5 }
       ]
 
       const resultsPromise = batchDashboardData(requests)
@@ -337,8 +337,8 @@ describe('RequestBatcher', () => {
       })
 
       const requests = [
-        { endpoint: '/api/v1/appointments?date=2024-01-01', priority: 9 },
-        { endpoint: '/api/v1/appointments?date=2024-01-02', priority: 7 }
+        { endpoint: '/api/v2/appointments?date=2024-01-01', priority: 9 },
+        { endpoint: '/api/v2/appointments?date=2024-01-02', priority: 7 }
       ]
 
       const resultsPromise = batchCalendarData(requests)

@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Clock, User, Trash2, Edit, RotateCcw } from 'lucide-react'
+import { apiRequest } from '@/lib/api-client-sentry'
 import { toast } from '@/hooks/use-toast'
 
 interface Appointment {
@@ -38,7 +39,7 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
         description: `Deleted appointment for ${appointment.client_name}`
       })
 
-      await fetch(`/api/v1/appointments/${appointment.id}`, {
+      await apiRequest(`/api/v2/appointments/${appointment.id}`, {
         method: 'DELETE'
       })
 
@@ -83,15 +84,12 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
         description: `Rescheduled ${appointment.client_name} to ${newTime.toLocaleTimeString()}`
       })
 
-      await fetch(`/api/v1/appointments/${appointment.id}`, {
+      await apiRequest(`/api/v2/appointments/${appointment.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        data: {
           appointment_time: newTime.toISOString(),
           end_time: newEndTime.toISOString()
-        })
+        }
       })
 
       toast({
@@ -119,12 +117,9 @@ function AppointmentCard({ appointment, onRefresh }: { appointment: Appointment,
         description: `Cancelled appointment for ${appointment.client_name}`
       })
 
-      await fetch(`/api/v1/appointments/${appointment.id}/status`, {
+      await apiRequest(`/api/v2/appointments/${appointment.id}/status`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'cancelled' })
+        data: { status: 'cancelled' }
       })
 
       toast({
@@ -217,11 +212,10 @@ export default function AppointmentManagementWithUndo() {
 
   const fetchAppointments = async () => {
     try {
-      const response = await fetch('/api/v1/appointments', {
+      const response = await apiRequest('/api/v2/appointments', {
         method: 'GET'
       })
-      const data = await response.json()
-      setAppointments(data.data || [])
+      setAppointments(response.data || [])
     } catch (error) {
       toast({
         title: 'Error',

@@ -52,6 +52,136 @@ pytest --html=test-report.html --self-contained-html
 - **Integration Tests**: Required for all API endpoints
 - **E2E Tests**: Required for complete user flows
 
+## 🚀 GITHUB CODESPACES DEVELOPMENT (RECOMMENDED)
+
+### 🎯 **ELIMINATES ALL SERVER CRASHES AND PORT CONFLICTS**
+
+**GitHub Codespaces is the recommended development environment for BookedBarber V2.** It completely eliminates the documented issues with server conflicts, port problems, and Docker management complexity.
+
+### Quick Start with Codespaces
+
+1. **Create Codespace**: Go to your repository → "Code" → "Codespaces" → "Create codespace"
+2. **Automatic Setup**: The devcontainer configuration automatically installs all dependencies (~3-5 minutes)
+3. **Start Development**: Run `./docker-dev-start.sh` or start services manually
+4. **Access URLs**: Use auto-forwarded ports (e.g., `https://your-codespace-3000.app.github.dev`)
+
+### Benefits Over Local Development
+
+| Issue | Local Development | GitHub Codespaces |
+|-------|------------------|------------------|
+| **Server Conflicts** | ❌ Constant `EADDRINUSE` errors | ✅ Isolated cloud environment |
+| **Multiple Next.js Processes** | ❌ Manual process management | ✅ Container isolation |
+| **Docker Issues** | ❌ Local Docker conflicts | ✅ Professional Docker management |
+| **Build Cache Corruption** | ❌ Manual cache cleanup | ✅ Persistent cloud storage |
+| **Port Management** | ❌ Manual port forwarding | ✅ Automatic port forwarding |
+| **Team Consistency** | ❌ "Works on my machine" | ✅ Identical environments |
+| **Onboarding Time** | ❌ Hours of setup | ✅ 3-5 minutes |
+
+### Codespaces Development Commands
+
+```bash
+# All your existing commands work identically in Codespaces:
+
+# Docker development (recommended)
+./docker-dev-start.sh
+
+# Manual server startup
+cd backend-v2
+uvicorn main:app --reload &
+cd frontend-v2
+npm run dev &
+
+# Testing (same as local)
+pytest --cov=. --cov-report=term-missing
+npm test
+
+# All development workflows remain unchanged
+```
+
+### Environment Configuration
+
+**Setup Process:**
+1. **Repository Secrets**: Add API keys to GitHub → Settings → Codespaces → Secrets
+2. **Template Available**: Use `.devcontainer/codespaces.env.template` as a guide
+3. **Automatic CORS**: Codespaces domains are pre-configured in CORS settings
+
+**Essential Secrets to Configure:**
+```bash
+JWT_SECRET_KEY          # Generate with: python -c 'import secrets; print(secrets.token_urlsafe(64))'
+STRIPE_SECRET_KEY       # From Stripe Dashboard (test keys)
+GOOGLE_CLIENT_SECRET    # From Google Cloud Console
+SENDGRID_API_KEY        # From SendGrid Dashboard (optional)
+TWILIO_AUTH_TOKEN      # From Twilio Console (optional)
+```
+
+### Validation & Testing
+
+Run these commands in your Codespace to validate the setup:
+
+```bash
+# Validate Codespaces environment
+./.devcontainer/validate-codespaces.sh
+
+# Test database persistence
+./.devcontainer/test-database-persistence.py
+
+# Test external integrations
+./.devcontainer/test-integrations.py
+```
+
+### Webhook Configuration for Codespaces
+
+When using external services, update webhook URLs to point to your Codespace:
+
+```bash
+# Your Codespace URLs (auto-generated)
+Frontend: https://your-codespace-name-3000.app.github.dev
+Backend:  https://your-codespace-name-8000.app.github.dev
+
+# Update these webhook endpoints:
+Stripe:   https://your-codespace-name-8000.app.github.dev/api/v2/webhooks/stripe
+Twilio:   https://your-codespace-name-8000.app.github.dev/api/v2/webhooks/twilio
+Google:   https://your-codespace-name-8000.app.github.dev/api/v2/webhooks/google-calendar
+```
+
+### Cost & Performance
+
+| Machine Type | Specs | Cost/Hour | Monthly Cost* | Recommended For |
+|-------------|-------|-----------|---------------|-----------------|
+| 2-core | 8GB RAM | $0.18 | ~$36 | Light development |
+| **4-core** | **16GB RAM** | **$0.36** | **~$72** | **Full-stack development (recommended)** |
+| 8-core | 32GB RAM | $0.72 | ~$144 | Heavy testing/building |
+
+*Based on ~200 hours/month usage
+
+### Migration from Local Development
+
+**If you're currently using local development:**
+
+1. **Commit your work**: `git add . && git commit -m "Pre-Codespaces checkpoint"`
+2. **Create Codespace**: Repository → Code → Codespaces → Create
+3. **Configure secrets**: Add your API keys to GitHub Codespaces secrets
+4. **Test environment**: Run validation scripts to ensure everything works
+5. **Continue development**: All your existing workflows work identically
+
+**Recovery Process (if needed):**
+- Your local environment remains unchanged
+- You can switch back to local development at any time
+- No changes to your codebase structure or workflow
+
+### 🎯 **Result: Zero Development Environment Issues**
+
+With GitHub Codespaces, you get:
+- ✅ **No more server crashes** - Professional cloud infrastructure
+- ✅ **No more port conflicts** - Isolated container environments  
+- ✅ **No more Docker issues** - Managed Docker infrastructure
+- ✅ **No more manual server management** - Automated environment provisioning
+- ✅ **Consistent team environments** - Identical setup for all developers
+- ✅ **Instant onboarding** - New developers productive in minutes
+- ✅ **Professional reliability** - 99.9% uptime SLA
+
+**For detailed setup instructions, see: `.devcontainer/CODESPACES_SETUP_GUIDE.md`**
+
 ## 🛡️ V2 Safety Protocols
 
 ### Before ANY Code Changes:
@@ -464,6 +594,86 @@ pytest --cov=[module] --cov-report=term-missing
 python utils/registry_manager.py add [feature] [details]
 ```
 
+## 🐳 MANDATORY DOCKER DEVELOPMENT WORKFLOW
+
+**CRITICAL**: BookedBarber V2 development MUST use Docker containers. Local development mode is prohibited.
+
+### 🚨 DOCKER-FIRST POLICY (MANDATORY)
+
+**ALWAYS use Docker containers for development. NEVER run local uvicorn/npm servers.**
+
+#### Required Docker Commands:
+```bash
+# 1. ALWAYS start development with Docker
+docker-compose up -d
+
+# 2. Check containers are running
+docker ps
+
+# 3. View logs
+docker-compose logs backend     # Backend logs
+docker-compose logs frontend   # Frontend logs
+docker-compose logs --follow   # Live log streaming
+
+# 4. Development workflow
+docker-compose exec backend bash # Shell into backend container
+docker-compose exec frontend bash # Shell into frontend container
+
+# 5. Testing within Docker
+docker-compose exec backend pytest                    # Run backend tests
+docker-compose exec frontend npm test                 # Run frontend tests
+docker-compose exec backend python utils/registry_manager.py check [feature]
+
+# 6. Stop services
+docker-compose down             # Stop and remove containers
+
+# 7. Rebuild if needed
+docker-compose up --build      # Rebuild and start containers
+```
+
+#### Forbidden Commands (DO NOT USE):
+```bash
+# ❌ NEVER use these local development commands
+uvicorn main:app --reload
+npm run dev
+python main.py
+./start-dev-clean.sh
+
+# ❌ NEVER start servers on localhost directly
+```
+
+#### Docker Service URLs:
+- **Frontend**: http://localhost:3000 (via Docker container)
+- **Backend**: http://localhost:8000 (via Docker container)
+- **Database**: PostgreSQL in Docker container
+- **Redis**: Redis in Docker container
+
+#### Quick Docker Health Check:
+```bash
+# Verify all containers are running
+docker-compose ps
+
+# Should show:
+# - backend container (port 8000)
+# - frontend container (port 3000)
+# - database container (PostgreSQL)
+# - redis container (Redis)
+```
+
+#### Docker-Specific Debugging:
+```bash
+# Container logs
+docker-compose logs [service-name]
+
+# Execute commands in containers
+docker-compose exec backend curl http://localhost:8000/health
+docker-compose exec frontend npm run build
+
+# Restart specific service
+docker-compose restart backend
+docker-compose restart frontend
+```
+
 ### Emergency Recovery:
 ```bash
 # If tests are failing after changes
@@ -471,6 +681,11 @@ git stash                        # Save current changes
 pytest                           # Verify tests pass on clean state
 git stash pop                    # Restore changes
 pytest --lf                      # Run last failed tests only
+
+# Docker-specific recovery
+docker-compose down              # Stop all containers
+docker-compose up --build       # Fresh rebuild
+docker system prune             # Clean up Docker system (if needed)
 ```
 
 ## 🚀 Marketing Integration Guidelines (2025-07-02)

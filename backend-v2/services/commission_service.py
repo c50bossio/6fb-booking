@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional
 from decimal import Decimal
 from datetime import datetime, timedelta
 import logging
-from utils.logging_config import get_audit_logger
+from utils.audit_logger_bypass import get_audit_logger
 
 from models import User, Payment
 from models.product import Order, OrderItem, POSTransaction

@@ -51,6 +51,7 @@ export default function IntegrationsPage() {
   const groupedIntegrations = React.useMemo(() => {
     const groups: Record<string, typeof INTEGRATION_METADATA[IntegrationType.GOOGLE_CALENDAR][]> = {
       'Calendar & Scheduling': [],
+      'Marketing & Reviews': [],
       'Payments': [],
       'Communications': [],
       'Data Import': [],
@@ -63,6 +64,9 @@ export default function IntegrationsPage() {
         case IntegrationType.ACUITY:
         case IntegrationType.BOOKSY:
           groups['Calendar & Scheduling'].push(metadata)
+          break
+        case IntegrationType.GOOGLE_MY_BUSINESS:
+          groups['Marketing & Reviews'].push(metadata)
           break
         case IntegrationType.STRIPE:
         case IntegrationType.SQUARE:
@@ -228,9 +232,10 @@ export default function IntegrationsPage() {
 
       {/* Integrations Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} defaultValue="all" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
           <TabsTrigger value="all">All Integrations</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
+          <TabsTrigger value="marketing">Marketing</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="communications">Communications</TabsTrigger>
           <TabsTrigger value="other">Other</TabsTrigger>
@@ -278,6 +283,28 @@ export default function IntegrationsPage() {
         <TabsContent value="calendar" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {groupedIntegrations['Calendar & Scheduling'].map((metadata) => (
+              <IntegrationCard
+                key={metadata.type}
+                integration={connectedIntegrationsMap[metadata.type]}
+                metadata={metadata}
+                onConnect={() => handleConnect(metadata.type)}
+                onDisconnect={handleDisconnect}
+                onUpdate={handleUpdate}
+                onHealthCheck={handleHealthCheck}
+              />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="marketing" className="space-y-6">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-2">Marketing & Business Presence</h2>
+            <p className="text-muted-foreground text-sm">
+              Manage your online presence, reviews, and marketing integrations to grow your business and build your brand.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {groupedIntegrations['Marketing & Reviews'].map((metadata) => (
               <IntegrationCard
                 key={metadata.type}
                 integration={connectedIntegrationsMap[metadata.type]}

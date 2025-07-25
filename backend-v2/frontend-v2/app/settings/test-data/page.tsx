@@ -91,7 +91,7 @@ export default function TestDataPage() {
 
   const fetchTestDataStatus = async () => {
     try {
-      const data = await fetchAPI('/api/v1/test-data/status')
+      const data = await fetchAPI('/api/v2/test-data/status')
       setStatus(data)
     } catch (error) {
       console.error('Failed to fetch test data status:', error)
@@ -109,7 +109,7 @@ export default function TestDataPage() {
     setActionLoading(true)
     try {
       const requestBody = useCustomization ? { customization } : {}
-      await fetchAPI('/api/v1/test-data/create', {
+      await fetchAPI('/api/v2/test-data/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,7 +142,7 @@ export default function TestDataPage() {
 
     setActionLoading(true)
     try {
-      await fetchAPI('/api/v1/test-data', {
+      await fetchAPI('/api/v2/test-data', {
         method: 'DELETE',
       })
       toast({
@@ -166,7 +166,7 @@ export default function TestDataPage() {
     setActionLoading(true)
     try {
       const requestBody = useCustomization ? { customization } : {}
-      await fetchAPI('/api/v1/test-data/refresh', {
+      await fetchAPI('/api/v2/test-data/refresh', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

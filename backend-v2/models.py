@@ -119,6 +119,11 @@ class User(Base):
     # Google Calendar integration relationship
     google_calendar_settings = relationship("GoogleCalendarSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
     
+    # Upselling relationships
+    upsell_attempts_as_barber = relationship("UpsellAttempt", foreign_keys="UpsellAttempt.barber_id", back_populates="barber")
+    upsell_attempts_as_client = relationship("UpsellAttempt", foreign_keys="UpsellAttempt.client_id", back_populates="client")
+    upsell_analytics = relationship("UpsellAnalytics", back_populates="barber")
+    
     # Organization relationships
     user_organizations = relationship("UserOrganization", back_populates="user", cascade="all, delete-orphan")
     
@@ -328,6 +333,8 @@ class Appointment(Base):
     payment = relationship("Payment", back_populates="appointment", uselist=False)
     recurring_pattern = relationship("RecurringAppointmentPattern", backref="appointments")
     recurring_series = relationship("RecurringAppointmentSeries", back_populates="appointments")
+    # Upselling tracking
+    upsell_conversions = relationship("UpsellConversion", back_populates="appointment")
 
 class Payment(Base):
     __tablename__ = "payments"

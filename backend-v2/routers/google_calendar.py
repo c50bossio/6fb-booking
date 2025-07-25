@@ -20,7 +20,7 @@ import json
 from google_auth_oauthlib.flow import Flow
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/google-calendar", tags=["Google Calendar"])
+router = APIRouter(prefix="/api/calendar", tags=["Google Calendar"])
 
 
 def get_google_flow(state: Optional[str] = None) -> Flow:

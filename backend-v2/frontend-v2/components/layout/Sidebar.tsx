@@ -1,13 +1,15 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
   ChevronLeftIcon,
   ChevronRightIcon,
   ScissorsIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import { type User, type UnifiedUserRole } from '@/lib/api'
 import { useThemeStyles } from '@/hooks/useTheme'
@@ -21,10 +23,13 @@ interface SidebarProps {
   onToggleCollapse: () => void
 }
 
+
 export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const { colors, isDark } = useThemeStyles()
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set(['dashboard', 'calendar & scheduling']))
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSearchResults, setShowSearchResults] = useState(false)
   
   // Helper function to get role display name
   const getRoleDisplayName = (user: User): string => {
@@ -48,17 +53,112 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
     setExpandedSections(newExpanded)
   }
 
-  // Memoize navigation items to prevent re-renders
+  // Memoize navigation items to prevent re-renders and group them
   const filteredNavigationItems = useMemo(() => 
     filterNavigationByRole(navigationItems, user?.unified_role || user?.role), 
     [user?.unified_role, user?.role]
   )
+
+
+  // Search functionality
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    
+    const query = searchQuery.toLowerCase()
+    const results: NavigationItem[] = []
+    
+    const searchInItems = (items: NavigationItem[]) => {
+      items.forEach(item => {
+        // Search in item name and description
+        if (item.name.toLowerCase().includes(query) || 
+            item.description?.toLowerCase().includes(query)) {
+          results.push(item)
+        }
+        // Search in children
+        if (item.children) {
+          searchInItems(item.children)
+        }
+      })
+    }
+    
+    searchInItems(filteredNavigationItems)
+    return results.slice(0, 8) // Limit to 8 results
+  }, [searchQuery, filteredNavigationItems])
+
+  // Group navigation items for better organization
+  const groupedNavigation = useMemo(() => {
+    const coreItems = filteredNavigationItems.filter(item => 
+      ['Dashboard', 'Calendar & Scheduling', 'Clients'].includes(item.name)
+    )
+    
+    const businessItems = filteredNavigationItems.filter(item => 
+      ['Customer Management', 'Communication', 'Marketing Suite', 'Reviews', 'Products'].includes(item.name)
+    )
+    
+    const financeItems = filteredNavigationItems.filter(item => 
+      ['Finance Hub', 'Analytics'].includes(item.name)
+    )
+    
+    const adminItems = filteredNavigationItems.filter(item => 
+      ['6FB Compliance', 'Enterprise', 'Administration', 'Business Tools'].includes(item.name)
+    )
+    
+    const settingsItems = filteredNavigationItems.filter(item => 
+      item.name === 'Settings'
+    )
+    
+    return {
+      core: coreItems,
+      business: businessItems,
+      finance: financeItems,
+      admin: adminItems,
+      settings: settingsItems
+    }
+  }, [filteredNavigationItems])
+
+  // Handle search input changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchQuery(value)
+    setShowSearchResults(value.trim().length > 0)
+  }
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchQuery('')
+    setShowSearchResults(false)
+  }
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
       return pathname === '/dashboard' || pathname === '/'
     }
     return pathname.startsWith(href)
+  }
+
+  // Render section header with separator
+  const renderSectionHeader = (title: string, isSticky = false) => {
+    if (collapsed) return null
+    
+    return (
+      <div className={`${isSticky ? 'sticky top-0 bg-white dark:bg-gray-900 z-10 border-b border-gray-100 dark:border-gray-800' : ''} py-2`}>
+        <div className="flex items-center px-3">
+          <div className="w-0.5 h-4 bg-primary-500 rounded-full mr-2"></div>
+          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            {title}
+          </h3>
+        </div>
+      </div>
+    )
+  }
+
+  // Render section separator
+  const renderSectionSeparator = () => {
+    if (collapsed) return null
+    
+    return (
+      <div className="my-4 border-t border-gray-200 dark:border-gray-700"></div>
+    )
   }
 
   const renderNavigationItem = (item: NavigationItem, level = 0, index = 0) => {
@@ -71,8 +171,8 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
       group flex items-center w-full text-left px-3 py-2.5 text-sm font-medium rounded-ios-lg
       transition-all duration-200 ease-out cursor-pointer relative
       ${active 
-        ? `bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 shadow-ios-sm` 
-        : `text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white`
+        ? `bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 shadow-ios-sm border-l-2 border-primary-500` 
+        : `text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white hover:shadow-sm`
       }
       ${level > 0 ? 'ml-6' : ''}
     `
@@ -197,9 +297,9 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
 
       {/* User Info */}
       {!collapsed && user && (
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center shadow-sm">
               <span className="text-sm font-semibold text-white">
                 {user.name?.charAt(0).toUpperCase() || 'U'}
               </span>
@@ -212,25 +312,164 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
                 {getRoleDisplayName(user)}
               </p>
             </div>
+            {/* Status indicator */}
+            <div className="w-2 h-2 bg-green-400 rounded-full shadow-sm"></div>
           </div>
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Main navigation">
-        {filteredNavigationItems.map((item, index) => renderNavigationItem(item, 0, index))}
-      </nav>
+      {/* Search */}
+      {!collapsed && (
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search navigation..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="block w-full pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-ios-lg
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                         placeholder-gray-500 dark:placeholder-gray-400
+                         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+                         text-sm transition-all duration-200 shadow-sm focus:shadow-md"
+            />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              >
+                <XMarkIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Navigation - Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <nav className="flex-1 px-4 py-4 overflow-y-auto" role="navigation" aria-label="Main navigation">
+          {showSearchResults ? (
+            /* Search Results */
+            <div className="space-y-1">
+              {!collapsed && renderSectionHeader('Search Results')}
+              {searchResults.length > 0 ? (
+                searchResults.map((item, index) => (
+                  <Link
+                    key={`search-${item.href}-${index}`}
+                    href={item.href}
+                    onClick={clearSearch}
+                    className={`
+                      group flex items-center w-full text-left px-3 py-2 text-sm font-medium rounded-ios-lg
+                      transition-all duration-200 ease-out cursor-pointer relative
+                      ${isActive(item.href) 
+                        ? `bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 shadow-ios-sm` 
+                        : `text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white`
+                      }
+                    `}
+                    title={collapsed ? item.name : undefined}
+                  >
+                    <div className="flex items-center">
+                      <item.icon className={`
+                        flex-shrink-0 w-5 h-5 mr-3 transition-colors duration-200
+                        ${isActive(item.href) ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}
+                        ${collapsed ? 'mr-0' : 'mr-3'}
+                      `} />
+                      {!collapsed && (
+                        <div>
+                          <span className="truncate">{item.name}</span>
+                          {item.description && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <MagnifyingGlassIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No results found</p>
+                  <p className="text-xs mt-1">Try a different search term</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Normal Navigation */
+            <>
+              {/* Core Section */}
+              {groupedNavigation.core.length > 0 && (
+                <div className="space-y-1">
+                  {!collapsed && renderSectionHeader('Core', true)}
+                  {groupedNavigation.core.map((item, index) => renderNavigationItem(item, 0, index))}
+                </div>
+              )}
+
+
+              {/* Business Section */}
+              {groupedNavigation.business.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Business')}
+                    {groupedNavigation.business.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+
+              {/* Finance & Analytics Section */}
+              {groupedNavigation.finance.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Finance & Analytics')}
+                    {groupedNavigation.finance.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+
+              {/* Administration Section */}
+              {groupedNavigation.admin.length > 0 && (
+                <>
+                  {renderSectionSeparator()}
+                  <div className="space-y-1">
+                    {!collapsed && renderSectionHeader('Administration')}
+                    {groupedNavigation.admin.map((item, index) => renderNavigationItem(item, 0, index))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </nav>
+
+        {/* Settings Section - Sticky at bottom */}
+        {groupedNavigation.settings.length > 0 && (
+          <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="pt-4 space-y-1">
+              {!collapsed && renderSectionHeader('Settings')}
+              {groupedNavigation.settings.map((item, index) => renderNavigationItem(item, 0, index))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
         {!collapsed ? (
-          <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            <p>© 2024 Booked Barber</p>
-            <p>v2.0.0</p>
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center space-y-1">
+            <p className="font-medium">© 2024 Booked Barber</p>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-1 h-1 bg-green-400 rounded-full"></div>
+              <p>v2.0.0</p>
+            </div>
           </div>
         ) : (
           <div className="flex justify-center">
-            <QuestionMarkCircleIcon className="w-5 h-5 text-gray-400" />
+            <QuestionMarkCircleIcon className="w-5 h-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" />
           </div>
         )}
       </div>

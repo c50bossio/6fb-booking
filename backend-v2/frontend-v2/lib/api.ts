@@ -157,6 +157,25 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
           localStorage.setItem('token', data.access_token)
           // Also update the cookie
           document.cookie = `token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+          
+          // Extract and update user role from refreshed token
+          try {
+            const tokenPayload = JSON.parse(atob(data.access_token.split('.')[1]))
+            const userRole = tokenPayload.role || 
+                            tokenPayload.user_role || 
+                            tokenPayload.unified_role ||
+                            tokenPayload.sub_role ||
+                            'barber'
+            document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+            localStorage.setItem('user_role', userRole)
+            console.log('🔄 Refreshed token with role:', userRole)
+          } catch (error) {
+            console.warn('⚠️ Failed to extract role from refreshed token:', error)
+            const defaultRole = 'barber'
+            document.cookie = `user_role=${defaultRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+            localStorage.setItem('user_role', defaultRole)
+          }
+          
           if (data.refresh_token) {
             localStorage.setItem('refresh_token', data.refresh_token)
           }
@@ -168,8 +187,11 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // If refresh fails, redirect to login
       localStorage.removeItem('token')
       localStorage.removeItem('refresh_token')
-      // Remove the cookie
+      localStorage.removeItem('user_role')
+      // Remove the cookies
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+      document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+      console.log('🔄 Token refresh failed: Cleared all auth data')
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }
@@ -228,7 +250,10 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // If refresh already failed, redirect to login
       localStorage.removeItem('token')
       localStorage.removeItem('refresh_token')
+      localStorage.removeItem('user_role')
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+      document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+      console.log('🚫 401 Unauthorized: Cleared all auth data')
       if (typeof window !== 'undefined') {
         setTimeout(() => {
           window.location.href = '/login'
@@ -276,6 +301,40 @@ export async function login(email: string, password: string) {
     // Also set as httpOnly:false cookie so middleware can detect auth
     // Note: httpOnly:false is needed because we're setting from client-side
     document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+    
+    // CRITICAL FIX: Extract user role from JWT token and set user_role cookie
+    // This fixes the infinite redirect loop in middleware
+    try {
+      const tokenPayload = JSON.parse(atob(response.access_token.split('.')[1]))
+      
+      // Try multiple possible role field names from JWT payload
+      const userRole = tokenPayload.role || 
+                      tokenPayload.user_role || 
+                      tokenPayload.unified_role ||
+                      tokenPayload.sub_role ||
+                      'barber' // Default to barber instead of user for calendar access
+      
+      console.log('🔑 JWT Token Payload:', {
+        sub: tokenPayload.sub,
+        role: tokenPayload.role,
+        user_role: tokenPayload.user_role,
+        unified_role: tokenPayload.unified_role,
+        extractedRole: userRole
+      })
+      
+      console.log('🔑 Setting user_role cookie:', userRole)
+      document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+      
+      // Also store role in localStorage for consistency
+      localStorage.setItem('user_role', userRole)
+      
+    } catch (error) {
+      console.warn('⚠️ Failed to extract role from token, setting default role:', error)
+      console.warn('⚠️ Token payload base64:', response.access_token.split('.')[1])
+      const defaultRole = 'barber' // Default to barber for calendar access
+      document.cookie = `user_role=${defaultRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+      localStorage.setItem('user_role', defaultRole)
+    }
   }
   if (response.refresh_token) {
     localStorage.setItem('refresh_token', response.refresh_token)
@@ -287,8 +346,11 @@ export async function login(email: string, password: string) {
 export async function logout() {
   localStorage.removeItem('token')
   localStorage.removeItem('refresh_token')
-  // Remove the cookie by setting it with an expired date
+  localStorage.removeItem('user_role')
+  // Remove the cookies by setting them with an expired date
   document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+  document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+  console.log('🚪 Logout: Cleared all tokens and role information')
 }
 
 // @deprecated - Use registerComplete() instead. This old function uses a single "name" field.
@@ -6608,6 +6670,120 @@ export const api = {
   createBooking
 }
 
+// Upselling API Types
+export interface UpsellAttemptRequest {
+  client_id: number
+  current_service: string
+  suggested_service: string
+  potential_revenue: number
+  confidence_score: number
+  channel: 'in_person' | 'email' | 'sms' | 'phone_call' | 'booking_page' | 'app_notification'
+  client_tier?: string
+  relationship_score?: number
+  reasons?: string[]
+  methodology_alignment?: string
+  implementation_notes?: string
+  opportunity_id?: string
+  source_analysis?: Record<string, any>
+  expires_in_hours?: number
+}
+
+export interface UpsellAttemptResponse {
+  id: number
+  barber_id: number
+  client_id: number
+  current_service: string
+  suggested_service: string
+  potential_revenue: number
+  confidence_score: number
+  client_tier?: string
+  relationship_score?: number
+  status: string
+  channel: string
+  opportunity_id?: string
+  implemented_at: string
+  expires_at?: string
+  automation_triggered: boolean
+}
+
+export interface UpsellConversionRequest {
+  attempt_id: number
+  converted: boolean
+  conversion_channel?: string
+  actual_service_booked?: string
+  actual_revenue?: number
+  appointment_id?: number
+  client_satisfaction_score?: number
+  client_feedback?: string
+  conversion_notes?: string
+}
+
+export interface UpsellAnalyticsResponse {
+  period_start: string
+  period_end: string
+  total_attempts: number
+  total_conversions: number
+  conversion_rate: number
+  total_potential_revenue: number
+  total_actual_revenue: number
+  revenue_realization_rate: number
+  average_upsell_value: number
+  average_time_to_conversion: number
+  best_performing_channel?: string
+  methodology_compliance_score: number
+}
+
+// Upselling API Functions
+export async function recordUpsellAttempt(attemptData: UpsellAttemptRequest): Promise<UpsellAttemptResponse> {
+  return fetchAPI('/api/v2/upselling/attempt', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(attemptData),
+  })
+}
+
+export async function recordUpsellConversion(conversionData: UpsellConversionRequest) {
+  return fetchAPI('/api/v2/upselling/conversion', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(conversionData),
+  })
+}
+
+export async function getUpsellAttempts(filters?: {
+  client_id?: number
+  status?: string
+  days_back?: number
+  limit?: number
+}): Promise<UpsellAttemptResponse[]> {
+  const params = new URLSearchParams()
+  if (filters?.client_id) params.append('client_id', filters.client_id.toString())
+  if (filters?.status) params.append('status', filters.status)
+  if (filters?.days_back) params.append('days_back', filters.days_back.toString())
+  if (filters?.limit) params.append('limit', filters.limit.toString())
+  
+  const queryString = params.toString()
+  return fetchAPI(`/api/v2/upselling/attempts${queryString ? `?${queryString}` : ''}`)
+}
+
+export async function getUpsellAnalytics(periodDays: number = 30): Promise<UpsellAnalyticsResponse> {
+  return fetchAPI(`/api/v2/upselling/analytics?period_days=${periodDays}`)
+}
+
+export async function updateAttemptStatus(attemptId: number, status: string, notes?: string) {
+  return fetchAPI(`/api/v2/upselling/attempt/${attemptId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status, notes }),
+  })
+}
+
 export const apiClient = {
   // Core API functions
   fetchAPI,
@@ -6625,7 +6801,13 @@ export const apiClient = {
   forgotPassword,
   resetPassword,
   verifyEmail,
-  refreshToken
+  refreshToken,
+  // Upselling functions
+  recordUpsellAttempt,
+  recordUpsellConversion,
+  getUpsellAttempts,
+  getUpsellAnalytics,
+  updateAttemptStatus
 }
 
 

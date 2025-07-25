@@ -4,14 +4,14 @@ import React, { useState, useEffect } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 const inputVariants = cva(
-  'w-full rounded-ios border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 peer',
+  'w-full rounded-ios border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 peer shadow-sm hover:shadow-md focus:shadow-lg transform-gpu will-change-transform',
   {
     variants: {
       variant: {
-        default: 'border-ios-gray-300 dark:border-ios-gray-600 focus:border-primary-500 focus:ring-primary-500/20 hover:border-ios-gray-400 dark:hover:border-ios-gray-500',
-        error: 'border-error-500 focus:border-error-500 focus:ring-error-500/20 animate-pulse',
-        success: 'border-success-500 focus:border-success-500 focus:ring-success-500/20',
-        floating: 'border-ios-gray-300 dark:border-ios-gray-600 focus:border-primary-500 focus:ring-primary-500/20 placeholder:opacity-0 focus:placeholder:opacity-100',
+        default: 'border-ios-gray-300 dark:border-ios-gray-600 focus:border-primary-500 focus:ring-primary-500/20 hover:border-primary-400 dark:hover:border-primary-500 hover:-translate-y-0.5 focus:-translate-y-1',
+        error: 'border-error-500 focus:border-error-500 focus:ring-error-500/20 hover:border-error-600 shadow-error/10',
+        success: 'border-success-500 focus:border-success-500 focus:ring-success-500/20 hover:border-success-600 shadow-success/10',
+        floating: 'border-ios-gray-300 dark:border-ios-gray-600 focus:border-primary-500 focus:ring-primary-500/20 placeholder:opacity-0 focus:placeholder:opacity-100 hover:border-primary-400 hover:-translate-y-0.5 focus:-translate-y-1',
       },
       size: {
         sm: 'px-3 py-2 text-ios-footnote',
@@ -192,7 +192,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     setHasValue(false)
                     onClear?.()
                   }}
-                  className={`text-ios-gray-400 hover:text-ios-gray-600 dark:hover:text-ios-gray-300 transition-colors ${iconSize}`}
+                  className={`text-ios-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-all duration-200 ease-out hover:scale-110 active:scale-95 transform-gpu ${iconSize}`}
                   tabIndex={-1}
                 >
                   <svg viewBox="0 0 20 20" fill="currentColor">
@@ -206,7 +206,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className={`text-ios-gray-400 hover:text-ios-gray-600 dark:hover:text-ios-gray-300 transition-colors ${iconSize}`}
+                  className={`text-ios-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-all duration-200 ease-out hover:scale-110 active:scale-95 transform-gpu ${iconSize}`}
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -255,13 +255,13 @@ Input.displayName = 'Input'
 
 // Textarea component using similar styling
 const textareaVariants = cva(
-  'w-full rounded-ios border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 resize-y min-h-[100px]',
+  'w-full rounded-ios border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 resize-y min-h-[100px] shadow-sm hover:shadow-md focus:shadow-lg transform-gpu will-change-transform',
   {
     variants: {
       variant: {
-        default: 'border-ios-gray-300 dark:border-ios-gray-600 focus:border-primary-500 focus:ring-primary-500/20 hover:border-ios-gray-400 dark:hover:border-ios-gray-500',
-        error: 'border-error-500 focus:border-error-500 focus:ring-error-500/20',
-        success: 'border-success-500 focus:border-success-500 focus:ring-success-500/20',
+        default: 'border-ios-gray-300 dark:border-ios-gray-600 focus:border-primary-500 focus:ring-primary-500/20 hover:border-primary-400 dark:hover:border-primary-500 hover:-translate-y-0.5 focus:-translate-y-1',
+        error: 'border-error-500 focus:border-error-500 focus:ring-error-500/20 hover:border-error-600 shadow-error/10',
+        success: 'border-success-500 focus:border-success-500 focus:ring-success-500/20 hover:border-success-600 shadow-success/10',
       },
       size: {
         sm: 'px-3 py-2 text-ios-footnote',

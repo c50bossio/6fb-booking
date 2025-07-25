@@ -3,6 +3,18 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
+/**
+ * Global Modal Component with Universal Click-Outside-to-Exit
+ * 
+ * GLOBAL BEHAVIORS (enabled by default for ALL modals):
+ * - Click outside modal overlay → closes modal
+ * - Press ESC key → closes modal  
+ * - Focus trapping within modal
+ * - Body scroll prevention when open
+ * 
+ * To disable click-outside behavior, explicitly set closeOnOverlayClick={false}
+ */
+
 const modalVariants = cva(
   'relative bg-white dark:bg-dark-elevated-100 rounded-t-ios-2xl shadow-ios-2xl transform transition-all duration-300 ease-out',
   {
@@ -46,17 +58,18 @@ const modalVariants = cva(
 )
 
 const overlayVariants = cva(
-  'fixed inset-0 z-50 flex items-end justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm transition-all duration-300',
+  'fixed inset-0 flex items-end justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm transition-all duration-300',
   {
     variants: {
       position: {
-        center: 'items-center p-4',
-        bottom: 'items-end',
-        top: 'items-start',
+        center: 'items-center justify-center p-4',
+        bottom: 'items-end justify-center',
+        top: 'items-start justify-center pt-4',
+        'adaptive': 'items-start justify-center p-4',
       },
     },
     defaultVariants: {
-      position: 'bottom',
+      position: 'center',
     },
   }
 )
@@ -68,13 +81,17 @@ export interface ModalProps extends VariantProps<typeof modalVariants> {
   title?: string
   description?: string
   showCloseButton?: boolean
+  /** Enable click outside modal to close. Defaults to true for all modals. */
   closeOnOverlayClick?: boolean
+  /** Enable ESC key to close modal. Defaults to true. */
   closeOnEscape?: boolean
   preventScroll?: boolean
   trapFocus?: boolean
   className?: string
   overlayClassName?: string
   overflow?: 'hidden' | 'visible' | 'auto'
+  /** Enable adaptive positioning to prevent cutoff. Defaults to false. */
+  adaptivePositioning?: boolean
 }
 
 const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
@@ -89,17 +106,53 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     position,
     overflow,
     showCloseButton = true,
-    closeOnOverlayClick = true,
+    closeOnOverlayClick = true, // Global default: clicking outside closes modal
     closeOnEscape = true,
     preventScroll = true,
     trapFocus = true,
     className,
     overlayClassName,
+    adaptivePositioning = false,
   }, ref) => {
     const [isVisible, setIsVisible] = useState(false)
     const [isAnimating, setIsAnimating] = useState(false)
     const modalRef = useRef<HTMLDivElement>(null)
     const previousFocus = useRef<HTMLElement | null>(null)
+    const [adaptivePosition, setAdaptivePosition] = useState<'center' | 'top' | 'bottom' | 'adaptive'>(position || 'bottom')
+    const [maxHeight, setMaxHeight] = useState<string>('80vh')
+
+    // Adaptive positioning logic
+    useEffect(() => {
+      if (!adaptivePositioning || !isOpen) return
+
+      const updatePosition = () => {
+        if (!modalRef.current) return
+
+        const viewportHeight = window.innerHeight
+        const modalRect = modalRef.current.getBoundingClientRect()
+        const modalHeight = modalRect.height
+
+        // If modal is too tall for viewport, use adaptive positioning with scrolling
+        if (modalHeight > viewportHeight * 0.9) {
+          setAdaptivePosition('adaptive')
+          setMaxHeight('90vh')
+        } else if (modalHeight > viewportHeight * 0.7) {
+          // Use center positioning with reduced max height
+          setAdaptivePosition('center')
+          setMaxHeight('80vh')
+        } else {
+          // Use original position
+          setAdaptivePosition(position || 'center')
+          setMaxHeight('80vh')
+        }
+      }
+
+      // Update on mount and window resize
+      updatePosition()
+      window.addEventListener('resize', updatePosition)
+      
+      return () => window.removeEventListener('resize', updatePosition)
+    }, [adaptivePositioning, isOpen, position])
 
     // Focus management
     useEffect(() => {
@@ -188,18 +241,29 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
 
     if (!isVisible) return null
 
-    const slideTransform = position === 'bottom' 
+    const effectivePosition = adaptivePositioning ? adaptivePosition : position
+    const slideTransform = effectivePosition === 'bottom' 
       ? isAnimating ? 'translate-y-full' : 'translate-y-0'
-      : position === 'top'
+      : effectivePosition === 'top' || effectivePosition === 'adaptive'
       ? isAnimating ? '-translate-y-full' : 'translate-y-0'
       : isAnimating ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+
+    // Modal positioning debug (removed console.log for production)
 
     return (
       <div
         className={overlayVariants({ 
-          position, 
+          position: effectivePosition, 
           className: `${isAnimating ? 'opacity-0' : 'opacity-100'} ${overlayClassName || ''}` 
         })}
+        style={{ 
+          zIndex: 2147483647, // Maximum z-index to ensure modal appears on top
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0
+        }}
         onClick={closeOnOverlayClick ? onClose : undefined}
         onKeyDown={handleKeyDown}
         role="dialog"
@@ -221,14 +285,19 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           className={modalVariants({ 
             size, 
             variant, 
-            position,
+            position: effectivePosition,
             overflow,
             className: `${slideTransform} ${className || ''}` 
           })}
+          style={{ 
+            maxHeight: adaptivePositioning ? maxHeight : undefined,
+            maxWidth: '90vw',
+            width: 'auto'
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modal Handle (iOS-style) */}
-          {position === 'bottom' && (
+          {effectivePosition === 'bottom' && (
             <div className="flex justify-center py-3">
               <div className="w-10 h-1 bg-ios-gray-300 dark:bg-ios-gray-600 rounded-full"></div>
             </div>
@@ -271,7 +340,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           )}
 
           {/* Content */}
-          <div className="flex-1">
+          <div className={`flex-1 ${adaptivePositioning && adaptivePosition === 'adaptive' ? 'overflow-y-auto' : ''}`}>
             {children}
           </div>
         </div>

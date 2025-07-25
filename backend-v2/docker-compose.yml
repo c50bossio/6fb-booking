@@ -1,58 +1,262 @@
+# =============================================================================
+# BookedBarber V2 - Production-Ready Docker Compose Architecture
+# =============================================================================
+# 🎯 Complete multi-service setup with service discovery, health checks, and environment isolation
+# 🔧 Solves networking connectivity issues between frontend and backend containers
+# 🚀 Production-ready deployment with PostgreSQL, Redis, and Nginx
+# =============================================================================
+
 version: '3.8'
 
 services:
-  backend:
-    build: .
-    container_name: 6fb-backend-v2
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/sixfb
-      - SECRET_KEY=your-secret-key-here-change-in-production
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-sk_test_your_stripe_test_key}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-whsec_your_webhook_secret}
-    depends_on:
-      - db
-    volumes:
-      - ./:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-  db:
+  # =============================================================================
+  # PostgreSQL Database
+  # =============================================================================
+  postgres:
     image: postgres:15-alpine
-    container_name: 6fb-postgres
-    ports:
-      - "5432:5432"
+    container_name: bookedbarber-postgres
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=sixfb
+      POSTGRES_DB: bookedbarber_v2
+      POSTGRES_USER: bookedbarber
+      POSTGRES_PASSWORD: bookedbarber_secure_password_2025
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - bookedbarber-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookedbarber"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
+  # =============================================================================
+  # Redis Cache & Session Store
+  # =============================================================================
   redis:
     image: redis:7-alpine
-    container_name: 6fb-redis
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes
+    container_name: bookedbarber-redis
+    command: redis-server --appendonly yes --requirepass bookedbarber_redis_password_2025
     volumes:
       - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - bookedbarber-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
 
+  # =============================================================================
+  # FastAPI Backend Service
+  # =============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookedbarber-backend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    environment:
+      # Database Configuration (SQLite for development) - use shared volume
+      DATABASE_URL: sqlite:///./shared/6fb_booking.db
+      
+      # Redis Configuration
+      REDIS_URL: redis://:bookedbarber_redis_password_2025@redis:6379/0
+      
+      # Application Settings
+      ENVIRONMENT: development
+      DEBUG: "true"
+      PORT: 8000
+      HOST: 0.0.0.0
+      
+      # JWT and Security
+      SECRET_KEY: bookedbarber_jwt_super_secret_key_2025_change_in_production
+      JWT_SECRET_KEY: bookedbarber_jwt_super_secret_key_2025_change_in_production
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: 7
+      
+      # CORS Settings
+      CORS_ORIGINS: http://localhost:3000,http://frontend:3000,https://bookedbarber.com,https://staging.bookedbarber.com
+      
+      # External Services
+      STRIPE_PUBLISHABLE_KEY: pk_test_your_stripe_key_here
+      STRIPE_SECRET_KEY: sk_test_your_stripe_secret_here
+      GOOGLE_CLIENT_ID: your_google_client_id.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: your_google_client_secret
+      
+      # Email & SMS (Optional for development)
+      SENDGRID_API_KEY: ""
+      TWILIO_ACCOUNT_SID: ""
+      TWILIO_AUTH_TOKEN: ""
+      
+      # Analytics & Tracking
+      GOOGLE_ANALYTICS_ID: G-YOUR_GA4_MEASUREMENT_ID
+      META_PIXEL_ID: your_meta_pixel_id
+      
+      # Health Checks
+      HEALTH_CHECK_ENABLED: "true"
+      
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - .:/app/shared
+    ports:
+      - "8000:8000"
+    networks:
+      - bookedbarber-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health", "--max-time", "5"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+
+  # =============================================================================
+  # Next.js Frontend Service
+  # =============================================================================
   frontend:
-    build: ./frontend-v2
-    container_name: 6fb-frontend-v2
+    build:
+      context: ./frontend-v2
+      dockerfile: Dockerfile
+      target: development
+      args:
+        # Build-time environment variables (browser-accessible URLs)
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+        NEXT_PUBLIC_ENVIRONMENT: development
+        NODE_ENV: development
+    container_name: bookedbarber-frontend
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 1G
+          cpus: '0.75'
+    environment:
+      # Runtime environment variables (browser-accessible URLs)
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+      NEXT_PUBLIC_ENVIRONMENT: development
+      NODE_ENV: development
+      PORT: 3000
+      
+      # External Services (Frontend Safe Keys Only)
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_your_stripe_key_here
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: your_google_client_id.apps.googleusercontent.com
+      NEXT_PUBLIC_GA_TRACKING_ID: G-YOUR_GA4_MEASUREMENT_ID
+      NEXT_PUBLIC_GTM_ID: GTM-YOUR_CONTAINER_ID
+      NEXT_PUBLIC_META_PIXEL_ID: your_meta_pixel_id
+      NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID: AW-YOUR_CONVERSION_ID
+      
+      # Feature Flags
+      NEXT_PUBLIC_ENABLE_DEBUG_PANEL: "true"
+      NEXT_PUBLIC_SHOW_TEST_DATA: "true"
+      NEXT_PUBLIC_ENABLE_ANALYTICS: "true"
+      NEXT_PUBLIC_ENABLE_ERROR_TRACKING: "true"
+      
+      # Debug Dashboard Components
+      NEXT_PUBLIC_DEBUG_DASHBOARD: "true"
+      NEXT_PUBLIC_FORCE_ADMIN_DASHBOARD: "true"
+      
+      # Security
+      NEXT_PUBLIC_CSP_ENABLED: "true"
+      NEXT_PUBLIC_HSTS_ENABLED: "true"
+      
+    volumes:
+      - ./frontend-v2/public:/app/public
+      - frontend_cache:/app/.next
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-pk_test_your_stripe_publishable_key}
+    networks:
+      - bookedbarber-network
     depends_on:
-      - backend
-    volumes:
-      - ./frontend-v2:/app
-      - /app/node_modules
-      - /app/.next
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || wget --quiet --tries=1 --spider http://localhost:3000/ || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
 
+  # =============================================================================
+  # Nginx Reverse Proxy & Load Balancer
+  # =============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: bookedbarber-nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - bookedbarber-network
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# =============================================================================
+# Named Volumes for Data Persistence
+# =============================================================================
 volumes:
   postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/postgres
   redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/redis
+  frontend_cache:
+    driver: local
+
+# =============================================================================
+# Custom Network for Service Discovery
+# =============================================================================
+networks:
+  bookedbarber-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

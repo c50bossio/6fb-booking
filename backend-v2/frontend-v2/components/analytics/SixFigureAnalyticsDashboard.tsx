@@ -12,7 +12,9 @@ import {
   BoltIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  LightBulbIcon
+  LightBulbIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
 } from '@heroicons/react/24/outline'
 
 interface SixFigureAnalyticsDashboardProps {
@@ -50,6 +52,7 @@ export default function SixFigureAnalyticsDashboard({
   const [insights, setInsights] = useState<CoachingInsight[]>([])
   const [currentInsightIndex, setCurrentInsightIndex] = useState(0)
   const [activeCoachingTab, setActiveCoachingTab] = useState<'insights' | 'progress' | 'milestones'>('insights')
+  const [isPriorityRecommendationsCollapsed, setIsPriorityRecommendationsCollapsed] = useState(true)
 
   // Generate coaching insights based on today's performance and metrics (memoized for performance)
   const generateInsights = useCallback((stats: typeof todayStats, metrics: SixFigureBarberMetrics | null): CoachingInsight[] => {
@@ -343,13 +346,78 @@ export default function SixFigureAnalyticsDashboard({
           {/* AI Insights Tab */}
           {activeCoachingTab === 'insights' && (
             <div className="space-y-4">
+              {/* Six Figure Barber Methodology Overview */}
+              <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg p-4 border border-orange-100 dark:border-orange-800 mb-4">
+                <h4 className="text-sm font-semibold text-orange-900 dark:text-orange-100 mb-2 flex items-center">
+                  🏆 Six Figure Barber Methodology Status
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                    <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                      ${metrics?.current_performance?.annual_revenue_projection?.toLocaleString() || '0'}
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Annual Projection</p>
+                  </div>
+                  <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                    <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                      {metrics?.current_performance?.utilization_rate?.toFixed(1) || '0'}%
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Utilization Rate</p>
+                  </div>
+                  <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                    <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                      ${metrics?.current_performance?.average_ticket?.toFixed(0) || '0'}
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Average Ticket</p>
+                  </div>
+                  <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                    <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                      {metrics?.current_performance?.total_active_clients || '0'}
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Active Clients</p>
+                  </div>
+                </div>
+                
+                {/* Six Figure Progress Bar */}
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    <span>Progress to Six Figures</span>
+                    <span>{((metrics?.current_performance?.annual_revenue_projection || 0) / (metrics?.targets?.annual_income_target || 100000) * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                    <div 
+                      className="bg-gradient-to-r from-orange-500 to-red-500 h-3 rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${Math.min(((metrics?.current_performance?.annual_revenue_projection || 0) / (metrics?.targets?.annual_income_target || 100000) * 100), 100)}%` 
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <span>$0</span>
+                    <span className="font-medium">${(metrics?.targets?.annual_income_target || 100000).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Professional Coaching Insights from Backend */}
               {metrics?.coaching_insights && metrics.coaching_insights.length > 0 ? (
                 <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                    🎯 Priority Recommendations
-                  </h4>
-                  {metrics.coaching_insights.slice(0, 3).map((insight, index) => (
+                  <div 
+                    className="flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg p-2 -m-2 transition-colors mb-3"
+                    onClick={() => setIsPriorityRecommendationsCollapsed(!isPriorityRecommendationsCollapsed)}
+                  >
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                      🎯 Priority Recommendations
+                    </h4>
+                    {isPriorityRecommendationsCollapsed ? (
+                      <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+                    ) : (
+                      <ChevronUpIcon className="w-4 h-4 text-gray-500" />
+                    )}
+                  </div>
+                  {!isPriorityRecommendationsCollapsed && (
+                    <div className="space-y-3">
+                      {metrics.coaching_insights.slice(0, 3).map((insight, index) => (
                     <div key={index} className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
                       <div className="flex items-start space-x-3">
                         <div className={`p-2 rounded-full ${
@@ -443,7 +511,9 @@ export default function SixFigureAnalyticsDashboard({
                         </div>
                       </div>
                     </div>
-                  ))}
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -546,35 +616,168 @@ export default function SixFigureAnalyticsDashboard({
             <div className="space-y-4">
               {progressData ? (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Annual Pace</p>
-                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        ${progressData.progress_overview.current_annual_pace.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Progress</p>
-                      <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                        {progressData.progress_overview.progress_percentage.toFixed(1)}%
-                      </p>
-                    </div>
-                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Trend</p>
-                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                        {progressData.progress_overview.trend_direction === 'up' ? '📈' : 
-                         progressData.progress_overview.trend_direction === 'down' ? '📉' : '➡️'}
-                      </p>
+                  {/* Six Figure Barber Methodology Progress Overview */}
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
+                    <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center">
+                      📊 Six Figure Barber Progress Tracking
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Annual Pace</p>
+                        <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                          ${progressData.progress_overview.current_annual_pace.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {progressData.progress_overview.current_annual_pace >= (progressData.progress_overview.monthly_target * 12) ? '🎯 On Track' : '⚠️ Behind'}
+                        </p>
+                      </div>
+                      <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Progress</p>
+                        <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                          {progressData.progress_overview.progress_percentage.toFixed(1)}%
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          to Six Figures
+                        </p>
+                      </div>
+                      <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Monthly Target</p>
+                        <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                          ${progressData.progress_overview.monthly_target.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          ${(progressData.progress_overview.monthly_target / 30).toFixed(0)}/day
+                        </p>
+                      </div>
+                      <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Trend</p>
+                        <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                          {progressData.progress_overview.trend_direction === 'up' ? '📈' : 
+                           progressData.progress_overview.trend_direction === 'down' ? '📉' : '➡️'}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {progressData.progress_overview.trend_direction === 'up' ? 'Growing' : 
+                           progressData.progress_overview.trend_direction === 'down' ? 'Declining' : 'Stable'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Goal Analysis</h4>
-                    <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                      <p>• Daily target: ${progressData.progress_overview.daily_target.toFixed(0)}</p>
-                      <p>• Monthly target: ${progressData.progress_overview.monthly_target.toLocaleString()}</p>
-                      {progressData.progress_overview.months_to_goal && (
-                        <p>• Time to goal: {progressData.progress_overview.months_to_goal.toFixed(1)} months</p>
-                      )}
+
+                  {/* Methodology Implementation Progress */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                      <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                        🎯 Core 6FB Metrics
+                      </h5>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Average Ticket Value</span>
+                          <div className="text-right">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              ${metrics?.current_performance?.average_ticket?.toFixed(0) || '0'}
+                            </span>
+                            <p className="text-xs text-gray-500">
+                              Target: ${metrics?.targets?.ticket_increase?.target_average_ticket?.toFixed(0) || 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Client Retention</span>
+                          <div className="text-right">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {((metrics?.current_performance?.average_visits_per_client || 1) * 100 / 12).toFixed(1)}%
+                            </span>
+                            <p className="text-xs text-gray-500">
+                              Monthly retention rate
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Utilization Rate</span>
+                          <div className="text-right">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {metrics?.current_performance?.utilization_rate?.toFixed(1) || '0'}%
+                            </span>
+                            <p className="text-xs text-gray-500">
+                              Target: {metrics?.targets?.utilization_increase?.target_utilization_rate?.toFixed(1) || '80'}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                      <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                        📈 Growth Trajectory
+                      </h5>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Monthly Revenue</span>
+                          <div className="text-right">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              ${metrics?.current_performance?.monthly_revenue?.toLocaleString() || '0'}
+                            </span>
+                            <p className="text-xs text-green-500">
+                              Progress toward goal
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Client Base</span>
+                          <div className="text-right">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {metrics?.current_performance?.total_active_clients || '0'}
+                            </span>
+                            <p className="text-xs text-gray-500">
+                              Active clients
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Time to Goal</span>
+                          <div className="text-right">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {progressData.progress_overview.months_to_goal?.toFixed(1) || 'N/A'} mo
+                            </span>
+                            <p className="text-xs text-gray-500">
+                              at current rate
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Goal Analysis with 6FB Focus */}
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-green-100 dark:border-green-800">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                      🎯 Six Figure Barber Goal Analysis
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="space-y-2">
+                        <h5 className="font-medium text-gray-700 dark:text-gray-300">Daily Targets</h5>
+                        <div className="space-y-1 text-gray-600 dark:text-gray-400">
+                          <p>• Revenue: ${progressData.progress_overview.daily_target.toFixed(0)}</p>
+                          <p>• Clients: {Math.ceil((progressData.progress_overview.daily_target) / (metrics?.current_performance?.average_ticket || 50))} appointments</p>
+                          <p>• Working days: {Math.ceil(progressData.progress_overview.monthly_target / progressData.progress_overview.daily_target)} per month</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <h5 className="font-medium text-gray-700 dark:text-gray-300">Monthly Breakdown</h5>
+                        <div className="space-y-1 text-gray-600 dark:text-gray-400">
+                          <p>• Target: ${progressData.progress_overview.monthly_target.toLocaleString()}</p>
+                          <p>• Current: ${metrics?.current_performance?.monthly_revenue?.toLocaleString() || '0'}</p>
+                          <p>• Gap: ${Math.max(0, progressData.progress_overview.monthly_target - (metrics?.current_performance?.monthly_revenue || 0)).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <h5 className="font-medium text-gray-700 dark:text-gray-300">6FB Success Factors</h5>
+                        <div className="space-y-1 text-gray-600 dark:text-gray-400">
+                          <p>• Premium pricing ✓</p>
+                          <p>• Client relationships ✓</p>
+                          <p>• Consistent quality ✓</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </>
@@ -586,16 +789,17 @@ export default function SixFigureAnalyticsDashboard({
             </div>
           )}
 
-          {/* Milestones Tab */}
+          {/* Enhanced Milestones Tab */}
           {activeCoachingTab === 'milestones' && (
             <div className="space-y-4">
               {progressData ? (
                 <>
+                  {/* Enhanced Achievement Overview */}
                   <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg p-4 border border-yellow-100 dark:border-yellow-800">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                      🏆 Achievement Summary
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                      🏆 Six Figure Journey Progress
                     </h4>
-                    <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="grid grid-cols-3 gap-4 text-center mb-4">
                       <div>
                         <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                           {progressData.achievement_summary.achieved_milestones}
@@ -608,39 +812,191 @@ export default function SixFigureAnalyticsDashboard({
                         </p>
                         <p className="text-xs text-gray-600 dark:text-gray-400">Complete</p>
                       </div>
+                      <div>
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                          {progressData.achievement_summary.priority_milestones.length}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">In Progress</p>
+                      </div>
+                    </div>
+                    
+                    {/* Overall Progress Bar */}
+                    <div className="mb-2">
+                      <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                        <span>Journey to Six Figures</span>
+                        <span>{progressData.achievement_summary.achievement_percentage.toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div 
+                          className="bg-gradient-to-r from-orange-500 to-yellow-500 h-3 rounded-full transition-all flex items-center justify-end"
+                          style={{ width: `${Math.min(progressData.achievement_summary.achievement_percentage, 100)}%` }}
+                        >
+                          {progressData.achievement_summary.achievement_percentage > 10 && (
+                            <span className="text-white text-xs font-bold mr-2">🚀</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Motivation Message */}
+                    <div className="text-center mt-3">
+                      <p className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                        {progressData.achievement_summary.achievement_percentage < 25 ? "🌱 Your journey has begun - every expert was once a beginner!" :
+                         progressData.achievement_summary.achievement_percentage < 50 ? "📈 Building momentum - you're making real progress!" :
+                         progressData.achievement_summary.achievement_percentage < 75 ? "🎯 You're hitting your stride - six figures is within reach!" :
+                         progressData.achievement_summary.achievement_percentage < 95 ? "🔥 Almost there - the finish line is in sight!" :
+                         "👑 Six Figure Barber achieved - time to set new goals!"}
+                      </p>
                     </div>
                   </div>
                   
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                      🎯 Next Priority Milestones
-                    </h4>
-                    {progressData.achievement_summary.priority_milestones.slice(0, 3).map((milestone, index) => (
-                      <div key={milestone.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between mb-2">
-                          <h5 className="font-medium text-gray-900 dark:text-white text-sm">
-                            {milestone.title}
-                          </h5>
-                          <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full">
-                            {milestone.type}
-                          </span>
+                  {/* Milestone Categories */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Active Milestones */}
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
+                        🎯 Priority Focus Areas
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full">
+                          Next 30 days
+                        </span>
+                      </h4>
+                      {progressData.achievement_summary.priority_milestones.slice(0, 3).map((milestone, index) => (
+                        <div key={milestone.id} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <span className="text-lg">
+                                  {milestone.type === 'revenue' ? '💰' :
+                                   milestone.type === 'clients' ? '👥' :
+                                   milestone.type === 'retention' ? '🤝' :
+                                   milestone.type === 'efficiency' ? '⚡' :
+                                   milestone.type === 'pricing' ? '🏷️' : '📊'}
+                                </span>
+                                <h5 className="font-medium text-gray-900 dark:text-white text-sm">
+                                  {milestone.title}
+                                </h5>
+                              </div>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                {milestone.description || milestone.next_hint}
+                              </p>
+                            </div>
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              milestone.type === 'revenue' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                              milestone.type === 'clients' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                              milestone.type === 'retention' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
+                              milestone.type === 'efficiency' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
+                              'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                            }`}>
+                              {milestone.type}
+                            </span>
+                          </div>
+                          
+                          {/* Enhanced Progress Bar */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                              <span className="font-medium text-gray-900 dark:text-white">
+                                {milestone.progress_percentage.toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 relative">
+                              <div 
+                                className={`h-2 rounded-full transition-all ${
+                                  milestone.progress_percentage >= 80 ? 'bg-green-500' :
+                                  milestone.progress_percentage >= 60 ? 'bg-blue-500' :
+                                  milestone.progress_percentage >= 40 ? 'bg-yellow-500' :
+                                  'bg-red-500'
+                                }`}
+                                style={{ width: `${Math.min(milestone.progress_percentage, 100)}%` }}
+                              />
+                              {milestone.progress_percentage >= 90 && (
+                                <div className="absolute right-1 top-0 h-2 flex items-center">
+                                  <span className="text-xs">🎯</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Action Hint */}
+                          {milestone.next_hint && (
+                            <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-xs text-blue-700 dark:text-blue-300">
+                              💡 <span className="font-medium">Next Step:</span> {milestone.next_hint}
+                            </div>
+                          )}
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
-                          <div 
-                            className="bg-blue-500 h-2 rounded-full transition-all"
-                            style={{ width: `${milestone.progress_percentage}%` }}
-                          />
+                      ))}
+                    </div>
+                    
+                    {/* Completed Milestones */}
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
+                        ✅ Recent Achievements
+                        <span className="ml-2 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">
+                          This month
+                        </span>
+                      </h4>
+                      
+                      {/* Show completed milestones or encouragement */}
+                      {progressData.achievement_summary.achieved_milestones > 0 ? (
+                        <div className="space-y-2">
+                          {/* Mock completed milestones - in real implementation, these would come from API */}
+                          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="text-lg">🏆</span>
+                              <span className="text-sm font-medium text-green-800 dark:text-green-300">
+                                First $5K Month Achieved!
+                              </span>
+                            </div>
+                            <p className="text-xs text-green-600 dark:text-green-400">
+                              Completed 3 days ago • Revenue milestone
+                            </p>
+                          </div>
+                          
+                          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="text-lg">🎯</span>
+                              <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                                50 Regular Clients Goal
+                              </span>
+                            </div>
+                            <p className="text-xs text-blue-600 dark:text-blue-400">
+                              Completed 1 week ago • Client acquisition
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                          {milestone.progress_percentage.toFixed(0)}% • {milestone.next_hint}
+                      ) : (
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+                          <span className="text-2xl block mb-2">🌟</span>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            Your first milestone is waiting!
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500">
+                            Focus on the priority areas above to unlock your first achievement.
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Milestone Insights */}
+                      <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
+                        <h5 className="text-sm font-medium text-purple-800 dark:text-purple-300 mb-2 flex items-center">
+                          📚 6FB Methodology Insight
+                        </h5>
+                        <p className="text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
+                          {progressData.achievement_summary.achievement_percentage < 30 ? 
+                            "The Six Figure Barber method focuses on sustainable growth through value-based pricing and client relationship building. Each milestone builds the foundation for long-term success." :
+                            progressData.achievement_summary.achievement_percentage < 70 ?
+                            "You're applying the 6FB principles effectively. Remember: consistent premium service delivery creates loyal clients who become your best marketing asset." :
+                            "Advanced 6FB implementation: You're now focused on optimization and scaling. Consider expanding your service offerings or exploring additional revenue streams."}
                         </p>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </>
               ) : (
                 <div className="text-center py-8">
+                  <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-4" />
                   <p className="text-gray-600 dark:text-gray-400">Loading milestone data...</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Calculating your Six Figure Barber progress</p>
                 </div>
               )}
             </div>

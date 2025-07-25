@@ -13,8 +13,9 @@ import {
 import BusinessHours from '../../../components/BusinessHours'
 import BookingRulesList from '../../../components/BookingRulesList'
 import BookingRuleEditor from '../../../components/BookingRuleEditor'
+// import VisualBookingRulesBuilder from '../../../components/admin/VisualBookingRulesBuilder'
 
-type TabType = 'business-hours' | 'booking-rules' | 'rule-editor'
+type TabType = 'business-hours' | 'booking-rules' | 'rule-editor' | 'visual-builder'
 
 export default function AdminBookingRulesPage() {
   const router = useRouter()
@@ -31,6 +32,7 @@ export default function AdminBookingRulesPage() {
   const [activeTab, setActiveTab] = useState<TabType>('business-hours')
   const [editingRule, setEditingRule] = useState<BookingRule | null>(null)
   const [showRuleEditor, setShowRuleEditor] = useState(false)
+  const [showVisualBuilder, setShowVisualBuilder] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -103,6 +105,24 @@ export default function AdminBookingRulesPage() {
     setActiveTab('rule-editor')
   }
 
+  const handleOpenVisualBuilder = () => {
+    setShowVisualBuilder(true)
+    setActiveTab('visual-builder')
+  }
+
+  const handleSaveVisualRules = (visualRules: any[]) => {
+    // Convert visual rules to API format and save
+    setSuccess('Visual rules saved successfully')
+    setShowVisualBuilder(false)
+    setActiveTab('booking-rules')
+    loadData()
+  }
+
+  const handleCancelVisualBuilder = () => {
+    setShowVisualBuilder(false)
+    setActiveTab('booking-rules')
+  }
+
   const handleRuleSaved = () => {
     setSuccess('Rule saved successfully')
     setShowRuleEditor(false)
@@ -169,6 +189,15 @@ export default function AdminBookingRulesPage() {
               </div>
               <div className="flex gap-4">
                 <button
+                  onClick={handleOpenVisualBuilder}
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-md hover:from-blue-700 hover:to-purple-700 flex items-center"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  Visual Builder
+                </button>
+                <button
                   onClick={() => router.push('/admin')}
                   className="px-4 py-2 text-gray-600 hover:text-gray-900 flex items-center"
                 >
@@ -209,6 +238,22 @@ export default function AdminBookingRulesPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 Booking Rules ({bookingRules.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('visual-builder')}
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'visual-builder'
+                    ? 'bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Visual Builder
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                  New
+                </span>
               </button>
               {(showRuleEditor || activeTab === 'rule-editor') && (
                 <button
@@ -273,6 +318,13 @@ export default function AdminBookingRulesPage() {
               onReorder={handleReorderRules}
               onCreateNew={handleCreateRule}
             />
+          )}
+          
+          {activeTab === 'visual-builder' && (
+            <div className="p-6 text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Visual Builder Temporarily Unavailable</h3>
+              <p className="text-gray-600">The visual builder is currently being updated. Please use the booking rules tab instead.</p>
+            </div>
           )}
           
           {activeTab === 'rule-editor' && showRuleEditor && (

@@ -18,6 +18,14 @@ import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { TrialStatusBanner } from '@/components/ui/TrialStatusBanner'
 import { TrialWarningSystem } from '@/components/ui/TrialWarningSystem'
 import { ErrorBoundary } from '@/components/error-boundaries'
+import { useRealtimeAnalytics } from '@/hooks/useRealtimeAnalytics'
+import { LazyAnalytics, LazySixFigureTracker, createLazyComponent } from '@/components/ui/LazyLoader'
+
+// Lazy load the upselling intelligence component
+const LazyUpsellingIntelligence = createLazyComponent(
+  () => import('@/components/analytics/UpsellingIntelligence'),
+  'card'
+)
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -92,6 +100,17 @@ function DashboardContent() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [showTimezoneWarning, setShowTimezoneWarning] = useState(false)
   const [showTimezoneModal, setShowTimezoneModal] = useState(false)
+  
+  // Real-time analytics integration
+  const { 
+    isConnected: realtimeConnected, 
+    analyticsData: realtimeData, 
+    lastEvent,
+    connectionError 
+  } = useRealtimeAnalytics({
+    enabled: user?.role === 'admin' || user?.role === 'barber' || user?.role === 'platform_admin',
+    showNotifications: true
+  })
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -100,21 +119,29 @@ function DashboardContent() {
         // Check authentication first
         const userData = await getProfile()
         console.log('Dashboard: User data received:', userData)
+        console.log('Dashboard: User role checks:', {
+          role: userData.role,
+          unified_role: userData.unified_role,
+          is_system_admin: userData.is_system_admin,
+          can_view_analytics: userData.can_view_analytics,
+          shouldShowAdvancedDashboard: userData.role === 'admin' || userData.role === 'barber' || userData.role === 'platform_admin'
+        })
         if (!userData) {
           console.log('Dashboard: No user data, will redirect to login')
           return
         }
         setUser(userData)
         
-        // Check if user needs onboarding
-        if (!userData.onboarding_completed && userData.is_new_user !== false) {
-          console.log('Dashboard: Redirecting new user to welcome page')
-          router.push('/dashboard/welcome')
-          return
-        }
+        // FIXED: Onboarding redirect logic disabled to prevent infinite loops
+        // Check if user needs onboarding - removed to fix redirect loop
+        // if (!userData.onboarding_completed && userData.is_new_user !== false) {
+        //   console.log('Dashboard: Redirecting new user to welcome page')
+        //   router.push('/dashboard/welcome')
+        //   return
+        // }
         
-        // Check if user should be redirected to role-specific dashboard
-        // Temporarily disabled to allow admin users to see the dashboard
+        // FIXED: Role-specific dashboard redirect disabled to allow admin access
+        // Check if user should be redirected to role-specific dashboard - disabled to fix loops
         // const defaultDashboard = getDefaultDashboard(userData)
         // if (defaultDashboard !== '/dashboard' && window.location.pathname === '/dashboard') {
         //   router.push(defaultDashboard)
@@ -140,7 +167,7 @@ function DashboardContent() {
         ]
 
         // Add role-specific requests
-        if (userData.role === 'admin' || userData.role === 'barber') {
+        if (userData.role === 'admin' || userData.role === 'barber' || userData.role === 'platform_admin') {
           dashboardRequests.push(
             {
               endpoint: '/api/v2/dashboard/client-metrics',
@@ -170,7 +197,7 @@ function DashboardContent() {
           }
 
           // Process role-specific data
-          if (userData.role === 'admin' || userData.role === 'barber') {
+          if (userData.role === 'admin' || userData.role === 'barber' || userData.role === 'platform_admin') {
             // Client metrics
             if (results[1]) {
               setClientMetrics(results[1])
@@ -198,7 +225,7 @@ function DashboardContent() {
             setBookings([])
           }
 
-          if (userData.role === 'admin' || userData.role === 'barber') {
+          if (userData.role === 'admin' || userData.role === 'barber' || userData.role === 'platform_admin') {
             const [metricsResult, analyticsResult] = await Promise.allSettled([
               getClientDashboardMetrics(),
               getDashboardAnalytics(userData.id)
@@ -296,8 +323,16 @@ function DashboardContent() {
     )
   }
 
+  // Debug logging for dashboard rendering
+  console.log('Dashboard: Rendering decision:', {
+    userRole: user?.role,
+    userUnifiedRole: user?.unified_role,
+    shouldShowAdvancedDashboard: user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'platform_admin',
+    isSystemAdmin: user?.is_system_admin
+  })
+
   // Render specialized barber dashboard layout
-  if (user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin') {
+  if (user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'platform_admin') {
     // Calculate completion rate from analytics data
     const completionRate = analytics?.appointment_summary ? 
       Math.round(100 - (analytics.appointment_summary.cancellation_rate + analytics.appointment_summary.no_show_rate)) : 95
@@ -320,57 +355,114 @@ function DashboardContent() {
     return (
       <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Header Section */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
-            <div className="space-y-2">
-              <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">
-                Barber Dashboard
-              </h1>
-              <p className="text-ios-body text-ios-gray-600 dark:text-zinc-300">
-                Welcome back, {user?.first_name || 'there'}. Here's your performance overview.
-              </p>
+          {/* Enhanced Header Section with Visual Hierarchy */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-6 lg:space-y-0">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-4">
+                {/* Subtle accent line following restraint principles */}
+                <div className="w-1 h-12 bg-primary-500 rounded-full"></div>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                    Dashboard
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-300 mt-1">
+                    Welcome back, {user?.first_name || 'there'}. Here's your day at a glance.
+                  </p>
+                </div>
+              </div>
+              
+              {/* Quick stats preview - subtle integration */}
+              {todayStats && (
+                <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center space-x-2">
+                    <CalendarIcon />
+                    <span>{todayStats.appointments} appointments today</span>
+                  </div>
+                  {todayStats.revenue > 0 && (
+                    <div className="flex items-center space-x-2">
+                      <ArrowTrendingUpIcon />
+                      <span>${todayStats.revenue.toFixed(2)} revenue</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Quick Actions - Enhanced with better hierarchy */}
+            <div className="flex items-center space-x-3">
+              <Button 
+                onClick={() => router.push('/calendar')} 
+                variant="primary" 
+                size="md"
+                leftIcon={<CalendarIcon />}
+                className="shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                View Calendar
+              </Button>
+              <Button 
+                onClick={() => router.push('/clients')} 
+                variant="secondary" 
+                size="md"
+                leftIcon={<UserIcon />}
+              >
+                Clients
+              </Button>
+              <Button 
+                onClick={() => router.push('/analytics')} 
+                variant="ghost" 
+                size="md"
+                leftIcon={<ArrowTrendingUpIcon />}
+              >
+                Analytics
+              </Button>
             </div>
           </div>
 
-          {/* Success Message */}
+          {/* Enhanced Success Message with new card variants */}
           {showSuccess && (
-            <Card variant="default" className="mb-6 border-green-200 bg-green-50">
-              <CardContent className="flex items-center space-x-3">
+            <Card variant="secondary" borderAccent className="mb-6 border-l-green-500 bg-green-50 dark:bg-green-900/10">
+              <CardContent className="flex items-center space-x-4 py-4">
                 <div className="flex-shrink-0">
-                  <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
                 </div>
                 <div className="flex-1">
-                  <p className="text-success-800 font-medium">Booking confirmed successfully!</p>
-                  <p className="text-success-700 text-sm mt-1">Your appointment has been scheduled.</p>
+                  <p className="text-green-800 dark:text-green-200 font-medium">Booking confirmed successfully!</p>
+                  <p className="text-green-700 dark:text-green-300 text-sm mt-1">Your appointment has been scheduled and confirmation sent.</p>
                 </div>
                 <Button
                   onClick={() => setShowSuccess(false)}
                   variant="ghost"
                   size="sm"
-                  className="text-success-600 hover:text-success-700"
+                  className="text-green-600 hover:text-green-700 hover:bg-green-100"
                 >
-                  ×
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </Button>
               </CardContent>
             </Card>
           )}
 
-          {/* Timezone Warning */}
+          {/* Enhanced Timezone Warning */}
           {showTimezoneWarning && (
-            <Card variant="default" className="mb-6 border-yellow-200 bg-yellow-50">
-              <CardContent className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
+            <Card variant="secondary" borderAccent className="mb-6 border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/10">
+              <CardContent className="flex items-center justify-between py-4">
+                <div className="flex items-center space-x-4">
                   <div className="flex-shrink-0">
-                    <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
+                    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    </div>
                   </div>
                   <div>
-                    <p className="text-warning-800 font-medium">Timezone not configured</p>
-                    <p className="text-warning-700 text-sm mt-1">
-                      Set your timezone to ensure appointment times display correctly.
+                    <p className="text-yellow-800 dark:text-yellow-200 font-medium">Timezone Setup Required</p>
+                    <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
+                      Configure your timezone to ensure appointment times display correctly.
                     </p>
                   </div>
                 </div>
@@ -379,12 +471,66 @@ function DashboardContent() {
                   variant="outline"
                   size="sm"
                   leftIcon={<SettingsIcon />}
+                  className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
                 >
                   Configure
                 </Button>
               </CardContent>
             </Card>
           )}
+
+          {/* Six Figure Barber Goal Tracking - Enhanced Analytics with Lazy Loading */}
+          <ErrorBoundary feature="six-figure-tracker" userId={user?.id}>
+            <LazySixFigureTracker
+              className="mb-8"
+              variant="hero"
+              showProjections={true}
+              showActionables={true}
+            />
+          </ErrorBoundary>
+
+          {/* Real-time Analytics Dashboard with Lazy Loading */}
+          <ErrorBoundary feature="interactive-analytics" userId={user?.id}>
+            <div className="mb-8">
+              {/* Real-time Connection Status */}
+              {connectionError && (
+                <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <div className="flex items-center text-yellow-800 dark:text-yellow-200 text-sm">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
+                    {connectionError}
+                  </div>
+                </div>
+              )}
+              
+              {realtimeConnected && (
+                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-center text-green-800 dark:text-green-200 text-sm">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    Real-time updates active
+                    {lastEvent && (
+                      <span className="ml-2 text-xs opacity-75">
+                        Last: {lastEvent.type.replace('_', ' ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <LazyAnalytics
+                sixFigureGoalEnabled={true}
+                className="w-full"
+              />
+            </div>
+          </ErrorBoundary>
+
+          {/* Upselling Intelligence - Six Figure Barber Revenue Optimization */}
+          <ErrorBoundary feature="upselling-intelligence" userId={user?.id}>
+            <LazyUpsellingIntelligence
+              className="mb-8"
+              autoNotifications={true}
+              showActionCards={true}
+            />
+          </ErrorBoundary>
 
           <ErrorBoundary 
             feature="barber-dashboard"
@@ -410,112 +556,114 @@ function DashboardContent() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
-          <div className="space-y-2">
-            <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">
-              Command Center
-            </h1>
-            <p className="text-ios-body text-ios-gray-600 dark:text-zinc-300">
-              Welcome back, {user?.first_name || 'there'}. Here's what's happening today.
-            </p>
+        {/* Enhanced Client Dashboard Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-6 lg:space-y-0">
+          <div className="space-y-3">
+            <div className="flex items-center space-x-4">
+              {/* Subtle accent line following restraint principles */}
+              <div className="w-1 h-12 bg-primary-500 rounded-full"></div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                  Welcome Back
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300 mt-1">
+                  Hello, {user?.first_name || 'there'}. Ready to book your next appointment?
+                </p>
+              </div>
+            </div>
+            
+            {/* Quick appointment info for clients */}
+            {bookings.length > 0 && (
+              <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center space-x-2">
+                  <CalendarIcon />
+                  <span>{bookings.length} upcoming appointment{bookings.length !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <ClockIcon />
+                  <span>Next: {bookings[0]?.start_time ? new Date(bookings[0].start_time).toLocaleDateString() : 'Not scheduled'}</span>
+                </div>
+              </div>
+            )}
           </div>
           
-          {/* Quick Actions - Mobile Hidden, Desktop Visible */}
-          <div className="hidden lg:flex items-center space-x-3">
+          {/* Client-focused Quick Actions */}
+          <div className="flex items-center space-x-3">
             <Button 
               onClick={() => router.push('/book')} 
               variant="primary" 
               size="md"
-              elevated
-              leftIcon={<BookIcon />}
+              leftIcon={<PlusIcon />}
+              className="shadow-sm hover:shadow-md transition-all duration-200"
             >
               Book Appointment
+            </Button>
+            <Button 
+              onClick={() => router.push('/calendar')} 
+              variant="secondary" 
+              size="md"
+              leftIcon={<CalendarIcon />}
+            >
+              My Appointments
             </Button>
             {(user?.role === 'admin' || user?.role === 'barber') && (
               <Button 
                 onClick={() => router.push('/notifications')} 
-                variant="secondary" 
+                variant="ghost" 
                 size="md"
                 leftIcon={<BellIcon />}
               >
                 Notifications
               </Button>
             )}
-            <Button 
-              onClick={() => router.push('/settings')} 
-              variant="ghost" 
-              size="md"
-              leftIcon={<SettingsIcon />}
-            >
-              Settings
-            </Button>
           </div>
         </div>
 
-        {/* Trial Warning System */}
-        {user && (user.subscription_status === 'trial' || user.is_trial_active) && (
-          <TrialWarningSystem
-            trialStatus={{
-              is_trial_active: user.is_trial_active || false,
-              trial_days_remaining: user.trial_days_remaining || 0,
-              trial_started_at: user.trial_started_at || null,
-              trial_expires_at: user.trial_expires_at || null,
-              subscription_status: user.subscription_status || 'trial',
-              user_type: user.user_type || user.role || 'barber'
-            }}
-            onUpgrade={() => router.push('/billing/plans')}
-            onDismiss={(warningId) => console.log('Dismissed warning:', warningId)}
-          />
-        )}
-
-        {/* Trial Status Banner */}
-        {user && user.primary_organization_id && (user.subscription_status === 'trial' || user.is_trial_active || user.primary_organization?.subscription_status === 'trial') && (
-          <TrialStatusBanner
-            organizationId={user.primary_organization_id}
-            className="mb-6"
-          />
-        )}
-
-        {/* Success Message */}
+        {/* Enhanced Success Message with new card variants */}
         {showSuccess && (
-          <Card variant="default" className="mb-6 border-green-200 bg-green-50">
-            <CardContent className="flex items-center space-x-3">
+          <Card variant="secondary" borderAccent className="mb-6 border-l-green-500 bg-green-50 dark:bg-green-900/10">
+            <CardContent className="flex items-center space-x-4 py-4">
               <div className="flex-shrink-0">
-                <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
               </div>
               <div className="flex-1">
-                <p className="text-success-800 font-medium">Booking confirmed successfully!</p>
-                <p className="text-success-700 text-sm mt-1">Your appointment has been scheduled.</p>
+                <p className="text-green-800 dark:text-green-200 font-medium">Booking confirmed successfully!</p>
+                <p className="text-green-700 dark:text-green-300 text-sm mt-1">Your appointment has been scheduled and confirmation sent.</p>
               </div>
               <Button
                 onClick={() => setShowSuccess(false)}
                 variant="ghost"
                 size="sm"
-                className="text-success-600 hover:text-success-700"
+                className="text-green-600 hover:text-green-700 hover:bg-green-100"
               >
-                ×
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* Timezone Warning */}
+        {/* Enhanced Timezone Warning */}
         {showTimezoneWarning && (
-          <Card variant="default" className="mb-6 border-yellow-200 bg-yellow-50">
-            <CardContent className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+          <Card variant="secondary" borderAccent className="mb-6 border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/10">
+            <CardContent className="flex items-center justify-between py-4">
+              <div className="flex items-center space-x-4">
                 <div className="flex-shrink-0">
-                  <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
+                  <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
                 </div>
                 <div>
-                  <p className="text-warning-800 font-medium">Timezone not configured</p>
-                  <p className="text-warning-700 text-sm mt-1">
-                    Set your timezone to ensure appointment times display correctly.
+                  <p className="text-yellow-800 dark:text-yellow-200 font-medium">Timezone Setup Required</p>
+                  <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
+                    Configure your timezone to ensure appointment times display correctly.
                   </p>
                 </div>
               </div>
@@ -524,6 +672,7 @@ function DashboardContent() {
                 variant="outline"
                 size="sm"
                 leftIcon={<SettingsIcon />}
+                className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
               >
                 Configure
               </Button>
@@ -538,121 +687,247 @@ function DashboardContent() {
           </ErrorBoundary>
         )}
 
-        {user && (
-          <Card className="mb-6">
+        {/* Enhanced Main Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Hero Card - Today's Appointments (Only one hero per page) */}
+          <div className="lg:col-span-2">
+            <Card variant="hero" className="h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+                      <CalendarIcon />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl">Today's Schedule</CardTitle>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {bookings.length > 0 ? `${bookings.length} appointment${bookings.length !== 1 ? 's' : ''} scheduled` : 'No appointments today'}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => router.push('/calendar')}
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary-600 hover:text-primary-700"
+                  >
+                    View All →
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ErrorBoundary feature="calendar-mini" userId={user?.id}>
+                  <CalendarDayMini
+                    appointments={bookings}
+                    selectedDate={new Date()}
+                    maxItems={4}
+                    onViewAll={() => router.push('/calendar')}
+                  />
+                </ErrorBoundary>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Actions Card - Secondary */}
+          <Card variant="secondary">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Welcome back!</CardTitle>
+              <CardTitle className="text-lg flex items-center space-x-2">
+                <PlusIcon />
+                <span>Quick Actions</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => router.push('/book')}
+                  variant="primary"
+                  size="sm"
+                  className="w-full justify-start"
+                  leftIcon={<BookIcon />}
+                >
+                  Book Appointment
+                </Button>
+                <Button
+                  onClick={() => router.push('/calendar')}
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  leftIcon={<CalendarIcon />}
+                >
+                  View Calendar
+                </Button>
                 <Button
                   onClick={() => router.push('/settings')}
                   variant="ghost"
                   size="sm"
-                  className="text-primary-600 hover:text-primary-700"
+                  className="w-full justify-start text-gray-600 hover:text-gray-800"
+                  leftIcon={<SettingsIcon />}
                 >
                   Account Settings
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Secondary Information Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Account Information */}
+          <Card variant="default">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center space-x-2">
+                <UserIcon />
+                <span>Account Information</span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="mb-6">
-                <p className="text-gray-600">Logged in as: {user.email}</p>
-                {user.timezone && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    Timezone: {user.timezone.replace(/_/g, ' ')}
-                  </p>
-                )}
-              </div>
-            
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* Today's Appointments Mini Calendar */}
-                <div className="md:col-span-1">
-                  <ErrorBoundary feature="calendar-mini" userId={user?.id}>
-                    <CalendarDayMini
-                      appointments={bookings}
-                      selectedDate={new Date()}
-                      maxItems={3}
-                      onViewAll={() => router.push('/calendar')}
-                    />
-                  </ErrorBoundary>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-500">Email Address</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{user.email}</p>
                 </div>
-                
-                <Card variant="default">
-                  <CardContent>
-                    <h3 className="font-semibold text-accent-900 mb-3">
-                      {user?.role === 'admin' || user?.role === 'barber' ? 'Client Management' : 'Services'}
-                    </h3>
-                    {user?.role === 'admin' || user?.role === 'barber' ? (
-                      <div className="space-y-2">
-                        {clientMetrics ? (
-                          <div className="text-sm space-y-1">
-                            <div>Total Clients: {clientMetrics.total_clients || 0}</div>
-                            <div>New This Month: {clientMetrics.new_clients_this_month || 0}</div>
-                            <div>VIP Clients: {clientMetrics.vip_clients || 0}</div>
-                          </div>
-                        ) : (
-                          <div className="text-sm text-gray-600">Loading metrics...</div>
-                        )}
-                        <Button
-                          onClick={() => router.push('/clients')}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
-                        >
-                          Manage clients →
-                        </Button>
-                        <Button
-                          onClick={() => router.push('/import')}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
-                        >
-                          Import data →
-                        </Button>
-                        <Button
-                          onClick={() => router.push('/export')}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
-                        >
-                          Export data →
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <p className="text-sm text-gray-600">Browse available services</p>
-                        <Button
-                          onClick={() => router.push('/book')}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
-                        >
-                          View services →
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {user?.role === 'admin' && (
-                <Card variant="default" className="mt-6 border-l-4 border-accent-400">
-                  <CardContent>
-                    <h3 className="font-semibold text-accent-900 mb-2">🛠️ Admin Panel</h3>
-                    <p className="text-accent-700 text-sm mb-3">
-                      Manage booking settings, business hours, and platform configuration
+                {user.timezone && (
+                  <div>
+                    <p className="text-sm text-gray-500">Timezone</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {user.timezone.replace(/_/g, ' ')}
                     </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-gray-500">Role</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100 capitalize">
+                    {user.role === 'admin' ? 'Administrator' : user.role}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Role-Specific Business Tools / Services */}
+          <Card variant={user?.role === 'admin' ? 'elevated' : 'default'}>
+            <CardHeader>
+              <div className="flex items-center space-x-3">
+                {user?.role === 'admin' && (
+                  <div className="w-1 h-8 bg-primary-500 rounded-full"></div>
+                )}
+                <CardTitle className="text-lg">
+                  {user?.role === 'admin' ? 'Admin Tools' : 
+                   user?.role === 'barber' ? 'Barber Dashboard' : 
+                   'Your Services'}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {user?.role === 'admin' || user?.role === 'barber' ? (
+                <div className="space-y-3">
+                  {clientMetrics ? (
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <p className="text-2xl font-bold text-primary-600">{clientMetrics.total_clients || 0}</p>
+                        <p className="text-xs text-gray-500">Total Clients</p>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <p className="text-2xl font-bold text-green-600">{clientMetrics.new_clients_this_month || 0}</p>
+                        <p className="text-xs text-gray-500">New This Month</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-600 mb-4">Loading metrics...</div>
+                  )}
+                  
+                  <div className="space-y-2">
                     <Button
-                      onClick={() => router.push('/admin')}
+                      onClick={() => router.push('/clients')}
                       variant="ghost"
                       size="sm"
-                      className="text-primary-600 hover:text-primary-700 p-0"
+                      className="w-full justify-start text-primary-600 hover:text-primary-700 hover:bg-primary-50"
+                      leftIcon={<UserIcon />}
                     >
-                      Open Admin Settings →
+                      Manage Clients
                     </Button>
-                  </CardContent>
-                </Card>
+                    <Button
+                      onClick={() => router.push('/analytics')}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-primary-600 hover:text-primary-700 hover:bg-primary-50"
+                      leftIcon={<ArrowTrendingUpIcon />}
+                    >
+                      View Analytics
+                    </Button>
+                    <Button
+                      onClick={() => router.push('/import')}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                    >
+                      Import Data
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Explore our professional barbering services and book your next appointment.
+                  </p>
+                  <Button
+                    onClick={() => router.push('/book')}
+                    variant="primary"
+                    size="sm"
+                    className="w-full"
+                    leftIcon={<BookIcon />}
+                  >
+                    Browse Services
+                  </Button>
+                </div>
               )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Admin Panel - Enhanced for Admin Role */}
+        {user?.role === 'admin' && (
+          <Card variant="elevated" borderAccent className="mt-6">
+            <CardHeader>
+              <div className="flex items-center space-x-4">
+                <div className="w-1 h-12 bg-primary-500 rounded-full"></div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
+                    <ShieldIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">System Administration</CardTitle>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Manage users, settings, and system operations
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Manage booking settings, business hours, and platform configuration
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Button
+                  onClick={() => router.push('/admin')}
+                  variant="primary"
+                  size="sm"
+                  className="justify-start"
+                  leftIcon={<SettingsIcon />}
+                >
+                  Admin Settings
+                </Button>
+                <Button
+                  onClick={() => router.push('/analytics')}
+                  variant="secondary"
+                  size="sm"
+                  className="justify-start"
+                  leftIcon={<ArrowTrendingUpIcon />}
+                >
+                  System Analytics
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}

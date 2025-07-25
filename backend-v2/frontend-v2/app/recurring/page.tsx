@@ -81,7 +81,7 @@ export default function RecurringAppointmentsPage() {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
-      const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/patterns`, {
+      const response = await fetch(`${apiUrl}/api/v2/recurring-appointments/patterns`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -106,7 +106,7 @@ export default function RecurringAppointmentsPage() {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
-      const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/upcoming?days_ahead=30`, {
+      const response = await fetch(`${apiUrl}/api/v2/recurring-appointments/upcoming?days_ahead=30`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -127,7 +127,7 @@ export default function RecurringAppointmentsPage() {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
-      const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/patterns`, {
+      const response = await fetch(`${apiUrl}/api/v2/recurring-appointments/patterns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ export default function RecurringAppointmentsPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/patterns/${patternId}/generate`,
+        `${apiUrl}/api/v2/recurring-appointments/patterns/${patternId}/generate`,
         {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` }
@@ -210,7 +210,7 @@ export default function RecurringAppointmentsPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(
-        `${apiUrl}/api/v1/recurring-appointments/patterns/${patternId}`,
+        `${apiUrl}/api/v2/recurring-appointments/patterns/${patternId}`,
         {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }

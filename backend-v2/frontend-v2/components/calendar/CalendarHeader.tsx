@@ -6,7 +6,7 @@ import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon } from '@heroicons/rea
 import { Button } from '../ui/button'
 import { useResponsive } from '@/hooks/useResponsive'
 import { getMobileTouchClass } from '@/lib/mobile-touch-enhancements'
-import type { CalendarView } from '../UnifiedCalendar'
+import type { CalendarView } from '@/types/calendar'
 
 interface CalendarHeaderProps {
   view: CalendarView
@@ -45,9 +45,15 @@ export const CalendarHeader = React.memo(function CalendarHeader({
 
   return (
     <div 
-      className="calendar-navigation flex items-center justify-between p-2 sm:p-4 border-b border-gray-200 dark:border-gray-700"
+      className={`
+        calendar-navigation flex items-center justify-between 
+        px-4 py-3 md:px-6 md:py-4
+        bg-white dark:bg-gray-900
+        border-b border-gray-200 dark:border-gray-700
+        rounded-t-lg
+      `}
       onClick={(e) => e.stopPropagation()}>
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className="flex items-center gap-2 md:gap-3">
         <Button
           variant="outline"
           size="sm"
@@ -59,7 +65,12 @@ export const CalendarHeader = React.memo(function CalendarHeader({
           <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
         
-        <h2 className="text-base sm:text-lg font-semibold min-w-[140px] sm:min-w-[200px] text-center select-none">
+        <h2 className={`
+          text-base md:text-lg font-semibold 
+          min-w-[140px] md:min-w-[200px] text-center select-none
+          text-gray-900 dark:text-gray-100
+          px-2
+        `}>
           {getPeriodTitle()}
         </h2>
         
@@ -75,7 +86,7 @@ export const CalendarHeader = React.memo(function CalendarHeader({
         </Button>
       </div>
       
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className="flex items-center gap-2 md:gap-3">
         <Button
           variant="outline"
           size="sm"

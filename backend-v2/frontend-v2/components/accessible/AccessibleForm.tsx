@@ -4,7 +4,7 @@ import React, { forwardRef, useId } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Select } from '@/components/ui/select'
+import { Select as UISelect } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { cn } from '@/lib/utils'
@@ -148,23 +148,22 @@ interface AccessibleSelectProps {
   required?: boolean
   placeholder?: string
   value?: string
-  onChange?: (value: string | string[] | null) => void
+  onValueChange?: (value: string) => void
   options: Array<{ value: string; label: string; disabled?: boolean }>
   className?: string
 }
 
 export const AccessibleSelect = forwardRef<HTMLDivElement, AccessibleSelectProps>(
-  ({ label, error, hint, required, placeholder, value, onChange, options, className }, ref) => {
+  ({ label, error, hint, required, placeholder, value, onValueChange, options, className }, ref) => {
     return (
       <AccessibleField label={label} error={error} hint={hint} required={required}>
-        <Select
+        <UISelect
           ref={ref}
           value={value}
-          onChange={onChange}
+          onChange={(val) => onValueChange?.(val as string)}
           options={options}
           placeholder={placeholder}
           className={className}
-          error={error}
         />
       </AccessibleField>
     )

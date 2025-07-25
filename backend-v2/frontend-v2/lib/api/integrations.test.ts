@@ -78,7 +78,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.initiateOAuth(request)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/connect', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/connect', {
           method: 'POST',
           body: JSON.stringify(request)
         })
@@ -96,7 +96,7 @@ describe('IntegrationsAPI', () => {
 
         await integrationsAPI.initiateOAuth(request)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/connect', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/connect', {
           method: 'POST',
           body: JSON.stringify(request)
         })
@@ -131,7 +131,7 @@ describe('IntegrationsAPI', () => {
           IntegrationType.GOOGLE_CALENDAR
         )
 
-        const expectedUrl = '/api/v1/integrations/callback?code=auth_code_123&state=state_abc&integration_type=google_calendar'
+        const expectedUrl = '/api/v2/integrations/callback?code=auth_code_123&state=state_abc&integration_type=google_calendar'
         expect(mockFetchAPI).toHaveBeenCalledWith(expectedUrl)
         expect(result).toEqual(mockCallbackResponse)
       })
@@ -152,7 +152,7 @@ describe('IntegrationsAPI', () => {
           'User denied access'
         )
 
-        const expectedUrl = '/api/v1/integrations/callback?code=auth_code_123&state=state_abc&integration_type=google_calendar&error=access_denied&error_description=User+denied+access'
+        const expectedUrl = '/api/v2/integrations/callback?code=auth_code_123&state=state_abc&integration_type=google_calendar&error=access_denied&error_description=User+denied+access'
         expect(mockFetchAPI).toHaveBeenCalledWith(expectedUrl)
         expect(result.success).toBe(false)
       })
@@ -166,7 +166,7 @@ describe('IntegrationsAPI', () => {
           IntegrationType.GOOGLE_CALENDAR
         )
 
-        const expectedUrl = '/api/v1/integrations/callback?code=code+with+spaces&state=state%2Fwith%2Fslashes&integration_type=google_calendar'
+        const expectedUrl = '/api/v2/integrations/callback?code=code+with+spaces&state=state%2Fwith%2Fslashes&integration_type=google_calendar'
         expect(mockFetchAPI).toHaveBeenCalledWith(expectedUrl)
       })
     })
@@ -180,7 +180,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.getIntegrations()
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/status')
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/status')
         expect(result).toEqual(mockIntegrations)
       })
 
@@ -190,7 +190,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.getIntegrations(IntegrationType.GOOGLE_CALENDAR)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/status?integration_type=google_calendar')
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/status?integration_type=google_calendar')
         expect(result).toEqual(mockIntegrations)
       })
 
@@ -209,7 +209,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.getIntegration(1)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/1')
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/1')
         expect(result).toEqual(mockIntegration)
       })
 
@@ -234,7 +234,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.createIntegration(createData)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations', {
           method: 'POST',
           body: JSON.stringify(createData)
         })
@@ -260,7 +260,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.createIntegration(createData)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations', {
           method: 'POST',
           body: JSON.stringify(createData)
         })
@@ -279,7 +279,7 @@ describe('IntegrationsAPI', () => {
 
         await integrationsAPI.createIntegration(createData)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations', {
           method: 'POST',
           body: JSON.stringify(createData)
         })
@@ -318,7 +318,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.updateIntegration(1, updateData)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/1', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/1', {
           method: 'PUT',
           body: JSON.stringify(updateData)
         })
@@ -339,7 +339,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.updateIntegration(1, updateData)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/1', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/1', {
           method: 'PUT',
           body: JSON.stringify(updateData)
         })
@@ -370,7 +370,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.disconnectIntegration(1)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/1', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/1', {
           method: 'DELETE'
         })
         expect(result).toEqual(mockDisconnectResponse)
@@ -409,7 +409,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.checkAllIntegrationsHealth()
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/health/all')
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/health/all')
         expect(result).toEqual(mockHealthSummary)
         expect(result.total_integrations).toBe(2)
         expect(result.healthy_count).toBe(1)
@@ -441,7 +441,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.checkIntegrationHealth(1)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/health/1')
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/health/1')
         expect(result).toEqual(mockHealthCheck)
         expect(result.healthy).toBe(true)
       })
@@ -488,7 +488,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.refreshTokens(refreshRequest)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/refresh-token', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/refresh-token', {
           method: 'POST',
           body: JSON.stringify(refreshRequest)
         })
@@ -548,7 +548,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.testConnection(1)
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/1/test', {
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/1/test', {
           method: 'POST'
         })
         expect(result).toEqual(mockTestResponse)
@@ -595,7 +595,7 @@ describe('IntegrationsAPI', () => {
 
         const result = await integrationsAPI.getAvailableIntegrations()
 
-        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/available')
+        expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/available')
         expect(result).toEqual(mockAvailableIntegrations)
       })
 
@@ -658,7 +658,7 @@ describe('IntegrationsAPI', () => {
 
       await integrationsAPI.createIntegration(createData)
 
-      expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations', {
+      expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations', {
         method: 'POST',
         body: JSON.stringify(createData)
       })
@@ -669,7 +669,7 @@ describe('IntegrationsAPI', () => {
 
       await integrationsAPI.getIntegrations(IntegrationType.GOOGLE_MY_BUSINESS)
 
-      expect(mockFetchAPI).toHaveBeenCalledWith('/api/v1/integrations/status?integration_type=google_my_business')
+      expect(mockFetchAPI).toHaveBeenCalledWith('/api/v2/integrations/status?integration_type=google_my_business')
     })
 
     it('handles special characters in URLs', async () => {
@@ -681,7 +681,7 @@ describe('IntegrationsAPI', () => {
         IntegrationType.GOOGLE_CALENDAR
       )
 
-      const expectedUrl = '/api/v1/integrations/callback?code=code%2Bwith%2Fspecial%26chars&state=state%3Dwith%26equals&integration_type=google_calendar'
+      const expectedUrl = '/api/v2/integrations/callback?code=code%2Bwith%2Fspecial%26chars&state=state%3Dwith%26equals&integration_type=google_calendar'
       expect(mockFetchAPI).toHaveBeenCalledWith(expectedUrl)
     })
   })

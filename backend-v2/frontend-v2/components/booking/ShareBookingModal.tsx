@@ -1,9 +1,21 @@
 'use client'
 
+/**
+ * ShareBookingModal - Comprehensive booking link sharing interface
+ * 
+ * MODAL BEHAVIOR:
+ * ✅ Click outside modal → closes automatically (global default)
+ * ✅ Press ESC key → closes automatically (global default)
+ * ✅ All 8 sharing options visible with scroll support
+ * ✅ Responsive grid layout: 1 col mobile, 2 col tablet, 4 col desktop
+ */
+
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Modal, ModalBody } from '../ui/Modal'
 import { Card } from '@/components/ui/card'
 import LinkCustomizer from './LinkCustomizer'
+import QRCodeGenerator from './QRCodeGenerator'
 import {
   LinkIcon,
   CodeBracketIcon,
@@ -15,6 +27,8 @@ import {
   CogIcon,
   WrenchScrewdriverIcon,
   BoltIcon,
+  ChartBarIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 
 interface ShareBookingModalProps {
@@ -43,20 +57,16 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
   services = [],
   barbers = []
 }) => {
+  const router = useRouter()
   const [copiedOption, setCopiedOption] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState<string | null>(null)
   const [showLinkCustomizer, setShowLinkCustomizer] = useState(false)
+  const [showQRGenerator, setShowQRGenerator] = useState(false)
   const [customizerMode, setCustomizerMode] = useState<'set-parameters' | 'quick'>('set-parameters')
 
-  // Generate QR Code (placeholder implementation)
-  const generateQRCode = async () => {
-    setIsGenerating('qr-code')
-    // In a real implementation, this would generate a QR code
-    setTimeout(() => {
-      setIsGenerating(null)
-      // Show QR code modal or download
-      alert('QR Code generated! (This would show the actual QR code in production)')
-    }, 1500)
+  // Open QR Code Generator Modal
+  const generateQRCode = () => {
+    setShowQRGenerator(true)
   }
 
   // Copy to clipboard utility
@@ -122,6 +132,12 @@ ${businessName}`
     }
   }
 
+  // Navigate to booking links management page
+  const openLinksManager = () => {
+    router.push('/marketing/booking-links')
+    onClose()
+  }
+
   const shareOptions: ShareOption[] = [
     {
       id: 'set-parameters',
@@ -145,8 +161,8 @@ ${businessName}`
     },
     {
       id: 'share-link',
-      title: 'Share Link',
-      description: 'Copy the current booking page link',
+      title: 'Copy Booking Link',
+      description: 'Instantly copy your booking page URL to clipboard',
       icon: LinkIcon,
       action: () => copyToClipboard(bookingUrl, 'share-link'),
     },
@@ -178,6 +194,13 @@ ${businessName}`
       icon: ShareIcon,
       action: shareViaSocial,
     },
+    {
+      id: 'manage-links',
+      title: 'Manage All Links & QR Codes',
+      description: 'Open the full links and QR codes management dashboard',
+      icon: ChartBarIcon,
+      action: openLinksManager,
+    },
   ]
 
   const renderOptionCard = (option: ShareOption) => {
@@ -186,95 +209,103 @@ ${businessName}`
     const isLoading = isGenerating === option.id
 
     return (
-      <Card
+      <div
         key={option.id}
-        variant="elevated"
-        padding="md"
-        interactive
-        className="group cursor-pointer hover:shadow-ios-lg hover:scale-[1.02] transition-all duration-200"
+        className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-5 cursor-pointer hover:shadow-xl hover:scale-[1.03] hover:-translate-y-1 transition-all duration-300 min-h-[140px] flex flex-col justify-center hover:bg-gradient-to-br hover:from-gray-50 hover:to-white dark:hover:from-gray-700 dark:hover:to-gray-800 hover:border-primary-300 dark:hover:border-primary-400"
         onClick={option.action}
       >
-        <div className="flex flex-col items-center text-center space-y-3">
-          {/* Icon */}
+        <div className="flex flex-col items-center text-center space-y-4">
+          {/* Enhanced Icon with better visual hierarchy */}
           <div className="relative">
-            <div className="w-12 h-12 rounded-ios-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-800/50 transition-colors duration-200">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-500/20 dark:to-primary-600/30 flex items-center justify-center group-hover:from-primary-200 group-hover:to-primary-300 dark:group-hover:from-primary-500/30 dark:group-hover:to-primary-600/40 transition-all duration-300 shadow-sm group-hover:shadow-md">
               {isLoading ? (
-                <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-7 h-7 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
               ) : isCopied ? (
-                <CheckIcon className="w-6 h-6 text-success-500" />
+                <CheckIcon className="w-7 h-7 text-green-500" />
               ) : (
-                <Icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                <Icon className="w-7 h-7 text-primary-600 dark:text-primary-300 group-hover:scale-110 transition-transform duration-300" />
               )}
             </div>
-            
+            {/* Subtle glow effect on hover */}
+            <div className="absolute inset-0 rounded-xl bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
           </div>
 
-          {/* Content */}
-          <div className="space-y-1">
-            <h3 className="text-ios-headline font-semibold text-accent-900 dark:text-white">
+          {/* Enhanced Content with better typography */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary-700 dark:group-hover:text-primary-300 transition-colors duration-300">
               {option.title}
             </h3>
-            <p className="text-ios-footnote text-ios-gray-600 dark:text-ios-gray-400 leading-relaxed">
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-2">
               {option.description}
             </p>
           </div>
 
-          {/* Copy indicator */}
+          {/* Enhanced Copy indicator with animation */}
           {isCopied && (
-            <div className="flex items-center space-x-1 text-success-600 dark:text-success-400">
+            <div className="flex items-center space-x-1 text-green-600 dark:text-green-400 animate-bounce">
               <DocumentDuplicateIcon className="w-4 h-4" />
-              <span className="text-ios-caption1 font-medium">Copied!</span>
+              <span className="text-xs font-semibold">Copied!</span>
             </div>
           )}
         </div>
-      </Card>
+      </div>
     )
   }
 
   return (
     <>
+    {/* Standardized Modal with improved UI and reliable click-outside behavior */}
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Share Booking"
-      size="lg"
+      size="4xl"
       position="center"
       variant="default"
-      className="max-w-2xl"
+      closeOnOverlayClick={true}
+      closeOnEscape={true}
+      adaptivePositioning={false}
     >
-      <ModalBody className="pb-8">
-        {/* Description */}
+      <ModalBody className="max-h-[75vh] max-w-full overflow-y-auto">
+        {/* Enhanced Description with better typography */}
         <div className="mb-8">
-          <p className="text-ios-body text-ios-gray-600 dark:text-ios-gray-400 leading-relaxed">
-            Choose a way in which you want to share your availability with the customers using one of the options below.
+          <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+            Choose how you want to share your availability with customers using one of the options below.
           </p>
         </div>
 
-        {/* Share Options Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Improved Share Options Grid with better spacing and responsiveness */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 w-full">
           {shareOptions.map(renderOptionCard)}
         </div>
 
-        {/* Current booking URL display */}
-        <div className="mt-8 p-4 bg-ios-gray-50 dark:bg-dark-surface-100 rounded-ios-lg border border-ios-gray-200 dark:border-ios-gray-700">
+        {/* Enhanced Current booking URL display with premium styling */}
+        <div className="mt-10 p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <p className="text-ios-caption1 font-medium text-ios-gray-700 dark:text-ios-gray-300 mb-1">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2 uppercase tracking-wide">
                 Current Booking URL
               </p>
-              <code className="text-ios-footnote text-primary-600 dark:text-primary-400 font-mono truncate block">
-                {bookingUrl}
-              </code>
+              <a
+                href={bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary-600 dark:text-primary-300 font-mono hover:text-primary-700 dark:hover:text-primary-200 hover:underline transition-all duration-200 cursor-pointer flex items-center gap-2 group bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400"
+                title="Click to open booking page in new tab"
+              >
+                <span className="truncate flex-1">{bookingUrl}</span>
+                <ArrowTopRightOnSquareIcon className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
+              </a>
             </div>
             <button
               onClick={() => copyToClipboard(bookingUrl, 'url-display')}
-              className="ml-3 p-2 rounded-ios text-ios-gray-500 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-ios-gray-100 dark:hover:bg-ios-gray-800 transition-colors duration-200"
-              title="Copy URL"
+              className="ml-4 p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-white dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400 transition-all duration-200 shadow-sm hover:shadow-md"
+              title="Copy URL to clipboard"
             >
               {copiedOption === 'url-display' ? (
-                <CheckIcon className="w-4 h-4 text-success-500" />
+                <CheckIcon className="w-5 h-5 text-green-500" />
               ) : (
-                <DocumentDuplicateIcon className="w-4 h-4" />
+                <DocumentDuplicateIcon className="w-5 h-5" />
               )}
             </button>
           </div>
@@ -292,6 +323,32 @@ ${businessName}`
       barbers={barbers}
       mode={customizerMode}
     />
+
+    {/* QR Code Generator Modal */}
+    {showQRGenerator && (
+      <Modal
+        isOpen={showQRGenerator}
+        onClose={() => setShowQRGenerator(false)}
+        title="QR Code Generator"
+        size="lg"
+        position="center"
+        variant="default"
+        className="max-w-2xl"
+      >
+        <ModalBody className="pb-8">
+          <QRCodeGenerator
+            bookingUrl={bookingUrl}
+            title={`${businessName} Booking QR Code`}
+            description="Scan this QR code to book an appointment"
+            defaultSize="medium"
+            showSizeSelector={true}
+            showDownloadButton={true}
+            showShareButton={true}
+            showCopyButton={true}
+          />
+        </ModalBody>
+      </Modal>
+    )}
   </>
   )
 }

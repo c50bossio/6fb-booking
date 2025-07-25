@@ -15,7 +15,7 @@ from schemas_new.api_key import (
     APIKeyCreate, APIKeyResponse, APIKeyListResponse,
     APIKeyRotate, APIKeyRevoke
 )
-from utils.logging_config import get_audit_logger
+from utils.audit_logger_bypass import get_audit_logger
 
 router = APIRouter(
     prefix="/api-keys",

@@ -166,15 +166,17 @@ export const INTEGRATION_METADATA: Record<IntegrationType, IntegrationMetadata> 
     type: IntegrationType.GOOGLE_MY_BUSINESS,
     name: 'google_my_business',
     displayName: 'Google My Business',
-    description: 'Manage reviews and business listings on Google',
+    description: 'Manage your business profile, reviews, and local SEO presence',
     icon: 'BuildingStorefrontIcon',
-    color: '#34A853',
+    color: '#4285F4',
     requiresOAuth: true,
     features: [
-      'Review management',
-      'Business listing updates',
-      'Customer messaging',
-      'Performance insights'
+      'Business profile management',
+      'Review monitoring & responses',
+      'Photo and post management',
+      'Local SEO optimization',
+      'Performance analytics',
+      'Customer insights'
     ],
     helpUrl: 'https://support.bookedbarber.com/integrations/google-my-business'
   },

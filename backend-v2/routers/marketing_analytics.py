@@ -73,7 +73,7 @@ async def get_marketing_overview(
     date_range: Optional[DateRangeRequest] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    permissions = Depends(get_permission_checker([Permission.VIEW_ADVANCED_ANALYTICS]))
+    permissions = Depends(get_permission_checker)
 ):
     """
     Get comprehensive marketing analytics overview.
@@ -122,7 +122,7 @@ async def get_campaign_performance(
     date_range: Optional[DateRangeRequest] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    permissions = Depends(get_permission_checker([Permission.VIEW_ADVANCED_ANALYTICS]))
+    permissions = Depends(get_permission_checker)
 ):
     """
     Get detailed performance metrics for a specific campaign.
@@ -161,7 +161,7 @@ async def get_all_campaigns_performance(
     date_range: Optional[DateRangeRequest] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    permissions = Depends(get_permission_checker([Permission.VIEW_ADVANCED_ANALYTICS]))
+    permissions = Depends(get_permission_checker)
 ):
     """
     Get performance metrics for all campaigns.
@@ -196,7 +196,7 @@ async def get_channel_performance(
     date_range: Optional[DateRangeRequest] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    permissions = Depends(get_permission_checker([Permission.VIEW_ADVANCED_ANALYTICS]))
+    permissions = Depends(get_permission_checker)
 ):
     """
     Get performance metrics by marketing channel.
@@ -234,7 +234,7 @@ async def get_conversion_funnel(
     date_range: Optional[DateRangeRequest] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    permissions = Depends(get_permission_checker([Permission.VIEW_ADVANCED_ANALYTICS]))
+    permissions = Depends(get_permission_checker)
 ):
     """
     Get conversion funnel analysis.
@@ -271,7 +271,7 @@ async def get_conversion_funnel(
 async def get_integration_health(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    permissions = Depends(get_permission_checker([Permission.VIEW_ADVANCED_ANALYTICS]))
+    permissions = Depends(get_permission_checker)
 ):
     """
     Get marketing integration health status.
@@ -304,7 +304,7 @@ async def get_performance_trends(
     days: int = Query(30, ge=7, le=365, description="Number of days to analyze"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    permissions = Depends(get_permission_checker([Permission.VIEW_ADVANCED_ANALYTICS]))
+    permissions = Depends(get_permission_checker)
 ):
     """
     Get performance trends over time.
@@ -343,7 +343,7 @@ async def export_marketing_data(
     date_range: Optional[DateRangeRequest] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    permissions = Depends(get_permission_checker([Permission.VIEW_ADVANCED_ANALYTICS]))
+    permissions = Depends(get_permission_checker)
 ):
     """
     Export marketing analytics data.
@@ -389,7 +389,7 @@ async def get_realtime_metrics(
     request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    permissions = Depends(get_permission_checker([Permission.VIEW_ADVANCED_ANALYTICS]))
+    permissions = Depends(get_permission_checker)
 ):
     """
     Get real-time marketing metrics.

@@ -35,7 +35,15 @@ export interface BookingLinkParams {
   // Location and availability
   location?: string
   locationId?: number
+  locations?: string[] // Multiple location support for enterprise
   timezone?: string
+  
+  // Organization/Enterprise level
+  organizationId?: number
+  organizationSlug?: string
+  
+  // Enhanced barber selection
+  barbersByLocation?: Record<string, string[]> // location slug -> barber slugs
   
   // Campaign and tracking
   ref?: string // Referral source
@@ -64,6 +72,11 @@ export interface BookingLinkParams {
   giftCertificate?: string // Gift certificate code
   coupon?: string // Coupon code
   package?: string // Service package
+  
+  // Enterprise-specific features
+  brandingPreset?: string // Enterprise branding theme
+  corporateDiscount?: string // Corporate discount code
+  departmentCode?: string // Department/cost center code
   
   // Accessibility and UI
   theme?: 'light' | 'dark' | 'auto'
@@ -118,6 +131,22 @@ export interface BarberInfo {
   isActive: boolean
   services: number[]
   timezone: string
+  locationId?: number // Which location this barber works at
+}
+
+// Location information for enterprise/multi-location support
+export interface LocationInfo {
+  id: number
+  name: string
+  slug: string
+  address: string
+  city: string
+  state: string
+  zipCode: string
+  phone: string
+  timezone: string
+  isActive: boolean
+  organizationId?: number // Parent organization for enterprise level
 }
 
 // Date range specification

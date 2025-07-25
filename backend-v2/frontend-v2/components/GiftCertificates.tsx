@@ -57,7 +57,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
   const fetchCertificates = async () => {
     try {
       setLoading(true);
-      const response = await fetchAPI('/api/v1/payments/gift-certificates');
+      const response = await fetchAPI('/api/v2/payments/gift-certificates');
       setCertificates(response);
     } catch (error) {
       console.error('Error fetching gift certificates:', error);
@@ -77,7 +77,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
       const createdCertificates = [];
       
       for (let i = 0; i < quantity; i++) {
-        const response = await fetchAPI('/api/v1/payments/gift-certificates', {
+        const response = await fetchAPI('/api/v2/payments/gift-certificates', {
           method: 'POST',
           body: JSON.stringify({
             amount: parseFloat(formData.amount),
@@ -126,7 +126,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
 
   const handleSendEmail = async (certificate: GiftCertificate) => {
     try {
-      await fetchAPI(`/api/v1/payments/gift-certificates/${certificate.id}/send`, {
+      await fetchAPI(`/api/v2/payments/gift-certificates/${certificate.id}/send`, {
         method: 'POST',
       });
       alert('Gift certificate email sent successfully!');
@@ -138,7 +138,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
 
   const exportCertificates = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/gift-certificates/export`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v2/payments/gift-certificates/export`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
