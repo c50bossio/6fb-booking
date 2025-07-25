@@ -91,15 +91,15 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
     )
     
     const businessItems = filteredNavigationItems.filter(item => 
-      ['Customer Management', 'Communication', 'Marketing Suite', 'Reviews', 'Products'].includes(item.name)
+      ['Customer Management', 'Communication', 'Communications', 'Marketing Suite', 'Marketing', 'Reviews', 'Products', 'Services'].includes(item.name)
     )
     
     const automationItems = filteredNavigationItems.filter(item => 
-      ['Business Automation'].includes(item.name)
+      ['AI Agents', 'Business Automation'].includes(item.name)
     )
     
     const financeItems = filteredNavigationItems.filter(item => 
-      ['Finance Hub', 'Analytics'].includes(item.name)
+      ['Finance Hub', 'Finance', 'Analytics'].includes(item.name)
     )
     
     const adminItems = filteredNavigationItems.filter(item => 

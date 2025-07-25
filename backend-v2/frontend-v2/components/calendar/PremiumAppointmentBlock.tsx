@@ -4,15 +4,15 @@ import React from 'react'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { 
-  FreshaColors, 
+  PremiumColors, 
   getServiceColor, 
   getStatusColor, 
   getClientTierColor,
-  FreshaTypography,
-  FreshaSpacing,
-  FreshaBorderRadius,
-  FreshaShadows
-} from '@/lib/fresha-design-system'
+  PremiumTypography,
+  PremiumSpacing,
+  PremiumBorderRadius,
+  PremiumShadows
+} from '@/lib/premium-design-system'
 import { 
   ClockIcon, 
   CurrencyDollarIcon,
@@ -137,9 +137,9 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
       style={{
         backgroundColor: colors.light,
         borderLeft: `4px solid ${colors.main}`,
-        borderRadius: FreshaBorderRadius.md,
-        padding: FreshaSpacing[3],
-        boxShadow: isDragging ? FreshaShadows.xl : FreshaShadows.sm,
+        borderRadius: PremiumBorderRadius.md,
+        padding: PremiumSpacing[3],
+        boxShadow: isDragging ? PremiumShadows.xl : PremiumShadows.sm,
         border: `1px solid ${colors.main}20`,
         minHeight: '60px',
         ...style
@@ -159,10 +159,10 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
         <h4 
           className="font-semibold truncate pr-4"
           style={{
-            color: FreshaColors.gray[900],
-            fontSize: FreshaTypography.fontSize.sm,
-            fontWeight: FreshaTypography.fontWeight.semibold,
-            lineHeight: FreshaTypography.lineHeight.tight
+            color: PremiumColors.gray[900],
+            fontSize: PremiumTypography.fontSize.sm,
+            fontWeight: PremiumTypography.fontWeight.semibold,
+            lineHeight: PremiumTypography.lineHeight.tight
           }}
         >
           {appointment.client_name}
@@ -190,8 +190,8 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
         className="text-xs mb-2 truncate"
         style={{
           color: colors.text,
-          fontSize: FreshaTypography.fontSize.xs,
-          fontWeight: FreshaTypography.fontWeight.medium
+          fontSize: PremiumTypography.fontSize.xs,
+          fontWeight: PremiumTypography.fontWeight.medium
         }}
       >
         {appointment.service_name}
@@ -200,8 +200,8 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
       {/* Time and Duration Row */}
       <div className="flex items-center justify-between text-xs mb-1">
         <div className="flex items-center space-x-1">
-          <ClockIcon className="w-3 h-3" style={{ color: FreshaColors.gray[500] }} />
-          <span style={{ color: FreshaColors.gray[600] }}>
+          <ClockIcon className="w-3 h-3" style={{ color: PremiumColors.gray[500] }} />
+          <span style={{ color: PremiumColors.gray[600] }}>
             {startTime}
             {showDuration && ` - ${endTime}`}
           </span>
@@ -214,8 +214,8 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
             className="text-xs px-1 py-0"
             style={{
               fontSize: '9px',
-              color: FreshaColors.gray[600],
-              borderColor: FreshaColors.gray[300],
+              color: PremiumColors.gray[600],
+              borderColor: PremiumColors.gray[300],
               backgroundColor: 'transparent'
             }}
           >
@@ -229,13 +229,13 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
         {/* Price */}
         {showPrice && (
           <div className="flex items-center space-x-1">
-            <CurrencyDollarIcon className="w-3 h-3" style={{ color: FreshaColors.services.styling.main }} />
+            <CurrencyDollarIcon className="w-3 h-3" style={{ color: PremiumColors.services.styling.main }} />
             <span 
               className="font-semibold"
               style={{
-                color: FreshaColors.services.styling.dark,
-                fontSize: FreshaTypography.fontSize.xs,
-                fontWeight: FreshaTypography.fontWeight.semibold
+                color: PremiumColors.services.styling.dark,
+                fontSize: PremiumTypography.fontSize.xs,
+                fontWeight: PremiumTypography.fontWeight.semibold
               }}
             >
               ${appointment.price.toFixed(0)}
@@ -252,7 +252,7 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
             color: statusColors.main,
             border: `1px solid ${statusColors.main}30`,
             fontSize: '9px',
-            fontWeight: FreshaTypography.fontWeight.medium
+            fontWeight: PremiumTypography.fontWeight.medium
           }}
         >
           <span className="mr-1">{statusDisplay.icon}</span>
@@ -266,7 +266,7 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
           <p 
             className="text-xs italic truncate"
             style={{
-              color: FreshaColors.gray[500],
+              color: PremiumColors.gray[500],
               fontSize: '10px'
             }}
           >
@@ -279,7 +279,7 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
       {appointment.is_recurring && (
         <div 
           className="absolute top-1 left-1 w-2 h-2 rounded-full"
-          style={{ backgroundColor: FreshaColors.primary[400] }}
+          style={{ backgroundColor: PremiumColors.primary[400] }}
           title="Recurring Appointment"
         />
       )}
@@ -287,14 +287,14 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
       {/* Hover Overlay */}
       <div 
         className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-5 transition-all duration-200 pointer-events-none"
-        style={{ borderRadius: FreshaBorderRadius.md }}
+        style={{ borderRadius: PremiumBorderRadius.md }}
       />
 
       {/* Drag Handle (when dragging) */}
       {isDragging && (
         <div 
           className="absolute inset-0 border-2 border-dashed border-blue-400 bg-blue-50 bg-opacity-50 flex items-center justify-center"
-          style={{ borderRadius: FreshaBorderRadius.md }}
+          style={{ borderRadius: PremiumBorderRadius.md }}
         >
           <span className="text-blue-600 font-medium text-xs">Moving...</span>
         </div>
@@ -304,7 +304,7 @@ const PremiumAppointmentBlock: React.FC<PremiumAppointmentBlockProps> = ({
       {isSelected && (
         <div 
           className="absolute inset-0 border-2 border-blue-400 bg-blue-50 bg-opacity-20"
-          style={{ borderRadius: FreshaBorderRadius.md }}
+          style={{ borderRadius: PremiumBorderRadius.md }}
         />
       )}
     </div>

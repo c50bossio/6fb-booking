@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { getMyBookings, getUsers, type BookingResponse } from '@/lib/api'
-import FreshaInspiredCalendar from '@/components/FreshaInspiredCalendar'
+import PremiumCalendar from '@/components/PremiumCalendar'
 
 /**
- * FRESHA-INSPIRED CALENDAR PAGE
+ * PREMIUM CALENDAR PAGE
  * 
- * Premium calendar implementation inspired by Fresha's professional design.
+ * Premium calendar implementation with professional design.
  * Features staff-centric layout, professional appointment blocks, and sophisticated visuals.
  */
 
@@ -21,7 +21,7 @@ interface Barber {
   role?: string
 }
 
-export default function FreshaCalendarPage() {
+export default function PremiumCalendarPage() {
   // Calendar state
   const [view, setView] = useState<'day' | 'week' | 'month'>('day')
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -127,7 +127,8 @@ export default function FreshaCalendarPage() {
   }
 
   const handleTimeSlotClick = (date: Date, barberId?: number, hour?: number, minute?: number) => {
-    // Future: Open new appointment modal
+    // The calendar component now handles this internally with the modal
+    console.log('Time slot clicked:', { date, barberId, hour, minute })
   }
 
   const handleBarberSelect = (barberId: number) => {
@@ -135,7 +136,8 @@ export default function FreshaCalendarPage() {
   }
 
   const handleNewAppointment = () => {
-    // Future: Open new appointment modal
+    // The calendar component now handles this internally with the modal
+    console.log('New appointment button clicked')
   }
 
   const handleRefresh = () => {
@@ -146,7 +148,7 @@ export default function FreshaCalendarPage() {
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Main Calendar - Full Height */}
       <div className="flex-1 overflow-hidden">
-        <FreshaInspiredCalendar
+        <PremiumCalendar
           // Data
           barbers={barbers}
           appointments={appointments}

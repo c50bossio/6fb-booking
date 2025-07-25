@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
-import { FreshaColors, FreshaTypography, FreshaSpacing, FreshaBorderRadius } from '@/lib/fresha-design-system'
+import { PremiumColors, PremiumTypography, PremiumSpacing, PremiumBorderRadius } from '@/lib/premium-design-system'
 
 interface StaffAvatarHeaderProps {
   barber: {
@@ -59,32 +59,32 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
     switch (availability) {
       case 'available':
         return {
-          color: FreshaColors.status.confirmed.main,
-          backgroundColor: FreshaColors.status.confirmed.light,
+          color: PremiumColors.status.confirmed.main,
+          backgroundColor: PremiumColors.status.confirmed.light,
           text: 'Available'
         }
       case 'busy':
         return {
-          color: FreshaColors.status.pending.main,
-          backgroundColor: FreshaColors.status.pending.light,
+          color: PremiumColors.status.pending.main,
+          backgroundColor: PremiumColors.status.pending.light,
           text: 'Busy'
         }
       case 'break':
         return {
-          color: FreshaColors.gray[600],
-          backgroundColor: FreshaColors.gray[100],
+          color: PremiumColors.gray[600],
+          backgroundColor: PremiumColors.gray[100],
           text: 'On Break'
         }
       case 'off':
         return {
-          color: FreshaColors.status.cancelled.main,
-          backgroundColor: FreshaColors.status.cancelled.light,
+          color: PremiumColors.status.cancelled.main,
+          backgroundColor: PremiumColors.status.cancelled.light,
           text: 'Off Duty'
         }
       default:
         return {
-          color: FreshaColors.gray[500],
-          backgroundColor: FreshaColors.gray[100],
+          color: PremiumColors.gray[500],
+          backgroundColor: PremiumColors.gray[100],
           text: 'Unknown'
         }
     }
@@ -105,8 +105,8 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
       onClick={onClick}
       style={{
         minWidth: '200px',
-        borderColor: isSelected ? FreshaColors.primary[200] : FreshaColors.border.light,
-        backgroundColor: isSelected ? FreshaColors.primary[50] : FreshaColors.background.secondary
+        borderColor: isSelected ? PremiumColors.primary[200] : PremiumColors.border.light,
+        backgroundColor: isSelected ? PremiumColors.primary[50] : PremiumColors.background.secondary
       }}
     >
       {/* Barber Avatar */}
@@ -116,10 +116,10 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
           style={{
             width: '48px',
             height: '48px',
-            borderRadius: FreshaBorderRadius.full,
-            backgroundColor: barber.avatar ? 'transparent' : FreshaColors.primary[500],
-            fontSize: FreshaTypography.fontSize.sm,
-            fontWeight: FreshaTypography.fontWeight.semibold
+            borderRadius: PremiumBorderRadius.full,
+            backgroundColor: barber.avatar ? 'transparent' : PremiumColors.primary[500],
+            fontSize: PremiumTypography.fontSize.sm,
+            fontWeight: PremiumTypography.fontWeight.semibold
           }}
         >
           {barber.avatar ? (
@@ -127,7 +127,7 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
               src={barber.avatar} 
               alt={getDisplayName()}
               className="w-full h-full object-cover"
-              style={{ borderRadius: FreshaBorderRadius.full }}
+              style={{ borderRadius: PremiumBorderRadius.full }}
             />
           ) : (
             getInitials()
@@ -139,7 +139,7 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
           className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white shadow-sm"
           style={{
             backgroundColor: availabilityStyle.color,
-            borderRadius: FreshaBorderRadius.full
+            borderRadius: PremiumBorderRadius.full
           }}
           title={availabilityStyle.text}
         />
@@ -149,10 +149,10 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
       <h3 
         className="font-semibold text-center mb-1 truncate max-w-full"
         style={{
-          fontSize: FreshaTypography.fontSize.sm,
-          fontWeight: FreshaTypography.fontWeight.semibold,
-          color: FreshaColors.gray[900],
-          lineHeight: FreshaTypography.lineHeight.tight
+          fontSize: PremiumTypography.fontSize.sm,
+          fontWeight: PremiumTypography.fontWeight.semibold,
+          color: PremiumColors.gray[900],
+          lineHeight: PremiumTypography.lineHeight.tight
         }}
       >
         {getDisplayName()}
@@ -163,8 +163,8 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
         <p 
           className="text-center text-xs mb-2 truncate max-w-full"
           style={{
-            color: FreshaColors.gray[600],
-            fontSize: FreshaTypography.fontSize.xs
+            color: PremiumColors.gray[600],
+            fontSize: PremiumTypography.fontSize.xs
           }}
         >
           {barber.role}
@@ -179,8 +179,8 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
             <span 
               className="font-semibold"
               style={{
-                fontSize: FreshaTypography.fontSize.sm,
-                color: FreshaColors.gray[900]
+                fontSize: PremiumTypography.fontSize.sm,
+                color: PremiumColors.gray[900]
               }}
             >
               {appointmentCount}
@@ -188,7 +188,7 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
             <span 
               className="text-xs"
               style={{
-                color: FreshaColors.gray[500],
+                color: PremiumColors.gray[500],
                 fontSize: '10px'
               }}
             >
@@ -203,8 +203,8 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
             <span 
               className="font-semibold"
               style={{
-                fontSize: FreshaTypography.fontSize.sm,
-                color: FreshaColors.services.styling.dark
+                fontSize: PremiumTypography.fontSize.sm,
+                color: PremiumColors.services.styling.dark
               }}
             >
               ${todayRevenue.toFixed(0)}
@@ -212,7 +212,7 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
             <span 
               className="text-xs"
               style={{
-                color: FreshaColors.gray[500],
+                color: PremiumColors.gray[500],
                 fontSize: '10px'
               }}
             >
@@ -232,7 +232,7 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
             color: availabilityStyle.color,
             border: `1px solid ${availabilityStyle.color}20`,
             fontSize: '10px',
-            fontWeight: FreshaTypography.fontWeight.medium
+            fontWeight: PremiumTypography.fontWeight.medium
           }}
         >
           {availabilityStyle.text}
@@ -249,8 +249,8 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
               className="text-xs px-1 py-0"
               style={{
                 fontSize: '9px',
-                color: FreshaColors.gray[600],
-                borderColor: FreshaColors.gray[300],
+                color: PremiumColors.gray[600],
+                borderColor: PremiumColors.gray[300],
                 backgroundColor: 'transparent'
               }}
             >
@@ -263,8 +263,8 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
               className="text-xs px-1 py-0"
               style={{
                 fontSize: '9px',
-                color: FreshaColors.gray[500],
-                borderColor: FreshaColors.gray[300],
+                color: PremiumColors.gray[500],
+                borderColor: PremiumColors.gray[300],
                 backgroundColor: 'transparent'
               }}
             >
@@ -279,7 +279,7 @@ const StaffAvatarHeader: React.FC<StaffAvatarHeaderProps> = ({
         <div 
           className="absolute top-0 left-0 w-full h-1"
           style={{
-            backgroundColor: FreshaColors.primary[500]
+            backgroundColor: PremiumColors.primary[500]
           }}
         />
       )}

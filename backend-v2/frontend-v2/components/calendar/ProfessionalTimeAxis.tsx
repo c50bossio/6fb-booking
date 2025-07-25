@@ -3,11 +3,11 @@
 import React from 'react'
 import { format } from 'date-fns'
 import { 
-  FreshaColors, 
-  FreshaTypography, 
-  FreshaSpacing,
-  FreshaBorderRadius
-} from '@/lib/fresha-design-system'
+  PremiumColors, 
+  PremiumTypography, 
+  PremiumSpacing,
+  PremiumBorderRadius
+} from '@/lib/premium-design-system'
 
 interface ProfessionalTimeAxisProps {
   startHour?: number
@@ -74,8 +74,8 @@ const ProfessionalTimeAxis: React.FC<ProfessionalTimeAxisProps> = ({
     <div 
       className={`professional-time-axis flex flex-col border-r ${className}`}
       style={{
-        backgroundColor: FreshaColors.background.secondary,
-        borderColor: FreshaColors.border.light,
+        backgroundColor: PremiumColors.background.secondary,
+        borderColor: PremiumColors.border.light,
         width: compact ? '60px' : '80px',
         flexShrink: 0
       }}
@@ -85,8 +85,8 @@ const ProfessionalTimeAxis: React.FC<ProfessionalTimeAxisProps> = ({
         className="border-b"
         style={{
           height: compact ? '60px' : '80px',
-          borderColor: FreshaColors.border.light,
-          backgroundColor: FreshaColors.background.secondary
+          borderColor: PremiumColors.border.light,
+          backgroundColor: PremiumColors.background.secondary
         }}
       >
         {!compact && (
@@ -94,9 +94,9 @@ const ProfessionalTimeAxis: React.FC<ProfessionalTimeAxisProps> = ({
             <span 
               className="text-xs font-medium uppercase tracking-wide"
               style={{
-                color: FreshaColors.gray[500],
-                fontSize: FreshaTypography.fontSize.xs,
-                fontWeight: FreshaTypography.fontWeight.medium
+                color: PremiumColors.gray[500],
+                fontSize: PremiumTypography.fontSize.xs,
+                fontWeight: PremiumTypography.fontWeight.medium
               }}
             >
               Time
@@ -116,9 +116,9 @@ const ProfessionalTimeAxis: React.FC<ProfessionalTimeAxisProps> = ({
           style={{
             height: getSlotHeight(),
             borderColor: slot.isPrimary 
-              ? FreshaColors.border.light 
-              : `${FreshaColors.border.light}80`,
-            backgroundColor: FreshaColors.background.secondary
+              ? PremiumColors.border.light 
+              : `${PremiumColors.border.light}80`,
+            backgroundColor: PremiumColors.background.secondary
           }}
         >
           {/* Time label */}
@@ -128,11 +128,11 @@ const ProfessionalTimeAxis: React.FC<ProfessionalTimeAxisProps> = ({
               ${compact ? 'text-xs' : 'text-sm'}
             `}
             style={{
-              color: slot.isPrimary ? FreshaColors.gray[700] : FreshaColors.gray[500],
-              fontSize: compact ? FreshaTypography.fontSize.xs : FreshaTypography.fontSize.sm,
+              color: slot.isPrimary ? PremiumColors.gray[700] : PremiumColors.gray[500],
+              fontSize: compact ? PremiumTypography.fontSize.xs : PremiumTypography.fontSize.sm,
               fontWeight: slot.isPrimary 
-                ? FreshaTypography.fontWeight.medium 
-                : FreshaTypography.fontWeight.normal,
+                ? PremiumTypography.fontWeight.medium 
+                : PremiumTypography.fontWeight.normal,
               lineHeight: '1'
             }}
           >
@@ -143,7 +143,7 @@ const ProfessionalTimeAxis: React.FC<ProfessionalTimeAxisProps> = ({
           {slot.isPrimary && (
             <div 
               className="absolute right-0 top-0 w-2 h-px"
-              style={{ backgroundColor: FreshaColors.border.main }}
+              style={{ backgroundColor: PremiumColors.border.main }}
             />
           )}
 
@@ -151,7 +151,7 @@ const ProfessionalTimeAxis: React.FC<ProfessionalTimeAxisProps> = ({
           {!slot.isPrimary && slotDuration === 30 && (
             <div 
               className="absolute right-0 top-0 w-1 h-px"
-              style={{ backgroundColor: FreshaColors.border.light }}
+              style={{ backgroundColor: PremiumColors.border.light }}
             />
           )}
         </div>
@@ -210,7 +210,7 @@ const CurrentTimeIndicator: React.FC<CurrentTimeIndicatorProps> = ({
       <div 
         className="w-2 h-2 rounded-full border-2 border-white shadow-sm"
         style={{ 
-          backgroundColor: FreshaColors.status.confirmed.main,
+          backgroundColor: PremiumColors.status.confirmed.main,
           marginRight: '-4px'
         }}
       />
@@ -220,10 +220,10 @@ const CurrentTimeIndicator: React.FC<CurrentTimeIndicatorProps> = ({
         <div 
           className="px-2 py-1 rounded shadow-sm ml-2"
           style={{
-            backgroundColor: FreshaColors.status.confirmed.main,
+            backgroundColor: PremiumColors.status.confirmed.main,
             color: 'white',
-            fontSize: FreshaTypography.fontSize.xs,
-            fontWeight: FreshaTypography.fontWeight.medium
+            fontSize: PremiumTypography.fontSize.xs,
+            fontWeight: PremiumTypography.fontWeight.medium
           }}
         >
           {format(now, 'h:mm a')}

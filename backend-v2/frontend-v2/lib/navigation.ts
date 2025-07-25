@@ -44,6 +44,7 @@ import {
   ShoppingBagIcon,
   ArrowTrendingUpIcon,
   CogIcon as AutomationIcon,
+  CpuChipIcon,
   // Solid versions for mobile
   HomeIcon as HomeIconSolid,
   CalendarIcon as CalendarIconSolid,
@@ -203,6 +204,39 @@ export const navigationItems: NavigationItem[] = [
     description: 'Comprehensive client management, segmentation, and communication'
   },
   
+  // AI Agents - Intelligent automation and revenue optimization
+  {
+    name: 'AI Agents',
+    href: '/agents',
+    icon: CpuChipIcon,
+    roles: ['admin', 'barber', 'super_admin'],
+    description: 'AI-powered automation and intelligent business optimization',
+    isNew: true,
+    children: [
+      {
+        name: 'Agent Dashboard',
+        href: '/ai-agent',
+        icon: ChartBarIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Real-time AI performance monitoring and control'
+      },
+      {
+        name: 'Agent Management',
+        href: '/agents',
+        icon: CpuChipIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Create and manage AI agent instances'
+      },
+      {
+        name: 'Agent Analytics',
+        href: '/agents/analytics',
+        icon: ChartPieIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Agent performance insights and optimization'
+      }
+    ]
+  },
+  
   // Marketing & Communication Suite - Consolidated
   {
     name: 'Marketing',
@@ -253,6 +287,39 @@ export const navigationItems: NavigationItem[] = [
         icon: CurrencyDollarIcon,
         roles: ['admin', 'super_admin'],
         description: 'Credits and usage tracking'
+      }
+    ]
+  },
+  
+  // Communications - Multi-channel client communication
+  {
+    name: 'Communications',
+    href: '/sms',
+    icon: ChatBubbleLeftRightIcon,
+    roles: ['admin', 'barber', 'super_admin'],
+    description: 'Multi-channel client communication and messaging',
+    isNew: true,
+    children: [
+      {
+        name: 'SMS Conversations',
+        href: '/sms',
+        icon: DevicePhoneMobileIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Real-time text message conversations with clients'
+      },
+      {
+        name: 'Email Campaigns',
+        href: '/marketing/campaigns',
+        icon: EnvelopeIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Email marketing campaigns and automation'
+      },
+      {
+        name: 'Quick Messages',
+        href: '/marketing/quick-send',
+        icon: BellIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Send instant notifications to clients'
       }
     ]
   },
@@ -339,6 +406,20 @@ export const navigationItems: NavigationItem[] = [
         icon: GiftIcon,
         roles: ['admin', 'super_admin'],
         description: 'Gift certificate management'
+      },
+      {
+        name: 'Payouts',
+        href: '/payouts',
+        icon: BanknotesIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Dedicated payout scheduling and tracking'
+      },
+      {
+        name: 'Billing & Plans',
+        href: '/billing/plans',
+        icon: CreditCardIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Subscription management and billing plans'
       }
     ]
   },
@@ -521,6 +602,20 @@ export const navigationItems: NavigationItem[] = [
         icon: CloudIcon,
         roles: ['admin', 'super_admin'],
         description: 'Configure API webhooks'
+      },
+      {
+        name: 'API Keys',
+        href: '/admin/api-keys',
+        icon: ShieldCheckIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Developer API access management'
+      },
+      {
+        name: 'Advanced Webhooks',
+        href: '/admin/webhook-management',
+        icon: CloudIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Webhook monitoring and management'
       }
     ]
   },
