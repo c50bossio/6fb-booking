@@ -194,40 +194,22 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
-  // Business Management
+  // Client Management - Consolidated
   {
     name: 'Clients',
     href: '/clients',
     icon: UserGroupIcon,
     roles: ['barber', 'admin', 'super_admin'],
-    description: 'Manage client information'
+    description: 'Comprehensive client management, segmentation, and communication'
   },
   
-  // Customer Management Hub
+  // Marketing & Communication Suite - Consolidated
   {
-    name: 'Customer Management',
-    href: '/customers',
-    icon: UsersIcon,
-    roles: ['admin', 'super_admin'],
-    description: 'Comprehensive customer management and segmentation'
-  },
-  
-  // Communication
-  {
-    name: 'Communication',
-    href: '/notifications',
-    icon: PhoneIcon,
-    roles: ['admin', 'barber', 'super_admin'],
-    description: 'Send notifications and messages'
-  },
-  
-  // Marketing Suite
-  {
-    name: 'Marketing Suite',
+    name: 'Marketing',
     href: '/marketing',
     icon: EnvelopeIcon,
     roles: ['admin', 'super_admin'],
-    description: 'Email and SMS marketing campaigns',
+    description: 'Integrated marketing, communication, and automation',
     isNew: true,
     children: [
       {
@@ -235,35 +217,28 @@ export const navigationItems: NavigationItem[] = [
         href: '/marketing/campaigns',
         icon: ChatBubbleLeftRightIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Create and manage campaigns'
+        description: 'Email, SMS, and notification campaigns'
+      },
+      {
+        name: 'Quick Messages',
+        href: '/marketing/quick-send',
+        icon: BellIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Send instant notifications to clients'
       },
       {
         name: 'Templates',
         href: '/marketing/templates',
         icon: DocumentArrowDownIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Email and SMS templates'
+        description: 'Email, SMS, and notification templates'
       },
       {
         name: 'Contacts',
         href: '/marketing/contacts',
         icon: UserCircleIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Manage contact lists'
-      },
-      {
-        name: 'Analytics',
-        href: '/marketing/analytics',
-        icon: ChartPieIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Campaign performance'
-      },
-      {
-        name: 'Usage & Billing',
-        href: '/marketing/billing',
-        icon: CurrencyDollarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Credits and usage tracking'
+        description: 'Manage contact lists and segments'
       },
       {
         name: 'Booking Links',
@@ -271,6 +246,13 @@ export const navigationItems: NavigationItem[] = [
         icon: LinkIcon,
         roles: ['admin', 'super_admin'],
         description: 'Trackable booking URLs and QR codes'
+      },
+      {
+        name: 'Usage & Billing',
+        href: '/marketing/billing',
+        icon: CurrencyDollarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Credits and usage tracking'
       }
     ]
   },
@@ -292,13 +274,6 @@ export const navigationItems: NavigationItem[] = [
         description: 'Manual → Semi-Auto → AI Agent upselling controls'
       },
       {
-        name: 'Client Communication',
-        href: '/automation/communication',
-        icon: ChatBubbleLeftRightIcon,
-        roles: ['admin', 'barber', 'super_admin'],
-        description: 'Automated messaging and follow-ups'
-      },
-      {
         name: 'Booking Management',
         href: '/automation/booking',
         icon: CalendarIcon,
@@ -311,112 +286,70 @@ export const navigationItems: NavigationItem[] = [
         icon: CurrencyDollarIcon,
         roles: ['admin', 'super_admin'],
         description: 'AI-powered pricing and revenue strategies'
+      },
+      {
+        name: 'Workflow Builder',
+        href: '/automation/workflows',
+        icon: ArrowPathIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Create custom automation workflows'
       }
     ]
   },
   
   // Finance Hub - Comprehensive financial management
   {
-    name: 'Finance Hub',
+    name: 'Finance',
     href: '/finance',
     icon: BanknotesIcon,
     roles: ['admin', 'barber', 'super_admin'],
     description: 'Comprehensive financial management',
     children: [
       {
-        name: 'Payment Overview',
-        href: '/payments',
+        name: 'Overview',
+        href: '/finance',
         icon: CreditCardIcon,
-        roles: ['admin', 'barber', 'super_admin']
-      },
-      {
-        name: 'Earnings',
-        href: '/barber/earnings',
-        icon: BanknotesIcon,
-        roles: ['barber'],
-        description: 'Track your income and payouts'
-      },
-      {
-        name: 'Gift Certificates',
-        href: '/payments/gift-certificates',
-        icon: GiftIcon,
-        roles: ['admin', 'super_admin']
-      },
-      {
-        name: 'Commissions',
-        href: '/commissions',
-        icon: CurrencyDollarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Manage commission structures'
-      },
-      {
-        name: 'Payouts',
-        href: '/payouts',
-        icon: BanknotesIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Manage barber payouts'
-      },
-      {
-        name: 'Financial Analytics',
-        href: '/finance/analytics',
-        icon: ChartBarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Revenue and financial insights'
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Financial dashboard and summary'
       },
       {
         name: 'Transactions',
         href: '/finance/transactions',
         icon: RectangleStackIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Transaction history and details'
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'All payment transactions'
       },
       {
-        name: 'Unified View',
-        href: '/finance/unified',
-        icon: ChartPieIcon,
+        name: 'Earnings & Payouts',
+        href: '/finance/earnings',
+        icon: BanknotesIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Income tracking and payout management'
+      },
+      {
+        name: 'Commissions',
+        href: '/finance/commissions',
+        icon: CurrencyDollarIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Unified financial dashboard'
+        description: 'Commission rates and calculations'
+      },
+      {
+        name: 'Gift Certificates',
+        href: '/finance/gift-certificates',
+        icon: GiftIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Gift certificate management'
       }
     ]
   },
   
-  // Analytics & Insights
+  // Analytics Hub - Unified analytics dashboard
   {
     name: 'Analytics',
     href: '/analytics',
     icon: ChartBarIcon,
     roles: ['barber', 'admin', 'super_admin'],
-    description: 'Business performance insights',
-    children: [
-      {
-        name: 'Overview',
-        href: '/analytics/overview',
-        icon: PresentationChartLineIcon,
-        roles: ['barber', 'admin', 'super_admin'],
-        description: 'Analytics overview dashboard'
-      },
-      {
-        name: 'Revenue Analytics',
-        href: '/analytics/revenue',
-        icon: CurrencyDollarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Revenue performance and trends'
-      },
-      {
-        name: 'Marketing Analytics',
-        href: '/analytics/marketing',
-        icon: ChartPieIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Marketing campaign performance'
-      },
-      {
-        name: 'Review Analytics',
-        href: '/analytics/reviews',
-        icon: StarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Customer review insights'
-      }
-    ]
+    description: 'Unified analytics dashboard with all business insights'
   },
   
   // Review Management
@@ -433,13 +366,6 @@ export const navigationItems: NavigationItem[] = [
         icon: StarIcon,
         roles: ['admin', 'super_admin'],
         description: 'View and manage all reviews'
-      },
-      {
-        name: 'Review Analytics',
-        href: '/reviews/analytics',
-        icon: ChartBarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Review performance insights'
       },
       {
         name: 'Response Templates',
@@ -476,6 +402,38 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
+  // Services Management - Consolidated
+  {
+    name: 'Services',
+    href: '/services',
+    icon: ScissorsIcon,
+    roles: ['admin', 'super_admin'],
+    description: 'Service catalog and performance management',
+    children: [
+      {
+        name: 'Service Catalog',
+        href: '/services',
+        icon: ScissorsIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage services and pricing'
+      },
+      {
+        name: 'Service Analytics',
+        href: '/services/analytics',
+        icon: ChartBarIcon,
+        roles: ['admin', 'super_admin', 'barber'],
+        description: 'Service performance insights'
+      },
+      {
+        name: 'Templates',
+        href: '/services/templates',
+        icon: DocumentArrowDownIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Service package templates'
+      }
+    ]
+  },
+  
   // Six Figure Barber Compliance
   {
     name: '6FB Compliance',
@@ -496,7 +454,7 @@ export const navigationItems: NavigationItem[] = [
     isNew: true
   },
   
-  // Admin section
+  // Admin section - Simplified
   {
     name: 'Administration',
     href: '/admin',
@@ -505,35 +463,22 @@ export const navigationItems: NavigationItem[] = [
     description: 'System administration',
     children: [
       {
-        name: 'Overview',
+        name: 'Dashboard',
         href: '/admin',
         icon: PresentationChartLineIcon,
-        roles: ['admin', 'super_admin']
-      },
-      {
-        name: 'Services',
-        href: '/admin/services',
-        icon: ScissorsIcon,
-        roles: ['admin', 'super_admin']
+        roles: ['admin', 'super_admin'],
+        description: 'Admin overview'
       },
       {
         name: 'User Management',
         href: '/admin/users',
         icon: UsersIcon,
         roles: ['admin', 'super_admin'],
-        description: 'Manage platform users and permissions'
-      },
-      {
-        name: 'Service Dashboard',
-        href: '/services/dashboard',
-        icon: ChartBarIcon,
-        roles: ['admin', 'super_admin', 'barber'],
-        description: 'Service management and analytics',
-        isNew: true
+        description: 'Manage users and permissions'
       },
       {
         name: 'Staff Invitations',
-        href: '/dashboard/staff/invitations',
+        href: '/admin/invitations',
         icon: UserPlusIcon,
         roles: ['admin', 'super_admin'],
         description: 'Invite team members'
@@ -542,7 +487,8 @@ export const navigationItems: NavigationItem[] = [
         name: 'Booking Rules',
         href: '/admin/booking-rules',
         icon: ClipboardDocumentListIcon,
-        roles: ['admin', 'super_admin']
+        roles: ['admin', 'super_admin'],
+        description: 'Configure booking policies'
       }
     ]
   },
@@ -575,13 +521,6 @@ export const navigationItems: NavigationItem[] = [
         icon: CloudIcon,
         roles: ['admin', 'super_admin'],
         description: 'Configure API webhooks'
-      },
-      {
-        name: 'Product Catalog',
-        href: '/products',
-        icon: TagIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Manage retail products'
       }
     ]
   },
@@ -692,7 +631,7 @@ export const mobileNavigationTabs: MobileTabItem[] = [
   },
   {
     name: 'Earnings',
-    href: '/barber/earnings',
+    href: '/finance/earnings',
     icon: BanknotesIcon,
     iconSolid: BanknotesIconSolid,
     roles: ['barber']
@@ -743,7 +682,7 @@ export const quickActions: QuickAction[] = [
   },
   {
     name: 'Check Earnings',
-    href: '/barber/earnings',
+    href: '/finance/earnings',
     icon: BanknotesIcon,
     description: 'View your earnings report',
     roles: ['barber']
@@ -762,22 +701,22 @@ export const quickActions: QuickAction[] = [
   // Admin quick actions
   {
     name: 'Manage Services',
-    href: '/admin/services',
+    href: '/services',
     icon: ScissorsIcon,
     description: 'Add or edit services',
     roles: ['admin', 'super_admin'],
     color: 'primary'
   },
   {
-    name: 'Service Dashboard',
-    href: '/services/dashboard',
+    name: 'Service Analytics',
+    href: '/services/analytics',
     icon: ChartBarIcon,
-    description: 'Comprehensive service analytics',
+    description: 'Service performance insights',
     roles: ['admin', 'super_admin', 'barber']
   },
   {
     name: 'Send Notification',
-    href: '/notifications',
+    href: '/marketing/quick-send',
     icon: BellIcon,
     description: 'Send SMS or email to clients',
     roles: ['admin', 'barber', 'super_admin']

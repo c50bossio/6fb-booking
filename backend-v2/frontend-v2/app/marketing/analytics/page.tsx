@@ -1,27 +1,22 @@
 'use client'
 
-import React from 'react'
-import MarketingAnalyticsDashboard from '@/components/marketing/MarketingAnalyticsDashboard'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { PageLoading } from '@/components/LoadingStates'
 
 /**
- * Marketing Analytics Page
+ * Redirect to unified analytics page with marketing tab
  * 
- * This page provides comprehensive marketing analytics including:
- * - Conversion tracking and attribution
- * - Landing page performance metrics
- * - Channel ROI analysis
- * - Integration health monitoring
- * - Performance trends and insights
+ * This page has been consolidated into the main analytics dashboard
+ * to reduce duplication and improve user experience.
  */
-export default function MarketingAnalyticsPage() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <ErrorBoundary feature="marketing-analytics">
-          <MarketingAnalyticsDashboard />
-        </ErrorBoundary>
-      </div>
-    </div>
-  )
+export default function MarketingAnalyticsRedirect() {
+  const router = useRouter()
+
+  useEffect(() => {
+    // Redirect to unified analytics with marketing tab selected
+    router.replace('/analytics?tab=marketing')
+  }, [router])
+
+  return <PageLoading message="Redirecting to marketing analytics..." />
 }
