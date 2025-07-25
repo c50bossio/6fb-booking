@@ -236,7 +236,6 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
   const applyConfiguration = () => {
     if (validateForm()) {
       // Here you would typically save the configuration or trigger a callback
-      console.log('Applying configuration:', {
         params: linkParams,
         services: selectedServices,
         barbers: selectedBarbers,

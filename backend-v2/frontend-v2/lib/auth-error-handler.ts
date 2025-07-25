@@ -57,7 +57,6 @@ export function handleAuthError(
     return false
   }
 
-  console.log('Auth error detected:', error.message || error)
 
   // Clear stored tokens and role information
   if (clearTokens && typeof window !== 'undefined') {
@@ -67,7 +66,6 @@ export function handleAuthError(
     // Clear cookies too
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
     document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-    console.log('🧹 Auth error: Cleared all tokens and role information')
   }
 
   // Check if we should skip redirect for public routes
@@ -76,7 +74,6 @@ export function handleAuthError(
     const currentPath = window.location.pathname
     
     if (publicRoutes.includes(currentPath) || currentPath.startsWith('/agents/') || currentPath.startsWith('/verify-email/')) {
-      console.log('Auth error on public route, not redirecting')
       return true
     }
   }

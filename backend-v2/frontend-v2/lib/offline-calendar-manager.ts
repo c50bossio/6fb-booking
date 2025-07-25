@@ -73,7 +73,6 @@ class OfflineCalendarManager {
 
       request.onsuccess = () => {
         this.db = request.result;
-        console.log('📱 Offline Calendar Database initialized');
         resolve();
       };
 
@@ -136,13 +135,11 @@ class OfflineCalendarManager {
   private setupNetworkListeners(): void {
     window.addEventListener('online', () => {
       this.isOnline = true;
-      console.log('📶 Back online - initiating sync');
       this.syncPendingAppointments();
     });
 
     window.addEventListener('offline', () => {
       this.isOnline = false;
-      console.log('📵 Gone offline - enabling offline mode');
     });
   }
 
@@ -331,7 +328,6 @@ class OfflineCalendarManager {
   async syncPendingAppointments(): Promise<void> {
     if (!this.isOnline || !this.db) return;
 
-    console.log('🔄 Starting appointment sync...');
 
     const transaction = this.db.transaction(['appointments'], 'readonly');
     const store = transaction.objectStore('appointments');
@@ -357,7 +353,6 @@ class OfflineCalendarManager {
           }
           
           localStorage.setItem('lastCalendarSync', Date.now().toString());
-          console.log(`✅ Synced ${pendingAppointments.length} appointments`);
           resolve();
         }
       };

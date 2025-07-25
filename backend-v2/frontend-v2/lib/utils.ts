@@ -422,7 +422,6 @@ export const debugUtils = {
   log: (component: string, message: string, data?: any) => {
     if (process.env.NODE_ENV === 'development') {
       const timestamp = new Date().toISOString()
-      console.log(`[${timestamp}] ${component}: ${message}`, data || '')
     }
   },
 
@@ -435,7 +434,6 @@ export const debugUtils = {
     const end = performance.now()
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`Performance [${name}]: ${(end - start).toFixed(2)}ms`)
     }
     
     return result

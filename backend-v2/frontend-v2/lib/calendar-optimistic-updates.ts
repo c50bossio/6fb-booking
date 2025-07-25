@@ -132,7 +132,6 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log('✨ Applied optimistic create for appointment')
       },
       // Rollback
       () => {
@@ -141,7 +140,6 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to create appointment'
         })
-        console.log('🔄 Rolled back optimistic create')
       }
     ).then(result => {
       // Replace optimistic appointment with real one
@@ -196,7 +194,6 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log(`✨ Applied optimistic update for appointment ${appointmentId}`)
       },
       // Rollback
       () => {
@@ -205,7 +202,6 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to update appointment'
         })
-        console.log(`🔄 Rolled back optimistic update for appointment ${appointmentId}`)
       }
     ).then(result => {
       // Update with real result
@@ -254,7 +250,6 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log(`✨ Applied optimistic delete for appointment ${appointmentId}`)
       },
       // Rollback
       () => {
@@ -263,7 +258,6 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to delete appointment'
         })
-        console.log(`🔄 Rolled back optimistic delete for appointment ${appointmentId}`)
       }
     ).then(() => {
       // Confirm deletion
@@ -318,7 +312,6 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log(`✨ Applied optimistic reschedule for appointment ${appointmentId}`)
       },
       // Rollback
       () => {
@@ -327,7 +320,6 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to reschedule appointment'
         })
-        console.log(`🔄 Rolled back optimistic reschedule for appointment ${appointmentId}`)
       }
     ).then(result => {
       // Update with real result
@@ -385,7 +377,6 @@ export class CalendarOptimisticManager {
           loading: true,
           error: null 
         })
-        console.log(`✨ Applied optimistic cancel for appointment ${appointmentId}`)
       },
       // Rollback
       () => {
@@ -394,7 +385,6 @@ export class CalendarOptimisticManager {
           loading: false,
           error: 'Failed to cancel appointment'
         })
-        console.log(`🔄 Rolled back optimistic cancel for appointment ${appointmentId}`)
       }
     ).then(result => {
       // Update with real result

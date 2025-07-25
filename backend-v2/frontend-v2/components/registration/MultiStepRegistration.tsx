@@ -87,12 +87,9 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
 
 
   const nextStep = () => {
-    console.log('[MultiStepRegistration] nextStep called, currentStep:', currentStep)
-    console.log('[MultiStepRegistration] registrationData:', registrationData)
     
     // Validate current step before proceeding
     const validation = validateStep(currentStep, registrationData)
-    console.log('[MultiStepRegistration] validation result:', validation)
     
     if (!validation.isValid) {
       setValidationErrors(validation.errors)
@@ -112,10 +109,8 @@ export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistr
     setValidationErrors([])
     
     if (currentStep < 3) {
-      console.log('[MultiStepRegistration] Moving to next step')
       setCurrentStep((prev) => (prev + 1) as RegistrationStep)
     } else if (currentStep === 3) {
-      console.log('[MultiStepRegistration] Completing registration')
       handleComplete()
     }
   }

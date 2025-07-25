@@ -155,7 +155,6 @@ export default function SixFigureAnalyticsDashboard({
       setLoading(true)
       setError(null)
       
-      console.log('🔍 Fetching Six Figure Barber metrics and progress...', { targetIncome, userId })
       
       // Fetch both metrics and progress data in parallel
       const [metricsData, progressTracking] = await Promise.all([
@@ -166,8 +165,6 @@ export default function SixFigureAnalyticsDashboard({
         })
       ])
       
-      console.log('📊 Received metrics data:', metricsData)
-      console.log('🎯 Received progress data:', progressTracking)
       
       // Validate metrics data structure before setting state
       if (!metricsData || typeof metricsData !== 'object') {

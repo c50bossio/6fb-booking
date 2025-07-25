@@ -71,7 +71,6 @@ export function useEnhancedConversionTracking(organizationSlug: string | undefin
     eventData: ConversionEventData = {}
   ) => {
     if (!pixelsLoaded) {
-      console.log('Pixels not loaded yet, queuing event:', eventName)
       return
     }
 
@@ -102,7 +101,6 @@ export function useEnhancedConversionTracking(organizationSlug: string | undefin
     trackMetaEvent(eventName, enhancedData)
     trackGoogleAdsEvent(eventName, enhancedData)
 
-    console.log(`🎯 Conversion Event Tracked: ${eventName}`, enhancedData)
   }, [pixelsLoaded, sessionId])
 
   // Convenience methods for common events

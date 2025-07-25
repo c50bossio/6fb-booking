@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
     // 3. Create audit trail
     
     // For now, just acknowledge the consent was received
-    console.log('Cookie consent received:', {
       categories,
       consentDate,
       version,

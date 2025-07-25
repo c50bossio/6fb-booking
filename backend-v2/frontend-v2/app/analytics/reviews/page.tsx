@@ -208,7 +208,6 @@ export default function ReviewsAnalyticsPage() {
   ]
 
   const handleExport = () => {
-    console.log('Exporting review analytics...')
   }
 
   return (

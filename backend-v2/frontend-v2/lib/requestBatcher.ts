@@ -248,7 +248,6 @@ export class RequestBatcher {
       this.timers.delete(batchType)
     }
 
-    console.log(`🚀 Executing batch ${batchType} with ${batch.length} requests`)
 
     // Group requests by endpoint for potential server-side batching
     const endpointGroups = this.groupByEndpoint(batch)

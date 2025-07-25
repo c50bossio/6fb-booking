@@ -45,7 +45,6 @@ export default function AITimeSuggestions({
         const response = await getMyBookings()
         setClientHistory(response.bookings || [])
       } catch (error) {
-        console.log('No client history available - using default suggestions')
       }
     }
     fetchClientHistory()

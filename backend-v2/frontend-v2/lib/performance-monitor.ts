@@ -127,10 +127,7 @@ class ProductionPerformanceMonitor {
       
       if (this.config.enableLogging) {
         console.group('📊 Performance Report');
-        console.log('⏱️ Render Performance:', report.metrics.renderTimes.slice(0, 5));
-        console.log('🧠 Memory Usage:', `${report.metrics.memoryUsage.toFixed(2)}MB`);
         if (report.recommendations.length > 0) {
-          console.log('💡 Recommendations:', report.recommendations);
         }
         console.groupEnd();
       }

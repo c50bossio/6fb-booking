@@ -40,7 +40,6 @@ export function useCustomerPixels(organizationSlug: string | undefined) {
         const pixels: CustomerPixels = await response.json()
 
         if (!pixels.tracking_enabled) {
-          console.log('Tracking disabled for this organization')
           return
         }
 

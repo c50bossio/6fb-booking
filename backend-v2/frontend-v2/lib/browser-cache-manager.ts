@@ -133,7 +133,6 @@ export class BrowserCacheManager {
         const lastKnownStart = localStorage.getItem(`${this.config.prefix}server_start`);
         
         if (lastKnownStart && lastKnownStart !== serverStartTime) {
-          console.log('🔄 Container restart detected, invalidating caches');
           this.handleContainerRestart();
         } else if (serverStartTime) {
           localStorage.setItem(`${this.config.prefix}server_start`, serverStartTime);
@@ -141,7 +140,6 @@ export class BrowserCacheManager {
       }
     } catch (error) {
       // Ignore network errors during development
-      console.debug('Container health check failed:', error.message);
     }
   }
 
@@ -264,14 +262,12 @@ export class BrowserCacheManager {
       if (this.config.containerMode && 
           entry.containerId && 
           entry.containerId !== this.containerId) {
-        console.log(`Cache entry ${key} from different container, invalidating`);
         this.remove(key);
         return null;
       }
 
       // Check version compatibility
       if (entry.version !== this.config.version) {
-        console.log(`Cache entry ${key} version mismatch, invalidating`);
         this.remove(key);
         return null;
       }
@@ -368,7 +364,6 @@ export class BrowserCacheManager {
       keysToRemove.forEach(key => localStorage.removeItem(key));
 
       if (keysToRemove.length > 0) {
-        console.log(`🧹 Cleaned up ${keysToRemove.length} expired cache entries`);
       }
     } catch (error) {
       console.warn('Failed to cleanup expired entries:', error);
@@ -496,7 +491,6 @@ export class BrowserCacheManager {
       const cached = this.get<{ response: string; headers: Record<string, string>; status: number }>(cacheKey);
       
       if (cached) {
-        console.debug(`Cache hit for ${url}`);
         return new Response(cached.response, {
           status: cached.status,
           headers: cached.headers

@@ -674,7 +674,6 @@ class GTMManager {
   
   private log(message: string, ...args: any[]): void {
     if (this.config.logEvents || this.config.debugMode) {
-      console.log(`[GTM] ${message}`, ...args);
     }
   }
   

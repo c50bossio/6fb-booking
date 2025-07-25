@@ -65,7 +65,6 @@ export default function BookPage() {
     onCacheUpdate: () => {
       // Optional: show a subtle indicator that data was refreshed
       if (refreshing) {
-        console.log('📡 Cache refreshed in background')
       }
     }
   })
@@ -141,7 +140,6 @@ export default function BookPage() {
         })
         setBookingDates(dates)
       } catch (err) {
-        console.log('User not authenticated - guest booking mode')
         setIsAuthenticated(false)
         // Don't redirect - allow guest booking
       }

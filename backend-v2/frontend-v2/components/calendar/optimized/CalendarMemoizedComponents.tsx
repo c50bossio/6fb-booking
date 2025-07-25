@@ -131,7 +131,6 @@ export const MemoizedTimeSlot = memo<{
         const appointmentId = e.dataTransfer.getData('appointment-id')
         if (appointmentId) {
           // Handle appointment drop
-          console.log(`Drop appointment ${appointmentId} at ${timeLabel}`)
         }
       }}
       onDragOver={(e) => e.preventDefault()}

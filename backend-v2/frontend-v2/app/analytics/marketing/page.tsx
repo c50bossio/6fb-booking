@@ -192,7 +192,6 @@ export default function MarketingAnalyticsPage() {
   ]
 
   const handleExport = () => {
-    console.log('Exporting marketing analytics...')
   }
 
   return (

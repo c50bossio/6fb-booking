@@ -94,7 +94,6 @@ export class RequestDeduplicationManager {
     // Check if request is already pending
     const existingRequest = this.pendingRequests.get(requestKey)
     if (existingRequest) {
-      console.log(`🔄 Deduplicating request: ${requestKey}`)
       return existingRequest.promise as Promise<T>
     }
     
@@ -102,7 +101,6 @@ export class RequestDeduplicationManager {
     if (config.method === 'GET') {
       const cached = this.getCachedData(requestKey)
       if (cached) {
-        console.log(`💾 Returning cached data for: ${requestKey}`)
         return cached as T
       }
     }
@@ -213,7 +211,6 @@ export class RequestDeduplicationManager {
         return error.response?.status >= 500 || error.code === 'NETWORK_ERROR'
       },
       onRetry: (error, attemptNumber) => {
-        console.log(`🔄 Retrying request (attempt ${attemptNumber}):`, config.key)
       },
       ...config.retryOptions
     }
@@ -258,7 +255,6 @@ export class RequestDeduplicationManager {
     try {
       onUpdate()
       optimisticUpdate.applied = true
-      console.log(`✨ Applied optimistic update: ${updateId}`)
     } catch (error) {
       console.error('Failed to apply optimistic update:', error)
       this.optimisticUpdates.delete(updateId)
@@ -274,7 +270,6 @@ export class RequestDeduplicationManager {
   private confirmOptimisticUpdate(updateId: string): void {
     const update = this.optimisticUpdates.get(updateId)
     if (update) {
-      console.log(`✅ Confirmed optimistic update: ${updateId}`)
       this.optimisticUpdates.delete(updateId)
     }
   }
@@ -287,7 +282,6 @@ export class RequestDeduplicationManager {
     if (update && update.applied) {
       try {
         update.rollback()
-        console.log(`🔄 Rolled back optimistic update: ${updateId}`)
       } catch (error) {
         console.error('Failed to rollback optimistic update:', error)
       }
@@ -355,7 +349,6 @@ export class RequestDeduplicationManager {
     keysToDelete.forEach(key => this.requestCache.delete(key))
     
     if (keysToDelete.length > 0) {
-      console.log(`🗑️ Invalidated ${keysToDelete.length} cache entries for: ${endpoint}`)
     }
   }
 
@@ -387,7 +380,6 @@ export class RequestDeduplicationManager {
       }
     }
     
-    console.log(`🛑 Aborted ${abortedCount} pending requests`)
   }
 
   /**
@@ -402,11 +394,9 @@ export class RequestDeduplicationManager {
           clearedCount++
         }
       }
-      console.log(`🗑️ Cleared ${clearedCount} cache entries matching: ${pattern}`)
     } else {
       const clearedCount = this.requestCache.size
       this.requestCache.clear()
-      console.log(`🗑️ Cleared all ${clearedCount} cache entries`)
     }
   }
 
@@ -414,12 +404,10 @@ export class RequestDeduplicationManager {
    * Pause/resume requests (for page visibility changes)
    */
   private pauseRequests(): void {
-    console.log('⏸️ Pausing pending requests')
     // Could implement request pausing logic here
   }
 
   private resumeRequests(): void {
-    console.log('▶️ Resuming requests')
     // Could implement request resuming logic here
   }
 

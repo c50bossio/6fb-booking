@@ -42,8 +42,6 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
   const [showShareModal, setShowShareModal] = useState(false)
   
   // Debug logging
-  console.log('🔍 Header component - user data:', user)
-  console.log('🔍 Header component - should show share button:', !!user)
   const [notificationDropdownPosition, setNotificationDropdownPosition] = useState({ top: 0, left: 0 })
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
@@ -204,7 +202,6 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
             className="w-full"
             onResultSelect={(result) => {
               // The search component handles navigation internally
-              console.log('Search result selected:', result)
             }}
             showRecentItems={true}
             maxResults={10}

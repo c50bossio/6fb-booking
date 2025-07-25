@@ -81,7 +81,6 @@ export function MobileCalendarLayout({
   } = useMobileCalendarGestures({
     onSwipeLeft: () => handleDateChange(addDays(selectedDate, 1)),
     onSwipeRight: () => handleDateChange(subDays(selectedDate, 1)),
-    onPinchZoom: (scale) => console.log('Pinch zoom:', scale),
     onDoubleTap: handleQuickBooking,
     onLongPress: (target) => handleLongPressAction(target)
   });

@@ -68,7 +68,7 @@ export default function MyBookingsPage() {
       await loadBookings()
     } catch (err: any) {
       // TODO: Show error in toast instead of alert
-      alert(err.message || 'Failed to cancel booking')
+      // TODO: Replace with toast notification: err.message || 'Failed to cancel booking'
     } finally {
       setCancellingId(null)
     }
@@ -109,7 +109,7 @@ export default function MyBookingsPage() {
 
   const handleRescheduleSubmit = async () => {
     if (!selectedBooking || !rescheduleDate || !rescheduleTime) {
-      alert('Please select both date and time')
+      // TODO: Replace with toast notification: 'Please select both date and time'
       return
     }
 
@@ -124,7 +124,7 @@ export default function MyBookingsPage() {
       // Reload bookings after successful reschedule
       await loadBookings()
     } catch (err: any) {
-      alert(err.message || 'Failed to reschedule booking')
+      // TODO: Replace with toast notification: err.message || 'Failed to reschedule booking'
     } finally {
       setReschedulingId(null)
     }

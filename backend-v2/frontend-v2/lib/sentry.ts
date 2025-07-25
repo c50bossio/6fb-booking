@@ -89,7 +89,6 @@ export function captureUserFeedback(
   eventId?: string
 ): void {
   // Development stub - log to console
-  console.log('User Feedback:', feedback)
 }
 
 export function initializeSentryContext(context: any): void {
@@ -112,7 +111,6 @@ export async function withSentryContext<T>(
 // Minimal Sentry-like export for compatibility
 export const Sentry = {
   captureException: (error: Error) => console.error('Exception:', error),
-  captureMessage: (message: string) => console.log('Message:', message),
   addBreadcrumb: (breadcrumb: any) => {},
   setUser: (user: any) => {},
   setTag: (key: string, value: any) => {},
@@ -128,5 +126,4 @@ export const Sentry = {
   },
   startSpan: (options: any, fn: () => any) => fn(),
   lastEventId: () => 'dev-mode',
-  captureUserFeedback: (feedback: any) => console.log('Feedback:', feedback),
 }

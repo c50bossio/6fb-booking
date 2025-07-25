@@ -266,7 +266,6 @@ export class ErrorBoundaryWithRetry extends Component<Props, State> {
   private scheduleAutoRetry(error: EnhancedError) {
     const delay = this.calculateRetryDelay(error)
     
-    console.log(`Scheduling auto-retry in ${delay}ms`)
     
     this.retryTimeoutId = setTimeout(() => {
       this.handleRetry()
@@ -299,7 +298,6 @@ export class ErrorBoundaryWithRetry extends Component<Props, State> {
 
     // Check network status first
     if (!isOnline() && this.state.error?.type === 'network') {
-      console.log('Still offline, skipping retry')
       return
     }
 

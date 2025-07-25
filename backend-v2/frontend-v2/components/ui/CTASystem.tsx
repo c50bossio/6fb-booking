@@ -420,7 +420,6 @@ export function trackCTAClick(ctaId: string, additionalData?: Record<string, any
   
   // Console log for development
   if (process.env.NODE_ENV === 'development') {
-    console.log('CTA Click:', { ctaId, config, additionalData })
   }
 }
 

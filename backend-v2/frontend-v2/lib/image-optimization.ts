@@ -293,7 +293,6 @@ export class ImagePerformanceMonitor {
         if (lastEntry.entryType === 'largest-contentful-paint') {
           const element = (lastEntry as any).element
           if (element && element.tagName === 'IMG') {
-            console.log('🖼️ LCP Image:', {
               src: element.src,
               loadTime: lastEntry.startTime,
               size: (lastEntry as any).size,
@@ -320,7 +319,6 @@ export class ImagePerformanceMonitor {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
           if ((entry as any).initiatorType === 'img') {
-            console.log('🖼️ Image loaded:', {
               src: entry.name,
               duration: entry.duration,
               transferSize: (entry as any).transferSize,

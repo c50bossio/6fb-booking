@@ -125,7 +125,6 @@ export class APIPerformanceMonitor {
 
   static logSummary() {
     const summary = this.getMetrics()
-    console.log('📊 API Performance Summary:', summary)
   }
 }
 

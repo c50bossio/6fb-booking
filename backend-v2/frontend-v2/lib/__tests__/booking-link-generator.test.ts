@@ -240,7 +240,6 @@ describe('BookingLinkGenerator', () => {
       
       // Debug: log errors if validation fails
       if (!result.isValid) {
-        console.log('Validation errors:', result.errors)
       }
       
       expect(result.isValid).toBe(true)

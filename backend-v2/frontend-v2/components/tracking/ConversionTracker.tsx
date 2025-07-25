@@ -124,7 +124,6 @@ export const trackConversion = (
   params?: ConversionEventParams
 ) => {
   if (debugMode) {
-    console.log('[ConversionTracker] Event:', eventType, params)
   }
   
   // Track via scriptLoader (handles consent internally)
@@ -132,7 +131,6 @@ export const trackConversion = (
   
   // Log to console in development
   if (process.env.NODE_ENV === 'development') {
-    console.log('🎯 Conversion Event:', {
       type: eventType,
       params,
       timestamp: new Date().toISOString(),
@@ -226,14 +224,12 @@ export const useConversionTracking = (options?: { debug?: boolean }) => {
     
     if (requiresAnalytics && !canLoadAnalytics) {
       if (debugMode) {
-        console.log('[ConversionTracker] Analytics consent required for:', eventType)
       }
       return
     }
     
     if (requiresMarketing && !canLoadMarketing) {
       if (debugMode) {
-        console.log('[ConversionTracker] Marketing consent required for:', eventType)
       }
       return
     }

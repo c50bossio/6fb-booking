@@ -267,7 +267,6 @@ export default function RecurringSeriesManager({
         setSelectedAppointments([]);
         setActionData({});
         
-        console.log(`Successfully ${actionData.action}d ${result.affected_appointments.length} appointment(s)`);
       }
     } catch (error) {
       console.error('Error performing appointment action:', error);
@@ -513,7 +512,6 @@ export default function RecurringSeriesManager({
                         size="sm"
                         onClick={() => {
                           // Navigate to appointment details
-                          console.log('View appointment details:', appointment.appointment_id);
                         }}
                       >
                         <Eye className="h-4 w-4" />

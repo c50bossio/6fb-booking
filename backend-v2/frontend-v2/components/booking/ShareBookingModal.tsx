@@ -124,7 +124,6 @@ ${businessName}`
       try {
         await navigator.share(shareData)
       } catch (err) {
-        console.log('Share cancelled')
       }
     } else {
       // Fallback: copy to clipboard

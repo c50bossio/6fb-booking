@@ -78,7 +78,6 @@ class PushNotificationManager {
       this.barberId = barberId || null;
       this.isInitialized = true;
 
-      console.log('🔔 Push notification system initialized');
       return true;
     } catch (error) {
       console.error('Failed to initialize push notifications:', error);
@@ -101,10 +100,8 @@ class PushNotificationManager {
     }
 
     if (permission === 'granted') {
-      console.log('✅ Notification permission granted');
       await this.subscribeToPush();
     } else {
-      console.log('❌ Notification permission denied');
     }
 
     return permission;
@@ -131,7 +128,6 @@ class PushNotificationManager {
           applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey)
         });
 
-        console.log('🔔 Push subscription created');
       }
 
       // Send subscription to server
@@ -155,7 +151,6 @@ class PushNotificationManager {
       await this.removeSubscriptionFromServer();
       
       this.subscription = null;
-      console.log('🔕 Push notifications disabled');
       return true;
     } catch (error) {
       console.error('Failed to unsubscribe:', error);
@@ -358,7 +353,6 @@ class PushNotificationManager {
         throw new Error('Failed to update preferences');
       }
 
-      console.log('✅ Notification preferences updated');
     } catch (error) {
       console.error('Failed to update notification preferences:', error);
     }
@@ -458,7 +452,6 @@ class PushNotificationManager {
         throw new Error('Failed to save subscription');
       }
 
-      console.log('✅ Push subscription saved to server');
     } catch (error) {
       console.error('Failed to send subscription to server:', error);
     }

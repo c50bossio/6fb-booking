@@ -155,7 +155,6 @@ export default function UnifiedAnalyticsPage() {
 
   const handleExport = async () => {
     // Export functionality
-    console.log('Exporting analytics data...')
   }
 
   if (loading) {

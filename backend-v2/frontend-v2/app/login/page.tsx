@@ -85,13 +85,10 @@ function LoginContent() {
     }
 
     try {
-      console.log('Starting login...')
       setIsSubmitting(true)
       const response = await loginActions.execute(() => login(values.email, values.password))
-      console.log('Login response:', response)
       
       if (response.access_token) {
-        console.log('Token received, fetching profile...')
         // Token is already stored in the login function
         
         // Handle device trust if remember me is checked
@@ -99,7 +96,6 @@ function LoginContent() {
           try {
             const deviceId = await generateDeviceFingerprint()
             await trustDevice(deviceId, response.user_id, 30) // Trust for 30 days
-            console.log('✅ Device trusted successfully')
           } catch (error) {
             console.error('Failed to trust device:', error)
             // Continue with login even if device trust fails
@@ -107,25 +103,20 @@ function LoginContent() {
         }
         
         // Fetch user profile to determine role
-        console.log('✅ Login successful, starting redirect process...')
         
         // Set up a timeout fallback to ensure redirect happens
         const redirectTimeout = setTimeout(() => {
-          console.log('⏰ Timeout fallback - forcing redirect to dashboard')
           window.location.href = '/dashboard'
         }, 3000)
         
         try {
-          console.log('📋 Fetching user profile...')
           const userProfile = await getProfile()
-          console.log('✅ User profile fetched:', userProfile)
           
           // Clear timeout since we got profile successfully
           clearTimeout(redirectTimeout)
           
           // Always redirect to dashboard for now
           const dashboardUrl = '/dashboard'
-          console.log('🎯 Redirecting to:', dashboardUrl)
           
           // Use both methods to ensure redirect works
           router.push(dashboardUrl)
@@ -133,7 +124,6 @@ function LoginContent() {
           // Also set a backup using window.location after short delay
           setTimeout(() => {
             if (window.location.pathname === '/login') {
-              console.log('🔄 Router.push failed, using window.location fallback')
               window.location.href = dashboardUrl
             }
           }, 1000)
@@ -144,14 +134,12 @@ function LoginContent() {
           // Clear timeout and redirect anyway
           clearTimeout(redirectTimeout)
           
-          console.log('🎯 Redirecting to dashboard despite profile error...')
           window.location.href = '/dashboard'
         }
         
         // Reset rate limit on successful login
         rateLimit.resetAttempts()
       } else {
-        console.log('No access token in response')
       }
     } catch (err: any) {
       // Increment rate limit attempts on failed login

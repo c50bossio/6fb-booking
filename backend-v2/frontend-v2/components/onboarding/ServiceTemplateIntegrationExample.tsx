@@ -22,7 +22,6 @@ export const ServiceTemplateIntegrationExample: React.FC = () => {
   // Handle template selection
   const handleTemplatesSelect = (templates: ServiceTemplate[]) => {
     setSelectedTemplates(templates)
-    console.log('Selected templates:', templates)
     
     // Show user feedback
     if (templates.length > 0) {

@@ -106,7 +106,6 @@ export default function ServicePricingOptimization({
 
   const applyOptimization = async () => {
     // Implement bulk price update
-    console.log('Applying optimization to selected services')
     await onOptimize()
   }
 

@@ -51,7 +51,6 @@ export function GA4Provider({ children }: GA4ProviderProps) {
             setAnalytics(ga4Instance)
             setIsInitialized(true)
             
-            console.log('GA4 initialized successfully with consent status:', consentStatus)
           }
         } catch (error) {
           console.error('Failed to initialize GA4:', error)
@@ -99,7 +98,6 @@ export function GA4Provider({ children }: GA4ProviderProps) {
       
       analytics.updateConsent(consentStatus)
       
-      console.log('GA4 consent updated:', consentStatus)
     }
   }, [analytics, preferences])
 

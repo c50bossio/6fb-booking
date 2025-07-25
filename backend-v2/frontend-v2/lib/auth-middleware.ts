@@ -40,7 +40,6 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
                  'barber' // Default to barber for calendar access
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 Extracted role from JWT token:', {
           sub: tokenPayload.sub,
           extractedRole: userRole,
           allFields: Object.keys(tokenPayload)
@@ -48,7 +47,6 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ Failed to extract role from JWT token:', error)
       }
       userRole = 'barber' // Default fallback for calendar access
     }
@@ -73,7 +71,6 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
 
     // Log access denial for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🚫 Access denied: ${path} - User role: ${userRole || 'none'}, Required: ${accessCheck.matchedRoute?.allowedRoles.join(',') || 'authenticated'}`)
     }
 
     return NextResponse.redirect(redirectUrl)
@@ -121,7 +118,6 @@ export function extractUserRoleFromToken(token: string): string | null {
                      'barber' // Default to barber for calendar access
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 JWT Token Analysis:', {
         sub: payload.sub,
         role: payload.role,
         user_role: payload.user_role,
@@ -135,7 +131,6 @@ export function extractUserRoleFromToken(token: string): string | null {
     return userRole
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('⚠️ Failed to extract role from JWT token:', error)
     }
     return 'barber' // Default fallback for calendar access
   }
@@ -205,7 +200,6 @@ export function logAccessAttempt(
     const ip = request.ip || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
     
-    console.log(`[${timestamp}] Access ${granted ? 'GRANTED' : 'DENIED'} - Path: ${request.nextUrl.pathname}, Role: ${userRole || 'none'}, IP: ${ip}, Reason: ${reason || 'role_check'}`)
   }
   
   // In production, you'd send this to a logging service

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Brain, TrendingUp, Zap, Eye, Settings, Activity, Clock, Target, BarChart3, AlertCircle, CreditCard } from 'lucide-react'
 import AIAgentPricingDisplay from '@/components/ai/AIAgentPricingDisplay'
+import { useToast } from '@/components/ui/use-toast'
 
 /**
  * 🤖 AI Agent Dashboard - Real-time AI monitoring and control
@@ -52,6 +53,7 @@ interface AIStatus {
 }
 
 export default function AIAgentDashboard() {
+  const { toast } = useToast()
   const [opportunities, setOpportunities] = useState<AIOpportunity[]>([])
   const [insights, setInsights] = useState<AIInsights | null>(null)
   const [status, setStatus] = useState<AIStatus | null>(null)
@@ -136,10 +138,18 @@ export default function AIAgentDashboard() {
       // Refresh opportunities after execution
       await fetchAIData()
 
-      alert(`✅ AI executed opportunity for ${opportunity.client_name}!\n\nService: ${opportunity.suggested_service}\nChannel: ${opportunity.recommended_channel}\nConfidence: ${(opportunity.confidence_score * 100).toFixed()}%`)
+      toast({
+        title: "✅ AI Executed Opportunity",
+        description: `Successfully executed opportunity for ${opportunity.client_name}. Service: ${opportunity.suggested_service}, Confidence: ${(opportunity.confidence_score * 100).toFixed()}%`,
+        variant: "default",
+      })
 
     } catch (err: any) {
-      alert(`❌ Failed to execute opportunity: ${err.message}`)
+      toast({
+        title: "❌ Execution Failed",
+        description: `Failed to execute opportunity: ${err.message}`,
+        variant: "destructive",
+      })
     } finally {
       setExecutingIds(prev => {
         const next = new Set(prev)
@@ -161,10 +171,18 @@ export default function AIAgentDashboard() {
 
       await fetchAIData()
 
-      alert(`🤖 AI Auto-Execution Complete!\n\nOpportunities scanned: ${result.opportunities_scanned}\nHigh confidence found: ${result.high_confidence_found}\nExecuted: ${result.executed_count}\nPotential revenue: $${result.total_potential_revenue?.toFixed(2) || 0}`)
+      toast({
+        title: "🤖 AI Auto-Execution Complete",
+        description: `Scanned: ${result.opportunities_scanned}, Executed: ${result.executed_count}, Potential revenue: $${result.total_potential_revenue?.toFixed(2) || 0}`,
+        variant: "default",
+      })
 
     } catch (err: any) {
-      alert(`❌ Auto-execution failed: ${err.message}`)
+      toast({
+        title: "❌ Auto-execution Failed",
+        description: `Auto-execution failed: ${err.message}`,
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -551,9 +569,12 @@ export default function AIAgentDashboard() {
           <AIAgentPricingDisplay
             currentTier="starter"
             onUpgrade={(tier) => {
-              console.log('Upgrade to:', tier)
               // TODO: Implement upgrade flow
-              alert(`Upgrading to ${tier} plan - Feature coming soon!`)
+              toast({
+                title: "Upgrade Plan",
+                description: `Upgrading to ${tier} plan - Feature coming soon!`,
+                variant: "default",
+              })
             }}
             showComparison={true}
           />

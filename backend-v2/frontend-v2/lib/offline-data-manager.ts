@@ -78,7 +78,6 @@ class OfflineDataManager {
       request.onsuccess = () => {
         this.db = request.result;
         this.initialized = true;
-        console.log('✅ Offline Data Manager initialized');
         resolve();
       };
 
@@ -90,7 +89,6 @@ class OfflineDataManager {
   }
 
   private upgradeDatabase(db: IDBDatabase, oldVersion: number): void {
-    console.log(`📦 Upgrading IndexedDB from version ${oldVersion} to ${this.dbVersion}`);
 
     // Action Queue Store
     if (!db.objectStoreNames.contains('actionQueue')) {
@@ -168,7 +166,6 @@ class OfflineDataManager {
       const request = store.add(fullAction);
 
       request.onsuccess = () => {
-        console.log('📤 Action queued for sync:', action.type, action.url);
         resolve(request.result as number);
       };
 
@@ -294,7 +291,6 @@ class OfflineDataManager {
       const request = store.add(offlineAppointment);
 
       request.onsuccess = () => {
-        console.log('📅 Offline appointment created:', tempId);
         resolve(tempId);
       };
 
@@ -366,7 +362,6 @@ class OfflineDataManager {
   async syncWithServer(): Promise<SyncResult> {
     await this.ensureInitialized();
 
-    console.log('🔄 Starting sync with server...');
     
     const result: SyncResult = {
       success: false,
@@ -383,7 +378,6 @@ class OfflineDataManager {
         action.status === 'pending' || action.status === 'failed'
       );
 
-      console.log(`📤 Syncing ${pendingActions.length} pending actions`);
 
       for (const action of pendingActions) {
         try {
@@ -394,7 +388,6 @@ class OfflineDataManager {
           if (response.ok) {
             await this.removeAction(action.id!);
             result.synced++;
-            console.log('✅ Synced action:', action.type, action.url);
           } else if (response.status === 409) {
             // Conflict detected
             result.conflicts++;
@@ -429,7 +422,6 @@ class OfflineDataManager {
         lastSyncResult: result
       });
 
-      console.log('🔄 Sync completed:', result);
       return result;
 
     } catch (error) {
@@ -533,7 +525,6 @@ class OfflineDataManager {
 
   private async storeConflict(conflict: any): Promise<void> {
     // Implementation for storing conflicts for user resolution
-    console.log('💥 Conflict stored:', conflict);
   }
 
   // Utility Methods
@@ -649,7 +640,6 @@ class OfflineDataManager {
       });
     }
 
-    console.log('🗑️ All offline data cleared');
   }
 }
 

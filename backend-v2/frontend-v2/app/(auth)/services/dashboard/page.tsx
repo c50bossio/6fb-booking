@@ -184,7 +184,6 @@ export default function ServiceDashboardPage() {
 
   const handleBulkAction = async (action: string) => {
     // Implement bulk actions
-    console.log(`Performing bulk action: ${action} on`, selectedServices)
     await loadData() // Reload after action
   }
 

@@ -32,7 +32,6 @@ export function useOptimizedCalendarEventHandlers({
     () => debounce((barberId: number | 'all') => {
       onBarberSelect(barberId)
       // Track selection for analytics
-      console.debug('Barber selection changed:', barberId)
     }, 300),
     [onBarberSelect]
   )
@@ -40,7 +39,6 @@ export function useOptimizedCalendarEventHandlers({
   const debouncedLocationChange = useMemo(
     () => debounce((locationId: string) => {
       onLocationChange(locationId)
-      console.debug('Location changed:', locationId)
     }, 500),
     [onLocationChange]
   )
@@ -64,7 +62,6 @@ export function useOptimizedCalendarEventHandlers({
   const handleViewModeChange = useCallback((mode: 'day' | 'week' | 'month') => {
     onViewModeChange(mode)
     // Track view mode changes for analytics
-    console.debug('View mode changed:', mode)
   }, [onViewModeChange])
   
   // Enhanced appointment update with conflict detection
@@ -87,7 +84,6 @@ export function useOptimizedCalendarEventHandlers({
       }
       
       const endTime = performance.now()
-      console.debug(`Appointment update took ${endTime - startTime}ms`)
       
     } catch (error) {
       console.error('Failed to update appointment:', error)

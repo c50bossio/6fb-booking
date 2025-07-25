@@ -92,7 +92,6 @@ class GA4Analytics {
     this.logEvents = this.debugMode || process.env.NEXT_PUBLIC_GA4_LOG_EVENTS === 'true'
 
     if (this.debugMode) {
-      console.log('GA4Analytics initialized with config:', this.config)
     }
   }
 
@@ -112,7 +111,6 @@ class GA4Analytics {
 
     // Check Do Not Track
     if (this.config.respectDnt && this.isDntEnabled()) {
-      console.log('Do Not Track enabled. Analytics tracking disabled.')
       return
     }
 
@@ -141,7 +139,6 @@ class GA4Analytics {
       this.processEventQueue()
 
       if (this.debugMode) {
-        console.log('GA4Analytics successfully initialized')
       }
 
     } catch (error) {
@@ -228,7 +225,6 @@ class GA4Analytics {
       })
 
       if (this.debugMode) {
-        console.log('GA4 consent updated:', consent)
       }
     }
   }
@@ -784,7 +780,6 @@ class GA4Analytics {
    */
   private logEvent(eventName: string, parameters: Record<string, any>): void {
     if (this.logEvents) {
-      console.log(`🔍 GA4 Event: ${eventName}`, parameters)
     }
   }
 

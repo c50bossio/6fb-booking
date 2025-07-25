@@ -339,7 +339,6 @@ export default function EnhancedAnalyticsDashboard({ userId, timeRange }: Enhanc
           userId={userId} 
           className="w-full"
           onInsightClick={(insight) => {
-            console.log('Insight clicked:', insight)
             // You can add custom insight handling here
           }}
         />

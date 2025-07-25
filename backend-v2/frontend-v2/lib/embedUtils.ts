@@ -215,7 +215,6 @@ export function generateEmbedJS(): string {
       }
     } else if (data.type === 'booking_completed') {
       // Handle booking completion
-      console.log('Booking completed:', data.booking);
       
       // Fire custom event
       window.dispatchEvent(new CustomEvent('sixfb-booking-completed', {
@@ -223,7 +222,6 @@ export function generateEmbedJS(): string {
       }));
     } else if (data.type === 'booking_cancelled') {
       // Handle booking cancellation
-      console.log('Booking cancelled');
       
       // Fire custom event
       window.dispatchEvent(new CustomEvent('sixfb-booking-cancelled'));
@@ -235,12 +233,10 @@ export function generateEmbedJS(): string {
   
   // Example: Listen for booking events
   window.addEventListener('sixfb-booking-completed', function(event) {
-    console.log('Booking completed on your site:', event.detail);
     // Add your custom logic here
   });
   
   window.addEventListener('sixfb-booking-cancelled', function(event) {
-    console.log('Booking cancelled on your site');
     // Add your custom logic here
   });
 })();

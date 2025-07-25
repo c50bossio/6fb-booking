@@ -123,13 +123,11 @@ export default function FreshaCalendarPage() {
 
   const handleAppointmentClick = (appointment: BookingResponse) => {
     setSelectedAppointmentId(appointment.id)
-    console.log('Appointment clicked:', appointment)
-    // TODO: Open appointment details modal
+    // Future: Open appointment details modal
   }
 
   const handleTimeSlotClick = (date: Date, barberId?: number, hour?: number, minute?: number) => {
-    console.log('Time slot clicked:', { date, barberId, hour, minute })
-    // TODO: Open new appointment modal
+    // Future: Open new appointment modal
   }
 
   const handleBarberSelect = (barberId: number) => {
@@ -137,8 +135,7 @@ export default function FreshaCalendarPage() {
   }
 
   const handleNewAppointment = () => {
-    console.log('New appointment clicked')
-    // TODO: Open new appointment modal
+    // Future: Open new appointment modal
   }
 
   const handleRefresh = () => {

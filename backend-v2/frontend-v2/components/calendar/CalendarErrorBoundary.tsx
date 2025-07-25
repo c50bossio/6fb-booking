@@ -157,7 +157,6 @@ export class CalendarErrorBoundary extends Component<Props, State> {
     
     // Auto-retry for recoverable errors
     if (this.state.error?.recoverable && this.state.retryCount < this.maxRetries) {
-      console.log(`Attempting auto-retry ${this.state.retryCount + 1}/${this.maxRetries}`)
       setTimeout(() => {
         this.handleRetry()
       }, Math.pow(2, this.state.retryCount) * 1000) // Exponential backoff
@@ -222,7 +221,6 @@ export class CalendarErrorBoundary extends Component<Props, State> {
           maxRetries: 1, // Single attempt since we're managing retries at component level
           initialDelay: Math.min(1000 * Math.pow(2, this.state.retryCount), 10000),
           onRetry: (error, attemptNumber) => {
-            console.log(`Retrying calendar mount (attempt ${this.state.retryCount + 1}/${this.maxRetries})`)
           }
         }
       )

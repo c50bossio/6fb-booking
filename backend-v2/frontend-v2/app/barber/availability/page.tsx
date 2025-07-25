@@ -61,7 +61,6 @@ export default function BarberAvailabilityPage() {
       setBarberId(user.id);
       fetchAvailabilityData(user.id);
     } else {
-      console.log({
         title: 'Error',
         description: 'User information not found',
         variant: 'destructive',
@@ -122,7 +121,6 @@ export default function BarberAvailabilityPage() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching availability data:', error);
-      console.log({
         title: 'Error',
         description: 'Failed to load availability data',
         variant: 'destructive',
@@ -179,13 +177,11 @@ export default function BarberAvailabilityPage() {
         }
       }
 
-      console.log({
         title: 'Success',
         description: 'Availability updated successfully',
       });
     } catch (error) {
       console.error('Error updating availability:', error);
-      console.log({
         title: 'Error',
         description: 'Failed to update availability',
         variant: 'destructive',
@@ -221,14 +217,12 @@ export default function BarberAvailabilityPage() {
       if (response.ok) {
         const created = await response.json();
         setTimeOffRequests([...timeOffRequests, created]);
-        console.log({
           title: 'Success',
           description: 'Time off request created',
         });
       }
     } catch (error) {
       console.error('Error creating time off:', error);
-      console.log({
         title: 'Error',
         description: 'Failed to create time off request',
         variant: 'destructive',
@@ -263,14 +257,12 @@ export default function BarberAvailabilityPage() {
       if (response.ok) {
         const created = await response.json();
         setSpecialAvailability([...specialAvailability, created]);
-        console.log({
           title: 'Success',
           description: 'Special availability created',
         });
       }
     } catch (error) {
       console.error('Error creating special availability:', error);
-      console.log({
         title: 'Error',
         description: 'Failed to create special availability',
         variant: 'destructive',

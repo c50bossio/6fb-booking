@@ -20,9 +20,6 @@ export default function RegisterPage() {
   
   // Debug: Log when component mounts
   React.useEffect(() => {
-    console.log('[RegisterPage] Component mounted successfully')
-    console.log('[RegisterPage] handleComplete function exists:', !!handleComplete)
-    console.log('[RegisterPage] handleCancel function exists:', !!handleCancel)
   }, [])
 
   const handleComplete = async (data: RegistrationData) => {
@@ -73,7 +70,6 @@ export default function RegisterPage() {
       // Apply service templates if any were selected
       if (data.serviceTemplates && data.serviceTemplates.length > 0) {
         try {
-          console.log('[RegisterPage] Applying service templates:', data.serviceTemplates)
           
           // Apply each template
           for (const template of data.serviceTemplates) {
@@ -86,7 +82,6 @@ export default function RegisterPage() {
             })
           }
           
-          console.log('[RegisterPage] Service templates applied successfully')
         } catch (templateError) {
           console.error('[RegisterPage] Error applying service templates:', templateError)
           // Don't fail registration if template application fails

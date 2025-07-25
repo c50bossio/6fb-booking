@@ -231,7 +231,6 @@ export default function BlackoutDateManager({
         await fetchBlackouts();
         setShowCreateDialog(false);
         resetForm();
-        console.log('Blackout date created successfully');
       } else {
         const error = await response.json();
         console.error('Error creating blackout:', error);
@@ -264,7 +263,6 @@ export default function BlackoutDateManager({
         await fetchBlackouts();
         setEditingBlackout(null);
         resetForm();
-        console.log('Blackout date updated successfully');
       } else {
         const error = await response.json();
         console.error('Error updating blackout:', error);
@@ -291,7 +289,6 @@ export default function BlackoutDateManager({
 
       if (response.ok) {
         await fetchBlackouts();
-        console.log('Blackout date deleted successfully');
       } else {
         console.error('Error deleting blackout');
       }

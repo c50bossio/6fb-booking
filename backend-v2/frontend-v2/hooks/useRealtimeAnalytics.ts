@@ -173,7 +173,6 @@ export function useRealtimeAnalytics(options: UseRealtimeAnalyticsOptions = {}) 
       const ws = new WebSocket(wsUrl)
       
       ws.onopen = () => {
-        console.log('WebSocket connected for real-time analytics')
         
         // Send authentication token if available
         const token = localStorage.getItem('token')

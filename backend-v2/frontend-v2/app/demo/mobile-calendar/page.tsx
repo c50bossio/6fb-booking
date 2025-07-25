@@ -136,9 +136,7 @@ export default function MobileCalendarDemo() {
     setIsOfflineMode(!isOfflineMode);
     // Simulate offline mode
     if (!isOfflineMode) {
-      console.log('📵 Offline mode enabled - demonstrating offline functionality');
     } else {
-      console.log('📶 Back online - syncing data');
     }
   };
 
@@ -148,7 +146,7 @@ export default function MobileCalendarDemo() {
       setNotificationsEnabled(permission === 'granted');
       
       if (permission !== 'granted') {
-        alert('Please enable notifications to see this demo');
+        // TODO: Replace with toast notification: 'Please enable notifications to see this demo';
         return;
       }
     }
@@ -178,7 +176,7 @@ export default function MobileCalendarDemo() {
 
   const demoInstallPWA = async () => {
     if (isPWAInstalled) {
-      alert('PWA is already installed! Look for the BookedBarber icon on your home screen.');
+      // TODO: Replace with toast notification: 'PWA is already installed! Look for the BookedBarber icon on your home screen.';
       return;
     }
 
@@ -193,7 +191,7 @@ export default function MobileCalendarDemo() {
         setIsPWAInstalled(true);
       }
     } else {
-      alert('To install this app:\n\n1. Tap the browser menu\n2. Select "Add to Home Screen"\n3. Follow the prompts');
+      // TODO: Replace with toast notification: 'To install this app:\n\n1. Tap the browser menu\n2. Select "Add to Home Screen"\n3. Follow the prompts';
     }
   };
 
@@ -204,30 +202,26 @@ export default function MobileCalendarDemo() {
       setTimeout(() => navigator.vibrate([100]), 300); // Medium
       setTimeout(() => navigator.vibrate([200]), 600); // Heavy
     } else {
-      alert('Haptic feedback is not available on this device');
+      // TODO: Replace with toast notification: 'Haptic feedback is not available on this device';
     }
   };
 
   const demoBackgroundSync = async () => {
-    alert('Background Sync Demo:\n\n1. Create an appointment offline\n2. Go offline\n3. Come back online\n4. Changes sync automatically');
+    // TODO: Replace with toast notification: 'Background Sync Demo:\n\n1. Create an appointment offline\n2. Go offline\n3. Come back online\n4. Changes sync automatically';
     
     // Simulate background sync
-    console.log('🔄 Demonstrating background sync...');
     await offlineCalendarManager.syncPendingAppointments();
   };
 
   const handleAppointmentSelect = (appointment: any) => {
-    console.log('Selected appointment:', appointment);
   };
 
   const handleCreateAppointment = (timeSlot: string) => {
-    console.log('Creating appointment at:', timeSlot);
-    alert(`Demo: Creating appointment at ${timeSlot}`);
+    // TODO: Replace with toast notification: `Demo: Creating appointment at ${timeSlot}`;
   };
 
   const handleNavigate = (path: string) => {
-    console.log('Navigate to:', path);
-    alert(`Demo: Navigate to ${path}`);
+    // TODO: Replace with toast notification: `Demo: Navigate to ${path}`;
   };
 
   const getFeatureStatusColor = (status: string) => {

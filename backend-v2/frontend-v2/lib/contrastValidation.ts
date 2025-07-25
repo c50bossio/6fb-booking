@@ -194,14 +194,12 @@ export function auditComponentContrast(componentName: string, colorPairs: ColorP
     const result = validateContrast(pair.background, pair.text, pair.context)
     
     if (result.passesAA) {
-      console.log(`✅ Pair ${index + 1}: ${result.ratio} (${pair.context || 'No context'})`)
     } else {
       console.error(`❌ Pair ${index + 1}: ${result.ratio} - ${result.recommendation}`)
       allPassed = false
     }
   })
   
-  console.log(allPassed ? '🎉 All color pairs pass WCAG AA standards!' : '⚠️  Some color pairs need attention')
   console.groupEnd()
   
   return allPassed

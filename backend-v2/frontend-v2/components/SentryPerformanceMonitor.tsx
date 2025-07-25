@@ -100,7 +100,6 @@ export function SentryPerformanceMonitor({
           longTaskObserver.observe({ entryTypes: ['longtask'] })
         } catch (error) {
           // longtask might not be supported in all browsers
-          console.debug('Long task observer not supported:', error)
         }
 
         // Track paint timing
@@ -125,11 +124,9 @@ export function SentryPerformanceMonitor({
         try {
           paintObserver.observe({ entryTypes: ['paint'] })
         } catch (error) {
-          console.debug('Paint observer not supported:', error)
         }
 
       } catch (error) {
-        console.debug('Performance Observer not fully supported:', error)
       }
     }
 

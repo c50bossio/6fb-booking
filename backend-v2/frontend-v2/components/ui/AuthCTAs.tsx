@@ -36,12 +36,10 @@ function AuthHeaderCTAsInternal({ className = '' }: { className?: string }) {
   const { isAuthenticated, isLoading, logout, error } = useAuth()
   const router = useRouter()
 
-  console.log('🔗 AuthHeaderCTAs: Rendering with state - authenticated:', isAuthenticated, 'loading:', isLoading, 'error:', error)
 
   // Handle logout functionality
   const handleLogout = async () => {
     try {
-      console.log('🔗 AuthHeaderCTAs: User clicked logout button')
       await logout()
       // Redirect to homepage after logout (handled by useAuth)
     } catch (error) {
@@ -57,7 +55,6 @@ function AuthHeaderCTAsInternal({ className = '' }: { className?: string }) {
 
   // Show brief loading state, but fallback quickly
   if (isLoading) {
-    console.log('🔗 AuthHeaderCTAs: Showing loading state')
     return (
       <nav role="navigation" aria-label="Account actions" className={`flex items-center space-x-3 ${className}`}>
         <div className="h-9 w-16 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
@@ -69,7 +66,6 @@ function AuthHeaderCTAsInternal({ className = '' }: { className?: string }) {
 
   // Show different CTAs based on authentication state
   if (isAuthenticated) {
-    console.log('🔗 AuthHeaderCTAs: Showing authenticated user logout button')
     // Authenticated users see logout button
     return (
       <nav role="navigation" aria-label="Account actions" className={`flex items-center space-x-3 ${className}`}>
@@ -77,7 +73,6 @@ function AuthHeaderCTAsInternal({ className = '' }: { className?: string }) {
       </nav>
     )
   } else {
-    console.log('🔗 AuthHeaderCTAs: Showing unauthenticated user login/register buttons')
     // Unauthenticated users see login/register
     return (
       <nav role="navigation" aria-label="Account actions" className={`flex items-center space-x-3 ${className}`}>
@@ -105,7 +100,6 @@ function AuthHeroCTAsInternal({ className = '' }: { className?: string }) {
   const { isAuthenticated, isLoading, user, error } = useAuth()
   const router = useRouter()
 
-  console.log('🎯 AuthHeroCTAs: Rendering with state - authenticated:', isAuthenticated, 'loading:', isLoading, 'error:', error, 'user:', user?.name || 'none')
 
   // If there's an auth error, show static fallback
   if (error) {
@@ -115,7 +109,6 @@ function AuthHeroCTAsInternal({ className = '' }: { className?: string }) {
 
   // Show brief loading state, but fallback quickly
   if (isLoading) {
-    console.log('🎯 AuthHeroCTAs: Showing loading state')
     return (
       <div className={`flex justify-center ${className}`}>
         <div className="h-12 w-48 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
@@ -126,7 +119,6 @@ function AuthHeroCTAsInternal({ className = '' }: { className?: string }) {
 
   // Show different CTAs based on authentication state
   if (isAuthenticated && user) {
-    console.log('🎯 AuthHeroCTAs: Showing authenticated user dashboard link for:', user.name)
     // Authenticated users see personalized message and dashboard link with premium styling
     return (
       <section className={`py-12 lg:py-16 relative ${className}`}>
@@ -167,7 +159,6 @@ function AuthHeroCTAsInternal({ className = '' }: { className?: string }) {
       </section>
     )
   } else {
-    console.log('🎯 AuthHeroCTAs: Not showing duplicate register button for unauthenticated users (removed to prevent duplicate CTAs)')
     // Unauthenticated users don't need a duplicate register button here
     // The main register CTA is already available in the header navigation
     return null

@@ -924,7 +924,6 @@ export const a11yTestUtils = {
       })
       console.groupEnd()
     } else {
-      console.log('✅ No accessibility violations found')
     }
   },
 
@@ -979,7 +978,6 @@ export const a11yTestUtils = {
       })
       console.groupEnd()
     } else {
-      console.log('✅ All color contrasts meet WCAG AA standards')
     }
   },
 }

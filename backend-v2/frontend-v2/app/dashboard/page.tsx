@@ -110,11 +110,8 @@ function DashboardContent() {
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        console.log('Dashboard: Fetching user profile...')
         // Check authentication first
         const userData = await getProfile()
-        console.log('Dashboard: User data received:', userData)
-        console.log('Dashboard: User role checks:', {
           role: userData.role,
           unified_role: userData.unified_role,
           is_system_admin: userData.is_system_admin,
@@ -122,7 +119,6 @@ function DashboardContent() {
           shouldShowAdvancedDashboard: userData.role === 'admin' || userData.role === 'barber' || userData.role === 'platform_admin'
         })
         if (!userData) {
-          console.log('Dashboard: No user data, will redirect to login')
           return
         }
         setUser(userData)
@@ -130,7 +126,6 @@ function DashboardContent() {
         // FIXED: Onboarding redirect logic disabled to prevent infinite loops
         // Check if user needs onboarding - removed to fix redirect loop
         // if (!userData.onboarding_completed && userData.is_new_user !== false) {
-        //   console.log('Dashboard: Redirecting new user to welcome page')
         //   router.push('/dashboard/welcome')
         //   return
         // }
@@ -180,7 +175,6 @@ function DashboardContent() {
         }
 
         try {
-          console.log(`Dashboard: Batching ${dashboardRequests.length} requests...`)
           const results = await batchDashboardData(dashboardRequests)
           
           // Process bookings data
@@ -277,11 +271,9 @@ function DashboardContent() {
   useEffect(() => {
     // Check if we have a token in localStorage
     const token = localStorage.getItem('token')
-    console.log('Dashboard: Checking auth - token exists:', !!token, 'loading:', loading, 'user:', !!user)
     
     if (!loading && !user && !token) {
       // Only redirect if we truly have no authentication
-      console.log('Dashboard: No token and no user, redirecting to login')
       const redirectTimer = setTimeout(() => {
         router.push('/login')
       }, 500) // Increased delay to allow for profile fetch
@@ -319,7 +311,6 @@ function DashboardContent() {
   }
 
   // Debug logging for dashboard rendering
-  console.log('Dashboard: Rendering decision:', {
     userRole: user?.role,
     userUnifiedRole: user?.unified_role,
     shouldShowAdvancedDashboard: user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'platform_admin',

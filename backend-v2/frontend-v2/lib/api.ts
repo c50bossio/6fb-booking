@@ -122,13 +122,9 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
 
   let response: Response
   const fullUrl = `${API_URL}${endpoint}`
-  console.log('🌐 Making API request to:', fullUrl)
-  console.log('🔧 API_URL:', API_URL)
-  console.log('🔧 endpoint:', endpoint)
   
   try {
     response = await fetch(fullUrl, config)
-    console.log('✅ Response status:', response.status)
   } catch (error) {
     // Network error or CORS issue
     console.error(`Network error calling ${endpoint}:`, error)
@@ -168,7 +164,6 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
                             'barber'
             document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
             localStorage.setItem('user_role', userRole)
-            console.log('🔄 Refreshed token with role:', userRole)
           } catch (error) {
             console.warn('⚠️ Failed to extract role from refreshed token:', error)
             const defaultRole = 'barber'
@@ -191,7 +186,6 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // Remove the cookies
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
       document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-      console.log('🔄 Token refresh failed: Cleared all auth data')
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }
@@ -253,7 +247,6 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       localStorage.removeItem('user_role')
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
       document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-      console.log('🚫 401 Unauthorized: Cleared all auth data')
       if (typeof window !== 'undefined') {
         setTimeout(() => {
           window.location.href = '/login'
@@ -280,8 +273,6 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
 // Auth functions with retry logic for critical operations
 export async function login(email: string, password: string) {
   const requestBody = { email, password };
-  console.log('🚀 Login request body:', requestBody);
-  console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
   
   const response = await retryOperation(
     () => fetchAPI('/api/v2/auth/login', {
@@ -314,7 +305,6 @@ export async function login(email: string, password: string) {
                       tokenPayload.sub_role ||
                       'barber' // Default to barber instead of user for calendar access
       
-      console.log('🔑 JWT Token Payload:', {
         sub: tokenPayload.sub,
         role: tokenPayload.role,
         user_role: tokenPayload.user_role,
@@ -322,7 +312,6 @@ export async function login(email: string, password: string) {
         extractedRole: userRole
       })
       
-      console.log('🔑 Setting user_role cookie:', userRole)
       document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
       
       // Also store role in localStorage for consistency
@@ -350,16 +339,8 @@ export async function logout() {
   // Remove the cookies by setting them with an expired date
   document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
   document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-  console.log('🚪 Logout: Cleared all tokens and role information')
 }
 
-// @deprecated - Use registerComplete() instead. This old function uses a single "name" field.
-// export async function register(email: string, password: string, name: string, createTestData: boolean = false, userType: string = 'client') {
-//   return fetchAPI('/api/v2/auth/register', {
-//     method: 'POST',
-//     body: JSON.stringify({ email, password, name, role: userType }),
-//   })
-// }
 
 export interface CompleteRegistrationData {
   firstName: string
@@ -804,7 +785,6 @@ export async function getAvailableSlots(params: { date: string; service_id?: num
   if (params.barber_id) {
     queryParams.append('barber_id', params.barber_id.toString())
   }
-  console.log('🔗 Calling slots API:', `/api/v2/appointments/slots?${queryParams.toString()}`)
   return fetchAPI(`/api/v2/appointments/slots?${queryParams.toString()}`)
 }
 
@@ -988,7 +968,6 @@ export async function cancelBooking(bookingId: number): Promise<BookingResponse>
       const shouldRetry = !error.message?.includes('404') && 
                          !error.message?.includes('already') &&
                          !error.message?.includes('canceled')
-      console.log(`Cancel booking error retry decision: ${shouldRetry}`, error.message)
       return shouldRetry
     }
   )
@@ -1020,7 +999,6 @@ export async function rescheduleBooking(bookingId: number, date: string, time: s
       const shouldRetry = !error.message?.includes('422') && 
                          !error.message?.includes('404') &&
                          !error.message?.includes('unavailable')
-      console.log(`Reschedule booking error retry decision: ${shouldRetry}`, error.message)
       return shouldRetry
     }
   )
@@ -6031,7 +6009,6 @@ export async function createGuestBooking(bookingData: GuestBookingCreate): Promi
       const shouldRetry = !error.message?.includes('422') && 
                          !error.message?.includes('401') && 
                          !error.message?.includes('403')
-      console.log(`Guest booking error retry decision: ${shouldRetry}`, error.message)
       return shouldRetry
     }
   )
@@ -6053,7 +6030,6 @@ export async function createGuestQuickBooking(bookingData: GuestQuickBookingCrea
       const shouldRetry = !error.message?.includes('422') && 
                          !error.message?.includes('401') && 
                          !error.message?.includes('403')
-      console.log(`Guest quick booking error retry decision: ${shouldRetry}`, error.message)
       return shouldRetry
     }
   )

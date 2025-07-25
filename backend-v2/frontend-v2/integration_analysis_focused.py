@@ -9,7 +9,7 @@ import os
 import re
 import json
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict
 
 def check_critical_endpoints() -> Dict[str, any]:
     """Check for critical missing endpoints that could break functionality"""

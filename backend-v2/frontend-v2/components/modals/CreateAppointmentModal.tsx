@@ -169,7 +169,6 @@ export default function CreateAppointmentModal({
   // Load services and barbers on mount
   useEffect(() => {
     if (isOpen) {
-      console.log('📱 CreateAppointmentModal opened', {
         isPublicBooking,
         hasToken: !!localStorage.getItem('token')
       })
@@ -180,7 +179,6 @@ export default function CreateAppointmentModal({
 
   // Load time slots when date, service, or barber changes
   useEffect(() => {
-    console.log('🔄 CreateAppointmentModal - Time slots useEffect triggered', {
       selectedDate,
       selectedService,
       selectedBarber,
@@ -188,10 +186,8 @@ export default function CreateAppointmentModal({
     })
     
     if (selectedDate && selectedService) {
-      console.log('✅ Both date and service selected, loading time slots...')
       loadTimeSlots()
     } else {
-      console.log('❌ Missing required selection:', {
         hasDate: !!selectedDate,
         hasService: !!selectedService
       })
@@ -214,7 +210,6 @@ export default function CreateAppointmentModal({
       const { services: cachedServices, timestamp } = servicesCacheRef.current
       const now = Date.now()
       if (now - timestamp < CACHE_DURATION) {
-        console.log('📦 Using cached services')
         setServices(cachedServices)
         return
       }
@@ -234,7 +229,6 @@ export default function CreateAppointmentModal({
         } catch (authError: any) {
           // If authentication fails, try public endpoint
           if (authError.status === 401 || authError.message?.includes('401') || authError.message?.includes('Authentication failed')) {
-            console.log('Auth failed, trying public services endpoint...')
             response = await getPublicServices()
           } else {
             throw authError
@@ -269,21 +263,16 @@ export default function CreateAppointmentModal({
   const loadBarbers = async () => {
     try {
       setLoadingBarbers(true)
-      console.log('🔍 loadBarbers called - isPublicBooking:', isPublicBooking)
       
       {
-        console.log('🌐 Production mode: Fetching barbers from API...')
         // Try authenticated endpoint first (for calendar consistency)
         try {
           const barberUsers = await getAllUsers('barber')
-          console.log('💼 Barber users from authenticated API:', barberUsers)
           setBarbers(barberUsers)
         } catch (authError: any) {
           // If authentication fails, fall back to public barbers endpoint
           if (authError.status === 401 || authError.status === 403 || authError.message?.includes('401') || authError.message?.includes('403')) {
-            console.log('🔓 Auth failed, using public barbers endpoint...')
             const publicBarbers = await getBarbers()
-            console.log('💼 Public barbers from API:', publicBarbers)
             setBarbers(publicBarbers)
           } else {
             throw authError
@@ -305,7 +294,6 @@ export default function CreateAppointmentModal({
   }
 
   const loadTimeSlots = async () => {
-    console.log('📍 loadTimeSlots called', {
       selectedDate,
       selectedService,
       selectedBarber,
@@ -316,14 +304,12 @@ export default function CreateAppointmentModal({
     })
     
     if (!selectedDate || !selectedService) {
-      console.log('⚠️ Early return from loadTimeSlots - missing date or service')
       return
     }
     
     try {
       setLoadingSlots(true)
       const apiDate = formatDateForAPI(selectedDate)
-      console.log('🔍 Calling getAvailableSlots API with params:', {
         date: apiDate,
         service_id: selectedService.id,
         barber_id: selectedBarber?.id,
@@ -336,7 +322,6 @@ export default function CreateAppointmentModal({
         barber_id: selectedBarber?.id
       })
       
-      console.log('📦 API Response:', {
         hasSlots: !!response.slots,
         slotsCount: response.slots?.length || 0,
         nextAvailable: response.next_available,
@@ -347,7 +332,6 @@ export default function CreateAppointmentModal({
       // Filter only available slots and extract the available TimeSlot objects
       const availableSlots = response.slots?.filter(slot => slot.available) || []
       
-      console.log('✨ Available slots after filtering:', {
         count: availableSlots.length,
         slots: availableSlots.map(s => ({ time: s.time, isNextAvailable: s.is_next_available }))
       })
@@ -356,7 +340,6 @@ export default function CreateAppointmentModal({
       // this might be a backend issue. Log for debugging.
       if (availableSlots.length === 0 && response.slots?.length > 0) {
         console.warn('⚠️ Backend returned slots but none are marked available. This might be a barber filtering issue.')
-        console.log('All slots returned:', response.slots)
       }
       
       setAvailableSlots(availableSlots)
@@ -421,7 +404,6 @@ export default function CreateAppointmentModal({
     // Client selection is only required for admin/barber users creating appointments for clients
     // Regular users and public bookings book for themselves
     if (!isPublicBooking && !selectedClient) {
-      console.log('No client selected - user is booking for themselves')
     }
 
     try {
@@ -438,14 +420,11 @@ export default function CreateAppointmentModal({
           barber_id: selectedBarber?.id
         }
 
-        console.log('🚀 Creating appointment with data:', appointmentData)
         const result = await appointmentsAPI.create(appointmentData)
-        console.log('✅ Appointment created successfully:', result)
       }
 
       // TODO: If recurring, create recurring pattern
       if (isRecurring) {
-        console.log('Creating recurring pattern:', recurringPattern)
         // This would call a recurring appointments API
       }
 
@@ -681,7 +660,6 @@ export default function CreateAppointmentModal({
                       <button
                         key={service.id}
                         onClick={() => {
-                          console.log('🎯 Service selected:', {
                             id: service.id,
                             name: service.name,
                             price: service.base_price,
@@ -735,7 +713,6 @@ export default function CreateAppointmentModal({
                   ) : (
                     <>
                       {/* Debug logging */}
-                      {console.log('🔧 Rendering barber dropdown:', {
                         barbersLength: barbers.length,
                         barbers: barbers,
                         loadingBarbers,
@@ -808,7 +785,6 @@ export default function CreateAppointmentModal({
                 value={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''}
                 onChange={(e) => {
                   const newDate = e.target.value ? new Date(e.target.value) : null
-                  console.log('📅 Date selected:', {
                     value: e.target.value,
                     date: newDate,
                     formatted: newDate ? format(newDate, 'yyyy-MM-dd') : null
@@ -831,7 +807,6 @@ export default function CreateAppointmentModal({
               <button
                 type="button"
                 onClick={() => {
-                  console.log('⏰ Time dropdown clicked:', {
                     hasDate: !!selectedDate,
                     hasService: !!selectedService,
                     date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null,
@@ -843,7 +818,6 @@ export default function CreateAppointmentModal({
                   if (selectedDate && selectedService) {
                     setIsTimeDropdownOpen(!isTimeDropdownOpen)
                   } else {
-                    console.log('❌ Cannot open time dropdown - missing date or service')
                   }
                 }}
                 disabled={!selectedDate || !selectedService}

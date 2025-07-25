@@ -433,7 +433,6 @@ export const useCalendarPreloader = () => {
     try {
       await preloadComponents[componentName]()
       setPreloadedComponents(prev => new Set(prev).add(componentName))
-      console.debug(`Preloaded component: ${componentName}`)
     } catch (error) {
       console.error(`Failed to preload component ${componentName}:`, error)
     }

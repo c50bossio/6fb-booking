@@ -54,10 +54,8 @@ export function PWAInstallPrompt() {
     const { outcome } = await deferredPrompt.userChoice
 
     if (outcome === 'accepted') {
-      console.log('User accepted the install prompt')
       setIsInstalled(true)
     } else {
-      console.log('User dismissed the install prompt')
     }
 
     // Clear the deferredPrompt for reuse
@@ -129,7 +127,6 @@ export function useServiceWorker() {
     const isDevelopment = process.env.NODE_ENV === 'development'
     
     if (isDevelopment) {
-      console.log('🛠️ Service Worker COMPLETELY DISABLED in development mode')
       
       // Aggressively unregister any existing service workers
       if ('serviceWorker' in navigator) {
@@ -137,25 +134,19 @@ export function useServiceWorker() {
         caches.keys().then((cacheNames) => {
           return Promise.all(
             cacheNames.map((cacheName) => {
-              console.log('🗑️ Clearing cache:', cacheName)
               return caches.delete(cacheName)
             })
           )
         }).then(() => {
-          console.log('✅ All caches cleared in development mode')
         }).catch(error => {
-          console.log('Cache clearing completed with some errors (expected)')
         })
         
         // Unregister all service workers
         navigator.serviceWorker.getRegistrations().then((registrations) => {
           registrations.forEach((registration) => {
-            console.log('🗑️ Unregistering service worker:', registration.scope)
             registration.unregister().then((success) => {
-              console.log('✅ Service worker unregistered:', success)
               // Force page reload after unregistration
               if (success) {
-                console.log('🔄 Reloading page to complete service worker removal')
                 setTimeout(() => window.location.reload(), 1000)
               }
             }).catch((error) => {
@@ -166,7 +157,6 @@ export function useServiceWorker() {
         
         // Prevent any controller from functioning
         if (navigator.serviceWorker.controller) {
-          console.log('🛑 Terminating existing service worker controller')
           navigator.serviceWorker.controller.postMessage({ type: 'TERMINATE' })
         }
       }
@@ -178,7 +168,6 @@ export function useServiceWorker() {
       navigator.serviceWorker
         .register('/service-worker.js')
         .then((registration) => {
-          console.log('Service Worker registered:', registration)
           setIsRegistered(true)
 
           // Check for updates

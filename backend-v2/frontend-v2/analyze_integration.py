@@ -11,7 +11,7 @@ import re
 import json
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List
 from collections import defaultdict
 
 def find_frontend_api_calls() -> Dict[str, List[str]]:

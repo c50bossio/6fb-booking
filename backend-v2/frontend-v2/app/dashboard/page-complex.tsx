@@ -96,12 +96,9 @@ function DashboardContent() {
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        console.log('Dashboard: Fetching user profile...')
         // Check authentication first
         const userData = await getProfile()
-        console.log('Dashboard: User data received:', userData)
         if (!userData) {
-          console.log('Dashboard: No user data, will redirect to login')
           return
         }
         setUser(userData)
@@ -109,7 +106,6 @@ function DashboardContent() {
         // Check if user needs onboarding
         // Temporarily disabled to prevent redirect loops
         // if (!userData.onboarding_completed && userData.is_new_user !== false) {
-        //   console.log('Dashboard: Redirecting new user to welcome page')
         //   router.push('/dashboard/welcome')
         //   return
         // }
@@ -159,7 +155,6 @@ function DashboardContent() {
         }
 
         try {
-          console.log(`Dashboard: Batching ${dashboardRequests.length} requests...`)
           const results = await batchDashboardData(dashboardRequests)
           
           // Process bookings data
@@ -256,11 +251,9 @@ function DashboardContent() {
   useEffect(() => {
     // Check if we have a token in localStorage
     const token = localStorage.getItem('token')
-    console.log('Dashboard: Checking auth - token exists:', !!token, 'loading:', loading, 'user:', !!user)
     
     if (!loading && !user && !token) {
       // Only redirect if we truly have no authentication
-      console.log('Dashboard: No token and no user, redirecting to login')
       const redirectTimer = setTimeout(() => {
         router.push('/login')
       }, 500) // Increased delay to allow for profile fetch
@@ -466,7 +459,6 @@ function DashboardContent() {
               user_type: user.user_type || user.role || 'barber'
             }}
             onUpgrade={() => router.push('/billing/plans')}
-            onDismiss={(warningId) => console.log('Dismissed warning:', warningId)}
           />
         )}
 

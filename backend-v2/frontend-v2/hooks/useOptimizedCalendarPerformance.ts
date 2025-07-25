@@ -83,7 +83,6 @@ export function useOptimizedCalendarPerformance(): CalendarPerformanceHook {
           cacheMetadataRef.current.set(key, metadata)
         })
         
-        console.debug(`Memory pressure detected: Cache reduced to ${entriesToKeep} entries`)
         return
       }
     }
@@ -141,7 +140,6 @@ export function useOptimizedCalendarPerformance(): CalendarPerformanceHook {
           // Trigger cache cleanup on critical renders
           manageCacheSize()
         } else if (isSlowRender) {
-          console.debug(`⚠️ Slow render: ${componentName} took ${renderTime.toFixed(2)}ms`)
         }
       }
     }
@@ -367,7 +365,6 @@ export function useOptimizedCalendarPerformance(): CalendarPerformanceHook {
     lastClearRef.current = Date.now()
     
     if (process.env.NODE_ENV === 'development') {
-      console.debug('Calendar cache cleared due to memory pressure or manual request')
     }
   }, [])
 
@@ -534,7 +531,6 @@ export function useOptimizedCalendarPerformance(): CalendarPerformanceHook {
       metricsRef.current = null
       
       if (process.env.NODE_ENV === 'development') {
-        console.debug('Optimized calendar performance hook cleaned up successfully')
       }
     }
   }, [])

@@ -202,7 +202,6 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
   // Select result (for analytics/routing)
   const selectResult = useCallback((result: SearchResult) => {
     // Could add analytics tracking here
-    console.log('Search result selected:', result)
     
     // Navigate to the result URL
     if (result.url && typeof window !== 'undefined') {

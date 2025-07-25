@@ -143,7 +143,6 @@ class DockerAuthManager {
           
           sessionKeys.forEach(key => sessionStorage.removeItem(key));
           
-          console.log('🧹 Docker Auth Manager: Cache cleared');
         } catch (e) {
           console.warn('Failed to clear cache:', e);
         }
@@ -200,7 +199,6 @@ class DockerAuthManager {
       // Check for container restart
       const restartDetected = localStorage.getItem('container_restart_detected');
       if (restartDetected) {
-        console.log('🐳 Container restart detected, clearing auth cache');
         this.cacheManager.clear();
         localStorage.removeItem('container_restart_detected');
       }
@@ -263,11 +261,9 @@ class DockerAuthManager {
       const storedStartTime = this.authState.containerInfo?.startTime;
 
       if (currentStartTime && storedStartTime && currentStartTime !== storedStartTime) {
-        console.log('🔄 Backend restart detected, invalidating auth cache');
         this.handleContainerRestart();
       }
     } catch (e) {
-      console.debug('Container sync failed (expected during startup):', e.message);
     }
   }
 
@@ -314,7 +310,6 @@ class DockerAuthManager {
   getAuth(): AuthState {
     // Check if cache is stale
     if (this.cacheManager.isStale()) {
-      console.log('🐳 Auth cache is stale, clearing...');
       this.clearAuth();
       return { containerInfo: this.containerInfo };
     }
@@ -402,7 +397,6 @@ class DockerAuthManager {
       
       // Handle auth errors
       if (response.status === 401) {
-        console.log('🔐 Authentication failed, clearing cache');
         this.clearAuth();
         
         // Emit auth error event

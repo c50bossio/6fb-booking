@@ -110,35 +110,29 @@ const AICalendarDemo: React.FC = () => {
   }, [aiEngines.schedulingEngine, selectedDate])
 
   const handleTimeSlotSelect = (timeSlot: TimeSlotRecommendation) => {
-    console.log('Selected time slot:', timeSlot)
-    alert(`Selected: ${timeSlot.start_time.toLocaleTimeString()} with ${timeSlot.confidence_score}% confidence`)
+    // TODO: Replace with toast notification: `Selected: ${timeSlot.start_time.toLocaleTimeString()} with ${timeSlot.confidence_score}% confidence`
   }
 
   const handleInsightAction = (insight: any, action: string) => {
-    console.log('Insight action:', insight, action)
-    alert(`Action: ${action}\nInsight: ${insight.title}`)
+    // TODO: Replace with toast notification: `Action: ${action}\nInsight: ${insight.title}`
   }
 
   // Mobile demo event handlers
   const handleAppointmentClick = (appointment: any) => {
-    console.log('Appointment clicked:', appointment)
-    alert(`Appointment: ${appointment.client_name}\nService: ${appointment.service_name}\nTime: ${new Date(appointment.start_time).toLocaleTimeString()}`)
+    // TODO: Replace with toast notification: `Appointment: ${appointment.client_name}\nService: ${appointment.service_name}\nTime: ${new Date(appointment.start_time).toLocaleTimeString()}`
   }
 
   const handleTimeSlotClick = (date: Date, barberId: number, hour: number, minute: number) => {
-    console.log('Time slot clicked:', { date, barberId, hour, minute })
-    alert(`New appointment slot:\nDate: ${date.toLocaleDateString()}\nTime: ${hour}:${minute.toString().padStart(2, '0')}\nBarber ID: ${barberId}`)
+    // TODO: Replace with toast notification: `New appointment slot:\nDate: ${date.toLocaleDateString()}\nTime: ${hour}:${minute.toString().padStart(2, '0')}\nBarber ID: ${barberId}`
   }
 
   const handleBarberSelect = (barberId: number) => {
-    console.log('Barber selected:', barberId)
     const barber = sampleBarbers.find(b => b.id === barberId)
-    alert(`Selected barber: ${barber?.name || barber?.first_name}`)
+    // TODO: Replace with toast notification: `Selected barber: ${barber?.name || barber?.first_name}`
   }
 
   const handleNewAppointment = () => {
-    console.log('New appointment clicked')
-    alert('Opening new appointment dialog...')
+    // TODO: Replace with toast notification: 'Opening new appointment dialog...'
   }
 
   const renderDemoHeader = () => (
