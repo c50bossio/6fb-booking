@@ -1,0 +1,127 @@
+{
+  "enabled": true,
+  "agent_info": {
+    "name": "System Architect Agent",
+    "version": "1.0.0",
+    "description": "Comprehensive system architecture agent for BookedBarber V2",
+    "author": "Claude Code",
+    "created": "2025-07-26"
+  },
+  "triggers": {
+    "file_change_threshold": 10,
+    "new_api_endpoints": true,
+    "database_migrations": true,
+    "new_service_files": true,
+    "integration_changes": true,
+    "performance_issues": true,
+    "security_changes": true,
+    "major_refactoring": true
+  },
+  "analysis_settings": {
+    "depth": "comprehensive",
+    "generate_diagrams": true,
+    "six_figure_barber_focus": true,
+    "performance_analysis": true,
+    "security_analysis": true,
+    "compliance_checking": true
+  },
+  "safety_limits": {
+    "max_executions_per_hour": 3,
+    "cooldown_minutes": 30,
+    "max_execution_time_minutes": 20,
+    "memory_limit_gb": 1.0,
+    "cpu_limit_percent": 60,
+    "emergency_stop_enabled": true
+  },
+  "bookedbarber_v2_config": {
+    "business_domains": [
+      "booking_engine",
+      "payment_processing", 
+      "user_management",
+      "barbershop_management",
+      "service_catalog",
+      "calendar_integration",
+      "notification_system",
+      "analytics_engine",
+      "franchise_management",
+      "marketing_integrations",
+      "commission_system",
+      "review_management"
+    ],
+    "six_figure_barber_principles": [
+      "revenue_optimization",
+      "client_value_creation",
+      "business_efficiency",
+      "professional_growth",
+      "brand_building",
+      "scalability",
+      "premium_positioning",
+      "relationship_building"
+    ],
+    "technology_stack": {
+      "backend": {
+        "framework": "FastAPI",
+        "language": "Python 3.9+",
+        "database": "PostgreSQL",
+        "cache": "Redis",
+        "orm": "SQLAlchemy"
+      },
+      "frontend": {
+        "framework": "Next.js 14",
+        "language": "TypeScript",
+        "styling": "Tailwind CSS",
+        "components": "shadcn/ui",
+        "state_management": "React Query"
+      },
+      "infrastructure": {
+        "deployment": "Docker",
+        "hosting": "Render/Railway",
+        "monitoring": "Custom logging",
+        "ci_cd": "GitHub Actions"
+      }
+    }
+  },
+  "monitoring": {
+    "file_patterns": {
+      "api_endpoints": ["**/api/**/*.py", "**/router*/*.py"],
+      "database_models": ["**/models/**/*.py", "**/schema*/*.py"],
+      "services": ["**/services/**/*.py"],
+      "middleware": ["**/middleware/**/*.py"],
+      "integrations": ["**/integration*/*.py", "**/webhook*/*.py"],
+      "frontend_components": ["**/components/**/*.tsx", "**/pages/**/*.tsx"],
+      "configuration": ["**/config*/*.py", "**/*.env*"]
+    },
+    "exclusions": [
+      "*.pyc",
+      "*.log",
+      "*.tmp",
+      "__pycache__",
+      ".git",
+      "node_modules",
+      ".next",
+      "coverage",
+      "*.test.*",
+      "*.spec.*"
+    ]
+  },
+  "documentation": {
+    "auto_generate": true,
+    "output_formats": ["markdown", "mermaid", "c4"],
+    "include_diagrams": true,
+    "include_api_docs": true,
+    "include_implementation_guides": true
+  },
+  "integration": {
+    "sub_agent_system": true,
+    "webhook_support": false,
+    "external_tools": [],
+    "notification_channels": ["log", "file"]
+  },
+  "logging": {
+    "level": "INFO",
+    "file": ".claude/system-architect-agent.log",
+    "max_size_mb": 10,
+    "backup_count": 5,
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  }
+}

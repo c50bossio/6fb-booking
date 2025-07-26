@@ -1,0 +1,94 @@
+{
+  "wireframes": {
+    "user_flow_wireframes": {
+      "booking_flow": [
+        "Service selection wireframe",
+        "Barber selection wireframe",
+        "Date/time selection wireframe",
+        "Customer information wireframe",
+        "Payment wireframe",
+        "Confirmation wireframe"
+      ],
+      "authentication_flow": [
+        "Login wireframe",
+        "Registration wireframe",
+        "Password recovery wireframe",
+        "Profile setup wireframe"
+      ],
+      "barber_dashboard": [
+        "Schedule overview wireframe",
+        "Appointment management wireframe",
+        "Client management wireframe",
+        "Revenue tracking wireframe"
+      ]
+    },
+    "component_wireframes": {
+      "booking_calendar": "Interactive calendar component wireframe",
+      "service_selector": "Service selection component wireframe",
+      "payment_form": "Payment form component wireframe",
+      "appointment_card": "Appointment card component wireframe",
+      "barber_profile": "Barber profile component wireframe",
+      "client_history": "Client history component wireframe"
+    },
+    "mobile_wireframes": {
+      "mobile_booking": "Mobile booking flow wireframes",
+      "mobile_navigation": "Mobile navigation pattern wireframes",
+      "mobile_forms": "Mobile form design wireframes",
+      "touch_interactions": "Touch interaction wireframes"
+    }
+  },
+  "mockups": {
+    "high_fidelity_mockups": {
+      "branded_interfaces": "Six Figure Barber branded interface mockups",
+      "professional_aesthetics": "Professional barbershop aesthetic mockups",
+      "component_library": "Design system component mockups",
+      "responsive_layouts": "Responsive layout mockups"
+    },
+    "responsive_mockups": {
+      "desktop_layouts": "Desktop interface mockups",
+      "tablet_layouts": "Tablet interface mockups",
+      "mobile_layouts": "Mobile interface mockups",
+      "adaptive_components": "Adaptive component mockups"
+    },
+    "interaction_prototypes": {
+      "micro_interactions": "Button states and micro-interaction prototypes",
+      "page_transitions": "Page transition prototypes",
+      "loading_states": "Loading state prototypes",
+      "error_handling": "Error handling prototypes"
+    }
+  },
+  "design_specifications": {
+    "component_specs": {
+      "design_tokens": {
+        "colors": "Color palette specifications",
+        "typography": "Typography scale specifications",
+        "spacing": "Spacing system specifications",
+        "shadows": "Shadow system specifications"
+      },
+      "component_patterns": {
+        "buttons": "Button component specifications",
+        "forms": "Form component specifications",
+        "cards": "Card component specifications",
+        "navigation": "Navigation component specifications"
+      },
+      "interaction_patterns": {
+        "hover_states": "Hover state specifications",
+        "focus_states": "Focus state specifications",
+        "active_states": "Active state specifications",
+        "disabled_states": "Disabled state specifications"
+      }
+    },
+    "interaction_specs": {
+      "animation_guidelines": "Animation timing and easing specifications",
+      "feedback_systems": "User feedback system specifications",
+      "progressive_disclosure": "Progressive disclosure specifications",
+      "gesture_support": "Gesture interaction specifications"
+    },
+    "responsive_specs": {
+      "breakpoints": "Responsive breakpoint specifications",
+      "grid_systems": "Grid system specifications",
+      "flexible_layouts": "Flexible layout specifications",
+      "content_prioritization": "Content prioritization specifications"
+    }
+  }
+}

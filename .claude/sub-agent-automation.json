@@ -94,17 +94,86 @@
           },
           "cooldown_minutes": 10,
           "max_triggers_per_hour": 5
+        },
+        {
+          "name": "server_crashes",
+          "description": "Trigger on frontend/backend server crashes",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Bash(command:*npm run dev*)",
+            "Bash(command:*uvicorn*)",
+            "Bash(command:*next dev*)"
+          ],
+          "conditions": {
+            "exit_code": [1, 2, 3, 130],
+            "stderr_patterns": [
+              "EADDRINUSE",
+              "Error: listen",
+              "Port.*already in use",
+              "bind.*address already in use",
+              "Server crashed",
+              "Process exited"
+            ]
+          },
+          "cooldown_minutes": 2,
+          "max_triggers_per_hour": 20
+        },
+        {
+          "name": "auth_stack_overflow",
+          "description": "Trigger on authentication stack overflow loops",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Edit(file_path:*auth*)",
+            "Edit(file_path:*login*)",
+            "Edit(file_path:*middleware*)"
+          ],
+          "conditions": {
+            "browser_console_errors": true,
+            "error_types": [
+              "Maximum call stack size exceeded",
+              "RangeError: Maximum call stack",
+              "Infinite redirect loop",
+              "Too many redirects"
+            ]
+          },
+          "cooldown_minutes": 3,
+          "max_triggers_per_hour": 15
+        },
+        {
+          "name": "build_failures",
+          "description": "Trigger on TypeScript/build failures with missing dependencies",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Bash(command:*npm run build*)",
+            "Bash(command:*npx tsc*)",
+            "Bash(command:*next build*)"
+          ],
+          "conditions": {
+            "exit_code": [1, 2],
+            "stderr_patterns": [
+              "Cannot find module",
+              "Module not found",
+              "TS2307",
+              "Cannot resolve module",
+              "Failed to compile",
+              "Type error"
+            ]
+          },
+          "cooldown_minutes": 5,
+          "max_triggers_per_hour": 10
         }
       ],
       "action": {
         "agent_type": "debugger",
-        "prompt_template": "Critical issue detected: {trigger_name}. {error_details}. Please investigate and provide debugging steps.",
+        "agent_script": "/Users/bossio/6fb-booking/.claude/scripts/enhanced-debugger-agent.py",
+        "prompt_template": "Critical issue detected: {trigger_name}. {error_details}. Running enhanced debugging analysis.",
         "auto_execute": true,
-        "priority": "high"
+        "priority": "high",
+        "enhanced_mode": true
       }
     },
     "code-reviewer": {
-      "description": "Automatically trigger code review for critical changes",
+      "description": "Automatically trigger code review for critical changes with BookedBarber V2 enterprise standards",
       "enabled": true,
       "triggers": [
         {
@@ -116,24 +185,49 @@
             "Edit(file_path:*payment*)",
             "Edit(file_path:*security*)",
             "Edit(file_path:*stripe*)",
+            "Edit(file_path:*login*)",
+            "Edit(file_path:*session*)",
+            "Edit(file_path:*jwt*)",
+            "Edit(file_path:*oauth*)",
+            "Edit(file_path:*commission*)",
+            "Edit(file_path:*billing*)",
+            "Edit(file_path:*payout*)",
             "Write(file_path:*auth*)",
             "Write(file_path:*payment*)",
             "Write(file_path:*security*)",
             "Write(file_path:*stripe*)",
+            "Write(file_path:*login*)",
+            "Write(file_path:*session*)",
+            "Write(file_path:*jwt*)",
+            "Write(file_path:*oauth*)",
+            "Write(file_path:*commission*)",
+            "Write(file_path:*billing*)",
+            "Write(file_path:*payout*)",
             "MultiEdit(file_path:*auth*)",
             "MultiEdit(file_path:*payment*)",
             "MultiEdit(file_path:*security*)",
-            "MultiEdit(file_path:*stripe*)"
+            "MultiEdit(file_path:*stripe*)",
+            "MultiEdit(file_path:*login*)",
+            "MultiEdit(file_path:*session*)",
+            "MultiEdit(file_path:*jwt*)",
+            "MultiEdit(file_path:*oauth*)",
+            "MultiEdit(file_path:*commission*)",
+            "MultiEdit(file_path:*billing*)",
+            "MultiEdit(file_path:*payout*)"
           ],
           "conditions": {
-            "file_size_change": ">10",
+            "file_size_change": ">5",
             "sensitive_patterns": [
               "password",
               "secret",
               "api_key",
               "private_key",
               "stripe_",
-              "auth_token"
+              "auth_token",
+              "webhook_secret",
+              "client_secret",
+              "access_token",
+              "refresh_token"
             ]
           },
           "cooldown_minutes": 15,
@@ -141,18 +235,24 @@
         },
         {
           "name": "large_code_changes",
-          "description": "Trigger on large code modifications",
+          "description": "Trigger on large code modifications requiring enterprise review",
           "events": ["PostToolUse"],
           "matchers": [
             "Edit(file_path:*/backend-v2/*.py)",
             "Edit(file_path:*/frontend-v2/*.tsx)",
             "Edit(file_path:*/frontend-v2/*.ts)",
+            "Edit(file_path:*/frontend-v2/*.js)",
+            "Edit(file_path:*/frontend-v2/*.jsx)",
             "Write(file_path:*/backend-v2/*.py)",
             "Write(file_path:*/frontend-v2/*.tsx)",
             "Write(file_path:*/frontend-v2/*.ts)",
+            "Write(file_path:*/frontend-v2/*.js)",
+            "Write(file_path:*/frontend-v2/*.jsx)",
             "MultiEdit(file_path:*/backend-v2/*.py)",
             "MultiEdit(file_path:*/frontend-v2/*.tsx)",
-            "MultiEdit(file_path:*/frontend-v2/*.ts)"
+            "MultiEdit(file_path:*/frontend-v2/*.ts)",
+            "MultiEdit(file_path:*/frontend-v2/*.js)",
+            "MultiEdit(file_path:*/frontend-v2/*.jsx)"
           ],
           "conditions": {
             "lines_changed": ">100",
@@ -162,76 +262,1975 @@
           "max_triggers_per_hour": 4
         },
         {
+          "name": "critical_system_files",
+          "description": "Trigger on changes to critical system files (models, API endpoints)",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/backend-v2/models/*)",
+            "Edit(file_path:*/backend-v2/api/v2/*)",
+            "Edit(file_path:*/backend-v2/routers/*)",
+            "Edit(file_path:*/backend-v2/services/*)",
+            "Edit(file_path:*/backend-v2/middleware/*)",
+            "Edit(file_path:*/frontend-v2/app/*)",
+            "Edit(file_path:*/frontend-v2/components/*)",
+            "Write(file_path:*/backend-v2/models/*)",
+            "Write(file_path:*/backend-v2/api/v2/*)",
+            "Write(file_path:*/backend-v2/routers/*)",
+            "Write(file_path:*/backend-v2/services/*)",
+            "Write(file_path:*/backend-v2/middleware/*)",
+            "Write(file_path:*/frontend-v2/app/*)",
+            "Write(file_path:*/frontend-v2/components/*)",
+            "MultiEdit(file_path:*/backend-v2/models/*)",
+            "MultiEdit(file_path:*/backend-v2/api/v2/*)",
+            "MultiEdit(file_path:*/backend-v2/routers/*)",
+            "MultiEdit(file_path:*/backend-v2/services/*)",
+            "MultiEdit(file_path:*/backend-v2/middleware/*)",
+            "MultiEdit(file_path:*/frontend-v2/app/*)",
+            "MultiEdit(file_path:*/frontend-v2/components/*)"
+          ],
+          "conditions": {
+            "file_size_change": ">25",
+            "critical_keywords": [
+              "class",
+              "def",
+              "export default",
+              "@router",
+              "Column",
+              "relationship",
+              "ForeignKey"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 6
+        },
+        {
           "name": "critical_branch_commits",
           "description": "Trigger on commits to staging/production branches",
           "events": ["PostToolUse"],
           "matchers": [
             "Bash(command:*git commit*)",
             "Bash(command:*git push origin staging*)",
-            "Bash(command:*git push origin production*)"
+            "Bash(command:*git push origin production*)",
+            "Bash(command:*gh pr create*)"
           ],
           "conditions": {
             "branch_names": ["staging", "production", "main"],
-            "commit_types": ["feat", "fix", "refactor"]
+            "commit_types": ["feat", "fix", "refactor", "perf", "security"]
           },
           "cooldown_minutes": 20,
           "max_triggers_per_hour": 6
+        },
+        {
+          "name": "pull_request_submissions",
+          "description": "Trigger on pull request creation for automated review",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Bash(command:*gh pr create*)",
+            "Bash(command:*git request-pull*)",
+            "Bash(command:*hub pull-request*)"
+          ],
+          "conditions": {
+            "pr_target_branches": ["staging", "production", "main"],
+            "min_changes_threshold": 10
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 5
+        },
+        {
+          "name": "six_figure_barber_business_logic",
+          "description": "Trigger on Six Figure Barber methodology-related code changes",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*booking*)",
+            "Edit(file_path:*appointment*)",
+            "Edit(file_path:*client*)",
+            "Edit(file_path:*barber*)",
+            "Edit(file_path:*commission*)",
+            "Edit(file_path:*revenue*)",
+            "Edit(file_path:*analytics*)",
+            "Write(file_path:*booking*)",
+            "Write(file_path:*appointment*)",
+            "Write(file_path:*client*)",
+            "Write(file_path:*barber*)",
+            "Write(file_path:*commission*)",
+            "Write(file_path:*revenue*)",
+            "Write(file_path:*analytics*)",
+            "MultiEdit(file_path:*booking*)",
+            "MultiEdit(file_path:*appointment*)",
+            "MultiEdit(file_path:*client*)",
+            "MultiEdit(file_path:*barber*)",
+            "MultiEdit(file_path:*commission*)",
+            "MultiEdit(file_path:*revenue*)",
+            "MultiEdit(file_path:*analytics*)"
+          ],
+          "conditions": {
+            "file_size_change": ">15",
+            "six_figure_barber_keywords": [
+              "revenue",
+              "commission",
+              "booking",
+              "appointment",
+              "client_value",
+              "optimization",
+              "efficiency",
+              "scalability",
+              "growth"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 5
+        },
+        {
+          "name": "configuration_changes",
+          "description": "Trigger on configuration and environment changes",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*.env*)",
+            "Edit(file_path:*config*)",
+            "Edit(file_path:*settings*)",
+            "Edit(file_path:*docker-compose*)",
+            "Edit(file_path:*package.json)",
+            "Edit(file_path:*requirements.txt)",
+            "Edit(file_path:*tsconfig.json)",
+            "Edit(file_path:*next.config.js)",
+            "Write(file_path:*.env*)",
+            "Write(file_path:*config*)",
+            "Write(file_path:*settings*)",
+            "Write(file_path:*docker-compose*)",
+            "Write(file_path:*package.json)",
+            "Write(file_path:*requirements.txt)",
+            "Write(file_path:*tsconfig.json)",
+            "Write(file_path:*next.config.js)"
+          ],
+          "conditions": {
+            "config_security_check": true,
+            "deployment_impact": true
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 4
         }
       ],
       "action": {
         "agent_type": "code-reviewer",
-        "prompt_template": "Code review required for {trigger_name}. Files changed: {files_changed}. Please review for security, performance, and best practices.",
+        "agent_script": "/Users/bossio/6fb-booking/.claude/scripts/code-reviewer-agent.py",
+        "prompt_template": "BookedBarber V2 Enterprise Code Review for {trigger_name}. Files changed: {files_changed}. Review for Six Figure Barber methodology alignment, enterprise security, V2 API compliance, and performance optimization for barbershop booking systems.",
         "auto_execute": true,
-        "priority": "high"
+        "priority": "high",
+        "execution_timeout_minutes": 10,
+        "resource_limits": {
+          "memory_mb": 512,
+          "cpu_percent": 50
+        }
       }
     },
     "data-scientist": {
-      "description": "Automatically trigger data analysis for performance issues",
+      "description": "Specialized data scientist agent for SQL optimization, business intelligence, and Six Figure Barber methodology analytics",
       "enabled": true,
       "triggers": [
         {
           "name": "database_performance_issues",
-          "description": "Trigger on database query performance degradation",
-          "events": ["Continuous"],
-          "matchers": ["*"],
+          "description": "Trigger on database query performance degradation and SQL optimization needs",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Bash(command:*alembic*)",
+            "Bash(command:*psql*)",
+            "Bash(command:*sqlite*)",
+            "Edit(file_path:*models*)",
+            "Edit(file_path:*migrations*)",
+            "Write(file_path:*models*)",
+            "Write(file_path:*migrations*)"
+          ],
           "conditions": {
-            "query_time_threshold": ">1000ms",
             "error_patterns": [
               "QueryTimeout",
               "Database connection failed",
               "SQL syntax error",
-              "Deadlock detected"
+              "Deadlock detected",
+              "Connection pool exhausted",
+              "Table doesn't exist",
+              "Index missing",
+              "Performance issue"
+            ],
+            "performance_indicators": [
+              "query_time_threshold:>1000ms",
+              "high_cpu_usage",
+              "memory_exhaustion",
+              "connection_limit_reached"
+            ]
+          },
+          "cooldown_minutes": 10,
+          "max_triggers_per_hour": 8
+        },
+        {
+          "name": "analytics_dashboard_failures",
+          "description": "Trigger on analytics dashboard failures and data processing errors",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*analytics*)",
+            "Edit(file_path:*dashboard*)",
+            "Edit(file_path:*metrics*)",
+            "Edit(file_path:*reporting*)",
+            "Write(file_path:*analytics*)",
+            "Write(file_path:*dashboard*)",
+            "Write(file_path:*metrics*)",
+            "Write(file_path:*reporting*)",
+            "MultiEdit(file_path:*analytics*)",
+            "MultiEdit(file_path:*dashboard*)",
+            "MultiEdit(file_path:*metrics*)",
+            "MultiEdit(file_path:*reporting*)"
+          ],
+          "conditions": {
+            "http_status_codes": [500, 502, 503, 422],
+            "error_patterns": [
+              "Data processing failed",
+              "Chart rendering error",
+              "Metrics calculation error",
+              "toFixed()",
+              "Cannot read property",
+              "NaN in calculations",
+              "Undefined metrics",
+              "Analytics API failure"
+            ]
+          },
+          "cooldown_minutes": 10,
+          "max_triggers_per_hour": 8
+        },
+        {
+          "name": "business_intelligence_data_inconsistencies",
+          "description": "Trigger on business intelligence data inconsistencies and Six Figure Barber metrics issues",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*revenue*)",
+            "Edit(file_path:*commission*)",
+            "Edit(file_path:*booking*)",
+            "Edit(file_path:*payment*)",
+            "Edit(file_path:*client*)",
+            "Edit(file_path:*barber*)",
+            "Write(file_path:*revenue*)",
+            "Write(file_path:*commission*)",
+            "Write(file_path:*booking*)",
+            "Write(file_path:*payment*)",
+            "Write(file_path:*client*)",
+            "Write(file_path:*barber*)"
+          ],
+          "conditions": {
+            "business_keywords": [
+              "revenue",
+              "commission",
+              "six_figure",
+              "barber_performance",
+              "client_value",
+              "efficiency",
+              "scalability",
+              "growth_metrics"
+            ],
+            "data_inconsistency_patterns": [
+              "Commission calculation error",
+              "Revenue mismatch",
+              "Booking data inconsistent",
+              "Client metrics invalid",
+              "Performance calculation failed"
             ]
           },
           "cooldown_minutes": 15,
           "max_triggers_per_hour": 6
         },
         {
-          "name": "analytics_dashboard_failures",
-          "description": "Trigger when analytics dashboards fail",
+          "name": "ab_testing_and_conversion_tracking",
+          "description": "Trigger on A/B testing needs and conversion rate optimization requirements",
           "events": ["PostToolUse"],
           "matchers": [
-            "Edit(file_path:*analytics*)",
-            "Write(file_path:*analytics*)",
-            "MultiEdit(file_path:*analytics*)"
+            "Edit(file_path:*conversion*)",
+            "Edit(file_path:*tracking*)",
+            "Edit(file_path:*test*)",
+            "Edit(file_path:*experiment*)",
+            "Edit(file_path:*funnel*)",
+            "Write(file_path:*conversion*)",
+            "Write(file_path:*tracking*)",
+            "Write(file_path:*test*)",
+            "Write(file_path:*experiment*)",
+            "Write(file_path:*funnel*)"
           ],
           "conditions": {
-            "http_status_codes": [500, 502, 503],
-            "error_patterns": [
-              "toFixed()",
-              "Cannot read property",
-              "Data processing failed"
+            "statistical_keywords": [
+              "ab_test",
+              "conversion_rate",
+              "funnel_analysis",
+              "statistical_significance",
+              "experiment",
+              "variant",
+              "control_group"
             ]
           },
-          "cooldown_minutes": 10,
-          "max_triggers_per_hour": 8
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 5
+        },
+        {
+          "name": "revenue_optimization_analysis",
+          "description": "Trigger on revenue optimization and Six Figure Barber methodology data analysis needs",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*pricing*)",
+            "Edit(file_path:*service*)",
+            "Edit(file_path:*appointment*)",
+            "Edit(file_path:*schedule*)",
+            "Write(file_path:*pricing*)",
+            "Write(file_path:*service*)",
+            "Write(file_path:*appointment*)",
+            "Write(file_path:*schedule*)"
+          ],
+          "conditions": {
+            "six_figure_barber_keywords": [
+              "pricing_strategy",
+              "service_optimization",
+              "appointment_efficiency",
+              "revenue_per_barber",
+              "client_lifetime_value",
+              "upselling",
+              "premium_services"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "performance_bottlenecks_data_analysis",
+          "description": "Trigger on performance bottlenecks requiring data analysis and optimization",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Bash(command:*benchmark*)",
+            "Bash(command:*performance*)",
+            "Bash(command:*load_test*)",
+            "Edit(file_path:*optimization*)",
+            "Edit(file_path:*performance*)",
+            "Write(file_path:*optimization*)",
+            "Write(file_path:*performance*)"
+          ],
+          "conditions": {
+            "performance_patterns": [
+              "Response time > 2s",
+              "High memory usage",
+              "CPU bottleneck",
+              "Database slowdown",
+              "API rate limiting",
+              "Concurrent user issues"
+            ]
+          },
+          "cooldown_minutes": 12,
+          "max_triggers_per_hour": 7
         }
       ],
       "action": {
         "agent_type": "data-scientist",
-        "prompt_template": "Data/performance issue detected: {trigger_name}. {error_details}. Please analyze and provide optimization recommendations.",
+        "script_path": "/Users/bossio/6fb-booking/.claude/agents/data-scientist-agent.py",
+        "prompt_template": "BookedBarber V2 Data Scientist Analysis Required:\n\nTrigger: {trigger_name}\nContext: {error_details}\nFocus Area: {focus_area}\n\nPlease perform comprehensive data analysis including:\n1. SQL query optimization and database performance analysis\n2. Six Figure Barber methodology metrics evaluation\n3. Business intelligence insights and recommendations\n4. Statistical analysis for conversion optimization\n5. Revenue optimization opportunities\n6. Actionable insights for business growth\n\nEnsure all analysis aligns with Six Figure Barber principles of revenue optimization, client value creation, business efficiency, professional growth, and scalability.",
         "auto_execute": true,
-        "priority": "medium"
+        "priority": "medium",
+        "timeout_minutes": 15,
+        "resource_limits": {
+          "memory_mb": 1024,
+          "cpu_percent": 65
+        }
+      }
+    },
+    "security-specialist": {
+      "description": "Automatically trigger security analysis for sensitive changes",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "authentication_security_changes",
+          "description": "Trigger on authentication and authorization file changes",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*auth*)",
+            "Edit(file_path:*login*)",
+            "Edit(file_path:*session*)",
+            "Edit(file_path:*jwt*)",
+            "Edit(file_path:*oauth*)",
+            "Edit(file_path:*middleware/auth*)",
+            "Edit(file_path:*middleware/security*)",
+            "Write(file_path:*auth*)",
+            "Write(file_path:*login*)",
+            "Write(file_path:*session*)",
+            "Write(file_path:*jwt*)",
+            "Write(file_path:*oauth*)",
+            "Write(file_path:*middleware/auth*)",
+            "Write(file_path:*middleware/security*)",
+            "MultiEdit(file_path:*auth*)",
+            "MultiEdit(file_path:*login*)",
+            "MultiEdit(file_path:*session*)",
+            "MultiEdit(file_path:*jwt*)",
+            "MultiEdit(file_path:*oauth*)",
+            "MultiEdit(file_path:*middleware/auth*)",
+            "MultiEdit(file_path:*middleware/security*)"
+          ],
+          "conditions": {
+            "file_size_change": ">5",
+            "security_keywords": [
+              "password",
+              "token",
+              "authenticate",
+              "authorize",
+              "session",
+              "verify"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 8
+        },
+        {
+          "name": "payment_security_changes",
+          "description": "Trigger on payment and financial security changes",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*payment*)",
+            "Edit(file_path:*stripe*)",
+            "Edit(file_path:*billing*)",
+            "Edit(file_path:*checkout*)",
+            "Edit(file_path:*commission*)",
+            "Edit(file_path:*payout*)",
+            "Edit(file_path:*financial*)",
+            "Write(file_path:*payment*)",
+            "Write(file_path:*stripe*)",
+            "Write(file_path:*billing*)",
+            "Write(file_path:*checkout*)",
+            "Write(file_path:*commission*)",
+            "Write(file_path:*payout*)",
+            "Write(file_path:*financial*)",
+            "MultiEdit(file_path:*payment*)",
+            "MultiEdit(file_path:*stripe*)",
+            "MultiEdit(file_path:*billing*)",
+            "MultiEdit(file_path:*checkout*)",
+            "MultiEdit(file_path:*commission*)",
+            "MultiEdit(file_path:*payout*)",
+            "MultiEdit(file_path:*financial*)"
+          ],
+          "conditions": {
+            "pci_dss_relevant": true,
+            "financial_keywords": [
+              "stripe_secret",
+              "api_key",
+              "webhook",
+              "amount",
+              "currency",
+              "transaction"
+            ]
+          },
+          "cooldown_minutes": 10,
+          "max_triggers_per_hour": 10
+        },
+        {
+          "name": "user_data_security_changes",
+          "description": "Trigger on user and client data model changes",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*models/user*)",
+            "Edit(file_path:*models/client*)",
+            "Edit(file_path:*models/appointment*)",
+            "Edit(file_path:*models/booking*)",
+            "Edit(file_path:*user*)",
+            "Edit(file_path:*client*)",
+            "Write(file_path:*models/user*)",
+            "Write(file_path:*models/client*)",
+            "Write(file_path:*models/appointment*)",
+            "Write(file_path:*models/booking*)",
+            "Write(file_path:*user*)",
+            "Write(file_path:*client*)",
+            "MultiEdit(file_path:*models/user*)",
+            "MultiEdit(file_path:*models/client*)",
+            "MultiEdit(file_path:*models/appointment*)",
+            "MultiEdit(file_path:*models/booking*)",
+            "MultiEdit(file_path:*user*)",
+            "MultiEdit(file_path:*client*)"
+          ],
+          "conditions": {
+            "gdpr_relevant": true,
+            "privacy_keywords": [
+              "personal_info",
+              "email",
+              "phone",
+              "address",
+              "data_retention",
+              "encryption"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 6
+        },
+        {
+          "name": "api_security_changes",
+          "description": "Trigger on API endpoint security changes",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*api/v2/auth*)",
+            "Edit(file_path:*api/v2/payments*)",
+            "Edit(file_path:*routers/auth*)",
+            "Edit(file_path:*routers/payments*)",
+            "Edit(file_path:*routers/users*)",
+            "Edit(file_path:*routers/clients*)",
+            "Write(file_path:*api/v2/auth*)",
+            "Write(file_path:*api/v2/payments*)",
+            "Write(file_path:*routers/auth*)",
+            "Write(file_path:*routers/payments*)",
+            "Write(file_path:*routers/users*)",
+            "Write(file_path:*routers/clients*)",
+            "MultiEdit(file_path:*api/v2/auth*)",
+            "MultiEdit(file_path:*api/v2/payments*)",
+            "MultiEdit(file_path:*routers/auth*)",
+            "MultiEdit(file_path:*routers/payments*)",
+            "MultiEdit(file_path:*routers/users*)",
+            "MultiEdit(file_path:*routers/clients*)"
+          ],
+          "conditions": {
+            "api_security_keywords": [
+              "endpoint",
+              "route",
+              "authentication",
+              "authorization",
+              "middleware",
+              "validation"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 8
+        },
+        {
+          "name": "configuration_security_changes",
+          "description": "Trigger on security configuration changes",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*.env*)",
+            "Edit(file_path:*config*)",
+            "Edit(file_path:*settings*)",
+            "Edit(file_path:*secrets*)",
+            "Edit(file_path:*credentials*)",
+            "Edit(file_path:*keys*)",
+            "Write(file_path:*.env*)",
+            "Write(file_path:*config*)",
+            "Write(file_path:*settings*)",
+            "Write(file_path:*secrets*)",
+            "Write(file_path:*credentials*)",
+            "Write(file_path:*keys*)"
+          ],
+          "conditions": {
+            "config_security_keywords": [
+              "secret",
+              "key",
+              "password",
+              "token",
+              "credential",
+              "certificate"
+            ]
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "critical_security_vulnerabilities",
+          "description": "Trigger on detection of critical security issues",
+          "events": ["Continuous"],
+          "matchers": ["*"],
+          "conditions": {
+            "vulnerability_patterns": [
+              "SQL injection",
+              "XSS vulnerability",
+              "Authentication bypass",
+              "Hardcoded secret",
+              "Weak cryptography",
+              "IDOR vulnerability"
+            ],
+            "severity_threshold": "high"
+          },
+          "cooldown_minutes": 5,
+          "max_triggers_per_hour": 20
+        }
+      ],
+      "action": {
+        "agent_type": "security-specialist",
+        "agent_script": "/Users/bossio/6fb-booking/.claude/scripts/security-specialist-agent.py",
+        "prompt_template": "Security analysis required for {trigger_name}. Files changed: {files_changed}. Please analyze for vulnerabilities, compliance issues, and provide security recommendations for BookedBarber V2 barbershop platform.",
+        "auto_execute": true,
+        "priority": "high",
+        "security_focused": true
+      }
+    },
+    "production-fullstack-dev": {
+      "description": "Automatically trigger production fullstack dev agent for enterprise-grade implementations",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "api_endpoint_creation",
+          "description": "Trigger on new API endpoint creation or modification",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*backend-v2/api/*)",
+            "Edit(file_path:*backend-v2/routers/*)",
+            "Write(file_path:*backend-v2/api/*)",
+            "Write(file_path:*backend-v2/routers/*)",
+            "MultiEdit(file_path:*backend-v2/api/*)",
+            "MultiEdit(file_path:*backend-v2/routers/*)"
+          ],
+          "conditions": {
+            "file_size_change": ">20",
+            "endpoint_keywords": [
+              "@router.",
+              "FastAPI",
+              "HTTPException",
+              "async def",
+              "Depends("
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 3
+        },
+        {
+          "name": "database_model_changes",
+          "description": "Trigger on database model changes requiring enterprise-grade implementation",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*backend-v2/models/*)",
+            "Write(file_path:*backend-v2/models/*)",
+            "MultiEdit(file_path:*backend-v2/models/*)"
+          ],
+          "conditions": {
+            "file_size_change": ">15",
+            "model_keywords": [
+              "class",
+              "Column",
+              "relationship",
+              "ForeignKey",
+              "Index"
+            ]
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 2
+        },
+        {
+          "name": "component_development",
+          "description": "Trigger on React component development needing production standards",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*frontend-v2/components/*)",
+            "Edit(file_path:*frontend-v2/app/*)",
+            "Write(file_path:*frontend-v2/components/*)",
+            "Write(file_path:*frontend-v2/app/*)",
+            "MultiEdit(file_path:*frontend-v2/components/*)",
+            "MultiEdit(file_path:*frontend-v2/app/*)"
+          ],
+          "conditions": {
+            "file_size_change": ">25",
+            "component_keywords": [
+              "export default function",
+              "interface",
+              "useState",
+              "useEffect",
+              "React.FC"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "performance_optimization_requirements",
+          "description": "Trigger on performance optimization requirements",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*cache*)",
+            "Edit(file_path:*redis*)",
+            "Edit(file_path:*optimization*)",
+            "Edit(file_path:*performance*)",
+            "Write(file_path:*cache*)",
+            "Write(file_path:*redis*)",
+            "Write(file_path:*optimization*)",
+            "Write(file_path:*performance*)"
+          ],
+          "conditions": {
+            "performance_keywords": [
+              "cache",
+              "optimization",
+              "lazy",
+              "memo",
+              "callback",
+              "query_optimization"
+            ]
+          },
+          "cooldown_minutes": 35,
+          "max_triggers_per_hour": 2
+        },
+        {
+          "name": "cross_system_integration",
+          "description": "Trigger on cross-system integration tasks",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*integration*)",
+            "Edit(file_path:*service*)",
+            "Edit(file_path:*webhook*)",
+            "Write(file_path:*integration*)",
+            "Write(file_path:*service*)",
+            "Write(file_path:*webhook*)",
+            "MultiEdit(file_path:*integration*)",
+            "MultiEdit(file_path:*service*)",
+            "MultiEdit(file_path:*webhook*)"
+          ],
+          "conditions": {
+            "integration_keywords": [
+              "stripe",
+              "google",
+              "sendgrid",
+              "twilio",
+              "oauth",
+              "webhook"
+            ]
+          },
+          "cooldown_minutes": 40,
+          "max_triggers_per_hour": 2
+        },
+        {
+          "name": "authentication_security_features",
+          "description": "Trigger on authentication and security feature implementation",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*auth*)",
+            "Edit(file_path:*security*)",
+            "Edit(file_path:*middleware*)",
+            "Write(file_path:*auth*)",
+            "Write(file_path:*security*)",
+            "Write(file_path:*middleware*)",
+            "MultiEdit(file_path:*auth*)",
+            "MultiEdit(file_path:*security*)",
+            "MultiEdit(file_path:*middleware*)"
+          ],
+          "conditions": {
+            "file_size_change": ">10",
+            "security_keywords": [
+              "jwt",
+              "password",
+              "token",
+              "authenticate",
+              "authorize",
+              "mfa"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 5
+        },
+        {
+          "name": "payment_booking_core_features",
+          "description": "Trigger on payment and booking core feature development",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*payment*)",
+            "Edit(file_path:*booking*)",
+            "Edit(file_path:*appointment*)",
+            "Edit(file_path:*commission*)",
+            "Edit(file_path:*stripe*)",
+            "Write(file_path:*payment*)",
+            "Write(file_path:*booking*)",
+            "Write(file_path:*appointment*)",
+            "Write(file_path:*commission*)",
+            "Write(file_path:*stripe*)",
+            "MultiEdit(file_path:*payment*)",
+            "MultiEdit(file_path:*booking*)",
+            "MultiEdit(file_path:*appointment*)",
+            "MultiEdit(file_path:*commission*)",
+            "MultiEdit(file_path:*stripe*)"
+          ],
+          "conditions": {
+            "six_figure_barber_keywords": [
+              "revenue",
+              "commission",
+              "booking",
+              "appointment",
+              "client",
+              "barber"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 4
+        }
+      ],
+      "action": {
+        "agent_type": "production-fullstack-dev",
+        "agent_script": "/Users/bossio/6fb-booking/.claude/scripts/production-fullstack-dev-agent.py",
+        "prompt_template": "Production fullstack development required for {trigger_name}. Files changed: {files_changed}. Please provide enterprise-grade implementation with Six Figure Barber methodology alignment for BookedBarber V2 platform.",
+        "auto_execute": true,
+        "priority": "high",
+        "production_grade": true,
+        "execution_timeout_minutes": 15,
+        "resource_limits": {
+          "memory_mb": 1024,
+          "cpu_percent": 75
+        }
+      }
+    },
+    "automated-test-generator": {
+      "description": "Automatically generate comprehensive test suites for code implementations with 80%+ coverage",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "new_feature_implementation",
+          "description": "Trigger on new feature implementation requiring test coverage",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Write(file_path:*/backend-v2/api/*)",
+            "Write(file_path:*/backend-v2/routers/*)",
+            "Write(file_path:*/backend-v2/services/*)",
+            "Write(file_path:*/backend-v2/models/*)",
+            "Write(file_path:*/frontend-v2/components/*)",
+            "Write(file_path:*/frontend-v2/app/*)",
+            "Write(file_path:*/frontend-v2/lib/*)",
+            "Write(file_path:*/frontend-v2/hooks/*)"
+          ],
+          "conditions": {
+            "file_size": ">100",
+            "new_file": true,
+            "implementation_keywords": [
+              "export default function",
+              "class",
+              "async def",
+              "@router",
+              "React.FC",
+              "useState",
+              "useEffect"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 6
+        },
+        {
+          "name": "code_modifications_without_tests",
+          "description": "Trigger when code is modified but corresponding tests are not updated",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/backend-v2/*.py)",
+            "Edit(file_path:*/frontend-v2/*.tsx)",
+            "Edit(file_path:*/frontend-v2/*.ts)",
+            "MultiEdit(file_path:*/backend-v2/*.py)",
+            "MultiEdit(file_path:*/frontend-v2/*.tsx)",
+            "MultiEdit(file_path:*/frontend-v2/*.ts)"
+          ],
+          "conditions": {
+            "file_size_change": ">25",
+            "no_corresponding_test_changes": true,
+            "code_complexity_increase": true
+          },
+          "cooldown_minutes": 10,
+          "max_triggers_per_hour": 8
+        },
+        {
+          "name": "model_schema_changes",
+          "description": "Trigger on database model changes requiring comprehensive testing",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/backend-v2/models/*)",
+            "Write(file_path:*/backend-v2/models/*)",
+            "MultiEdit(file_path:*/backend-v2/models/*)"
+          ],
+          "conditions": {
+            "file_size_change": ">10",
+            "model_keywords": [
+              "Column",
+              "relationship",
+              "ForeignKey",
+              "Index",
+              "constraint"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "integration_point_additions",
+          "description": "Trigger on new integration points requiring end-to-end testing",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*stripe*)",
+            "Edit(file_path:*google*)",
+            "Edit(file_path:*sendgrid*)",
+            "Edit(file_path:*twilio*)",
+            "Edit(file_path:*webhook*)",
+            "Edit(file_path:*oauth*)",
+            "Write(file_path:*stripe*)",
+            "Write(file_path:*google*)",
+            "Write(file_path:*sendgrid*)",
+            "Write(file_path:*twilio*)",
+            "Write(file_path:*webhook*)",
+            "Write(file_path:*oauth*)"
+          ],
+          "conditions": {
+            "integration_keywords": [
+              "stripe",
+              "google_calendar",
+              "sendgrid",
+              "twilio",
+              "webhook",
+              "oauth",
+              "api_key"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 3
+        },
+        {
+          "name": "six_figure_barber_business_logic",
+          "description": "Trigger on Six Figure Barber methodology business logic requiring validation tests",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*booking*)",
+            "Edit(file_path:*appointment*)",
+            "Edit(file_path:*commission*)",
+            "Edit(file_path:*revenue*)",
+            "Edit(file_path:*client*)",
+            "Edit(file_path:*barber*)",
+            "Edit(file_path:*analytics*)",
+            "Write(file_path:*booking*)",
+            "Write(file_path:*appointment*)",
+            "Write(file_path:*commission*)",
+            "Write(file_path:*revenue*)",
+            "Write(file_path:*client*)",
+            "Write(file_path:*barber*)",
+            "Write(file_path:*analytics*)"
+          ],
+          "conditions": {
+            "file_size_change": ">15",
+            "six_figure_barber_keywords": [
+              "revenue",
+              "commission",
+              "booking",
+              "appointment",
+              "client_value",
+              "optimization",
+              "efficiency",
+              "scalability",
+              "growth"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 5
+        },
+        {
+          "name": "critical_path_implementations",
+          "description": "Trigger on critical path implementations requiring performance and security testing",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*auth*)",
+            "Edit(file_path:*payment*)",
+            "Edit(file_path:*booking*)",
+            "Edit(file_path:*appointment*)",
+            "Edit(file_path:*security*)",
+            "Write(file_path:*auth*)",
+            "Write(file_path:*payment*)",
+            "Write(file_path:*booking*)",
+            "Write(file_path:*appointment*)",
+            "Write(file_path:*security*)"
+          ],
+          "conditions": {
+            "critical_path_keywords": [
+              "authenticate",
+              "authorize",
+              "payment",
+              "stripe",
+              "booking",
+              "appointment",
+              "security",
+              "validation"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 6
+        },
+        {
+          "name": "missing_test_coverage",
+          "description": "Trigger when test coverage falls below 80% threshold",
+          "events": ["Continuous"],
+          "matchers": ["*"],
+          "conditions": {
+            "coverage_threshold": "<80%",
+            "untested_functions": ">5",
+            "coverage_check_interval": "30m"
+          },
+          "cooldown_minutes": 60,
+          "max_triggers_per_hour": 2
+        }
+      ],
+      "action": {
+        "agent_type": "automated-test-generator",
+        "agent_script": "/Users/bossio/6fb-booking/.claude/scripts/automated-test-generator-agent.py",
+        "prompt_template": "Automated test generation triggered by {trigger_name}. Files changed: {files_changed}. Generate comprehensive test suite including unit tests (80%+ coverage), integration tests for business flows, E2E tests for user workflows, performance tests for critical paths, and security tests for sensitive components. Align with Six Figure Barber methodology requirements.",
+        "auto_execute": true,
+        "priority": "high",
+        "tdd_focused": true,
+        "execution_timeout_minutes": 15,
+        "resource_limits": {
+          "memory_mb": 768,
+          "cpu_percent": 60
+        },
+        "test_requirements": {
+          "minimum_coverage": 80,
+          "test_types": ["unit", "integration", "component", "e2e", "performance", "security"],
+          "six_figure_barber_alignment": true,
+          "technology_stack": {
+            "backend": "pytest",
+            "frontend": "jest",
+            "e2e": "playwright",
+            "performance": "pytest-benchmark"
+          }
+        }
+      }
+    },
+    "devops-infrastructure-architect": {
+      "description": "Automatically trigger DevOps infrastructure architect for enterprise-grade infrastructure automation and optimization",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "docker_configuration_changes",
+          "description": "Trigger on Docker configuration modifications requiring optimization",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*docker-compose*)",
+            "Edit(file_path:*Dockerfile*)",
+            "Edit(file_path:*.dockerignore)",
+            "Write(file_path:*docker-compose*)",
+            "Write(file_path:*Dockerfile*)",
+            "Write(file_path:*.dockerignore)",
+            "MultiEdit(file_path:*docker-compose*)",
+            "MultiEdit(file_path:*Dockerfile*)"
+          ],
+          "conditions": {
+            "file_size_change": ">10",
+            "docker_keywords": [
+              "FROM",
+              "RUN",
+              "COPY",
+              "EXPOSE",
+              "services:",
+              "volumes:",
+              "networks:"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 3
+        },
+        {
+          "name": "kubernetes_manifest_changes",
+          "description": "Trigger on Kubernetes manifest modifications requiring enterprise validation",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*k8s/*)",
+            "Edit(file_path:*kubernetes/*)",
+            "Edit(file_path:*.yaml)",
+            "Edit(file_path:*.yml)",
+            "Write(file_path:*k8s/*)",
+            "Write(file_path:*kubernetes/*)",
+            "MultiEdit(file_path:*k8s/*)",
+            "MultiEdit(file_path:*kubernetes/*)"
+          ],
+          "conditions": {
+            "kubernetes_keywords": [
+              "apiVersion:",
+              "kind:",
+              "Deployment",
+              "Service",
+              "Ingress",
+              "ConfigMap",
+              "Secret",
+              "StatefulSet",
+              "HorizontalPodAutoscaler"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "terraform_infrastructure_changes",
+          "description": "Trigger on Terraform infrastructure modifications requiring validation and optimization",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*terraform/*)",
+            "Edit(file_path:*.tf)",
+            "Edit(file_path:*.tfvars)",
+            "Write(file_path:*terraform/*)",
+            "Write(file_path:*.tf)",
+            "Write(file_path:*.tfvars)",
+            "MultiEdit(file_path:*terraform/*)",
+            "MultiEdit(file_path:*.tf)"
+          ],
+          "conditions": {
+            "terraform_keywords": [
+              "resource",
+              "module",
+              "provider",
+              "variable",
+              "output",
+              "data"
+            ]
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 3
+        },
+        {
+          "name": "deployment_failures",
+          "description": "Trigger on deployment failures requiring infrastructure troubleshooting",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Bash(command:*kubectl*)",
+            "Bash(command:*helm*)",
+            "Bash(command:*terraform*)",
+            "Bash(command:*docker deploy*)",
+            "Bash(command:*docker stack*)"
+          ],
+          "conditions": {
+            "exit_code": [1, 2, 126, 127],
+            "stderr_patterns": [
+              "deployment failed",
+              "rollout failed",
+              "health check failed",
+              "container failed to start",
+              "image pull failed",
+              "terraform plan failed",
+              "terraform apply failed",
+              "kubectl apply failed"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 5
+        },
+        {
+          "name": "infrastructure_scaling_requirements",
+          "description": "Trigger on infrastructure scaling and performance requirements",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Edit(file_path:*scaling*)",
+            "Edit(file_path:*performance*)",
+            "Edit(file_path:*optimization*)",
+            "Edit(file_path:*load-balancer*)",
+            "Edit(file_path:*autoscaling*)"
+          ],
+          "conditions": {
+            "performance_indicators": [
+              "cpu_usage > 80%",
+              "memory_usage > 85%",
+              "response_time > 1000ms",
+              "error_rate > 5%",
+              "queue_length > 100"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "monitoring_infrastructure_changes",
+          "description": "Trigger on monitoring and observability infrastructure modifications",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*prometheus*)",
+            "Edit(file_path:*grafana*)",
+            "Edit(file_path:*alertmanager*)",
+            "Edit(file_path:*monitoring*)",
+            "Edit(file_path:*metrics*)",
+            "Edit(file_path:*observability*)",
+            "Write(file_path:*prometheus*)",
+            "Write(file_path:*grafana*)",
+            "Write(file_path:*alertmanager*)",
+            "Write(file_path:*monitoring*)"
+          ],
+          "conditions": {
+            "monitoring_keywords": [
+              "prometheus",
+              "grafana",
+              "alertmanager",
+              "metrics",
+              "dashboard",
+              "alert_rules"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 3
+        },
+        {
+          "name": "cicd_pipeline_optimization",
+          "description": "Trigger on CI/CD pipeline failures and optimization needs",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*.github/workflows/*)",
+            "Edit(file_path:*.gitlab-ci.yml)",
+            "Edit(file_path:*Jenkinsfile*)",
+            "Edit(file_path:*buildspec.yml)",
+            "Write(file_path:*.github/workflows/*)",
+            "Write(file_path:*.gitlab-ci.yml)"
+          ],
+          "conditions": {
+            "cicd_keywords": [
+              "workflow",
+              "pipeline",
+              "build",
+              "deploy",
+              "test",
+              "release"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "database_infrastructure_issues",
+          "description": "Trigger on database infrastructure and clustering requirements",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*postgres*)",
+            "Edit(file_path:*redis*)",
+            "Edit(file_path:*database*)",
+            "Edit(file_path:*cluster*)",
+            "Edit(file_path:*sharding*)",
+            "Edit(file_path:*replication*)"
+          ],
+          "conditions": {
+            "database_keywords": [
+              "postgres",
+              "redis",
+              "cluster",
+              "sharding",
+              "replication",
+              "backup",
+              "failover"
+            ]
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 3
+        },
+        {
+          "name": "security_infrastructure_requirements",
+          "description": "Trigger on security infrastructure and network policy requirements",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*security*)",
+            "Edit(file_path:*network-policy*)",
+            "Edit(file_path:*rbac*)",
+            "Edit(file_path:*service-mesh*)",
+            "Edit(file_path:*istio*)",
+            "Edit(file_path:*certificates*)",
+            "Edit(file_path:*tls*)"
+          ],
+          "conditions": {
+            "security_keywords": [
+              "NetworkPolicy",
+              "RBAC",
+              "ServiceAccount",
+              "Certificate",
+              "TLS",
+              "Istio",
+              "security"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "environment_configuration_changes",
+          "description": "Trigger on environment configuration changes affecting infrastructure",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*.env*)",
+            "Edit(file_path:*config*)",
+            "Edit(file_path:*settings*)",
+            "Edit(file_path:*secrets*)",
+            "Write(file_path:*.env*)",
+            "Write(file_path:*config*)",
+            "Write(file_path:*settings*)"
+          ],
+          "conditions": {
+            "config_keywords": [
+              "DATABASE_URL",
+              "REDIS_URL",
+              "SECRET_KEY",
+              "API_KEY",
+              "ENVIRONMENT",
+              "PORT",
+              "HOST"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 6
+        }
+      ],
+      "action": {
+        "agent_type": "devops-infrastructure-architect",
+        "agent_script": "/Users/bossio/6fb-booking/.claude/scripts/devops-infrastructure-architect-agent.py",
+        "prompt_template": "DevOps infrastructure automation required for {trigger_name}. Files changed: {files_changed}. Provide enterprise-grade infrastructure solutions including Kubernetes orchestration, Terraform automation, Docker optimization, CI/CD pipeline enhancement, monitoring stack deployment, and security hardening for BookedBarber V2 barbershop management platform.",
+        "auto_execute": true,
+        "priority": "high",
+        "enterprise_infrastructure": true,
+        "execution_timeout_minutes": 20,
+        "resource_limits": {
+          "memory_mb": 1024,
+          "cpu_percent": 70
+        },
+        "infrastructure_requirements": {
+          "kubernetes_support": true,
+          "terraform_automation": true,
+          "docker_optimization": true,
+          "monitoring_stack": true,
+          "security_hardening": true,
+          "performance_optimization": true,
+          "cost_management": true,
+          "compliance_automation": true
+        }
+      }
+    },
+    "ux-designer": {
+      "description": "Automatically trigger UX designer agent for user experience optimization and design improvements in BookedBarber V2",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "frontend_component_changes",
+          "description": "Trigger on React component changes affecting user interface",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/frontend-v2/components/*)",
+            "Edit(file_path:*/frontend-v2/app/*)",
+            "Write(file_path:*/frontend-v2/components/*)",
+            "Write(file_path:*/frontend-v2/app/*)",
+            "MultiEdit(file_path:*/frontend-v2/components/*)",
+            "MultiEdit(file_path:*/frontend-v2/app/*)"
+          ],
+          "conditions": {
+            "file_size_change": ">15",
+            "ui_keywords": [
+              "interface",
+              "component",
+              "useState",
+              "useEffect",
+              "form",
+              "button",
+              "modal",
+              "dropdown",
+              "navigation"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "user_flow_modifications",
+          "description": "Trigger on modifications to critical user flows",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*booking*)",
+            "Edit(file_path:*appointment*)",
+            "Edit(file_path:*auth*)",
+            "Edit(file_path:*login*)",
+            "Edit(file_path:*signup*)",
+            "Edit(file_path:*register*)",
+            "Edit(file_path:*payment*)",
+            "Edit(file_path:*checkout*)",
+            "Write(file_path:*booking*)",
+            "Write(file_path:*appointment*)",
+            "Write(file_path:*auth*)",
+            "Write(file_path:*login*)",
+            "Write(file_path:*signup*)",
+            "Write(file_path:*register*)",
+            "Write(file_path:*payment*)",
+            "Write(file_path:*checkout*)",
+            "MultiEdit(file_path:*booking*)",
+            "MultiEdit(file_path:*appointment*)",
+            "MultiEdit(file_path:*auth*)",
+            "MultiEdit(file_path:*login*)",
+            "MultiEdit(file_path:*signup*)",
+            "MultiEdit(file_path:*register*)",
+            "MultiEdit(file_path:*payment*)",
+            "MultiEdit(file_path:*checkout*)"
+          ],
+          "conditions": {
+            "file_size_change": ">10",
+            "user_flow_keywords": [
+              "booking",
+              "appointment",
+              "authentication",
+              "payment",
+              "checkout",
+              "user_experience",
+              "workflow"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 3
+        },
+        {
+          "name": "accessibility_compliance_issues",
+          "description": "Trigger on potential accessibility compliance issues",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/frontend-v2/*.tsx)",
+            "Edit(file_path:*/frontend-v2/*.ts)",
+            "Edit(file_path:*/frontend-v2/*.css)",
+            "Edit(file_path:*/frontend-v2/*.scss)",
+            "Write(file_path:*/frontend-v2/*.tsx)",
+            "Write(file_path:*/frontend-v2/*.ts)",
+            "Write(file_path:*/frontend-v2/*.css)",
+            "Write(file_path:*/frontend-v2/*.scss)",
+            "MultiEdit(file_path:*/frontend-v2/*.tsx)",
+            "MultiEdit(file_path:*/frontend-v2/*.ts)"
+          ],
+          "conditions": {
+            "accessibility_keywords": [
+              "aria-",
+              "role=",
+              "tabindex",
+              "alt=",
+              "label",
+              "contrast",
+              "focus",
+              "screen-reader"
+            ]
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 3
+        },
+        {
+          "name": "mobile_responsiveness_changes",
+          "description": "Trigger on mobile responsiveness and cross-device compatibility changes",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/frontend-v2/*)",
+            "Write(file_path:*/frontend-v2/*)",
+            "MultiEdit(file_path:*/frontend-v2/*)"
+          ],
+          "conditions": {
+            "mobile_keywords": [
+              "responsive",
+              "mobile",
+              "tablet",
+              "breakpoint",
+              "touch",
+              "gesture",
+              "viewport",
+              "media-query"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "conversion_optimization_opportunities",
+          "description": "Trigger on changes affecting conversion rates and business metrics",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*booking*)",
+            "Edit(file_path:*payment*)",
+            "Edit(file_path:*commission*)",
+            "Edit(file_path:*revenue*)",
+            "Edit(file_path:*analytics*)",
+            "Edit(file_path:*dashboard*)",
+            "Write(file_path:*booking*)",
+            "Write(file_path:*payment*)",
+            "Write(file_path:*commission*)",
+            "Write(file_path:*revenue*)",
+            "Write(file_path:*analytics*)",
+            "Write(file_path:*dashboard*)"
+          ],
+          "conditions": {
+            "conversion_keywords": [
+              "booking",
+              "payment",
+              "commission",
+              "revenue",
+              "analytics",
+              "conversion",
+              "funnel",
+              "optimization"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 5
+        },
+        {
+          "name": "design_system_updates",
+          "description": "Trigger on design system and UI component library updates",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/frontend-v2/components/ui/*)",
+            "Edit(file_path:*/frontend-v2/lib/*)",
+            "Edit(file_path:*tailwind.config*)",
+            "Edit(file_path:*globals.css)",
+            "Edit(file_path:*style*)",
+            "Write(file_path:*/frontend-v2/components/ui/*)",
+            "Write(file_path:*/frontend-v2/lib/*)",
+            "Write(file_path:*tailwind.config*)",
+            "Write(file_path:*globals.css)",
+            "Write(file_path:*style*)"
+          ],
+          "conditions": {
+            "design_system_keywords": [
+              "component",
+              "theme",
+              "token",
+              "color",
+              "typography",
+              "spacing",
+              "shadow",
+              "border"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 6
+        },
+        {
+          "name": "six_figure_barber_ux_alignment",
+          "description": "Trigger on Six Figure Barber methodology UX alignment requirements",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*barber*)",
+            "Edit(file_path:*client*)",
+            "Edit(file_path:*appointment*)",
+            "Edit(file_path:*revenue*)",
+            "Edit(file_path:*commission*)",
+            "Edit(file_path:*analytics*)",
+            "Edit(file_path:*dashboard*)",
+            "Edit(file_path:*booking*)",
+            "Write(file_path:*barber*)",
+            "Write(file_path:*client*)",
+            "Write(file_path:*appointment*)",
+            "Write(file_path:*revenue*)",
+            "Write(file_path:*commission*)",
+            "Write(file_path:*analytics*)",
+            "Write(file_path:*dashboard*)",
+            "Write(file_path:*booking*)"
+          ],
+          "conditions": {
+            "six_figure_keywords": [
+              "revenue",
+              "commission",
+              "client_value",
+              "efficiency",
+              "scalability",
+              "growth",
+              "optimization",
+              "professional"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "performance_ux_impact",
+          "description": "Trigger on changes affecting user experience performance",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/frontend-v2/*)",
+            "Write(file_path:*/frontend-v2/*)",
+            "MultiEdit(file_path:*/frontend-v2/*)"
+          ],
+          "conditions": {
+            "performance_keywords": [
+              "loading",
+              "lazy",
+              "optimization",
+              "cache",
+              "performance",
+              "speed",
+              "bundle",
+              "chunk"
+            ]
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 3
+        }
+      ],
+      "action": {
+        "agent_type": "ux-designer",
+        "agent_script": "/Users/bossio/6fb-booking/.claude/scripts/ux-designer-agent.py",
+        "prompt_template": "UX Designer analysis required for {trigger_name}. Files changed: {files_changed}. Conduct comprehensive user experience audit including accessibility compliance (WCAG 2.1 AA), conversion optimization, mobile responsiveness, Six Figure Barber methodology alignment, information architecture review, and visual design system optimization for BookedBarber V2 barbershop management platform.",
+        "auto_execute": true,
+        "priority": "high",
+        "ux_focused": true,
+        "execution_timeout_minutes": 12,
+        "resource_limits": {
+          "memory_mb": 512,
+          "cpu_percent": 50
+        },
+        "ux_requirements": {
+          "accessibility_compliance": "WCAG_2_1_AA",
+          "mobile_optimization": true,
+          "conversion_optimization": true,
+          "six_figure_barber_alignment": true,
+          "design_system_consistency": true,
+          "performance_ux": true,
+          "user_research_guidance": true,
+          "wireframe_generation": true
+        }
+      }
+    },
+    "api-integration-specialist": {
+      "description": "Automatically trigger API integration specialist for comprehensive integration management and optimization",
+      "enabled": true,
+      "triggers": [
+        {
+          "name": "stripe_integration_failures",
+          "description": "Trigger on Stripe Connect payment integration failures",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Edit(file_path:*stripe*)",
+            "Edit(file_path:*payment*)",
+            "Edit(file_path:*commission*)",
+            "Edit(file_path:*payout*)",
+            "Edit(file_path:*billing*)",
+            "Edit(file_path:*checkout*)",
+            "Write(file_path:*stripe*)",
+            "Write(file_path:*payment*)",
+            "Write(file_path:*commission*)",
+            "Write(file_path:*payout*)",
+            "Write(file_path:*billing*)",
+            "Write(file_path:*checkout*)",
+            "MultiEdit(file_path:*stripe*)",
+            "MultiEdit(file_path:*payment*)",
+            "MultiEdit(file_path:*commission*)",
+            "MultiEdit(file_path:*payout*)",
+            "Bash(command:*stripe*)"
+          ],
+          "conditions": {
+            "error_patterns": [
+              "stripe",
+              "payment failed",
+              "invalid_request_error",
+              "card_error",
+              "authentication_error",
+              "rate_limit_error",
+              "api_connection_error",
+              "webhook signature",
+              "commission calculation",
+              "payout failed"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 8
+        },
+        {
+          "name": "google_api_integration_issues",
+          "description": "Trigger on Google Calendar and Google My Business API integration issues",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Edit(file_path:*google*)",
+            "Edit(file_path:*calendar*)",
+            "Edit(file_path:*oauth*)",
+            "Edit(file_path:*appointment*)",
+            "Edit(file_path:*booking*)",
+            "Write(file_path:*google*)",
+            "Write(file_path:*calendar*)",
+            "Write(file_path:*oauth*)",
+            "Write(file_path:*appointment*)",
+            "Write(file_path:*booking*)",
+            "MultiEdit(file_path:*google*)",
+            "MultiEdit(file_path:*calendar*)",
+            "MultiEdit(file_path:*oauth*)",
+            "Bash(command:*google*)"
+          ],
+          "conditions": {
+            "error_patterns": [
+              "google_api",
+              "oauth_error",
+              "invalid_grant",
+              "unauthorized",
+              "quota_exceeded",
+              "rate_limit_exceeded",
+              "calendar_sync",
+              "appointment_conflict",
+              "refresh_token",
+              "scope_error"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 6
+        },
+        {
+          "name": "webhook_security_validation_failures",
+          "description": "Trigger on webhook signature verification and security validation failures",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Edit(file_path:*webhook*)",
+            "Edit(file_path:*/api/v2/webhooks/*)",
+            "Write(file_path:*webhook*)",
+            "Write(file_path:*/api/v2/webhooks/*)",
+            "MultiEdit(file_path:*webhook*)",
+            "MultiEdit(file_path:*/api/v2/webhooks/*)",
+            "Bash(command:*webhook*)"
+          ],
+          "conditions": {
+            "error_patterns": [
+              "webhook",
+              "signature verification",
+              "invalid signature",
+              "webhook_endpoint_error",
+              "payload validation",
+              "replay attack",
+              "timestamp verification",
+              "hmac verification",
+              "webhook_secret",
+              "unauthorized webhook"
+            ]
+          },
+          "cooldown_minutes": 10,
+          "max_triggers_per_hour": 10
+        },
+        {
+          "name": "communication_api_failures",
+          "description": "Trigger on SendGrid email and Twilio SMS integration failures",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Edit(file_path:*sendgrid*)",
+            "Edit(file_path:*twilio*)",
+            "Edit(file_path:*email*)",
+            "Edit(file_path:*sms*)",
+            "Edit(file_path:*notification*)",
+            "Write(file_path:*sendgrid*)",
+            "Write(file_path:*twilio*)",
+            "Write(file_path:*email*)",
+            "Write(file_path:*sms*)",
+            "Write(file_path:*notification*)",
+            "MultiEdit(file_path:*sendgrid*)",
+            "MultiEdit(file_path:*twilio*)",
+            "MultiEdit(file_path:*email*)",
+            "MultiEdit(file_path:*sms*)",
+            "Bash(command:*sendgrid*)",
+            "Bash(command:*twilio*)"
+          ],
+          "conditions": {
+            "error_patterns": [
+              "sendgrid",
+              "twilio",
+              "email_delivery_failed",
+              "sms_delivery_failed",
+              "invalid_api_key",
+              "rate_limit",
+              "quota_exceeded",
+              "message_failed",
+              "authentication_error",
+              "invalid_phone_number",
+              "unsubscribed",
+              "bounced_email"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 8
+        },
+        {
+          "name": "rate_limiting_quota_management",
+          "description": "Trigger on API rate limiting and quota management issues",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Edit(file_path:*rate_limit*)",
+            "Edit(file_path:*quota*)",
+            "Edit(file_path:*throttle*)",
+            "Edit(file_path:*backoff*)",
+            "Edit(file_path:*retry*)",
+            "Write(file_path:*rate_limit*)",
+            "Write(file_path:*quota*)",
+            "Write(file_path:*throttle*)",
+            "Write(file_path:*backoff*)",
+            "Write(file_path:*retry*)"
+          ],
+          "conditions": {
+            "error_patterns": [
+              "rate_limit",
+              "quota_exceeded",
+              "too_many_requests",
+              "429",
+              "throttled",
+              "rate_limit_exceeded",
+              "api_quota",
+              "request_limit",
+              "backoff",
+              "retry_after"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 6
+        },
+        {
+          "name": "oauth_authentication_failures",
+          "description": "Trigger on OAuth authentication and token management failures",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Edit(file_path:*oauth*)",
+            "Edit(file_path:*auth*)",
+            "Edit(file_path:*token*)",
+            "Edit(file_path:*refresh*)",
+            "Edit(file_path:*credential*)",
+            "Write(file_path:*oauth*)",
+            "Write(file_path:*auth*)",
+            "Write(file_path:*token*)",
+            "Write(file_path:*refresh*)",
+            "Write(file_path:*credential*)",
+            "MultiEdit(file_path:*oauth*)",
+            "MultiEdit(file_path:*auth*)",
+            "MultiEdit(file_path:*token*)"
+          ],
+          "conditions": {
+            "error_patterns": [
+              "oauth",
+              "authentication_failed",
+              "invalid_token",
+              "expired_token",
+              "refresh_token_error",
+              "invalid_grant",
+              "unauthorized",
+              "access_denied",
+              "invalid_client",
+              "token_refresh_failed",
+              "scope_error"
+            ]
+          },
+          "cooldown_minutes": 15,
+          "max_triggers_per_hour": 8
+        },
+        {
+          "name": "social_media_marketing_integrations",
+          "description": "Trigger on Facebook/Instagram marketing integration issues",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*facebook*)",
+            "Edit(file_path:*instagram*)",
+            "Edit(file_path:*social*)",
+            "Edit(file_path:*marketing*)",
+            "Edit(file_path:*campaign*)",
+            "Write(file_path:*facebook*)",
+            "Write(file_path:*instagram*)",
+            "Write(file_path:*social*)",
+            "Write(file_path:*marketing*)",
+            "Write(file_path:*campaign*)",
+            "MultiEdit(file_path:*facebook*)",
+            "MultiEdit(file_path:*instagram*)",
+            "MultiEdit(file_path:*social*)"
+          ],
+          "conditions": {
+            "error_patterns": [
+              "facebook_api",
+              "instagram_api",
+              "graph_api",
+              "marketing_api",
+              "invalid_access_token",
+              "application_request_limit_reached",
+              "user_request_limit_reached",
+              "app_not_installed",
+              "permissions_error",
+              "ad_account_error"
+            ]
+          },
+          "cooldown_minutes": 25,
+          "max_triggers_per_hour": 4
+        },
+        {
+          "name": "api_connectivity_timeouts",
+          "description": "Trigger on API connectivity issues and timeout problems",
+          "events": ["PostToolUse", "Continuous"],
+          "matchers": [
+            "Bash(command:*curl*)",
+            "Bash(command:*requests*)",
+            "Bash(command:*api*)",
+            "Edit(file_path:*timeout*)",
+            "Edit(file_path:*connection*)",
+            "Write(file_path:*timeout*)",
+            "Write(file_path:*connection*)"
+          ],
+          "conditions": {
+            "error_patterns": [
+              "timeout",
+              "connection_error",
+              "connection_timeout",
+              "read_timeout",
+              "ssl_error",
+              "dns_error",
+              "network_error",
+              "connection_refused",
+              "connection_reset",
+              "502 Bad Gateway",
+              "503 Service Unavailable",
+              "504 Gateway Timeout"
+            ]
+          },
+          "cooldown_minutes": 10,
+          "max_triggers_per_hour": 12
+        },
+        {
+          "name": "integration_configuration_changes",
+          "description": "Trigger on integration configuration and environment changes",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*integration*)",
+            "Edit(file_path:*config*)",
+            "Edit(file_path:*settings*)",
+            "Edit(file_path:*.env*)",
+            "Edit(file_path:*api_key*)",
+            "Edit(file_path:*secret*)",
+            "Write(file_path:*integration*)",
+            "Write(file_path:*config*)",
+            "Write(file_path:*settings*)",
+            "Write(file_path:*.env*)"
+          ],
+          "conditions": {
+            "integration_keywords": [
+              "STRIPE_",
+              "GOOGLE_",
+              "SENDGRID_",
+              "TWILIO_",
+              "FACEBOOK_",
+              "API_KEY",
+              "CLIENT_ID",
+              "CLIENT_SECRET",
+              "WEBHOOK_SECRET"
+            ]
+          },
+          "cooldown_minutes": 20,
+          "max_triggers_per_hour": 6
+        },
+        {
+          "name": "api_version_compatibility_issues",
+          "description": "Trigger on API version compatibility and migration issues",
+          "events": ["PostToolUse"],
+          "matchers": [
+            "Edit(file_path:*/api/v1/*)",
+            "Edit(file_path:*/api/v2/*)",
+            "Write(file_path:*/api/v1/*)",
+            "Write(file_path:*/api/v2/*)",
+            "MultiEdit(file_path:*/api/v1/*)",
+            "MultiEdit(file_path:*/api/v2/*)"
+          ],
+          "conditions": {
+            "api_version_keywords": [
+              "api_version",
+              "deprecated",
+              "migration",
+              "compatibility",
+              "version_mismatch",
+              "unsupported_version",
+              "api_upgrade"
+            ]
+          },
+          "cooldown_minutes": 30,
+          "max_triggers_per_hour": 3
+        }
+      ],
+      "action": {
+        "agent_type": "api-integration-specialist",
+        "agent_script": "/Users/bossio/6fb-booking/.claude/scripts/api-integration-specialist-agent.py",
+        "prompt_template": "API Integration Specialist analysis required for {trigger_name}. Files changed: {files_changed}. Conduct comprehensive integration analysis including health monitoring, webhook security validation, rate limiting optimization, authentication flow analysis, payment integration review, and performance optimization for BookedBarber V2's external API integrations (Stripe Connect, Google Calendar, SendGrid, Twilio, Google My Business, Facebook/Instagram).",
+        "auto_execute": true,
+        "priority": "high",
+        "integration_focused": true,
+        "execution_timeout_minutes": 12,
+        "resource_limits": {
+          "memory_mb": 768,
+          "cpu_percent": 55
+        },
+        "integration_requirements": {
+          "stripe_connect_optimization": true,
+          "google_calendar_sync": true,
+          "webhook_security_validation": true,
+          "rate_limiting_management": true,
+          "oauth_flow_optimization": true,
+          "api_health_monitoring": true,
+          "performance_optimization": true,
+          "six_figure_barber_alignment": true
+        }
       }
     },
     "general-purpose": {
@@ -284,8 +2283,8 @@
   },
   "safety_mechanisms": {
     "global_rate_limit": {
-      "max_agent_executions_per_hour": 50,
-      "max_agent_executions_per_day": 200,
+      "max_agent_executions_per_hour": 100,
+      "max_agent_executions_per_day": 400,
       "cooldown_between_agents": "30s"
     },
     "emergency_stop": {
@@ -295,12 +2294,12 @@
     },
     "conflict_prevention": {
       "max_concurrent_agents": 1,
-      "agent_priority_order": ["debugger", "code-reviewer", "data-scientist", "general-purpose"]
+      "agent_priority_order": ["security-specialist", "api-integration-specialist", "devops-infrastructure-architect", "production-fullstack-dev", "ux-designer", "debugger", "code-reviewer", "automated-test-generator", "data-scientist", "general-purpose"]
     },
     "resource_protection": {
-      "max_execution_time_minutes": 10,
-      "memory_limit_mb": 512,
-      "cpu_limit_percent": 50
+      "max_execution_time_minutes": 15,
+      "memory_limit_mb": 1024,
+      "cpu_limit_percent": 75
     }
   },
   "monitoring": {

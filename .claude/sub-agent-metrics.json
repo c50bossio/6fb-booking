@@ -1,11 +1,11 @@
 {
-  "total_executions": 205,
+  "total_executions": 119,
   "success_rate": 100.0,
   "executions_by_agent": {
-    "debugger": 205
+    "debugger": 119
   },
   "executions_by_trigger": {
-    "http_errors": 205
+    "http_errors": 119
   },
-  "last_updated": "2025-07-26T02:06:30.396751"
+  "last_updated": "2025-07-26T17:32:08.585987"
 }
