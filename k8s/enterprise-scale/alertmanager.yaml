@@ -1,0 +1,491 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'smtp.sendgrid.net:587'
+      smtp_from: 'alerts@bookedbarber.com'
+      smtp_auth_username: 'apikey'
+      smtp_auth_password: '{{ .SendGridApiKey }}'
+      
+    templates:
+    - '/etc/alertmanager/templates/*.tmpl'
+    
+    route:
+      group_by: ['alertname', 'franchise_shard_id', 'severity']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      receiver: 'franchise-alerts'
+      routes:
+      # Critical franchise alerts - immediate notification
+      - match:
+          severity: critical
+        receiver: 'franchise-critical'
+        group_wait: 5s
+        repeat_interval: 5m
+        
+      # Database alerts - DBA team
+      - match_re:
+          component: franchise-database|franchise-cache
+        receiver: 'database-team'
+        group_by: ['alertname', 'franchise_shard_id', 'instance']
+        
+      # Performance alerts - DevOps team
+      - match_re:
+          component: franchise-performance|franchise-infrastructure
+        receiver: 'devops-team'
+        group_by: ['alertname', 'franchise_shard_id', 'node']
+        
+      # Business alerts - Business team
+      - match:
+          component: franchise-business
+        receiver: 'business-team'
+        group_by: ['alertname', 'franchise_shard_id']
+        
+    receivers:
+    - name: 'franchise-alerts'
+      email_configs:
+      - to: 'devops@bookedbarber.com'
+        subject: 'BookedBarber V2 Franchise Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Franchise Shard: {{ .Labels.franchise_shard_id }}
+          Region: {{ .Labels.franchise_region }}
+          Severity: {{ .Labels.severity }}
+          Start Time: {{ .StartsAt }}
+          {{ end }}
+          
+      slack_configs:
+      - api_url: '{{ .SlackWebhookURL }}'
+        channel: '#franchise-alerts'
+        title: 'BookedBarber V2 Franchise Alert'
+        text: |
+          {{ range .Alerts }}
+          *Alert*: {{ .Annotations.summary }}
+          *Shard*: {{ .Labels.franchise_shard_id }}
+          *Region*: {{ .Labels.franchise_region }}
+          *Severity*: {{ .Labels.severity }}
+          *Description*: {{ .Annotations.description }}
+          {{ end }}
+        
+    - name: 'franchise-critical'
+      email_configs:
+      - to: 'oncall@bookedbarber.com,cto@bookedbarber.com'
+        subject: '[CRITICAL] BookedBarber V2 Franchise Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          🚨 CRITICAL FRANCHISE ALERT 🚨
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Franchise Shard: {{ .Labels.franchise_shard_id }}
+          Region: {{ .Labels.franchise_region }}
+          Component: {{ .Labels.component }}
+          Start Time: {{ .StartsAt }}
+          
+          Immediate action required!
+          {{ end }}
+          
+      slack_configs:
+      - api_url: '{{ .SlackCriticalWebhookURL }}'
+        channel: '#franchise-critical'
+        title: '🚨 CRITICAL: BookedBarber V2 Franchise Alert'
+        color: 'danger'
+        text: |
+          <!channel>
+          {{ range .Alerts }}
+          *Alert*: {{ .Annotations.summary }}
+          *Shard*: {{ .Labels.franchise_shard_id }}
+          *Region*: {{ .Labels.franchise_region }}
+          *Component*: {{ .Labels.component }}
+          *Description*: {{ .Annotations.description }}
+          
+          *Immediate action required!*
+          {{ end }}
+          
+      pagerduty_configs:
+      - routing_key: '{{ .PagerDutyIntegrationKey }}'
+        description: 'BookedBarber V2 Critical Alert: {{ .GroupLabels.alertname }}'
+        details:
+          franchise_shard_id: '{{ .GroupLabels.franchise_shard_id }}'
+          region: '{{ .GroupLabels.franchise_region }}'
+          component: '{{ .GroupLabels.component }}'
+          
+    - name: 'database-team'
+      email_configs:
+      - to: 'dba@bookedbarber.com'
+        subject: 'Database Alert - Shard {{ .GroupLabels.franchise_shard_id }}: {{ .GroupLabels.alertname }}'
+        body: |
+          Database Alert for Franchise Infrastructure
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Franchise Shard: {{ .Labels.franchise_shard_id }}
+          Database Instance: {{ .Labels.instance }}
+          Region: {{ .Labels.franchise_region }}
+          Start Time: {{ .StartsAt }}
+          {{ end }}
+          
+    - name: 'devops-team'
+      email_configs:
+      - to: 'devops@bookedbarber.com'
+        subject: 'Infrastructure Alert - Shard {{ .GroupLabels.franchise_shard_id }}: {{ .GroupLabels.alertname }}'
+        body: |
+          Infrastructure Alert for Franchise Platform
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Franchise Shard: {{ .Labels.franchise_shard_id }}
+          Node: {{ .Labels.node }}
+          Region: {{ .Labels.franchise_region }}
+          Start Time: {{ .StartsAt }}
+          {{ end }}
+          
+      slack_configs:
+      - api_url: '{{ .SlackDevOpsWebhookURL }}'
+        channel: '#devops-alerts'
+        title: 'Infrastructure Alert - Franchise Platform'
+        
+    - name: 'business-team'
+      email_configs:
+      - to: 'business@bookedbarber.com'
+        subject: 'Business Metrics Alert - Shard {{ .GroupLabels.franchise_shard_id }}: {{ .GroupLabels.alertname }}'
+        body: |
+          Business Metrics Alert for Franchise Operations
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Franchise Shard: {{ .Labels.franchise_shard_id }}
+          Region: {{ .Labels.franchise_region }}
+          Start Time: {{ .StartsAt }}
+          
+          This may impact franchise revenue and operations.
+          {{ end }}
+          
+    inhibit_rules:
+    - source_match:
+        severity: 'critical'
+      target_match:
+        severity: 'warning'
+      equal: ['alertname', 'franchise_shard_id', 'instance']
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-templates
+  namespace: monitoring
+data:
+  franchise.tmpl: |
+    {{ define "franchise.title" }}
+    [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 
+    BookedBarber V2 Franchise Alert
+    {{ end }}
+    
+    {{ define "franchise.content" }}
+    {{ if gt (len .Alerts.Firing) 0 }}
+    **Firing Alerts:**
+    {{ range .Alerts.Firing }}
+    - **{{ .Annotations.summary }}**
+      - Shard: {{ .Labels.franchise_shard_id }}
+      - Region: {{ .Labels.franchise_region }}
+      - Severity: {{ .Labels.severity }}
+      - Component: {{ .Labels.component }}
+      - Description: {{ .Annotations.description }}
+      - Started: {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+    {{ end }}
+    {{ end }}
+    
+    {{ if gt (len .Alerts.Resolved) 0 }}
+    **Resolved Alerts:**
+    {{ range .Alerts.Resolved }}
+    - **{{ .Annotations.summary }}** ✅
+      - Shard: {{ .Labels.franchise_shard_id }}
+      - Region: {{ .Labels.franchise_region }}
+      - Resolved: {{ .EndsAt.Format "2006-01-02 15:04:05 UTC" }}
+    {{ end }}
+    {{ end }}
+    {{ end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: monitoring
+  labels:
+    app: alertmanager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:v0.26.0
+        args:
+        - --config.file=/etc/alertmanager/alertmanager.yml
+        - --storage.path=/alertmanager
+        - --web.external-url=http://localhost:9093
+        - --cluster.advertise-address=$(POD_IP):9094
+        - --cluster.listen-address=0.0.0.0:9094
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        ports:
+        - containerPort: 9093
+          name: alertmanager
+        - containerPort: 9094
+          name: cluster
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: alertmanager-config-volume
+          mountPath: /etc/alertmanager
+        - name: alertmanager-templates-volume
+          mountPath: /etc/alertmanager/templates
+        - name: alertmanager-storage-volume
+          mountPath: /alertmanager
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9093
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9093
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+      volumes:
+      - name: alertmanager-config-volume
+        configMap:
+          defaultMode: 420
+          name: alertmanager-config
+      - name: alertmanager-templates-volume
+        configMap:
+          defaultMode: 420
+          name: alertmanager-templates
+      - name: alertmanager-storage-volume
+        persistentVolumeClaim:
+          claimName: alertmanager-storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager-storage
+  namespace: monitoring
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp3-encrypted
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: monitoring
+  labels:
+    app: alertmanager
+spec:
+  selector:
+    app: alertmanager
+  ports:
+  - port: 9093
+    targetPort: 9093
+    name: alertmanager
+  - port: 9094
+    targetPort: 9094
+    name: cluster
+  type: ClusterIP
+---
+# Jaeger Tracing for Franchise Operations
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger-collector
+  namespace: monitoring
+  labels:
+    app: jaeger
+    component: collector
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jaeger
+      component: collector
+  template:
+    metadata:
+      labels:
+        app: jaeger
+        component: collector
+    spec:
+      containers:
+      - name: jaeger-collector
+        image: jaegertracing/jaeger-collector:1.49
+        env:
+        - name: SPAN_STORAGE_TYPE
+          value: elasticsearch
+        - name: ES_SERVER_URLS
+          value: http://elasticsearch:9200
+        - name: COLLECTOR_ZIPKIN_HOST_PORT
+          value: ":9411"
+        - name: COLLECTOR_OTLP_ENABLED
+          value: "true"
+        ports:
+        - containerPort: 14250
+          name: grpc
+        - containerPort: 14268
+          name: http
+        - containerPort: 9411
+          name: zipkin
+        - containerPort: 4317
+          name: otlp-grpc
+        - containerPort: 4318
+          name: otlp-http
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 14269
+          initialDelaySeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 14269
+          initialDelaySeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-collector
+  namespace: monitoring
+  labels:
+    app: jaeger
+    component: collector
+spec:
+  selector:
+    app: jaeger
+    component: collector
+  ports:
+  - port: 14250
+    targetPort: 14250
+    name: grpc
+  - port: 14268
+    targetPort: 14268
+    name: http
+  - port: 9411
+    targetPort: 9411
+    name: zipkin
+  - port: 4317
+    targetPort: 4317
+    name: otlp-grpc
+  - port: 4318
+    targetPort: 4318
+    name: otlp-http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger-query
+  namespace: monitoring
+  labels:
+    app: jaeger
+    component: query
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jaeger
+      component: query
+  template:
+    metadata:
+      labels:
+        app: jaeger
+        component: query
+    spec:
+      containers:
+      - name: jaeger-query
+        image: jaegertracing/jaeger-query:1.49
+        env:
+        - name: SPAN_STORAGE_TYPE
+          value: elasticsearch
+        - name: ES_SERVER_URLS
+          value: http://elasticsearch:9200
+        ports:
+        - containerPort: 16686
+          name: query
+        - containerPort: 16687
+          name: admin
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "300m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 16687
+          initialDelaySeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 16687
+          initialDelaySeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-query
+  namespace: monitoring
+  labels:
+    app: jaeger
+    component: query
+spec:
+  selector:
+    app: jaeger
+    component: query
+  ports:
+  - port: 16686
+    targetPort: 16686
+    name: query
+  - port: 16687
+    targetPort: 16687
+    name: admin
+  type: ClusterIP

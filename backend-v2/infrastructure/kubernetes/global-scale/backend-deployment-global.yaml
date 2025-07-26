@@ -1,0 +1,613 @@
+# BookedBarber V2 - Global Scale Backend Deployment
+# Enhanced Kubernetes deployment for 1M+ concurrent users across multiple regions
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookedbarber-v2
+  labels:
+    name: bookedbarber-v2
+    environment: production
+    app: bookedbarber
+    version: v2
+---
+# ConfigMap for global application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bookedbarber-config
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: config
+data:
+  # Database sharding configuration
+  DATABASE_SHARDING_ENABLED: "true"
+  DATABASE_SHARD_COUNT: "4"
+  DATABASE_SHARD_1_REGION: "us-east-1"
+  DATABASE_SHARD_2_REGION: "us-west-2"
+  DATABASE_SHARD_3_REGION: "eu-west-1"
+  DATABASE_SHARD_4_REGION: "ap-southeast-1"
+  
+  # Redis cluster configuration
+  REDIS_CLUSTER_ENABLED: "true"
+  REDIS_CLUSTER_NODES: "6"
+  REDIS_GLOBAL_REPLICATION: "true"
+  
+  # Performance optimizations
+  FASTAPI_WORKERS: "8"
+  UVICORN_LOOP: "uvloop"
+  UVICORN_HTTP: "httptools"
+  
+  # Connection pooling
+  DATABASE_POOL_SIZE: "100"
+  DATABASE_MAX_OVERFLOW: "50"
+  DATABASE_POOL_TIMEOUT: "30"
+  DATABASE_POOL_RECYCLE: "3600"
+  
+  # Caching configuration
+  CACHE_TTL_DEFAULT: "300"
+  CACHE_TTL_USER_SESSION: "86400"
+  CACHE_TTL_FRANCHISE_DATA: "3600"
+  CACHE_TTL_API_RESPONSE: "60"
+  
+  # Rate limiting
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_PER_MINUTE: "1000"
+  RATE_LIMIT_BURST: "100"
+  
+  # Observability
+  SENTRY_ENABLED: "true"
+  PROMETHEUS_METRICS: "true"
+  JAEGER_TRACING: "true"
+  LOG_LEVEL: "INFO"
+  
+  # Feature flags
+  FEATURE_GLOBAL_SEARCH: "true"
+  FEATURE_REAL_TIME_ANALYTICS: "true"
+  FEATURE_AI_RECOMMENDATIONS: "true"
+  FEATURE_FRANCHISE_INSIGHTS: "true"
+---
+# ServiceAccount for enhanced security
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookedbarber-backend
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: backend
+automountServiceAccountToken: true
+---
+# ClusterRole for application permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: bookedbarber-backend-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "endpoints", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list"]
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: bookedbarber-backend-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: bookedbarber-backend-role
+subjects:
+- kind: ServiceAccount
+  name: bookedbarber-backend
+  namespace: bookedbarber-v2
+---
+# Deployment for FastAPI backend with advanced scaling
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookedbarber-backend
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: backend
+    version: v2
+spec:
+  replicas: 50  # Initial replicas for global scale
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 10%
+  selector:
+    matchLabels:
+      app: bookedbarber
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: bookedbarber
+        component: backend
+        version: v2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+        sidecar.istio.io/inject: "true"
+        sidecar.istio.io/proxyCPU: "100m"
+        sidecar.istio.io/proxyMemory: "128Mi"
+    spec:
+      serviceAccountName: bookedbarber-backend
+      affinity:
+        # Prefer to schedule pods across different nodes
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - bookedbarber
+                - key: component
+                  operator: In
+                  values:
+                  - backend
+              topologyKey: "kubernetes.io/hostname"
+        # Prefer to schedule in different availability zones
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 50
+            preference:
+              matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                - us-east-1a
+                - us-east-1b
+                - us-east-1c
+      containers:
+      - name: backend
+        image: bookedbarber/backend:v2.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        envFrom:
+        - configMapRef:
+            name: bookedbarber-config
+        - secretRef:
+            name: bookedbarber-secrets
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+            ephemeral-storage: 1Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+            ephemeral-storage: 5Gi
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health/startup
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+          runAsGroup: 65534
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/cache
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir:
+          sizeLimit: 1Gi
+      # Security and performance optimizations
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: bookedbarber
+            component: backend
+      - maxSkew: 2
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: bookedbarber
+            component: backend
+      priorityClassName: high-priority
+      terminationGracePeriodSeconds: 60
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+---
+# Service for backend exposure
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookedbarber-backend-service
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: backend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: "deregistration_delay.timeout_seconds=30"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  - port: 9090
+    targetPort: 9090
+    protocol: TCP
+    name: metrics
+  selector:
+    app: bookedbarber
+    component: backend
+---
+# Horizontal Pod Autoscaler for massive scale
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bookedbarber-backend-hpa
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-backend
+  minReplicas: 50
+  maxReplicas: 2000  # Support for massive scale
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  # Custom metrics: requests per second
+  - type: Pods
+    pods:
+      metric:
+        name: requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  # Custom metrics: queue depth
+  - type: Pods
+    pods:
+      metric:
+        name: celery_queue_depth
+      target:
+        type: AverageValue
+        averageValue: "10"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 300
+      - type: Pods
+        value: 50
+        periodSeconds: 300
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+      - type: Pods
+        value: 100
+        periodSeconds: 60
+      selectPolicy: Max
+---
+# Vertical Pod Autoscaler for resource optimization
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: bookedbarber-backend-vpa
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: backend
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-backend
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: backend
+      minAllowed:
+        cpu: 100m
+        memory: 256Mi
+      maxAllowed:
+        cpu: 4000m
+        memory: 8Gi
+      mode: Auto
+---
+# Pod Disruption Budget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bookedbarber-backend-pdb
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: backend
+spec:
+  minAvailable: 70%
+  selector:
+    matchLabels:
+      app: bookedbarber
+      component: backend
+---
+# Network Policy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: bookedbarber-backend-netpol
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: backend
+spec:
+  podSelector:
+    matchLabels:
+      app: bookedbarber
+      component: backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: istio-system
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    - podSelector:
+        matchLabels:
+          app: bookedbarber
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 9090
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow database connections
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 5432
+  # Allow Redis connections
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 6379
+  # Allow HTTPS for external APIs
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+---
+# Priority Class for critical workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 1000000
+globalDefault: false
+description: "High priority class for critical BookedBarber services"
+---
+# ServiceMonitor for Prometheus metrics collection
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: bookedbarber-backend-metrics
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: backend
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: bookedbarber
+      component: backend
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    honorLabels: true
+---
+# PrometheusRule for alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: bookedbarber-backend-alerts
+  namespace: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    component: backend
+    prometheus: kube-prometheus
+spec:
+  groups:
+  - name: bookedbarber.backend.rules
+    rules:
+    - alert: BookedBarberBackendDown
+      expr: up{job="bookedbarber-backend-service"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: backend
+      annotations:
+        summary: "BookedBarber backend is down"
+        description: "BookedBarber backend has been down for more than 1 minute."
+    
+    - alert: BookedBarberHighErrorRate
+      expr: rate(http_requests_total{job="bookedbarber-backend-service",status=~"5.."}[5m]) > 0.01
+      for: 2m
+      labels:
+        severity: critical
+        service: backend
+      annotations:
+        summary: "High error rate in BookedBarber backend"
+        description: "BookedBarber backend error rate is {{ $value }} errors per second."
+    
+    - alert: BookedBarberHighLatency
+      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="bookedbarber-backend-service"}[5m])) > 2
+      for: 5m
+      labels:
+        severity: warning
+        service: backend
+      annotations:
+        summary: "High latency in BookedBarber backend"
+        description: "BookedBarber backend 95th percentile latency is {{ $value }} seconds."
+    
+    - alert: BookedBarberHighCPU
+      expr: avg(rate(container_cpu_usage_seconds_total{pod=~"bookedbarber-backend-.*"}[5m])) > 0.8
+      for: 10m
+      labels:
+        severity: warning
+        service: backend
+      annotations:
+        summary: "High CPU usage in BookedBarber backend"
+        description: "BookedBarber backend CPU usage is {{ $value }}."
+    
+    - alert: BookedBarberHighMemory
+      expr: avg(container_memory_usage_bytes{pod=~"bookedbarber-backend-.*"} / container_spec_memory_limit_bytes{pod=~"bookedbarber-backend-.*"}) > 0.9
+      for: 5m
+      labels:
+        severity: warning
+        service: backend
+      annotations:
+        summary: "High memory usage in BookedBarber backend"
+        description: "BookedBarber backend memory usage is {{ $value }}."
+    
+    - alert: BookedBarberPodCrashLooping
+      expr: rate(kube_pod_container_status_restarts_total{pod=~"bookedbarber-backend-.*"}[5m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+        service: backend
+      annotations:
+        summary: "BookedBarber backend pods are crash looping"
+        description: "BookedBarber backend pod {{ $labels.pod }} is crash looping."
+    
+    - alert: BookedBarberLowReplicas
+      expr: kube_deployment_status_replicas{deployment="bookedbarber-backend"} < 10
+      for: 2m
+      labels:
+        severity: warning
+        service: backend
+      annotations:
+        summary: "Low number of BookedBarber backend replicas"
+        description: "BookedBarber backend has only {{ $value }} replicas running."

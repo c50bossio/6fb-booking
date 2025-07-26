@@ -197,7 +197,7 @@ npm test
 3. **Subscription Payments**: Recurring payment support
 4. **Multi-Currency**: Support for international payments
 5. **Advanced Analytics**: Predictive revenue forecasting
-6. **Mobile App Integration**: Native payment support
+6. **Progressive Web App Integration**: Enhanced PWA payment support
 
 ## Support
 

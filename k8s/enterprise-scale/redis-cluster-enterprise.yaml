@@ -1,0 +1,853 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: redis-enterprise
+  labels:
+    name: redis-enterprise
+    tier: infrastructure
+    franchise-aware: "true"
+---
+# Redis Cluster Configuration for Franchise-Aware Caching
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-cluster-config
+  namespace: redis-enterprise
+data:
+  redis.conf: |
+    # Redis Enterprise Configuration for BookedBarber Franchise Platform
+    
+    # Basic settings
+    bind 0.0.0.0
+    port 6379
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+    
+    # Cluster settings
+    cluster-enabled yes
+    cluster-config-file nodes.conf
+    cluster-node-timeout 15000
+    cluster-require-full-coverage no
+    cluster-migration-barrier 1
+    
+    # Memory management
+    maxmemory-policy allkeys-lru
+    maxmemory-samples 5
+    
+    # Performance settings
+    hz 10
+    dynamic-hz yes
+    
+    # Persistence (for franchise data integrity)
+    save 900 1
+    save 300 10
+    save 60 10000
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    
+    # AOF persistence for critical franchise data
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    
+    # Security
+    requirepass ${REDIS_PASSWORD}
+    masterauth ${REDIS_PASSWORD}
+    
+    # Logging
+    loglevel notice
+    syslog-enabled yes
+    syslog-ident redis-enterprise
+    
+    # Client output buffer limits
+    client-output-buffer-limit normal 0 0 0
+    client-output-buffer-limit replica 256mb 64mb 60
+    client-output-buffer-limit pubsub 32mb 8mb 60
+    
+    # Franchise-specific settings
+    # Longer TTLs for franchise data
+    hash-max-ziplist-entries 512
+    hash-max-ziplist-value 64
+    list-max-ziplist-size -2
+    list-compress-depth 0
+    set-max-intset-entries 512
+    zset-max-ziplist-entries 128
+    zset-max-ziplist-value 64
+    
+    # Memory optimization for franchise workloads
+    activerehashing yes
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+    replica-lazy-flush yes
+---
+# Redis Cluster StatefulSet - Primary Franchise Cache
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cluster-primary
+  namespace: redis-enterprise
+  labels:
+    app: redis-cluster
+    role: primary
+    tier: cache
+    cache-type: franchise-primary
+spec:
+  serviceName: redis-cluster-primary-headless
+  replicas: 6
+  selector:
+    matchLabels:
+      app: redis-cluster
+      role: primary
+  template:
+    metadata:
+      labels:
+        app: redis-cluster
+        role: primary
+        tier: cache
+        cache-type: franchise-primary
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        command:
+        - redis-server
+        - /etc/redis/redis.conf
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-enterprise-secret
+              key: password
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: CLUSTER_ANNOUNCE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        ports:
+        - containerPort: 6379
+          name: redis
+        - containerPort: 16379
+          name: cluster
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "1000m"
+          limits:
+            memory: "8Gi"
+            cpu: "2000m"
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis
+        - name: redis-data
+          mountPath: /data
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+      - name: redis-exporter
+        image: oliver006/redis_exporter:v1.55.0
+        env:
+        - name: REDIS_ADDR
+          value: "redis://localhost:6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-enterprise-secret
+              key: password
+        ports:
+        - containerPort: 9121
+          name: metrics
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-cluster-config
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: gp3-encrypted
+      resources:
+        requests:
+          storage: 100Gi
+---
+# Redis Cluster StatefulSet - Sessions Cache
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cluster-sessions
+  namespace: redis-enterprise
+  labels:
+    app: redis-cluster
+    role: sessions
+    tier: cache
+    cache-type: franchise-sessions
+spec:
+  serviceName: redis-cluster-sessions-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-cluster
+      role: sessions
+  template:
+    metadata:
+      labels:
+        app: redis-cluster
+        role: sessions
+        tier: cache
+        cache-type: franchise-sessions
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        command:
+        - redis-server
+        - /etc/redis/redis.conf
+        - --maxmemory
+        - "2gb"
+        - --maxmemory-policy
+        - "allkeys-lru"
+        - --save
+        - ""
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-enterprise-secret
+              key: password
+        ports:
+        - containerPort: 6379
+          name: redis
+        - containerPort: 16379
+          name: cluster
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis
+        - name: redis-sessions-data
+          mountPath: /data
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      - name: redis-exporter
+        image: oliver006/redis_exporter:v1.55.0
+        env:
+        - name: REDIS_ADDR
+          value: "redis://localhost:6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-enterprise-secret
+              key: password
+        ports:
+        - containerPort: 9121
+          name: metrics
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "25m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-cluster-config
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-sessions-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: gp3-encrypted
+      resources:
+        requests:
+          storage: 20Gi
+---
+# Redis Cluster StatefulSet - Rate Limiting Cache
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cluster-ratelimit
+  namespace: redis-enterprise
+  labels:
+    app: redis-cluster
+    role: ratelimit
+    tier: cache
+    cache-type: franchise-ratelimit
+spec:
+  serviceName: redis-cluster-ratelimit-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-cluster
+      role: ratelimit
+  template:
+    metadata:
+      labels:
+        app: redis-cluster
+        role: ratelimit
+        tier: cache
+        cache-type: franchise-ratelimit
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        command:
+        - redis-server
+        - /etc/redis/redis.conf
+        - --maxmemory
+        - "1gb"
+        - --maxmemory-policy
+        - "allkeys-lru"
+        - --save
+        - ""
+        - --appendonly
+        - "no"
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-enterprise-secret
+              key: password
+        ports:
+        - containerPort: 6379
+          name: redis
+        - containerPort: 16379
+          name: cluster
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      - name: redis-exporter
+        image: oliver006/redis_exporter:v1.55.0
+        env:
+        - name: REDIS_ADDR
+          value: "redis://localhost:6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-enterprise-secret
+              key: password
+        ports:
+        - containerPort: 9121
+          name: metrics
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "25m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-cluster-config
+---
+# Headless Services for StatefulSets
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster-primary-headless
+  namespace: redis-enterprise
+  labels:
+    app: redis-cluster
+    role: primary
+spec:
+  clusterIP: None
+  selector:
+    app: redis-cluster
+    role: primary
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  - port: 16379
+    targetPort: 16379
+    name: cluster
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster-sessions-headless
+  namespace: redis-enterprise
+  labels:
+    app: redis-cluster
+    role: sessions
+spec:
+  clusterIP: None
+  selector:
+    app: redis-cluster
+    role: sessions
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  - port: 16379
+    targetPort: 16379
+    name: cluster
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster-ratelimit-headless
+  namespace: redis-enterprise
+  labels:
+    app: redis-cluster
+    role: ratelimit
+spec:
+  clusterIP: None
+  selector:
+    app: redis-cluster
+    role: ratelimit
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  - port: 16379
+    targetPort: 16379
+    name: cluster
+---
+# Load Balancer Services for External Access
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster-primary-service
+  namespace: redis-enterprise
+  labels:
+    app: redis-cluster
+    role: primary
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  type: LoadBalancer
+  selector:
+    app: redis-cluster
+    role: primary
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  sessionAffinity: ClientIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster-sessions-service
+  namespace: redis-enterprise
+  labels:
+    app: redis-cluster
+    role: sessions
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  type: LoadBalancer
+  selector:
+    app: redis-cluster
+    role: sessions
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  sessionAffinity: ClientIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster-ratelimit-service
+  namespace: redis-enterprise
+  labels:
+    app: redis-cluster
+    role: ratelimit
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  type: LoadBalancer
+  selector:
+    app: redis-cluster
+    role: ratelimit
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  sessionAffinity: ClientIP
+---
+# Redis Sentinel for High Availability
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-sentinel
+  namespace: redis-enterprise
+  labels:
+    app: redis-sentinel
+    tier: cache
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-sentinel
+  template:
+    metadata:
+      labels:
+        app: redis-sentinel
+        tier: cache
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+      containers:
+      - name: redis-sentinel
+        image: redis:7.2-alpine
+        command:
+        - redis-sentinel
+        - /etc/redis-sentinel/sentinel.conf
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-enterprise-secret
+              key: password
+        ports:
+        - containerPort: 26379
+          name: sentinel
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: sentinel-config
+          mountPath: /etc/redis-sentinel
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -p
+            - "26379"
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -p
+            - "26379"
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: sentinel-config
+        configMap:
+          name: redis-sentinel-config
+---
+# Redis Sentinel Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-sentinel-config
+  namespace: redis-enterprise
+data:
+  sentinel.conf: |
+    port 26379
+    dir /tmp
+    
+    # Monitor primary franchise cache
+    sentinel monitor primary-franchise redis-cluster-primary-0.redis-cluster-primary-headless.redis-enterprise.svc.cluster.local 6379 2
+    sentinel auth-pass primary-franchise ${REDIS_PASSWORD}
+    sentinel down-after-milliseconds primary-franchise 5000
+    sentinel parallel-syncs primary-franchise 1
+    sentinel failover-timeout primary-franchise 10000
+    
+    # Monitor sessions cache
+    sentinel monitor sessions-franchise redis-cluster-sessions-0.redis-cluster-sessions-headless.redis-enterprise.svc.cluster.local 6379 2
+    sentinel auth-pass sessions-franchise ${REDIS_PASSWORD}
+    sentinel down-after-milliseconds sessions-franchise 5000
+    sentinel parallel-syncs sessions-franchise 1
+    sentinel failover-timeout sessions-franchise 10000
+    
+    # Monitor rate limiting cache
+    sentinel monitor ratelimit-franchise redis-cluster-ratelimit-0.redis-cluster-ratelimit-headless.redis-enterprise.svc.cluster.local 6379 2
+    sentinel auth-pass ratelimit-franchise ${REDIS_PASSWORD}
+    sentinel down-after-milliseconds ratelimit-franchise 5000
+    sentinel parallel-syncs ratelimit-franchise 1
+    sentinel failover-timeout ratelimit-franchise 10000
+---
+# Redis Sentinel Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-sentinel-service
+  namespace: redis-enterprise
+  labels:
+    app: redis-sentinel
+spec:
+  selector:
+    app: redis-sentinel
+  ports:
+  - port: 26379
+    targetPort: 26379
+    name: sentinel
+  type: ClusterIP
+---
+# Franchise Cache Manager - Custom Controller
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: franchise-cache-manager
+  namespace: redis-enterprise
+  labels:
+    app: franchise-cache-manager
+    tier: cache-management
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: franchise-cache-manager
+  template:
+    metadata:
+      labels:
+        app: franchise-cache-manager
+        tier: cache-management
+    spec:
+      serviceAccountName: franchise-cache-manager
+      containers:
+      - name: cache-manager
+        image: bookedbarber/franchise-cache-manager:enterprise-latest
+        env:
+        - name: REDIS_PRIMARY_URL
+          value: "redis://redis-cluster-primary-service:6379"
+        - name: REDIS_SESSIONS_URL
+          value: "redis://redis-cluster-sessions-service:6379"
+        - name: REDIS_RATELIMIT_URL
+          value: "redis://redis-cluster-ratelimit-service:6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-enterprise-secret
+              key: password
+        - name: CLUSTER_NAME
+          value: "bookedbarber-enterprise"
+        - name: REGION
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['topology.kubernetes.io/region']
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9090
+          name: metrics
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: cache-config
+          mountPath: /etc/cache-manager
+      volumes:
+      - name: cache-config
+        configMap:
+          name: franchise-cache-config
+---
+# Franchise Cache Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: franchise-cache-config
+  namespace: redis-enterprise
+data:
+  cache-config.yaml: |
+    franchise_cache:
+      strategies:
+        franchise_data:
+          ttl: 3600  # 1 hour
+          cache_type: "primary"
+          replication: "regional"
+          eviction_policy: "lru"
+          
+        user_sessions:
+          ttl: 86400  # 24 hours
+          cache_type: "sessions"
+          replication: "global"
+          eviction_policy: "lru"
+          
+        rate_limiting:
+          ttl: 60  # 1 minute
+          cache_type: "ratelimit"
+          replication: "local"
+          eviction_policy: "lru"
+          
+        api_responses:
+          ttl: 300  # 5 minutes
+          cache_type: "primary"
+          replication: "regional"
+          eviction_policy: "lru"
+          
+      sharding:
+        strategy: "franchise_id"
+        hash_function: "crc32"
+        consistent_hashing: true
+        
+      monitoring:
+        metrics_interval: 30
+        health_check_interval: 10
+        alert_thresholds:
+          memory_usage: 85
+          connection_count: 80
+          hit_rate: 90
+---
+# Service Account and RBAC for Cache Manager
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: franchise-cache-manager
+  namespace: redis-enterprise
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: redis-enterprise
+  name: franchise-cache-manager
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "endpoints", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: franchise-cache-manager
+  namespace: redis-enterprise
+subjects:
+- kind: ServiceAccount
+  name: franchise-cache-manager
+  namespace: redis-enterprise
+roleRef:
+  kind: Role
+  name: franchise-cache-manager
+  apiGroup: rbac.authorization.k8s.io

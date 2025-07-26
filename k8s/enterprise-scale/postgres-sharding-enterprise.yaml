@@ -1,0 +1,625 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-primary-shard-1
+  namespace: bookedbarber-enterprise
+  labels:
+    app: postgres
+    shard: "1"
+    role: primary
+    tier: database
+spec:
+  serviceName: postgres-primary-shard-1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+      shard: "1"
+      role: primary
+  template:
+    metadata:
+      labels:
+        app: postgres
+        shard: "1"
+        role: primary
+        tier: database
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        env:
+        - name: POSTGRES_DB
+          value: bookedbarber_shard_1
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+        - name: POSTGRES_REPLICATION_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: replication-username
+        - name: POSTGRES_REPLICATION_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: replication-password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: SHARD_ID
+          value: "1"
+        - name: FRANCHISE_RANGE_START
+          value: "1"
+        - name: FRANCHISE_RANGE_END
+          value: "25000"
+        ports:
+        - containerPort: 5432
+          name: postgres
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "2000m"
+            ephemeral-storage: "10Gi"
+          limits:
+            memory: "16Gi"
+            cpu: "4000m"
+            ephemeral-storage: "20Gi"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-config
+          mountPath: /etc/postgresql
+        - name: postgres-init
+          mountPath: /docker-entrypoint-initdb.d
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: postgres-config
+        configMap:
+          name: postgres-enterprise-config
+      - name: postgres-init
+        configMap:
+          name: postgres-shard-init
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+      labels:
+        app: postgres
+        shard: "1"
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: gp3-encrypted
+      resources:
+        requests:
+          storage: 1Ti
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-primary-shard-1
+  namespace: bookedbarber-enterprise
+  labels:
+    app: postgres
+    shard: "1"
+    role: primary
+spec:
+  selector:
+    app: postgres
+    shard: "1"
+    role: primary
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+  clusterIP: None  # Headless service for StatefulSet
+---
+# Read Replica for Shard 1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-replica-shard-1
+  namespace: bookedbarber-enterprise
+  labels:
+    app: postgres
+    shard: "1"
+    role: replica
+    tier: database
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: postgres
+      shard: "1"
+      role: replica
+  template:
+    metadata:
+      labels:
+        app: postgres
+        shard: "1"
+        role: replica
+        tier: database
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        env:
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: replication-username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: replication-password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_MASTER_SERVICE
+          value: postgres-primary-shard-1
+        - name: POSTGRES_REPLICA_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: replication-username
+        command:
+        - bash
+        - -c
+        - |
+          # Wait for master to be ready
+          until pg_isready -h $POSTGRES_MASTER_SERVICE -p 5432; do
+            echo "Waiting for master..."
+            sleep 2
+          done
+          
+          # Create base backup from master
+          pg_basebackup -h $POSTGRES_MASTER_SERVICE -D $PGDATA -U $POSTGRES_REPLICA_USER -v -P -W
+          
+          # Configure replica
+          echo "standby_mode = 'on'" >> $PGDATA/recovery.conf
+          echo "primary_conninfo = 'host=$POSTGRES_MASTER_SERVICE port=5432 user=$POSTGRES_REPLICA_USER'" >> $PGDATA/recovery.conf
+          echo "trigger_file = '/tmp/promote_replica'" >> $PGDATA/recovery.conf
+          
+          # Start PostgreSQL
+          postgres
+        ports:
+        - containerPort: 5432
+          name: postgres
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "1000m"
+          limits:
+            memory: "8Gi"
+            cpu: "2000m"
+        volumeMounts:
+        - name: postgres-replica-storage
+          mountPath: /var/lib/postgresql/data
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U $PGUSER
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: postgres-replica-storage
+        emptyDir:
+          sizeLimit: 500Gi
+---
+# PgBouncer Connection Pooler for Shard 1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgbouncer-shard-1
+  namespace: bookedbarber-enterprise
+  labels:
+    app: pgbouncer
+    shard: "1"
+    tier: database
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: pgbouncer
+      shard: "1"
+  template:
+    metadata:
+      labels:
+        app: pgbouncer
+        shard: "1"
+        tier: database
+    spec:
+      containers:
+      - name: pgbouncer
+        image: pgbouncer/pgbouncer:1.20.1
+        env:
+        - name: DATABASES_HOST
+          value: postgres-primary-shard-1
+        - name: DATABASES_PORT
+          value: "5432"
+        - name: DATABASES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: username
+        - name: DATABASES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+        - name: DATABASES_DBNAME
+          value: bookedbarber_shard_1
+        - name: POOL_MODE
+          value: transaction
+        - name: SERVER_RESET_QUERY
+          value: DISCARD ALL
+        - name: MAX_CLIENT_CONN
+          value: "2000"
+        - name: DEFAULT_POOL_SIZE
+          value: "100"
+        - name: MIN_POOL_SIZE
+          value: "10"
+        - name: RESERVE_POOL_SIZE
+          value: "20"
+        - name: SERVER_LIFETIME
+          value: "3600"
+        - name: SERVER_IDLE_TIMEOUT
+          value: "600"
+        - name: LOG_CONNECTIONS
+          value: "1"
+        - name: LOG_DISCONNECTIONS
+          value: "1"
+        - name: LOG_POOLER_ERRORS
+          value: "1"
+        ports:
+        - containerPort: 5432
+          name: pgbouncer
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: pgbouncer-config
+          mountPath: /etc/pgbouncer
+      volumes:
+      - name: pgbouncer-config
+        configMap:
+          name: pgbouncer-enterprise-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer-shard-1
+  namespace: bookedbarber-enterprise
+  labels:
+    app: pgbouncer
+    shard: "1"
+spec:
+  selector:
+    app: pgbouncer
+    shard: "1"
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: pgbouncer
+  type: ClusterIP
+---
+# Database Router Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-router
+  namespace: bookedbarber-enterprise
+  labels:
+    app: db-router
+    tier: database
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: db-router
+  template:
+    metadata:
+      labels:
+        app: db-router
+        tier: database
+    spec:
+      containers:
+      - name: db-router
+        image: bookedbarber/db-router:enterprise-latest
+        env:
+        - name: SHARD_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              name: database-shard-config
+              key: shard-mapping.json
+        - name: ROUTER_MODE
+          value: "franchise"
+        - name: HEALTH_CHECK_INTERVAL
+          value: "30s"
+        - name: CONNECTION_TIMEOUT
+          value: "10s"
+        - name: QUERY_TIMEOUT
+          value: "30s"
+        ports:
+        - containerPort: 5432
+          name: proxy
+        - containerPort: 8080
+          name: metrics
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: router-config
+          mountPath: /etc/db-router
+      volumes:
+      - name: router-config
+        configMap:
+          name: database-shard-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-router-service
+  namespace: bookedbarber-enterprise
+  labels:
+    app: db-router
+spec:
+  selector:
+    app: db-router
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: proxy
+  - port: 8080
+    targetPort: 8080
+    name: metrics
+  type: ClusterIP
+---
+# Configuration for database sharding
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-shard-config
+  namespace: bookedbarber-enterprise
+data:
+  shard-mapping.json: |
+    {
+      "shards": [
+        {
+          "id": 1,
+          "name": "us-east-franchises",
+          "connection": "pgbouncer-shard-1:5432",
+          "franchise_range": [1, 25000],
+          "region": "us-east-1",
+          "read_replicas": ["postgres-replica-shard-1:5432"],
+          "weight": 100
+        },
+        {
+          "id": 2,
+          "name": "us-west-franchises", 
+          "connection": "pgbouncer-shard-2:5432",
+          "franchise_range": [25001, 50000],
+          "region": "us-west-2",
+          "read_replicas": ["postgres-replica-shard-2:5432"],
+          "weight": 100
+        },
+        {
+          "id": 3,
+          "name": "eu-franchises",
+          "connection": "pgbouncer-shard-3:5432", 
+          "franchise_range": [50001, 75000],
+          "region": "eu-west-1",
+          "read_replicas": ["postgres-replica-shard-3:5432"],
+          "weight": 100
+        },
+        {
+          "id": 4,
+          "name": "apac-franchises",
+          "connection": "pgbouncer-shard-4:5432",
+          "franchise_range": [75001, 100000],
+          "region": "ap-southeast-1", 
+          "read_replicas": ["postgres-replica-shard-4:5432"],
+          "weight": 100
+        }
+      ],
+      "routing_rules": {
+        "default_shard": 1,
+        "read_preference": "replica_first",
+        "write_preference": "primary_only",
+        "connection_pool_size": 100,
+        "max_connections": 2000,
+        "query_timeout": "30s",
+        "idle_timeout": "300s"
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-enterprise-config
+  namespace: bookedbarber-enterprise
+data:
+  postgresql.conf: |
+    # PostgreSQL Enterprise Configuration for BookedBarber Franchise Scale
+    
+    # Connection Settings
+    max_connections = 500
+    shared_buffers = 4GB
+    effective_cache_size = 12GB
+    maintenance_work_mem = 1GB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 64MB
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    work_mem = 64MB
+    min_wal_size = 2GB
+    max_wal_size = 8GB
+    
+    # Replication Settings  
+    wal_level = replica
+    max_wal_senders = 10
+    max_replication_slots = 10
+    hot_standby = on
+    hot_standby_feedback = on
+    
+    # Logging
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = 'log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_statement = 'mod'
+    log_min_duration_statement = 1000
+    log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    log_temp_files = 0
+    
+    # Performance Tuning
+    checkpoint_timeout = 15min
+    checkpoint_warning = 30s
+    autovacuum = on
+    autovacuum_max_workers = 6
+    autovacuum_naptime = 30s
+    autovacuum_vacuum_threshold = 500
+    autovacuum_analyze_threshold = 250
+    
+    # Franchise-specific settings
+    shared_preload_libraries = 'pg_stat_statements,auto_explain'
+    track_activity_query_size = 2048
+    pg_stat_statements.max = 10000
+    pg_stat_statements.track = all
+---
+apiVersion: v1
+kind: ConfigMap  
+metadata:
+  name: postgres-shard-init
+  namespace: bookedbarber-enterprise
+data:
+  01-create-shard-schema.sql: |
+    -- Initialize franchise shard schema
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
+    
+    -- Franchise routing function
+    CREATE OR REPLACE FUNCTION get_franchise_shard(franchise_id bigint)
+    RETURNS integer AS $$
+    BEGIN
+      CASE
+        WHEN franchise_id BETWEEN 1 AND 25000 THEN RETURN 1;
+        WHEN franchise_id BETWEEN 25001 AND 50000 THEN RETURN 2; 
+        WHEN franchise_id BETWEEN 50001 AND 75000 THEN RETURN 3;
+        WHEN franchise_id BETWEEN 75001 AND 100000 THEN RETURN 4;
+        ELSE RETURN 1; -- Default shard
+      END CASE;
+    END;
+    $$ LANGUAGE plpgsql IMMUTABLE;
+    
+    -- Create shard-specific indexes
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_appointments_franchise_created 
+    ON appointments(franchise_id, created_at);
+    
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_payments_franchise_date
+    ON payments(franchise_id, created_at);
+    
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_franchise_status
+    ON users(franchise_id, status) WHERE status = 'active';
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbouncer-enterprise-config
+  namespace: bookedbarber-enterprise
+data:
+  pgbouncer.ini: |
+    [databases]
+    * = host=postgres-primary-shard-1 port=5432 pool_size=100 max_db_connections=500
+    
+    [pgbouncer]
+    listen_port = 5432
+    listen_addr = 0.0.0.0
+    auth_type = md5
+    auth_file = /etc/pgbouncer/userlist.txt
+    admin_users = postgres
+    stats_users = stats, postgres
+    pool_mode = transaction
+    server_reset_query = DISCARD ALL
+    max_client_conn = 2000
+    default_pool_size = 100
+    min_pool_size = 10
+    reserve_pool_size = 20
+    reserve_pool_timeout = 5
+    max_db_connections = 500
+    max_user_connections = 1000
+    server_lifetime = 3600
+    server_idle_timeout = 600
+    log_connections = 1
+    log_disconnections = 1
+    log_pooler_errors = 1
+    application_name_add_host = 1
+    
+  userlist.txt: |
+    "postgres" "md5..."
+    "bookedbarber" "md5..."

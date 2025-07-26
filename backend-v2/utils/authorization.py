@@ -308,3 +308,42 @@ def filter_by_user_locations(query, model, user, db: Session):
     
     # Filter by user's locations
     return query.filter(model.location_id.in_(user_locations))
+
+
+def verify_franchise_access(
+    user,  # User model
+    entity_type: str,
+    entity_id: int,
+    db: Session,
+    required_role: str = "franchise_admin"
+) -> bool:
+    """
+    Verify if a user has access to franchise entities (networks, regions, groups).
+    
+    Args:
+        user: The user to check
+        entity_type: Type of entity ("network", "region", "group", "location")
+        entity_id: ID of the entity to check access for
+        db: Database session
+        required_role: Minimum role required for access
+    
+    Returns:
+        bool: True if user has access, False otherwise
+    """
+    # Super admins have access to everything
+    if user.role == "super_admin":
+        return True
+    
+    # Check minimum role requirement
+    if required_role == "franchise_admin" and user.role not in ["admin", "super_admin", "franchise_admin"]:
+        return False
+    elif required_role == "admin" and user.role not in ["admin", "super_admin"]:
+        return False
+    
+    # For now, franchise admins and above have access to all franchise entities
+    # In a more complex implementation, you could check specific entity permissions
+    if user.role in ["admin", "super_admin", "franchise_admin"]:
+        return True
+    
+    # Regular users don't have franchise access
+    return False

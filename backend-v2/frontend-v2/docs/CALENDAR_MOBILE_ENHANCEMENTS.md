@@ -2,7 +2,7 @@
 
 ## Overview
 
-The BookedBarber calendar now includes comprehensive mobile touch enhancements that provide a native app-like experience on mobile devices. These enhancements improve usability, accessibility, and performance on touch devices.
+The BookedBarber calendar now includes comprehensive mobile touch enhancements that provide a progressive web app experience on mobile devices. These enhancements improve usability, accessibility, and performance on touch devices using modern web technologies.
 
 ## Key Features
 
@@ -76,19 +76,20 @@ import { MobileCalendarModal } from '@/components/calendar/MobileCalendarModal'
 ```
 
 ### 4. Haptic Feedback
-Provides tactile feedback for actions on supported devices.
+Provides tactile feedback for actions on supported devices using web APIs.
 
 ```tsx
-import { Haptics, ImpactStyle } from '@capacitor/haptics'
-
-// Light feedback for selections
-await Haptics.impact({ style: ImpactStyle.Light })
-
-// Medium feedback for navigation
-await Haptics.impact({ style: ImpactStyle.Medium })
-
-// Heavy feedback for important actions
-await Haptics.impact({ style: ImpactStyle.Heavy })
+// Modern Web API vibration support
+if (navigator.vibrate) {
+  // Light feedback for selections
+  navigator.vibrate(50)
+  
+  // Medium feedback for navigation  
+  navigator.vibrate(100)
+  
+  // Heavy feedback for important actions
+  navigator.vibrate([100, 50, 100])
+}
 ```
 
 ### 5. Performance Optimizations
@@ -293,9 +294,9 @@ Test on various devices:
    - Optimize animation with `will-change`
 
 3. **Haptics not working**
-   - Only works on real devices (not simulators)
-   - Requires Capacitor or native bridge
-   - Check device permissions
+   - Only works on real devices (not desktop browsers)
+   - Requires user interaction to activate vibration
+   - Check browser support for Vibration API
 
 4. **Modal dismiss issues**
    - Ensure backdrop click handlers are set
@@ -304,12 +305,12 @@ Test on various devices:
 
 ## Future Enhancements
 
-1. **3D Touch / Force Touch** support
-2. **Voice control** integration
-3. **Offline mode** with sync
-4. **Native app** wrapper with Capacitor
-5. **Apple Watch** companion app
-6. **Android Wear** support
+1. **3D Touch / Force Touch** support via web APIs
+2. **Voice control** integration with Web Speech API
+3. **Enhanced offline mode** with advanced service worker capabilities
+4. **PWA installation** improvements for better user experience
+5. **Web Bluetooth** integration for peripheral devices
+6. **WebRTC** support for real-time communication features
 
 ## Demo
 

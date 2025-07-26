@@ -1,0 +1,688 @@
+# BookedBarber V2 - Global Multi-Region Deployment Pipeline
+# GitHub Actions workflow for automated deployment across all regions
+
+name: Global Production Deployment
+
+on:
+  push:
+    branches: [production]
+    paths: 
+      - 'backend-v2/**'
+      - 'infrastructure/**'
+      - '.github/workflows/deploy-global.yml'
+  workflow_dispatch:
+    inputs:
+      deployment_strategy:
+        description: 'Deployment strategy'
+        required: true
+        default: 'blue-green'
+        type: choice
+        options:
+        - blue-green
+        - canary
+        - rolling
+      regions:
+        description: 'Regions to deploy (comma-separated)'
+        required: true
+        default: 'us-east-1,us-west-2,eu-west-1,ap-southeast-1'
+        type: string
+      enable_traffic_splitting:
+        description: 'Enable gradual traffic splitting'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  # Container registry configuration
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REPOSITORY: bookedbarber/backend
+  IMAGE_TAG: ${{ github.sha }}
+  
+  # Application configuration
+  APP_NAME: bookedbarber-v2
+  NAMESPACE: bookedbarber-v2
+  
+  # Security scanning
+  TRIVY_CACHE_DIR: /tmp/.cache/trivy
+  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  
+  # Monitoring
+  DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+  SENTRY_ORG: bookedbarber
+  SENTRY_PROJECT: backend-v2
+
+jobs:
+  # Pre-deployment security and quality checks
+  security-scan:
+    name: Security & Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+        role-session-name: GitHubActionsDeployment
+    
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        registries: ${{ secrets.AWS_ACCOUNT_ID }}
+        mask-password: 'true'
+    
+    - name: Build and push container image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend-v2
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          VCS_REF=${{ github.sha }}
+          VERSION=${{ env.IMAGE_TAG }}
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
+        exit-code: '1'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+    
+    - name: Run Snyk security scan
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+        args: --severity-threshold=high --fail-on=upgradable
+    
+    - name: Static Application Security Testing (SAST)
+      uses: github/super-linter@v5
+      env:
+        DEFAULT_BRANCH: production
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VALIDATE_PYTHON: true
+        VALIDATE_DOCKERFILE: true
+        VALIDATE_YAML: true
+        VALIDATE_JSON: true
+        PYTHON_BLACK_CONFIG_FILE: .black.toml
+        PYTHON_PYLINT_CONFIG_FILE: .pylintrc
+    
+    - name: License compliance check
+      uses: fossa-contrib/fossa-action@v2
+      with:
+        api-key: ${{ secrets.FOSSA_API_KEY }}
+        project-url: ${{ github.repository }}
+
+  # Infrastructure validation and deployment
+  infrastructure-deployment:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    needs: security-scan
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        region: [us-east-1, us-west-2, eu-west-1, ap-southeast-1]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials for ${{ matrix.region }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ matrix.region }}
+        role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+        role-session-name: GitHubActionsInfrastructure
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "~1.6.0"
+        terraform_wrapper: false
+    
+    - name: Terraform Init
+      working-directory: ./infrastructure/terraform/environments/production
+      run: |
+        terraform init \
+          -backend-config="bucket=bookedbarber-v2-terraform-state-${{ matrix.region }}" \
+          -backend-config="key=production/terraform.tfstate" \
+          -backend-config="region=${{ matrix.region }}" \
+          -backend-config="encrypt=true"
+    
+    - name: Terraform Plan
+      working-directory: ./infrastructure/terraform/environments/production
+      run: |
+        terraform plan \
+          -var="region=${{ matrix.region }}" \
+          -var="environment=production" \
+          -var="image_tag=${{ env.IMAGE_TAG }}" \
+          -out=tfplan
+    
+    - name: Terraform Apply
+      working-directory: ./infrastructure/terraform/environments/production
+      run: terraform apply -auto-approve tfplan
+    
+    - name: Verify infrastructure health
+      run: |
+        # Wait for infrastructure to be ready
+        sleep 60
+        
+        # Check EKS cluster status
+        aws eks describe-cluster \
+          --name bookedbarber-v2-${{ matrix.region }} \
+          --region ${{ matrix.region }} \
+          --query 'cluster.status' \
+          --output text | grep -q ACTIVE
+        
+        # Check RDS instance status
+        aws rds describe-db-instances \
+          --region ${{ matrix.region }} \
+          --query 'DBInstances[?contains(DBInstanceIdentifier, `bookedbarber-v2`)].DBInstanceStatus' \
+          --output text | grep -q available
+
+  # Primary region deployment (US-East-1)
+  deploy-primary-region:
+    name: Deploy to Primary Region (US-East-1)
+    runs-on: ubuntu-latest
+    needs: [security-scan, infrastructure-deployment]
+    timeout-minutes: 20
+    environment: 
+      name: production-us-east-1
+      url: https://us-east-1.api.bookedbarber.com
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+        role-session-name: GitHubActionsPrimaryDeploy
+    
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig \
+          --region us-east-1 \
+          --name bookedbarber-v2-us-east-1 \
+          --role-arn ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+    
+    - name: Deploy to Kubernetes
+      run: |
+        # Update deployment image
+        kubectl set image deployment/bookedbarber-backend \
+          backend=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} \
+          -n ${{ env.NAMESPACE }}
+        
+        # Wait for rollout to complete
+        kubectl rollout status deployment/bookedbarber-backend \
+          -n ${{ env.NAMESPACE }} \
+          --timeout=600s
+    
+    - name: Run smoke tests
+      run: |
+        # Get service endpoint
+        ENDPOINT=$(kubectl get service bookedbarber-backend-service \
+          -n ${{ env.NAMESPACE }} \
+          -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        
+        # Wait for endpoint to be ready
+        timeout 300 bash -c 'until curl -sf http://'$ENDPOINT'/health; do sleep 5; done'
+        
+        # Run comprehensive health checks
+        ./scripts/smoke-tests.sh $ENDPOINT
+    
+    - name: Update DNS for primary region
+      run: |
+        # Update Route 53 record for primary region
+        aws route53 change-resource-record-sets \
+          --hosted-zone-id ${{ secrets.ROUTE53_HOSTED_ZONE_ID }} \
+          --change-batch file://dns-updates/us-east-1.json
+
+  # Canary deployment to secondary regions
+  deploy-canary:
+    name: Canary Deployment
+    runs-on: ubuntu-latest
+    needs: deploy-primary-region
+    if: ${{ github.event.inputs.deployment_strategy == 'canary' || github.event.inputs.deployment_strategy == '' }}
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        region: [us-west-2, eu-west-1, ap-southeast-1]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials for ${{ matrix.region }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ matrix.region }}
+        role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+        role-session-name: GitHubActionsCanary
+    
+    - name: Update kubeconfig for ${{ matrix.region }}
+      run: |
+        aws eks update-kubeconfig \
+          --region ${{ matrix.region }} \
+          --name bookedbarber-v2-${{ matrix.region }} \
+          --role-arn ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+    
+    - name: Deploy canary (10% traffic)
+      run: |
+        # Create canary deployment
+        kubectl apply -f infrastructure/kubernetes/canary/canary-deployment.yaml \
+          -n ${{ env.NAMESPACE }}
+        
+        # Update image for canary
+        kubectl set image deployment/bookedbarber-backend-canary \
+          backend=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} \
+          -n ${{ env.NAMESPACE }}
+        
+        # Wait for canary rollout
+        kubectl rollout status deployment/bookedbarber-backend-canary \
+          -n ${{ env.NAMESPACE }} \
+          --timeout=300s
+    
+    - name: Configure traffic splitting (10% canary)
+      run: |
+        # Use Istio VirtualService for traffic splitting
+        kubectl apply -f - <<EOF
+        apiVersion: networking.istio.io/v1beta1
+        kind: VirtualService
+        metadata:
+          name: bookedbarber-backend-vs
+          namespace: ${{ env.NAMESPACE }}
+        spec:
+          hosts:
+          - bookedbarber-backend-service
+          http:
+          - match:
+            - headers:
+                canary:
+                  exact: "true"
+            route:
+            - destination:
+                host: bookedbarber-backend-service
+                subset: canary
+          - route:
+            - destination:
+                host: bookedbarber-backend-service
+                subset: stable
+              weight: 90
+            - destination:
+                host: bookedbarber-backend-service
+                subset: canary
+              weight: 10
+        EOF
+    
+    - name: Monitor canary metrics
+      timeout-minutes: 10
+      run: |
+        ./scripts/monitor-canary.sh \
+          --region ${{ matrix.region }} \
+          --duration 600 \
+          --error-threshold 1.0 \
+          --latency-threshold 2000
+
+  # Full deployment after canary validation
+  deploy-global:
+    name: Full Global Deployment
+    runs-on: ubuntu-latest
+    needs: deploy-canary
+    if: success()
+    timeout-minutes: 25
+    strategy:
+      matrix:
+        region: [us-west-2, eu-west-1, ap-southeast-1]
+      max-parallel: 2  # Deploy 2 regions at a time
+    environment:
+      name: production-${{ matrix.region }}
+      url: https://${{ matrix.region }}.api.bookedbarber.com
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials for ${{ matrix.region }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ matrix.region }}
+        role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+        role-session-name: GitHubActionsGlobalDeploy
+    
+    - name: Update kubeconfig for ${{ matrix.region }}
+      run: |
+        aws eks update-kubeconfig \
+          --region ${{ matrix.region }} \
+          --name bookedbarber-v2-${{ matrix.region }} \
+          --role-arn ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+    
+    - name: Blue-Green Deployment
+      run: |
+        # Create green deployment
+        kubectl apply -f infrastructure/kubernetes/blue-green/green-deployment.yaml \
+          -n ${{ env.NAMESPACE }}
+        
+        # Update green deployment image
+        kubectl set image deployment/bookedbarber-backend-green \
+          backend=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} \
+          -n ${{ env.NAMESPACE }}
+        
+        # Wait for green deployment
+        kubectl rollout status deployment/bookedbarber-backend-green \
+          -n ${{ env.NAMESPACE }} \
+          --timeout=600s
+    
+    - name: Health check green deployment
+      run: |
+        # Get green service endpoint
+        GREEN_ENDPOINT=$(kubectl get service bookedbarber-backend-green-service \
+          -n ${{ env.NAMESPACE }} \
+          -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        
+        # Comprehensive health checks
+        ./scripts/health-check.sh $GREEN_ENDPOINT
+        
+        # Performance validation
+        ./scripts/performance-test.sh $GREEN_ENDPOINT \
+          --duration 300 \
+          --concurrent-users 1000 \
+          --target-rps 500
+    
+    - name: Switch traffic to green
+      run: |
+        # Update service selector to point to green deployment
+        kubectl patch service bookedbarber-backend-service \
+          -n ${{ env.NAMESPACE }} \
+          -p '{"spec":{"selector":{"version":"green"}}}'
+        
+        # Verify traffic switch
+        sleep 30
+        ./scripts/verify-traffic-switch.sh
+    
+    - name: Monitor post-deployment metrics
+      timeout-minutes: 5
+      run: |
+        ./scripts/monitor-deployment.sh \
+          --region ${{ matrix.region }} \
+          --duration 300 \
+          --error-threshold 0.5 \
+          --latency-threshold 1500
+    
+    - name: Clean up blue deployment
+      if: success()
+      run: |
+        # Scale down blue deployment
+        kubectl scale deployment bookedbarber-backend \
+          --replicas=0 \
+          -n ${{ env.NAMESPACE }}
+        
+        # Keep blue deployment for potential rollback
+        # Will be cleaned up in next deployment cycle
+
+  # Update global DNS and CDN
+  update-global-infrastructure:
+    name: Update Global Infrastructure
+    runs-on: ubuntu-latest
+    needs: deploy-global
+    if: success()
+    timeout-minutes: 10
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+        role-session-name: GitHubActionsGlobalInfra
+    
+    - name: Update CloudFront distribution
+      run: |
+        # Invalidate CloudFront cache for new deployment
+        aws cloudfront create-invalidation \
+          --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+          --paths "/*"
+    
+    - name: Update Route 53 health checks
+      run: |
+        # Update health check endpoints for all regions
+        ./scripts/update-health-checks.sh \
+          --regions "us-east-1,us-west-2,eu-west-1,ap-southeast-1"
+    
+    - name: Update WAF rules if needed
+      run: |
+        # Apply any updated WAF rules
+        aws wafv2 update-web-acl \
+          --scope CLOUDFRONT \
+          --id ${{ secrets.WAF_WEB_ACL_ID }} \
+          --default-action Allow={} \
+          --rules file://infrastructure/waf/production-rules.json
+
+  # Post-deployment validation and monitoring
+  post-deployment-validation:
+    name: Post-Deployment Validation
+    runs-on: ubuntu-latest
+    needs: [deploy-global, update-global-infrastructure]
+    if: success()
+    timeout-minutes: 15
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Global endpoint testing
+      run: |
+        # Test all regional endpoints
+        REGIONS=("us-east-1" "us-west-2" "eu-west-1" "ap-southeast-1")
+        
+        for region in "${REGIONS[@]}"; do
+          echo "Testing $region endpoint..."
+          curl -f https://$region.api.bookedbarber.com/health
+          
+          # Run regional smoke tests
+          ./scripts/regional-smoke-tests.sh $region
+        done
+    
+    - name: Performance benchmark
+      run: |
+        # Run global performance benchmarks
+        ./scripts/global-performance-test.sh \
+          --duration 600 \
+          --concurrent-users 5000 \
+          --regions "us-east-1,eu-west-1,ap-southeast-1"
+    
+    - name: Database replication check
+      run: |
+        # Verify cross-region database replication
+        ./scripts/verify-db-replication.sh \
+          --primary us-east-1 \
+          --replicas "us-west-2,eu-west-1,ap-southeast-1"
+    
+    - name: Create Sentry release
+      uses: getsentry/action-release@v1
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ env.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ env.SENTRY_PROJECT }}
+      with:
+        environment: production
+        version: ${{ env.IMAGE_TAG }}
+    
+    - name: Update Datadog deployment markers
+      run: |
+        curl -X POST "https://api.datadoghq.com/api/v1/events" \
+          -H "Content-Type: application/json" \
+          -H "DD-API-KEY: ${{ env.DATADOG_API_KEY }}" \
+          -d '{
+            "title": "BookedBarber V2 Global Deployment",
+            "text": "Deployed version ${{ env.IMAGE_TAG }} to all regions",
+            "tags": ["env:production", "service:bookedbarber-v2", "deployment:global"],
+            "alert_type": "info"
+          }'
+
+  # Rollback job (manual trigger or automatic on failure)
+  rollback:
+    name: Emergency Rollback
+    runs-on: ubuntu-latest
+    if: failure() && github.event.inputs.deployment_strategy != 'canary'
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        region: [us-east-1, us-west-2, eu-west-1, ap-southeast-1]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials for ${{ matrix.region }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ matrix.region }}
+        role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+        role-session-name: GitHubActionsRollback
+    
+    - name: Update kubeconfig for ${{ matrix.region }}
+      run: |
+        aws eks update-kubeconfig \
+          --region ${{ matrix.region }} \
+          --name bookedbarber-v2-${{ matrix.region }} \
+          --role-arn ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+    
+    - name: Rollback to previous version
+      run: |
+        # Rollback deployment
+        kubectl rollout undo deployment/bookedbarber-backend \
+          -n ${{ env.NAMESPACE }}
+        
+        # Wait for rollback to complete
+        kubectl rollout status deployment/bookedbarber-backend \
+          -n ${{ env.NAMESPACE }} \
+          --timeout=300s
+    
+    - name: Verify rollback
+      run: |
+        # Verify service health after rollback
+        ENDPOINT=$(kubectl get service bookedbarber-backend-service \
+          -n ${{ env.NAMESPACE }} \
+          -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        
+        timeout 180 bash -c 'until curl -sf http://'$ENDPOINT'/health; do sleep 5; done'
+    
+    - name: Notify rollback completion
+      run: |
+        # Send rollback notification
+        curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          -H 'Content-type: application/json' \
+          -d '{
+            "text": "🚨 Emergency rollback completed for BookedBarber V2 in region: ${{ matrix.region }}",
+            "attachments": [{
+              "color": "warning",
+              "fields": [{
+                "title": "Commit",
+                "value": "${{ github.sha }}",
+                "short": true
+              }, {
+                "title": "Region",
+                "value": "${{ matrix.region }}",
+                "short": true
+              }]
+            }]
+          }'
+
+  # Notification job
+  notify:
+    name: Deployment Notifications
+    runs-on: ubuntu-latest
+    needs: [post-deployment-validation]
+    if: always()
+    steps:
+    - name: Notify deployment success
+      if: ${{ needs.post-deployment-validation.result == 'success' }}
+      run: |
+        curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          -H 'Content-type: application/json' \
+          -d '{
+            "text": "✅ BookedBarber V2 global deployment successful!",
+            "attachments": [{
+              "color": "good",
+              "fields": [{
+                "title": "Version",
+                "value": "${{ env.IMAGE_TAG }}",
+                "short": true
+              }, {
+                "title": "Regions",
+                "value": "US-East-1, US-West-2, EU-West-1, AP-Southeast-1",
+                "short": true
+              }, {
+                "title": "Deployment Time",
+                "value": "${{ github.run_number }} minutes",
+                "short": true
+              }]
+            }]
+          }'
+    
+    - name: Notify deployment failure
+      if: ${{ needs.post-deployment-validation.result == 'failure' }}
+      run: |
+        curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          -H 'Content-type: application/json' \
+          -d '{
+            "text": "❌ BookedBarber V2 global deployment failed!",
+            "attachments": [{
+              "color": "danger",
+              "fields": [{
+                "title": "Commit",
+                "value": "${{ github.sha }}",
+                "short": true
+              }, {
+                "title": "Build",
+                "value": "${{ github.run_number }}",
+                "short": true
+              }, {
+                "title": "Logs",
+                "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "short": false
+              }]
+            }]
+          }'

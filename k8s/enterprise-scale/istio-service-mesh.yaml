@@ -1,0 +1,336 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: bookedbarber-enterprise-istio
+  namespace: istio-system
+spec:
+  values:
+    global:
+      meshID: bookedbarber-mesh
+      multiCluster:
+        clusterName: bookedbarber-enterprise
+      network: network1
+  components:
+    pilot:
+      k8s:
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2048Mi
+          limits:
+            cpu: 1000m
+            memory: 4096Mi
+        hpaSpec:
+          minReplicas: 3
+          maxReplicas: 10
+          metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 80
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 1024Mi
+          limits:
+            cpu: 2000m
+            memory: 2048Mi
+        hpaSpec:
+          minReplicas: 5
+          maxReplicas: 20
+          metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 70
+        service:
+          type: LoadBalancer
+          annotations:
+            service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+            service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    egressGateways:
+    - name: istio-egressgateway
+      enabled: true
+      k8s:
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
+        hpaSpec:
+          minReplicas: 2
+          maxReplicas: 10
+  meshConfig:
+    defaultConfig:
+      proxyStatsMatcher:
+        inclusionRegexps:
+        - ".*circuit_breakers.*"
+        - ".*upstream_rq_retry.*"
+        - ".*upstream_rq_pending.*"
+        - ".*_cx_.*"
+        exclusionRegexps:
+        - ".*osconfig.*"
+    extensionProviders:
+    - name: prometheus
+      prometheus:
+        configOverride:
+          metric_relabeling_configs:
+          - source_labels: [__name__]
+            regex: "istio_.*"
+            target_label: __tmp_istio_metric
+    - name: jaeger
+      envoyExtAuthzGrpc:
+        service: jaeger-collector.istio-system.svc.cluster.local
+        port: 14250
+    - name: otel
+      envoyOtelAls:
+        service: opentelemetry-collector.istio-system.svc.cluster.local
+        port: 4317
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: bookedbarber-gateway
+  namespace: bookedbarber-enterprise
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - api.bookedbarber.com
+    - "*.bookedbarber.com"
+    tls:
+      httpsRedirect: true
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: bookedbarber-tls-cert
+    hosts:
+    - api.bookedbarber.com
+    - "*.bookedbarber.com"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: bookedbarber-backend-vs
+  namespace: bookedbarber-enterprise
+spec:
+  hosts:
+  - api.bookedbarber.com
+  gateways:
+  - bookedbarber-gateway
+  http:
+  # Health check routes (no auth required)
+  - match:
+    - uri:
+        prefix: /health
+    route:
+    - destination:
+        host: bookedbarber-backend-service
+        port:
+          number: 80
+    timeout: 10s
+    retries:
+      attempts: 3
+      perTryTimeout: 3s
+  # API routes with authentication
+  - match:
+    - uri:
+        prefix: /api/v1
+    route:
+    - destination:
+        host: bookedbarber-backend-service
+        port:
+          number: 80
+        subset: enterprise
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+      retryOn: 5xx,reset,connect-failure,refused-stream
+    fault:
+      delay:
+        percentage:
+          value: 0.1
+        fixedDelay: 100ms
+    headers:
+      request:
+        add:
+          x-forwarded-proto: https
+          x-enterprise-mode: "true"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: bookedbarber-backend-dr
+  namespace: bookedbarber-enterprise
+spec:
+  host: bookedbarber-backend-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 30s
+        tcpKeepalive:
+          time: 7200s
+          interval: 75s
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 2
+        maxRetries: 3
+        consecutiveGatewayErrors: 5
+        interval: 30s
+        baseEjectionTime: 30s
+        maxEjectionPercent: 50
+        minHealthPercent: 30
+    loadBalancer:
+      simple: LEAST_CONN
+    outlierDetection:
+      consecutive5xxErrors: 5
+      consecutiveGatewayErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 30
+  subsets:
+  - name: enterprise
+    labels:
+      version: enterprise
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 200
+        http:
+          http1MaxPendingRequests: 100
+          http2MaxRequests: 200
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-database
+  namespace: bookedbarber-enterprise
+spec:
+  hosts:
+  - bookedbarber-db.cluster-xxx.us-east-1.rds.amazonaws.com
+  ports:
+  - number: 5432
+    name: postgres
+    protocol: TCP
+  location: MESH_EXTERNAL
+  resolution: DNS
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-redis
+  namespace: bookedbarber-enterprise
+spec:
+  hosts:
+  - bookedbarber-redis.xxx.cache.amazonaws.com
+  ports:
+  - number: 6379
+    name: redis
+    protocol: TCP
+  location: MESH_EXTERNAL
+  resolution: DNS
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: bookedbarber-enterprise
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: bookedbarber-backend-authz
+  namespace: bookedbarber-enterprise
+spec:
+  selector:
+    matchLabels:
+      app: bookedbarber-backend
+  rules:
+  # Allow health checks from anywhere
+  - to:
+    - operation:
+        paths: ["/health", "/health/*"]
+  # Allow API access with valid JWT
+  - to:
+    - operation:
+        paths: ["/api/*"]
+    when:
+    - key: request.auth.claims[iss]
+      values: ["https://api.bookedbarber.com"]
+  # Allow internal service communication
+  - from:
+    - source:
+        namespaces: ["bookedbarber-enterprise"]
+---
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: franchise-metrics
+  namespace: bookedbarber-enterprise
+spec:
+  metrics:
+  - providers:
+    - name: prometheus
+  - overrides:
+    - match:
+        metric: ALL_METRICS
+      tagOverrides:
+        franchise_id:
+          value: "%{REQUEST_HEADERS['x-franchise-id']}"
+        region:
+          value: "%{NODE_METADATA['region']}"
+        request_protocol:
+          value: "%{REQUEST_PROTOCOL}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-franchise-config
+  namespace: bookedbarber-enterprise
+data:
+  mesh_config.yaml: |
+    defaultConfig:
+      discoveryRefreshDelay: 10s
+      proxyStatsMatcher:
+        inclusionRegexps:
+        - ".*franchise.*"
+        - ".*booking.*"
+        - ".*payment.*"
+        - ".*circuit_breakers.*"
+        - ".*outlier_detection.*"
+        - ".*upstream_rq_retry.*"
+        - ".*upstream_rq_pending.*"
+    extensionProviders:
+    - name: franchise-prometheus
+      prometheus:
+        configOverride:
+          metric_relabeling_configs:
+          - source_labels: [franchise_id]
+            target_label: franchise
+          - source_labels: [region]
+            target_label: aws_region

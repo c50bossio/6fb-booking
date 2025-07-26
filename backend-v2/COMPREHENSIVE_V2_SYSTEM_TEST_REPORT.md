@@ -225,7 +225,7 @@ The 6FB Booking V2 platform has been thoroughly tested across all major function
 ### Long Term (2-3 months)
 1. 🚀 **Performance optimization** based on usage patterns
 2. 🔒 **Enhanced security features** (2FA, audit logs)
-3. 📱 **Mobile app API support** if needed
+3. 📱 **Progressive Web App API enhancements** if needed
 4. 📈 **Analytics and reporting** features
 
 ---

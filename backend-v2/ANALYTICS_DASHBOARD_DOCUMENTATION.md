@@ -420,7 +420,7 @@ const progress = await response.json();
 1. **Real-time Analytics** with WebSocket updates
 2. **Predictive Analytics** using machine learning
 3. **Custom Reporting** with user-defined metrics
-4. **Mobile Analytics** optimized for mobile apps
+4. **Mobile Analytics** optimized for progressive web apps
 5. **Integration APIs** for third-party analytics tools
 
 ### Enhancement Roadmap

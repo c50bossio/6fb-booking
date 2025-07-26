@@ -308,4 +308,4 @@ AND order_items.commission_paid = false;
 2. **Instant Payouts**: Allow barbers to request instant payouts
 3. **Multi-Currency**: Support for international payments
 4. **Advanced Analytics**: Predictive commission forecasting
-5. **Mobile Integration**: Payout management in mobile app
+5. **Mobile Integration**: Payout management in progressive web app

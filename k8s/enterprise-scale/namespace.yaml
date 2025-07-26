@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookedbarber-enterprise
+  labels:
+    name: bookedbarber-enterprise
+    tier: production
+    environment: enterprise
+    franchise-aware: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookedbarber-monitoring
+  labels:
+    name: bookedbarber-monitoring
+    tier: infrastructure
+    environment: enterprise
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-system
+  labels:
+    name: istio-system
+    tier: infrastructure
+    environment: enterprise

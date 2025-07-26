@@ -1,0 +1,664 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+    tier: infrastructure
+    franchise-aware: "true"
+---
+# Prometheus Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: '{{ cluster_name }}'
+        region: '{{ aws_region }}'
+        environment: 'enterprise'
+        
+    rule_files:
+      - /etc/prometheus/rules/*.yml
+      
+    scrape_configs:
+    # Kubernetes API Server
+    - job_name: 'kubernetes-apiservers'
+      kubernetes_sd_configs:
+      - role: endpoints
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+        
+    # Kubernetes Nodes
+    - job_name: 'kubernetes-nodes'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+        
+    # Kubernetes Cadvisor
+    - job_name: 'kubernetes-cadvisor'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+        
+    # BookedBarber Backend Services
+    - job_name: 'bookedbarber-backend'
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - bookedbarber-enterprise
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: kubernetes_service
+      - source_labels: [__meta_kubernetes_pod_label_franchise_bookedbarber_com_shard_id]
+        action: replace
+        target_label: franchise_shard_id
+      - source_labels: [__meta_kubernetes_pod_label_franchise_bookedbarber_com_region]
+        action: replace
+        target_label: franchise_region
+        
+    # Node Exporter
+    - job_name: 'node-exporter'
+      kubernetes_sd_configs:
+      - role: endpoints
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_endpoints_name]
+        regex: 'node-exporter'
+        action: keep
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - source_labels: [__meta_kubernetes_pod_label_franchise_bookedbarber_com_shard_id]
+        action: replace
+        target_label: franchise_shard_id
+        
+    # Istio Service Mesh Metrics
+    - job_name: 'istio-mesh'
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - istio-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: istio-proxy;http-monitoring
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+        
+    # PostgreSQL Exporter
+    - job_name: 'postgres-exporter'
+      static_configs:
+      - targets: ['postgres-exporter:9187']
+      relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: postgres
+      - target_label: franchise_database
+        replacement: 'true'
+        
+    # Redis Exporter
+    - job_name: 'redis-exporter'
+      static_configs:
+      - targets: ['redis-exporter:9121']
+      relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: redis
+      - target_label: franchise_cache
+        replacement: 'true'
+
+    alerting:
+      alertmanagers:
+      - static_configs:
+        - targets:
+          - alertmanager:9093
+---
+# Prometheus Rules for Franchise Monitoring
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: monitoring
+data:
+  franchise-alerts.yml: |
+    groups:
+    - name: franchise.critical
+      rules:
+      - alert: FranchiseShardDown
+        expr: up{job="bookedbarber-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: franchise-backend
+        annotations:
+          summary: "Franchise shard {{ $labels.franchise_shard_id }} is down"
+          description: "Franchise shard {{ $labels.franchise_shard_id }} in region {{ $labels.franchise_region }} has been down for more than 2 minutes."
+          
+      - alert: FranchiseDatabaseConnectionFailure
+        expr: pg_up{franchise_database="true"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: franchise-database
+        annotations:
+          summary: "Franchise database connection failure"
+          description: "Unable to connect to franchise database for shard {{ $labels.franchise_shard_id }}."
+          
+      - alert: FranchiseCacheClusterDown
+        expr: redis_up{franchise_cache="true"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: franchise-cache
+        annotations:
+          summary: "Franchise cache cluster down"
+          description: "Redis cache cluster for franchise operations is down."
+          
+      - alert: FranchiseHighBookingLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="bookedbarber-backend", endpoint=~"/api/v1/bookings.*"}[5m])) by (le, franchise_shard_id)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: franchise-performance
+        annotations:
+          summary: "High booking latency in franchise shard {{ $labels.franchise_shard_id }}"
+          description: "95th percentile latency for bookings is {{ $value }}s in shard {{ $labels.franchise_shard_id }}."
+          
+    - name: franchise.performance
+      rules:
+      - alert: FranchiseHighCPUUsage
+        expr: (100 - (avg by (instance, franchise_shard_id) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: franchise-infrastructure
+        annotations:
+          summary: "High CPU usage on franchise node"
+          description: "Node {{ $labels.instance }} in shard {{ $labels.franchise_shard_id }} has CPU usage above 80% for 5 minutes."
+          
+      - alert: FranchiseHighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: franchise-infrastructure
+        annotations:
+          summary: "High memory usage on franchise node"
+          description: "Node {{ $labels.instance }} has memory usage above 85% for 5 minutes."
+          
+      - alert: FranchiseDatabaseSlowQueries
+        expr: rate(pg_stat_database_tup_returned[5m]) / rate(pg_stat_database_tup_fetched[5m]) < 0.1
+        for: 3m
+        labels:
+          severity: warning
+          component: franchise-database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Database query efficiency is below 10% for franchise operations."
+          
+    - name: franchise.business
+      rules:
+      - alert: FranchiseBookingRateDropped
+        expr: rate(booking_requests_total{status="success"}[5m]) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: franchise-business
+        annotations:
+          summary: "Franchise booking rate has dropped significantly"
+          description: "Booking success rate in shard {{ $labels.franchise_shard_id }} is below normal levels."
+          
+      - alert: FranchisePaymentFailureSpike
+        expr: rate(payment_requests_total{status="failed"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          component: franchise-payments
+        annotations:
+          summary: "High payment failure rate detected"
+          description: "Payment failure rate in shard {{ $labels.franchise_shard_id }} is above 5%."
+---
+# Prometheus Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+        component: monitoring
+    spec:
+      serviceAccountName: prometheus
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.47.0
+        args:
+        - --config.file=/etc/prometheus/prometheus.yml
+        - --storage.tsdb.path=/prometheus/
+        - --web.console.libraries=/etc/prometheus/console_libraries
+        - --web.console.templates=/etc/prometheus/consoles
+        - --storage.tsdb.retention.time=30d
+        - --web.enable-lifecycle
+        - --storage.tsdb.no-lockfile
+        - --web.route-prefix=/
+        - --web.enable-admin-api
+        ports:
+        - containerPort: 9090
+          name: prometheus
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "1000m"
+          limits:
+            memory: "8Gi"
+            cpu: "2000m"
+        volumeMounts:
+        - name: prometheus-config-volume
+          mountPath: /etc/prometheus/
+        - name: prometheus-rules-volume
+          mountPath: /etc/prometheus/rules/
+        - name: prometheus-storage-volume
+          mountPath: /prometheus/
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+      volumes:
+      - name: prometheus-config-volume
+        configMap:
+          defaultMode: 420
+          name: prometheus-config
+      - name: prometheus-rules-volume
+        configMap:
+          defaultMode: 420
+          name: prometheus-rules
+      - name: prometheus-storage-volume
+        persistentVolumeClaim:
+          claimName: prometheus-storage
+---
+# Prometheus Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-storage
+  namespace: monitoring
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Gi
+  storageClassName: gp3-encrypted
+---
+# Prometheus Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+spec:
+  selector:
+    app: prometheus
+  ports:
+  - port: 9090
+    targetPort: 9090
+    name: prometheus
+  type: ClusterIP
+---
+# Grafana Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: monitoring
+data:
+  prometheus.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      url: http://prometheus:9090
+      access: proxy
+      isDefault: true
+      editable: true
+      jsonData:
+        httpMethod: POST
+        queryTimeout: 300s
+        timeInterval: 15s
+      secureJsonData: {}
+    - name: Jaeger
+      type: jaeger
+      url: http://jaeger-query:16686
+      access: proxy
+      editable: true
+      jsonData:
+        tracesToLogs:
+          datasourceUid: 'loki'
+          tags: ['job', 'instance', 'pod', 'namespace']
+          mappedTags: [
+            { key: 'service.name', value: 'service' }
+          ]
+          mapTagNamesEnabled: true
+          spanStartTimeShift: '1h'
+          spanEndTimeShift: '1h'
+          filterByTraceID: false
+          filterBySpanID: false
+---
+# Grafana Franchise Dashboards
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-franchise-dashboards
+  namespace: monitoring
+data:
+  franchise-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "BookedBarber V2 - Franchise Overview",
+        "tags": ["bookedbarber", "franchise", "enterprise"],
+        "style": "dark",
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Franchise Shards Status",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "count by (franchise_shard_id) (up{job=\"bookedbarber-backend\"})",
+                "legendFormat": "Shard {{franchise_shard_id}}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {"mode": "thresholds"},
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 1},
+                    {"color": "green", "value": 2}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Booking Requests per Minute by Shard",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(rate(booking_requests_total[1m])) by (franchise_shard_id)",
+                "legendFormat": "Shard {{franchise_shard_id}}"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Payment Success Rate by Region",
+            "type": "graph", 
+            "targets": [
+              {
+                "expr": "sum(rate(payment_requests_total{status=\"success\"}[5m])) by (franchise_region) / sum(rate(payment_requests_total[5m])) by (franchise_region) * 100",
+                "legendFormat": "{{franchise_region}}"
+              }
+            ],
+            "yAxes": [
+              {"max": 100, "min": 0, "unit": "percent"}
+            ],
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+          }
+        ],
+        "time": {"from": "now-1h", "to": "now"},
+        "refresh": "30s"
+      }
+    }
+---
+# Grafana Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app: grafana
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        fsGroup: 472
+      containers:
+      - name: grafana
+        image: grafana/grafana:10.1.0
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: grafana-credentials
+              key: admin-password
+        - name: GF_INSTALL_PLUGINS
+          value: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel"
+        - name: GF_SERVER_ROOT_URL
+          value: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+        - name: GF_SERVER_SERVE_FROM_SUB_PATH
+          value: "true"
+        ports:
+        - containerPort: 3000
+          name: grafana
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: grafana-dashboards-config
+          mountPath: /etc/grafana/provisioning/dashboards
+        - name: grafana-dashboards
+          mountPath: /var/lib/grafana/dashboards
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 60
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          timeoutSeconds: 10
+      volumes:
+      - name: grafana-storage
+        persistentVolumeClaim:
+          claimName: grafana-storage
+      - name: grafana-datasources
+        configMap:
+          defaultMode: 420
+          name: grafana-datasources
+      - name: grafana-dashboards-config
+        configMap:
+          name: grafana-dashboards-config
+      - name: grafana-dashboards
+        configMap:
+          name: grafana-franchise-dashboards
+---
+# Grafana Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-storage
+  namespace: monitoring
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: gp3-encrypted
+---
+# Grafana Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app: grafana
+spec:
+  selector:
+    app: grafana
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: grafana
+  type: ClusterIP
+---
+# Service Accounts and RBAC
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: monitoring

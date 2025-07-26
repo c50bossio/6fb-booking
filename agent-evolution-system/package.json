@@ -23,7 +23,7 @@
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
     "compression": "^1.7.4",
-    "rate-limiter-flexible": "^3.0.8",
+    "rate-limiter-flexible": "^2.4.2",
     "pg": "^8.11.3",
     "mongoose": "^7.6.3",
     "redis": "^4.6.10",

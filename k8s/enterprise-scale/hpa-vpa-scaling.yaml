@@ -1,0 +1,225 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bookedbarber-backend-hpa
+  namespace: bookedbarber-enterprise
+  labels:
+    app: bookedbarber-backend
+    tier: backend
+    scaling: enterprise
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-backend-enterprise
+  minReplicas: 50
+  maxReplicas: 1000
+  metrics:
+  # CPU utilization target
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  # Memory utilization target
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  # Custom metric: requests per second per pod
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  # Custom metric: franchise booking load
+  - type: Object
+    object:
+      metric:
+        name: franchise_booking_queue_depth
+      target:
+        type: Value
+        value: "50"
+      describedObject:
+        apiVersion: v1
+        kind: Service
+        name: bookedbarber-backend-service
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 5 minutes
+      policies:
+      - type: Percent
+        value: 25  # Scale down max 25% at a time
+        periodSeconds: 60
+      - type: Pods
+        value: 10  # Scale down max 10 pods at a time
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 60  # 1 minute
+      policies:
+      - type: Percent
+        value: 50  # Scale up max 50% at a time
+        periodSeconds: 60
+      - type: Pods
+        value: 25  # Scale up max 25 pods at a time
+        periodSeconds: 60
+      selectPolicy: Max
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: bookedbarber-backend-vpa
+  namespace: bookedbarber-enterprise
+  labels:
+    app: bookedbarber-backend
+    tier: backend
+    optimization: enterprise
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-backend-enterprise
+  updatePolicy:
+    updateMode: "Auto"  # Automatically apply recommendations
+    minReplicas: 50
+  resourcePolicy:
+    containerPolicies:
+    - containerName: backend
+      minAllowed:
+        cpu: 100m
+        memory: 256Mi
+      maxAllowed:
+        cpu: 2000m
+        memory: 4Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bookedbarber-frontend-hpa
+  namespace: bookedbarber-enterprise
+  labels:
+    app: bookedbarber-frontend
+    tier: frontend
+    scaling: enterprise
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-frontend-enterprise
+  minReplicas: 20
+  maxReplicas: 500
+  targetCPUUtilizationPercentage: 70
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bookedbarber-worker-hpa
+  namespace: bookedbarber-enterprise
+  labels:
+    app: bookedbarber-worker
+    tier: worker
+    scaling: enterprise
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-worker-enterprise
+  minReplicas: 10
+  maxReplicas: 200
+  targetCPUUtilizationPercentage: 80
+---
+# Cluster Autoscaler Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-autoscaler-status
+  namespace: kube-system
+  labels:
+    app: cluster-autoscaler
+data:
+  nodes.max: "1000"
+  nodes.min: "50"
+  scale-down-delay-after-add: "10m"
+  scale-down-unneeded-time: "10m"
+  scale-down-utilization-threshold: "0.5"
+  skip-nodes-with-local-storage: "false"
+  skip-nodes-with-system-pods: "false"
+---
+# Pod Disruption Budget for backend
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bookedbarber-backend-pdb
+  namespace: bookedbarber-enterprise
+  labels:
+    app: bookedbarber-backend
+spec:
+  minAvailable: 80%  # Always keep 80% of pods available
+  selector:
+    matchLabels:
+      app: bookedbarber-backend
+      version: enterprise
+---
+# Pod Disruption Budget for frontend
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bookedbarber-frontend-pdb
+  namespace: bookedbarber-enterprise
+  labels:
+    app: bookedbarber-frontend
+spec:
+  minAvailable: 15  # Always keep at least 15 frontend pods
+  selector:
+    matchLabels:
+      app: bookedbarber-frontend
+      version: enterprise
+---
+# Custom Resource Definition for Franchise Load Metrics
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: franchisemetrics.bookedbarber.com
+spec:
+  group: bookedbarber.com
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              franchiseId:
+                type: string
+              region:
+                type: string
+              bookingLoad:
+                type: integer
+              userCount:
+                type: integer
+              paymentVolume:
+                type: number
+          status:
+            type: object
+            properties:
+              lastUpdated:
+                type: string
+              scalingRecommendation:
+                type: string
+  scope: Namespaced
+  names:
+    plural: franchisemetrics
+    singular: franchisemetric
+    kind: FranchiseMetric
