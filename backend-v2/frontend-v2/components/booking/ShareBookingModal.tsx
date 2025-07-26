@@ -75,6 +75,7 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
   const [showQRCode, setShowQRCode] = useState(false)
   const [showShareMethods, setShowShareMethods] = useState(false)
   const [showQuickQR, setShowQuickQR] = useState(false)
+  const [showLinkOptions, setShowLinkOptions] = useState(false)
   const [customLinkName, setCustomLinkName] = useState('')
   const [linkExpiration, setLinkExpiration] = useState<string>('')
   const [enableExpiration, setEnableExpiration] = useState(false)
@@ -331,74 +332,10 @@ ${businessName}`
   // Render the new hierarchical structure
   const renderContent = () => (
     <div className="space-y-6">
-      {/* Primary Actions */}
+      {/* Primary Action - Booking Link Display */}
       <div className="space-y-4">
-        {/* Enhanced Booking Link Section */}
-        <div className="space-y-4">
-          {/* Custom Link Name Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Custom link name (optional)
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={customLinkName}
-                onChange={(e) => {
-                  const value = e.target.value
-                  // Only allow alphanumeric characters and hyphens
-                  const sanitized = value.replace(/[^a-zA-Z0-9-\s]/g, '').substring(0, 50)
-                  setCustomLinkName(sanitized)
-                }}
-                placeholder="e.g., summer-special, downtown-location"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-              {customLinkName.length > 40 && (
-                <div className="absolute right-2 top-2 text-xs text-amber-600 dark:text-amber-400">
-                  {customLinkName.length}/50
-                </div>
-              )}
-            </div>
-            {customLinkName.trim() && (
-              <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded">
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Attempting to create branded link...
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Link Expiration */}
-          <div className="flex items-center space-x-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={enableExpiration}
-                onChange={(e) => setEnableExpiration(e.target.checked)}
-                className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
-              />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Set expiration date</span>
-            </label>
-            {enableExpiration && (
-              <div className="flex-1">
-                <input
-                  type="date"
-                  value={linkExpiration}
-                  min={new Date().toISOString().split('T')[0]} // Prevent past dates
-                  onChange={(e) => setLinkExpiration(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-                {linkExpiration && new Date(linkExpiration) < new Date() && (
-                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                    Expiration date cannot be in the past
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Simplified Link Display */}
-          <div className="space-y-3">
+        {/* Simplified Link Display */}
+        <div className="space-y-3">
             {/* Link Status Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -528,9 +465,95 @@ ${businessName}`
               )}
             </div>
           </div>
+        </div>
 
-          {/* Recent Links Dropdown */}
-          {getRecentLinks().length > 0 && (
+        {/* Link Options - Collapsible */}
+        <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+          <button
+            onClick={() => setShowLinkOptions(!showLinkOptions)}
+            className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
+          >
+            <div className="flex items-center space-x-3">
+              <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <div>
+                <p className="font-medium text-gray-900 dark:text-gray-100">Link Options</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Customize link name and expiration</p>
+              </div>
+            </div>
+            <ChevronRightIcon className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showLinkOptions ? 'rotate-90' : ''}`} />
+          </button>
+          
+          {showLinkOptions && (
+            <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="pt-4 space-y-4">
+                {/* Custom Link Name Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Custom link name (optional)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={customLinkName}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        // Only allow alphanumeric characters and hyphens
+                        const sanitized = value.replace(/[^a-zA-Z0-9-\s]/g, '').substring(0, 50)
+                        setCustomLinkName(sanitized)
+                      }}
+                      placeholder="e.g., summer-special, downtown-location"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                    {customLinkName.length > 40 && (
+                      <div className="absolute right-2 top-2 text-xs text-amber-600 dark:text-amber-400">
+                        {customLinkName.length}/50
+                      </div>
+                    )}
+                  </div>
+                  {customLinkName.trim() && (
+                    <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        Attempting to create branded link...
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Link Expiration */}
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={enableExpiration}
+                      onChange={(e) => setEnableExpiration(e.target.checked)}
+                      className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Set expiration date</span>
+                  </label>
+                  {enableExpiration && (
+                    <div className="flex-1">
+                      <input
+                        type="date"
+                        value={linkExpiration}
+                        min={new Date().toISOString().split('T')[0]} // Prevent past dates
+                        onChange={(e) => setLinkExpiration(e.target.value)}
+                        className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      />
+                      {linkExpiration && new Date(linkExpiration) < new Date() && (
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          Expiration date cannot be in the past
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Recent Links Dropdown */}
+        {getRecentLinks().length > 0 && (
             <div className="relative">
               <button
                 onClick={() => setShowRecentLinks(!showRecentLinks)}
@@ -593,59 +616,58 @@ ${businessName}`
                 </div>
               )}
             </div>
-          )}
-        </div>
-
-        {/* QR Code - Collapsible */}
-        <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-          <button
-            onClick={toggleQRCode}
-            className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
-          >
-            <div className="flex items-center space-x-3">
-              <QrCodeIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <div>
-                <p className="font-medium text-gray-900 dark:text-gray-100">Generate QR Code</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">For mobile scanning and printing</p>
-              </div>
-            </div>
-            <ChevronRightIcon className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showQRCode ? 'rotate-90' : ''}`} />
-          </button>
-          
-          {showQRCode && (
-            <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="pt-4">
-                <QRCodeGenerator
-                  bookingUrl={bookingUrl}
-                  title={`${businessName} Booking QR Code`}
-                  description="Scan this QR code to book an appointment"
-                  defaultSize="small"
-                  showSizeSelector={true}
-                  showColorSelector={true}
-                  showDownloadButton={true}
-                  showShareButton={false}
-                  showCopyButton={true}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Customize Link - Primary action */}
-        <button
-          onClick={() => {
-            setCustomizerMode('set-parameters')
-            setShowLinkCustomizer(true)
-          }}
-          className="w-full flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
-        >
-          <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <div className="text-left">
-            <p className="font-medium text-gray-900 dark:text-gray-100">Customize Link</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Set specific services, dates, or barbers</p>
-          </div>
-        </button>
+        )}
       </div>
+
+      {/* QR Code - Collapsible */}
+      <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+        <button
+          onClick={toggleQRCode}
+          className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
+        >
+          <div className="flex items-center space-x-3">
+            <QrCodeIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <div>
+              <p className="font-medium text-gray-900 dark:text-gray-100">Generate QR Code</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">For mobile scanning and printing</p>
+            </div>
+          </div>
+          <ChevronRightIcon className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showQRCode ? 'rotate-90' : ''}`} />
+        </button>
+        
+        {showQRCode && (
+          <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-4">
+              <QRCodeGenerator
+                bookingUrl={bookingUrl}
+                title={`${businessName} Booking QR Code`}
+                description="Scan this QR code to book an appointment"
+                defaultSize="small"
+                showSizeSelector={true}
+                showColorSelector={true}
+                showDownloadButton={true}
+                showShareButton={false}
+                showCopyButton={true}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Customize Link - Primary action */}
+      <button
+        onClick={() => {
+          setCustomizerMode('set-parameters')
+          setShowLinkCustomizer(true)
+        }}
+        className="w-full flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
+      >
+        <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+        <div className="text-left">
+          <p className="font-medium text-gray-900 dark:text-gray-100">Customize Link</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Set specific services, dates, or barbers</p>
+        </div>
+      </button>
 
       {/* Secondary Actions - Collapsible Share Methods */}
       <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
