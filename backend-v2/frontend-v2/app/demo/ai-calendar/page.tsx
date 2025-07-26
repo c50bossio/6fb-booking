@@ -15,7 +15,7 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   LightBulbIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   StarIcon,
   RocketLaunchIcon,
   AcademicCapIcon,
@@ -189,7 +189,7 @@ const AICalendarDemo: React.FC = () => {
         <Card className="bg-white/10 border-white/20 text-white">
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <TrendingUpIcon className="h-5 w-5" />
+              <ArrowTrendingUpIcon className="h-5 w-5" />
               <div>
                 <p className="text-sm opacity-90">Optimization Score</p>
                 <p className="text-xl font-bold">{Math.round(analytics.revenueMetrics.utilization_rate)}%</p>
@@ -639,5 +639,8 @@ const AICalendarDemo: React.FC = () => {
     </div>
   )
 }
+
+// Force dynamic rendering for demo pages to avoid SSR issues
+export const dynamic = 'force-dynamic'
 
 export default AICalendarDemo

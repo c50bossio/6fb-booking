@@ -14,12 +14,15 @@ import {
   WifiOff,
   CheckCircle,
   Info,
-  RefreshCw
+  RefreshCw,
+  ArrowLeft
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useRouter } from 'next/navigation'
 
 export default function PWASettingsPage() {
   const { toast } = useToast()
+  const router = useRouter()
   const [isInstalled, setIsInstalled] = useState(false)
   const [isOfflineReady, setIsOfflineReady] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
@@ -123,11 +126,21 @@ export default function PWASettingsPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Progressive Web App</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Manage app installation and offline features
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Progressive Web App</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Manage app installation and offline features
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/settings')}
+          className="flex items-center space-x-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Settings</span>
+        </Button>
       </div>
 
       {/* App Installation Status */}
@@ -263,7 +276,7 @@ export default function PWASettingsPage() {
           
           {notificationsEnabled && (
             <div className="space-y-2 pt-2 border-t">
-              <p className="text-sm font-medium">You'll be notified about:</p>
+              <p className="text-sm font-medium">You&apos;ll be notified about:</p>
               <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• Upcoming appointments (30 minutes before)</li>
                 <li>• New bookings and cancellations</li>

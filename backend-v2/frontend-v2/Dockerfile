@@ -40,6 +40,7 @@ RUN npm install sharp
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV SKIP_DEMO_PRERENDER=true
 RUN npm run build && ls -la .next/
 
 # Stage 3: Development (pure dev mode)

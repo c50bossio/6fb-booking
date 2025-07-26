@@ -63,15 +63,23 @@ export default function TestModalPage() {
               </button>
               
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">🎉 Features Added & Fixed:</h4>
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">🎉 NEW: Clean Short URLs!</h4>
                 <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                  <li>• <strong>Custom Link Names:</strong> Add tracking names to booking URLs</li>
-                  <li>• <strong>Link Expiration:</strong> Set expiration dates with visual status indicators</li>
-                  <li>• <strong>Smart Validation:</strong> Prevents past dates and invalid characters</li>
-                  <li>• <strong>Recent Links History:</strong> Stores custom names and expiration status</li>
-                  <li>• <strong>QR Code Customization:</strong> 8 color presets + custom color picker</li>
-                  <li>• <strong>Smart Modal Navigation:</strong> Internal pages stay in app, public pages open externally</li>
+                  <li>• <strong>Short URL Generation:</strong> Creates branded bkdbrbr.com links</li>
+                  <li>• <strong>Clean URLs:</strong> No more ugly timestamps or long query strings</li>
+                  <li>• <strong>Custom Names:</strong> Use custom names as short codes when possible</li>
+                  <li>• <strong>Smart Fallback:</strong> Falls back to regular URLs if shortening fails</li>
+                  <li>• <strong>Loading States:</strong> Shows progress during URL generation</li>
+                  <li>• <strong>Enhanced History:</strong> Tracks short URL status in recent links</li>
+                  <li>• <strong>QR Code Integration:</strong> 8 color presets + custom color picker</li>
+                  <li>• <strong>Modal Navigation:</strong> Smart internal/external page routing</li>
                 </ul>
+                <div className="mt-3 p-3 bg-blue-100 dark:bg-blue-800/30 rounded">
+                  <p className="text-xs text-blue-700 dark:text-blue-200">
+                    <strong>Before:</strong> https://bookedbarber.com/book?ref=test&expires=1798156800000<br/>
+                    <strong>After:</strong> https://bkdbrbr.com/test (clean, trackable, professional)
+                  </p>
+                </div>
               </div>
             </div>
           </div>

@@ -285,7 +285,7 @@ export default function RevenuePage({}: RevenuePageProps) {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Revenue</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today&apos;s Revenue</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       ${revenueStats.today.toLocaleString()}
                     </p>

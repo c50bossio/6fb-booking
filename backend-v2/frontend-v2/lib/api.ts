@@ -524,6 +524,19 @@ export async function createAppointment(data: any) {
   })
 }
 
+export async function updateAppointment(appointmentId: number, data: any) {
+  return fetchAPI(`/api/v2/appointments/${appointmentId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function deleteAppointment(appointmentId: number) {
+  return fetchAPI(`/api/v2/appointments/${appointmentId}`, {
+    method: 'DELETE',
+  })
+}
+
 // Enhanced error handling interfaces
 export interface APIError {
   detail: string | ValidationError[]
@@ -6640,6 +6653,8 @@ export const api = {
   getProfile,
   getAppointments,
   createAppointment,
+  updateAppointment,
+  deleteAppointment,
   getAvailableSlots,
   getNextAvailableSlot,
   getBookingSettings,
@@ -6769,6 +6784,8 @@ export const apiClient = {
   getProfile,
   getAppointments,
   createAppointment,
+  updateAppointment,
+  deleteAppointment,
   // Booking functions
   getAvailableSlots,
   getBookingSettings,

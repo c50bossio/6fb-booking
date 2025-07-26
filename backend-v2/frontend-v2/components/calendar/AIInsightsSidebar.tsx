@@ -43,7 +43,6 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   LightBulbIcon,
-  TrendingUpIcon,
   StarIcon,
   BoltIcon,
   FireIcon,
@@ -85,7 +84,7 @@ const InsightCard: React.FC<InsightCardProps> = ({ insight, type, onActionClick 
         case 'retention':
           return <UserGroupIcon className="h-5 w-5" />
         case 'peak_optimization':
-          return <TrendingUpIcon className="h-5 w-5" />
+          return <ArrowTrendingUpIcon className="h-5 w-5" />
         case 'retention_risk':
           return <ExclamationTriangleIcon className="h-5 w-5" />
         case 'upsell_opportunity':
@@ -492,7 +491,7 @@ export const AIInsightsSidebar: React.FC<AIInsightsSidebarProps> = ({
         <MetricCard
           title="Avg. Price"
           value={revenueMetrics.average_service_price}
-          icon={<TrendingUpIcon className="h-5 w-5" />}
+          icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
           color={FreshaColors.premium.bronze}
           subtitle="Per service"
         />

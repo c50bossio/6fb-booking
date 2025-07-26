@@ -16,7 +16,8 @@ import {
   CheckCircle,
   Lock,
   Settings,
-  ChevronRight
+  ChevronRight,
+  ArrowLeft
 } from 'lucide-react'
 import { TwoFactorAuth, TwoFactorSetup } from '@/components/auth/TwoFactorAuth'
 import { TrustedDevices } from '@/components/auth/TrustedDevices'
@@ -112,11 +113,21 @@ export default function SecuritySettingsPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Security Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Manage your account security and authentication preferences
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Security Settings</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Manage your account security and authentication preferences
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/settings')}
+          className="flex items-center space-x-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Settings</span>
+        </Button>
       </div>
 
       {/* Two-Factor Authentication */}

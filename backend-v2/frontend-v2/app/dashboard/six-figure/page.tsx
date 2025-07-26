@@ -100,7 +100,7 @@ export default function SixFigureGoalTracker() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-gray-400 mt-1">Welcome back, there. Here's your day at a glance.</p>
+            <p className="text-gray-400 mt-1">Welcome back, there. Here&apos;s your day at a glance.</p>
           </div>
           <div className="flex gap-3">
             <Button className="bg-teal-500 hover:bg-teal-600 text-white">

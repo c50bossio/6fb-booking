@@ -99,32 +99,32 @@ export function filterNavigationByRole(
   items: NavigationItem[],
   userRole?: string | null
 ): NavigationItem[] {
-  // Always show basic navigation items
-  const basicItems = [
+  // Always show core navigation items for authenticated users
+  const coreItems = [
     items.find(item => item.name === 'Dashboard'),
     items.find(item => item.name === 'Calendar & Scheduling'),
     items.find(item => item.name === 'Settings')
   ].filter(Boolean) as NavigationItem[]
   
   if (!userRole) {
-    return basicItems
+    return coreItems
   }
   
-  // Map unified roles to equivalent access levels
+  // Simplified role mapping with broader access for barbers
   const roleMapping: Record<string, string[]> = {
-    // Platform-level roles
-    'super_admin': ['super_admin', 'admin', 'barber'],
-    'platform_admin': ['super_admin', 'admin', 'barber'],
+    // Platform-level roles get everything
+    'super_admin': ['super_admin', 'admin', 'barber', 'user'],
+    'platform_admin': ['super_admin', 'admin', 'barber', 'user'],
     
-    // Business owner roles - enterprise owners get everything
-    'enterprise_owner': ['super_admin', 'admin', 'barber'],
-    'shop_owner': ['admin', 'barber'],
-    'individual_barber': ['barber'],
+    // Business owner roles - broader access for barbers
+    'enterprise_owner': ['super_admin', 'admin', 'barber', 'user'],
+    'shop_owner': ['admin', 'barber', 'user'], 
+    'individual_barber': ['barber', 'user'], // Give barbers user access too
     
-    // Staff roles
-    'shop_manager': ['admin', 'barber'],
-    'barber': ['barber'],
-    'receptionist': ['barber'], // Can manage appointments
+    // Staff roles - ensure barbers get full access
+    'shop_manager': ['admin', 'barber', 'user'],
+    'barber': ['barber', 'user'], // Barbers get user permissions too
+    'receptionist': ['barber', 'user'], // Can manage appointments and basic features
     
     // Client roles
     'client': ['user'],
@@ -134,19 +134,40 @@ export function filterNavigationByRole(
   // Get equivalent roles for the user's role
   const equivalentRoles = roleMapping[userRole] || [userRole]
   
-  // Filter items based on role permissions
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Navigation filtering debug:', {
+      userRole,
+      equivalentRoles,
+      totalItems: items.length
+    })
+  }
+  
+  // Filter items based on role permissions - be more permissive
   const roleItems = items.filter(item => {
-    if (!item.roles || item.roles.length === 0) return false
+    // Items without roles are available to everyone
+    if (!item.roles || item.roles.length === 0) return true
     
     // Check if any of the item's required roles match the user's equivalent roles
-    return item.roles.some(role => equivalentRoles.includes(role))
+    const hasAccess = item.roles.some(role => equivalentRoles.includes(role))
+    
+    if (process.env.NODE_ENV === 'development' && !hasAccess) {
+      console.log('❌ Access denied for:', item.name, 'requires:', item.roles, 'user has:', equivalentRoles)
+    }
+    
+    return hasAccess
   })
   
-  // Remove duplicates (basic items might also be in roleItems)
-  const allItemNames = new Set(basicItems.map(item => item.name))
+  // Filter out duplicates while preserving core items first
+  const allItemNames = new Set(coreItems.map(item => item.name))
   const additionalItems = roleItems.filter(item => !allItemNames.has(item.name))
   
-  return [...basicItems, ...additionalItems]
+  const finalItems = [...coreItems, ...additionalItems]
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ Final navigation items:', finalItems.map(item => item.name))
+  }
+  
+  return finalItems
 }
 
 // Main navigation items (for sidebar)
@@ -179,13 +200,6 @@ export const navigationItems: NavigationItem[] = [
         description: 'View and manage your appointments'
       },
       {
-        name: 'Availability',
-        href: '/barber/availability',
-        icon: ClockIcon,
-        roles: ['barber', 'admin', 'super_admin'],
-        description: 'Manage working hours'
-      },
-      {
         name: 'Recurring',
         href: '/recurring',
         icon: ArrowPathIcon,
@@ -195,13 +209,45 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
-  // Client Management - Consolidated
+  // Client Management - Essential for barbers
   {
     name: 'Clients',
     href: '/clients',
     icon: UserGroupIcon,
     roles: ['barber', 'admin', 'super_admin'],
-    description: 'Comprehensive client management, segmentation, and communication'
+    description: 'Comprehensive client management, segmentation, and communication',
+    children: [
+      {
+        name: 'All Clients',
+        href: '/clients',
+        icon: UserGroupIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'View and manage all clients'
+      },
+      {
+        name: 'Add New Client',
+        href: '/clients/new',
+        icon: UserPlusIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Register a new client'
+      },
+      {
+        name: 'Client History',
+        href: '/clients/history',
+        icon: ClockIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'View client appointment history'
+      }
+    ]
+  },
+
+  // My Schedule - Barber-focused view
+  {
+    name: 'My Schedule',
+    href: '/my-schedule',
+    icon: CalendarIcon,
+    roles: ['barber', 'admin', 'super_admin'],
+    description: 'Unified view of your availability and scheduled appointments'
   },
   
   // AI Agents - Intelligent automation and revenue optimization
@@ -364,12 +410,22 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
+  // My Earnings - Barber-focused finance view
+  {
+    name: 'My Earnings',
+    href: '/finance/earnings',
+    icon: BanknotesIcon,
+    roles: ['barber'],
+    description: 'Track your personal earnings and performance',
+    isNew: true
+  },
+
   // Finance Hub - Comprehensive financial management
   {
     name: 'Finance',
     href: '/finance',
     icon: BanknotesIcon,
-    roles: ['admin', 'barber', 'super_admin'],
+    roles: ['admin', 'super_admin'],
     description: 'Comprehensive financial management',
     children: [
       {
@@ -625,71 +681,7 @@ export const navigationItems: NavigationItem[] = [
     name: 'Settings',
     href: '/settings',
     icon: CogIcon,
-    description: 'Personal preferences',
-    children: [
-      {
-        name: 'Profile',
-        href: '/settings/profile',
-        icon: UserIcon
-      },
-      {
-        name: 'Calendar Sync',
-        href: '/settings/calendar',
-        icon: CalendarIcon
-      },
-      {
-        name: 'Notifications',
-        href: '/settings/notifications',
-        icon: BellIcon
-      },
-      {
-        name: 'Security',
-        href: '/settings/security',
-        icon: ShieldCheckIcon,
-        description: 'Manage security settings and trusted devices'
-      },
-      {
-        name: 'Integrations',
-        href: '/settings/integrations',
-        icon: CloudIcon,
-        description: 'Connect third-party services'
-      },
-      {
-        name: 'Tracking Pixels',
-        href: '/settings/tracking-pixels',
-        icon: ChartBarIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Manage conversion tracking pixels'
-      },
-      {
-        name: 'Test Data',
-        href: '/settings/test-data',
-        icon: BeakerIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Manage test data for exploring platform features'
-      },
-      {
-        name: 'Landing Page',
-        href: '/settings/landing-page',
-        icon: RectangleStackIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Configure landing page settings'
-      },
-      {
-        name: 'Privacy Settings',
-        href: '/settings/privacy',
-        icon: ShieldCheckIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Privacy and data protection settings'
-      },
-      {
-        name: 'PWA Settings',
-        href: '/settings/pwa',
-        icon: DevicePhoneMobileIcon,
-        roles: ['admin', 'super_admin'],
-        description: 'Progressive Web App configuration'
-      }
-    ]
+    description: 'Manage account settings and preferences'
   }
   
 ]
@@ -834,11 +826,6 @@ export const quickActions: QuickAction[] = [
 
 // User menu items (dropdown in header)
 export const userMenuItems: NavigationItem[] = [
-  {
-    name: 'My Profile',
-    href: '/settings/profile',
-    icon: UserIcon
-  },
   {
     name: 'Settings',
     href: '/settings',

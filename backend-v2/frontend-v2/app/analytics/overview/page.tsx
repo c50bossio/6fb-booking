@@ -201,7 +201,7 @@ export default function OverviewPage({}: OverviewPageProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Appointments</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today&apos;s Appointments</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {todayStats.appointments}
                 </p>
@@ -218,7 +218,7 @@ export default function OverviewPage({}: OverviewPageProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Revenue</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today&apos;s Revenue</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   ${todayStats.revenue.toLocaleString()}
                 </p>

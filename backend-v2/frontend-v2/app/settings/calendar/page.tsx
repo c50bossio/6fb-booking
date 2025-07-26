@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import CalendarSync from '@/components/CalendarSync'
 import CalendarConflictResolver from '@/components/CalendarConflictResolver'
 import { calendarAPI, getProfile, type User as ApiUser } from '@/lib/api'
-import { CheckCircle, XCircle, Calendar, Link, Settings, RefreshCw, AlertTriangle, Repeat } from 'lucide-react'
+import { CheckCircle, XCircle, Calendar, Link, Settings, RefreshCw, AlertTriangle, Repeat, ArrowLeft } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
 
 interface CalendarStatus {
@@ -136,13 +136,22 @@ export default function CalendarSettingsPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Calendar Settings</h1>
             <p className="text-gray-600">Manage your calendar integration, sync preferences, and conflict resolution</p>
           </div>
-          <button
-            onClick={() => router.push('/recurring')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <Repeat className="h-4 w-4" />
-            Recurring Appointments
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => router.push('/recurring')}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Repeat className="h-4 w-4" />
+              Recurring Appointments
+            </button>
+            <button
+              onClick={() => router.push('/settings')}
+              className="inline-flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Settings
+            </button>
+          </div>
         </div>
       </div>
 

@@ -469,7 +469,7 @@ export default function AIAgentDashboard() {
               <div className="space-y-2">
                 {Object.entries(insights.personality_distribution).map(([personality, count]) => (
                   <div key={personality} className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">{personality.replace('_', ' ')}</span>
+                    <span className="text-sm text-gray-600">{personality.replace('_', &apos; &apos;)}</span>
                     <div className="flex items-center space-x-2">
                       <div className="w-20 bg-gray-200 rounded-full h-2">
                         <div 
@@ -519,7 +519,7 @@ export default function AIAgentDashboard() {
                 <div className="space-y-2">
                   {status?.current_models && Object.entries(status.current_models).map(([model, status]) => (
                     <div key={model} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">{model.replace('_', ' ')}</span>
+                      <span className="text-sm text-gray-600">{model.replace('_', &apos; &apos;)}</span>
                       <span className={`text-sm px-2 py-1 rounded ${
                         status === '✅ Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                       }`}>

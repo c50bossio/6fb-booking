@@ -246,38 +246,38 @@ export default function CalendarRevenueOptimizationDemo() {
       <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 border-b border-gray-200">
         <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
           <span className="bg-green-600 text-white px-3 py-1 rounded-lg text-lg mr-3">6FB</span>
-          Revenue Optimization Dashboard
+          Advanced Analytics Suite
         </h1>
         <p className="text-gray-700 mb-3">
-          <strong>Six Figure Barber Platform:</strong> Click the "Revenue" button to access comprehensive business analytics, 
-          performance metrics, and optimization recommendations aligned with 6FB methodology.
+          <strong>Six Figure Barber Platform:</strong> Click the "Revenue" button to access the advanced analytics suite with 
+          interactive charts, predictive forecasting, and AI-powered business intelligence aligned with 6FB methodology.
         </p>
         
         <div className="bg-white p-3 rounded-lg border border-gray-200 mb-4">
           <h3 className="font-semibold text-gray-800 mb-2">Key Features Demonstrated:</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
-              <strong className="text-green-600">Revenue Analytics:</strong>
+              <strong className="text-green-600">Interactive Charts:</strong>
               <ul className="text-gray-600 mt-1">
-                <li>• Six Figure progress tracking</li>
-                <li>• Revenue per client analysis</li>
-                <li>• Service mix optimization</li>
+                <li>• Real-time revenue visualization</li>
+                <li>• Line & bar chart options</li>
+                <li>• Appointment vs revenue trends</li>
               </ul>
             </div>
             <div>
-              <strong className="text-blue-600">Performance Metrics:</strong>
+              <strong className="text-blue-600">Client Analytics:</strong>
               <ul className="text-gray-600 mt-1">
-                <li>• Time utilization analysis</li>
-                <li>• Upselling success rates</li>
-                <li>• Client retention tracking</li>
+                <li>• Client distribution charts</li>
+                <li>• VIP vs regular analysis</li>
+                <li>• Retention rate tracking</li>
               </ul>
             </div>
             <div>
-              <strong className="text-purple-600">Optimization Tools:</strong>
+              <strong className="text-purple-600">AI Predictions:</strong>
               <ul className="text-gray-600 mt-1">
-                <li>• Pricing recommendations</li>
-                <li>• Growth acceleration tips</li>
-                <li>• Goal setting interface</li>
+                <li>• Revenue forecasting</li>
+                <li>• Seasonal trend analysis</li>
+                <li>• Smart recommendations</li>
               </ul>
             </div>
           </div>

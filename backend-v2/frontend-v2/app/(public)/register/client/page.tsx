@@ -273,7 +273,7 @@ export default function ClientRegistrationPage() {
                     <p className="mt-1 text-xs text-red-600">{errors.phone}</p>
                   )}
                   <p className="mt-1 text-xs text-gray-500">
-                    We'll use this to send appointment reminders via SMS
+                    We&apos;ll use this to send appointment reminders via SMS
                   </p>
                 </div>
 
@@ -288,7 +288,7 @@ export default function ClientRegistrationPage() {
                       className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                      I'd like to receive promotional offers and updates about services
+                      I&apos;d like to receive promotional offers and updates about services
                     </span>
                   </label>
                 </div>

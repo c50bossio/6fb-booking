@@ -18,7 +18,7 @@ import {
 import {
   ClockIcon,
   SparklesIcon,
-  CoffeeIcon,
+  StopIcon,
   PlayIcon,
   PauseIcon,
   AdjustmentsHorizontalIcon,
@@ -463,7 +463,7 @@ export function SmartSchedulingPanel({
                         </Badge>
                         {slot.suggested_break && (
                           <Badge variant="outline" className="text-orange-600 border-orange-200">
-                            <CoffeeIcon className="h-3 w-3 mr-1" />
+                            <StopIcon className="h-3 w-3 mr-1" />
                             Break Suggested
                           </Badge>
                         )}

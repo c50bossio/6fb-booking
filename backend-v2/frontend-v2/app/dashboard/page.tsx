@@ -531,8 +531,8 @@ function DashboardContent() {
         />
       </main>
     )
-  }
 
+  // Render the dashboard
   return (
     <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -679,7 +679,7 @@ function DashboardContent() {
                       <CalendarIcon />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">Today's Schedule</CardTitle>
+                      <CardTitle className="text-xl">Today&apos;s Schedule</CardTitle>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {bookings.length > 0 ? `${bookings.length} appointment${bookings.length !== 1 ? 's' : ''} scheduled` : 'No appointments today'}
                       </p>
@@ -911,16 +911,16 @@ function DashboardContent() {
             </CardContent>
           </Card>
         )}
-      </div>
 
-      <TimezoneSetupModal
-        isOpen={showTimezoneModal}
-        onClose={handleTimezoneModalClose}
-        onComplete={handleTimezoneComplete}
-      />
+        <TimezoneSetupModal
+          isOpen={showTimezoneModal}
+          onClose={handleTimezoneModalClose}
+          onComplete={handleTimezoneComplete}
+        />
+      </div>
     </main>
   )
-}
+}}
 
 export default function DashboardPage() {
   return (

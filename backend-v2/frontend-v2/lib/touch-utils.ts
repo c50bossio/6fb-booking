@@ -67,7 +67,7 @@ export class TouchDragManager {
             this.startDrag(element, position)
             
             // Provide haptic feedback if available
-            if ('vibrate' in navigator) {
+            if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
               navigator.vibrate(50)
             }
           }
@@ -152,7 +152,9 @@ export class TouchDragManager {
     element.classList.add('touch-dragging')
 
     // Add global styles for drag state
-    document.body.classList.add('touch-drag-active')
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('touch-drag-active')
+    }
   }
 
   private updateDrag(position: TouchPosition, getDropTarget?: (position: TouchPosition) => HTMLElement | null) {
@@ -198,7 +200,9 @@ export class TouchDragManager {
     }
 
     // Remove global styles
-    document.body.classList.remove('touch-drag-active')
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('touch-drag-active')
+    }
   }
 
   private resetDragState() {
@@ -226,7 +230,9 @@ export class TouchDragManager {
     ghost.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)'
     ghost.classList.add('touch-drag-ghost')
 
-    document.body.appendChild(ghost)
+    if (typeof document !== 'undefined') {
+      document.body.appendChild(ghost)
+    }
     this.ghostElement = ghost
   }
 
@@ -237,7 +243,9 @@ export class TouchDragManager {
       this.ghostElement.style.display = 'none'
     }
 
-    const element = document.elementFromPoint(position.clientX, position.clientY) as HTMLElement
+    const element = typeof document !== 'undefined' 
+      ? document.elementFromPoint(position.clientX, position.clientY) as HTMLElement
+      : null
 
     // Restore ghost element
     if (this.ghostElement && originalDisplay !== undefined) {
@@ -251,6 +259,9 @@ export class TouchDragManager {
    * Check if device supports touch
    */
   static isTouchDevice(): boolean {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return false
+    }
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0
   }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -14,7 +15,8 @@ import {
   EyeIcon,
   LinkIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline'
 import { getProfile } from '@/lib/api'
 
@@ -63,6 +65,7 @@ const BACKGROUND_PRESETS = [
 ]
 
 export default function LandingPageSettings() {
+  const router = useRouter()
   const [settings, setSettings] = useState<LandingPageSettings>({
     enabled: false,
     logo_url: '',
@@ -208,7 +211,7 @@ export default function LandingPageSettings() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Landing Page Settings</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Customize your organization's landing page and booking experience</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Customize your organization&apos;s landing page and booking experience</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={previewLandingPage}>
@@ -217,6 +220,10 @@ export default function LandingPageSettings() {
           </Button>
           <Button onClick={saveSettings} disabled={saving}>
             {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+          <Button variant="ghost" onClick={() => router.push('/settings')}>
+            <ArrowLeftIcon className="w-4 h-4 mr-2" />
+            Back to Settings
           </Button>
         </div>
       </div>

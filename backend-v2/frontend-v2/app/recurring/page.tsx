@@ -343,17 +343,17 @@ export default function RecurringAppointmentsPage() {
                       </div>
                       <div>
                         <Label className="text-gray-500">Start Date</Label>
-                        <p>{format(new Date(pattern.start_date), 'MMM d, yyyy')}</p>
+                        <p>{format(new Date(pattern.start_date), &apos;MMM d, yyyy&apos;)}</p>
                       </div>
                       {pattern.end_date && (
                         <div>
                           <Label className="text-gray-500">End Date</Label>
-                          <p>{format(new Date(pattern.end_date), 'MMM d, yyyy')}</p>
+                          <p>{format(new Date(pattern.end_date), &apos;MMM d, yyyy&apos;)}</p>
                         </div>
                       )}
                       <div>
                         <Label className="text-gray-500">Created</Label>
-                        <p>{format(new Date(pattern.created_at), 'MMM d, yyyy')}</p>
+                        <p>{format(new Date(pattern.created_at), &apos;MMM d, yyyy&apos;)}</p>
                       </div>
                     </div>
                   </CardContent>

@@ -421,6 +421,9 @@ const nextConfig = {
   // Output configuration
   output: 'standalone',
 
+  // Export configuration to handle SSR issues in demo pages
+  trailingSlash: false,
+  
   // Enhanced error handling
   onDemandEntries: {
     // Keep pages in memory for better performance

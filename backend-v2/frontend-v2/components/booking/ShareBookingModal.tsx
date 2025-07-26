@@ -10,12 +10,13 @@
  * ✅ Responsive grid layout: 1 col mobile, 2 col tablet, 4 col desktop
  */
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Modal, ModalBody } from '../ui/Modal'
 import { Card } from '@/components/ui/card'
 import LinkCustomizer from './LinkCustomizer'
 import QRCodeGenerator from './QRCodeGenerator'
+import { shortUrlService } from '@/lib/short-url-service'
 import { 
   ModalNavigationProvider, 
   ModalNavigationContent, 
@@ -80,6 +81,15 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
   const [shareCount, setShareCount] = useState(0)
   const [showRecentLinks, setShowRecentLinks] = useState(false)
   const [customizerMode, setCustomizerMode] = useState<'set-parameters' | 'quick'>('set-parameters')
+  const [currentUrl, setCurrentUrl] = useState(bookingUrl)
+  const [isGeneratingUrl, setIsGeneratingUrl] = useState(false)
+  const [urlError, setUrlError] = useState<string | null>(null)
+  const [urlIsShort, setUrlIsShort] = useState(false)
+
+  // Generate URL when parameters change
+  useEffect(() => {
+    generateUrl()
+  }, [customLinkName, linkExpiration, enableExpiration])
 
   // Feature availability - all features are now free
   const features = {
@@ -116,26 +126,41 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
     }
   }
 
-  // Generate custom URL with proper logic
-  const getCustomUrl = () => {
-    let url = bookingUrl
-    
-    // If custom link name is provided, append it as a parameter
-    if (customLinkName.trim()) {
-      const separator = url.includes('?') ? '&' : '?'
-      const cleanName = customLinkName.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-')
-      url = `${url}${separator}ref=${cleanName}`
+  // Generate URL using short URL service
+  const generateUrl = async () => {
+    setIsGeneratingUrl(true)
+    setUrlError(null)
+
+    try {
+      const description = `${businessName} booking link${customLinkName ? ` - ${customLinkName}` : ''}`
+      
+      const result = await shortUrlService.createBookingShortUrlWithFallback(
+        bookingUrl,
+        customLinkName,
+        enableExpiration && linkExpiration ? linkExpiration : undefined,
+        description
+      )
+
+      setCurrentUrl(result.url)
+      setUrlIsShort(result.isShortUrl)
+      
+      if (result.error && !result.isShortUrl) {
+        setUrlError(`Short URL creation failed: ${result.error}. Using fallback URL.`)
+      }
+
+    } catch (error) {
+      console.error('Error generating URL:', error)
+      // Fallback to original URL
+      setCurrentUrl(bookingUrl)
+      setUrlIsShort(false)
+      setUrlError('Failed to generate custom URL. Using default booking URL.')
+    } finally {
+      setIsGeneratingUrl(false)
     }
-    
-    // If expiration is enabled and date is set, add expiration parameter
-    if (enableExpiration && linkExpiration) {
-      const separator = url.includes('?') ? '&' : '?'
-      const expiryTimestamp = new Date(linkExpiration).getTime()
-      url = `${url}${separator}expires=${expiryTimestamp}`
-    }
-    
-    return url
   }
+
+  // Get current URL (synchronous for compatibility)
+  const getCustomUrl = () => currentUrl
 
   // Check if link is expired
   const isLinkExpired = () => {
@@ -173,7 +198,9 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
       name, 
       date: new Date().toISOString(),
       customName: customLinkName || null,
-      expirationDate: enableExpiration && linkExpiration ? linkExpiration : null
+      expirationDate: enableExpiration && linkExpiration ? linkExpiration : null,
+      isShortUrl: urlIsShort,
+      businessName: businessName
     }
     const updated = [newLink, ...recent.filter(r => r.name !== name)].slice(0, 5)
     localStorage.setItem('recentBookingLinks', JSON.stringify(updated))
@@ -368,6 +395,11 @@ ${businessName}`
               </p>
               <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                 {shareCount > 0 && <span>Shared {shareCount} times</span>}
+                {urlIsShort && (
+                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded text-xs font-medium">
+                    Short URL
+                  </span>
+                )}
                 {customLinkName.trim() && (
                   <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
                     Custom: {customLinkName}
@@ -377,6 +409,12 @@ ${businessName}`
                   <span className={`flex items-center space-x-1 ${getExpirationStatus()?.class}`}>
                     <CalendarIcon className="w-3 h-3" />
                     <span>{getExpirationStatus()?.message}</span>
+                  </span>
+                )}
+                {isGeneratingUrl && (
+                  <span className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
+                    <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Generating...</span>
                   </span>
                 )}
               </div>
@@ -409,18 +447,27 @@ ${businessName}`
                 {/* Copy Button */}
                 <button
                   onClick={() => copyToClipboard(getCustomUrl(), 'copy-link')}
-                  disabled={isLinkExpired()}
+                  disabled={isLinkExpired() || isGeneratingUrl}
                   className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                    isLinkExpired() 
+                    isLinkExpired() || isGeneratingUrl
                       ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
                       : 'bg-primary-600 hover:bg-primary-700 text-white'
                   }`}
-                  title={isLinkExpired() ? "Link has expired" : "Copy URL"}
+                  title={
+                    isLinkExpired() ? "Link has expired" : 
+                    isGeneratingUrl ? "Generating URL..." : 
+                    "Copy URL"
+                  }
                 >
                   {isLinkExpired() ? (
                     <div className="flex items-center space-x-1">
                       <CalendarIcon className="w-4 h-4" />
                       <span>Expired</span>
+                    </div>
+                  ) : isGeneratingUrl ? (
+                    <div className="flex items-center space-x-1">
+                      <div className="w-4 h-4 border border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Loading</span>
                     </div>
                   ) : copiedOption === 'copy-link' ? (
                     <div className="flex items-center space-x-1">
@@ -436,6 +483,13 @@ ${businessName}`
                 </button>
               </div>
             </div>
+            
+            {/* URL Error Display */}
+            {urlError && (
+              <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <p className="text-xs text-amber-700 dark:text-amber-300">{urlError}</p>
+              </div>
+            )}
           </div>
 
           {/* Recent Links Dropdown */}
@@ -461,6 +515,11 @@ ${businessName}`
                               <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                 {link.customName || link.name}
                               </p>
+                              {link.isShortUrl && (
+                                <span className="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                  Short
+                                </span>
+                              )}
                               {link.expirationDate && (
                                 <span className={`px-1.5 py-0.5 text-xs rounded ${
                                   isExpired 

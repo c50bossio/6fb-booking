@@ -59,7 +59,7 @@ const modalVariants = cva(
 )
 
 const overlayVariants = cva(
-  'fixed inset-0 flex items-end justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm transition-all duration-300',
+  'fixed inset-0 flex justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm transition-all duration-300',
   {
     variants: {
       position: {
@@ -261,16 +261,13 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           className: `${isAnimating ? 'opacity-0' : 'opacity-100'} ${overlayClassName || ''}` 
         })}
         style={{ 
-          zIndex: zIndex + 1000, // Much higher z-index to avoid conflicts
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0
+          zIndex: zIndex, // Use provided z-index directly (default 9999)
         }}
         onClick={(e) => {
-          // Simple click-outside detection: close if clicking the overlay itself
+          // Enhanced click-outside detection: close if clicking the overlay itself
           if (closeOnOverlayClick && e.target === e.currentTarget) {
+            e.preventDefault();
+            e.stopPropagation();
             onClose();
           }
         }}

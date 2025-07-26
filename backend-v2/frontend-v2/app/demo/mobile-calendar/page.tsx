@@ -17,7 +17,7 @@ import {
   Share, 
   Calendar,
   Zap,
-  TouchPadOff,
+  Touchpad,
   Vibrate,
   Star,
   ArrowLeft,
@@ -44,6 +44,9 @@ interface DemoFeature {
   status: 'available' | 'demo' | 'disabled';
 }
 
+// Force dynamic rendering for demo pages to avoid SSR issues
+export const dynamic = 'force-dynamic'
+
 export default function MobileCalendarDemo() {
   const [currentDemo, setCurrentDemo] = useState<string>('overview');
   const [isOfflineMode, setIsOfflineMode] = useState(false);
@@ -56,6 +59,8 @@ export default function MobileCalendarDemo() {
   // Check PWA installation status
   useEffect(() => {
     const checkPWAInstallation = () => {
+      if (typeof window === 'undefined') return;
+      
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
       const isInWebApps = (window.navigator as any).standalone === true;
       setIsPWAInstalled(isStandalone || isInWebApps);
@@ -64,15 +69,17 @@ export default function MobileCalendarDemo() {
     checkPWAInstallation();
 
     // Listen for app installation
-    window.addEventListener('appinstalled', () => {
-      setIsPWAInstalled(true);
-    });
+    if (typeof window !== 'undefined') {
+      window.addEventListener('appinstalled', () => {
+        setIsPWAInstalled(true);
+      });
+    }
   }, []);
 
   // Initialize push notifications
   useEffect(() => {
     const initializeNotifications = async () => {
-      if ('Notification' in window) {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
         const permission = await pushNotificationManager.getPermissionStatus();
         setNotificationsEnabled(permission === 'granted');
       }
@@ -102,7 +109,7 @@ export default function MobileCalendarDemo() {
       id: 'gestures',
       title: 'Touch Gestures',
       description: 'Swipe, long press, haptic feedback',
-      icon: <TouchPadOff className="h-5 w-5" />,
+      icon: <Touchpad className="h-5 w-5" />,
       demo: () => demoGestures(),
       status: 'demo'
     },
@@ -196,7 +203,7 @@ export default function MobileCalendarDemo() {
   };
 
   const demoHapticFeedback = () => {
-    if ('vibrate' in navigator && hapticEnabled) {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator && hapticEnabled) {
       // Different vibration patterns
       navigator.vibrate([50, 100, 50]); // Light feedback
       setTimeout(() => navigator.vibrate([100]), 300); // Medium
@@ -428,7 +435,7 @@ export default function MobileCalendarDemo() {
                 <Card className="w-full max-w-sm">
                   <CardContent className="p-6 text-center">
                     <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <TouchPadOff className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                      <Touchpad className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                     </div>
                     <h3 className="text-lg font-semibold mb-2">
                       Try These Gestures
@@ -516,7 +523,7 @@ export default function MobileCalendarDemo() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => window.history.back()}
+          onClick={() => typeof window !== 'undefined' && window.history.back()}
           className="bg-white dark:bg-gray-800 shadow-lg"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />

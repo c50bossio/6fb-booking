@@ -85,7 +85,7 @@ export default function BusinessToolsPage() {
       <Card className="mt-8 p-6 bg-gray-50">
         <h3 className="text-lg font-semibold mb-2">Need More Tools?</h3>
         <p className="text-gray-600 mb-4">
-          We're constantly adding new features to help you grow your business. If you need a specific tool or integration, let us know!
+          We&apos;re constantly adding new features to help you grow your business. If you need a specific tool or integration, let us know!
         </p>
         <Link href="/support">
           <Button variant="outline">Request a Feature</Button>

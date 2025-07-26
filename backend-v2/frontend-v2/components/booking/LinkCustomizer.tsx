@@ -80,6 +80,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [copiedUrl, setCopiedUrl] = useState(false)
+  const [urlGenerationError, setUrlGenerationError] = useState<string | null>(null)
 
   // URL generation
   const linkGenerator = useMemo(() => {
@@ -94,24 +95,63 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
   const generatedUrl = useMemo(() => {
     const params: BookingLinkParams = {
       ...linkParams,
-      service: selectedServices.length === 1 ? selectedServices[0] : selectedServices.length > 1 ? selectedServices : undefined,
-      barber: selectedBarbers.length === 1 ? selectedBarbers[0] : selectedBarbers.length > 1 ? selectedBarbers : undefined,
-      location: selectedLocations.length === 1 ? selectedLocations[0] : undefined,
-      locations: selectedLocations.length > 1 ? selectedLocations : undefined,
-      dateRange: dateRange.start && dateRange.end ? `${dateRange.start},${dateRange.end}` : undefined,
-      timeRange: timeRange.start && timeRange.end ? `${timeRange.start},${timeRange.end}` : undefined,
     }
 
-    // Remove undefined values
+    // Handle services properly
+    if (selectedServices.length === 1) {
+      params.service = selectedServices[0]
+    } else if (selectedServices.length > 1) {
+      params.service = selectedServices // This will be handled as array by the generator
+    }
+
+    // Handle barbers properly
+    if (selectedBarbers.length === 1) {
+      params.barber = selectedBarbers[0]
+    } else if (selectedBarbers.length > 1) {
+      params.barber = selectedBarbers // This will be handled as array by the generator
+    }
+
+    // Handle locations properly (single location or array)
+    if (selectedLocations.length === 1) {
+      params.location = selectedLocations[0]
+    } else if (selectedLocations.length > 1) {
+      params.locations = selectedLocations
+    }
+
+    // Handle date parameters - prefer specific date over range
+    if (linkParams.date) {
+      params.date = linkParams.date
+      // Clear any conflicting date range
+    } else if (dateRange.start && dateRange.end) {
+      params.dateRange = `${dateRange.start},${dateRange.end}`
+    }
+
+    // Handle time parameters - prefer specific time over range
+    if (linkParams.time) {
+      params.time = linkParams.time
+      // Clear any conflicting time range
+    } else if (timeRange.start && timeRange.end) {
+      params.timeRange = `${timeRange.start},${timeRange.end}`
+    }
+
+    // Remove undefined, null, and empty values
     const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value !== undefined && value !== '' && value !== null)
+      Object.entries(params).filter(([_, value]) => {
+        if (value === undefined || value === null || value === '') return false
+        if (Array.isArray(value) && value.length === 0) return false
+        return true
+      })
     )
 
     try {
-      return linkGenerator.generateURL(cleanParams)
+      const url = linkGenerator.generateURL(cleanParams)
+      setUrlGenerationError(null) // Clear any previous errors
+      return url
     } catch (error) {
       console.error('Failed to generate URL:', error)
-      return 'https://book.6fb.com/your-business'
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      setUrlGenerationError(`URL generation failed: ${errorMessage}`)
+      return 'https://book.6fb.com/your-business' // Fallback URL
     }
   }, [linkParams, selectedServices, selectedBarbers, selectedLocations, dateRange, timeRange, linkGenerator])
 
@@ -126,6 +166,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
       setTimeRange({ start: '', end: '' })
       setFormErrors({})
       setCopiedUrl(false)
+      setUrlGenerationError(null)
       if (mode === 'quick') {
         setShowAdvanced(false)
       }
@@ -134,10 +175,22 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
 
   // Handle parameter changes
   const updateParam = (key: keyof BookingLinkParams, value: any) => {
-    setLinkParams(prev => ({
-      ...prev,
-      [key]: value
-    }))
+    setLinkParams(prev => {
+      const newParams = { ...prev, [key]: value }
+      
+      // Clear conflicting date parameters
+      if (key === 'date' && value) {
+        // Clear date range when specific date is set
+        setDateRange({ start: '', end: '' })
+      }
+      if (key === 'time' && value) {
+        // Clear time range when specific time is set
+        setTimeRange({ start: '', end: '' })
+      }
+      
+      return newParams
+    })
+    
     // Clear related error
     if (formErrors[key]) {
       setFormErrors(prev => {
@@ -146,6 +199,32 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
         return newErrors
       })
     }
+  }
+
+  // Handle date range changes with conflict resolution
+  const updateDateRange = (field: 'start' | 'end', value: string) => {
+    setDateRange(prev => ({ ...prev, [field]: value }))
+    
+    // Clear specific date when date range is set
+    if (value && linkParams.date) {
+      setLinkParams(prev => ({ ...prev, date: undefined }))
+    }
+    
+    // Trigger validation after state update
+    setTimeout(() => validateForm(), 0)
+  }
+
+  // Handle time range changes with conflict resolution  
+  const updateTimeRange = (field: 'start' | 'end', value: string) => {
+    setTimeRange(prev => ({ ...prev, [field]: value }))
+    
+    // Clear specific time when time range is set
+    if (value && linkParams.time) {
+      setLinkParams(prev => ({ ...prev, time: undefined }))
+    }
+    
+    // Trigger validation after state update
+    setTimeout(() => validateForm(), 0)
   }
 
   // Handle service selection
@@ -193,28 +272,101 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
   const validateForm = (): boolean => {
     const errors: FormErrors = {}
 
+    // Validate date range
     if (dateRange.start && dateRange.end) {
-      if (new Date(dateRange.start) >= new Date(dateRange.end)) {
+      const startDate = new Date(dateRange.start)
+      const endDate = new Date(dateRange.end)
+      
+      if (startDate >= endDate) {
         errors.dateRange = 'Start date must be before end date'
       }
-    }
-
-    if (timeRange.start && timeRange.end) {
-      if (timeRange.start >= timeRange.end) {
-        errors.timeRange = 'Start time must be before end time'
+      
+      // Check if dates are in the future
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset time for date comparison
+      
+      if (startDate < today) {
+        errors.dateRange = 'Start date must be in the future'
       }
     }
 
-    if (linkParams.leadTime && linkParams.leadTime < 0) {
-      errors.leadTime = 'Lead time cannot be negative'
+    // Validate time range with proper time comparison
+    if (timeRange.start && timeRange.end) {
+      const [startHour, startMin] = timeRange.start.split(':').map(Number)
+      const [endHour, endMin] = timeRange.end.split(':').map(Number)
+      
+      const startMinutes = startHour * 60 + startMin
+      const endMinutes = endHour * 60 + endMin
+      
+      if (startMinutes >= endMinutes) {
+        errors.timeRange = 'Start time must be before end time'
+      }
+      
+      // Check for reasonable business hours (6 AM to 11 PM)
+      if (startMinutes < 360 || endMinutes > 1380) {
+        errors.timeRange = 'Please select reasonable business hours (6 AM - 11 PM)'
+      }
     }
 
-    if (linkParams.maxAdvance && linkParams.maxAdvance < 1) {
-      errors.maxAdvance = 'Max advance days must be at least 1'
+    // Validate specific date
+    if (linkParams.date) {
+      const selectedDate = new Date(linkParams.date)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      if (selectedDate < today) {
+        errors.date = 'Date must be in the future'
+      }
     }
 
-    if (linkParams.duration && (linkParams.duration < 5 || linkParams.duration > 480)) {
-      errors.duration = 'Duration must be between 5 and 480 minutes'
+    // Validate specific time (if date is today, time must be in future)
+    if (linkParams.time && linkParams.date) {
+      const selectedDate = new Date(linkParams.date)
+      const today = new Date()
+      
+      if (selectedDate.toDateString() === today.toDateString()) {
+        const [hour, min] = linkParams.time.split(':').map(Number)
+        const selectedMinutes = hour * 60 + min
+        const currentMinutes = today.getHours() * 60 + today.getMinutes()
+        
+        if (selectedMinutes <= currentMinutes) {
+          errors.time = 'Time must be in the future for today\'s date'
+        }
+      }
+    }
+
+    // Validate numeric parameters
+    if (linkParams.leadTime !== undefined) {
+      if (linkParams.leadTime < 0) {
+        errors.leadTime = 'Lead time cannot be negative'
+      }
+      if (linkParams.leadTime > 168) { // 1 week max
+        errors.leadTime = 'Lead time cannot exceed 168 hours (1 week)'
+      }
+    }
+
+    if (linkParams.maxAdvance !== undefined) {
+      if (linkParams.maxAdvance < 1) {
+        errors.maxAdvance = 'Max advance days must be at least 1'
+      }
+      if (linkParams.maxAdvance > 365) { // 1 year max
+        errors.maxAdvance = 'Max advance cannot exceed 365 days'
+      }
+    }
+
+    if (linkParams.duration !== undefined) {
+      if (linkParams.duration < 5 || linkParams.duration > 480) {
+        errors.duration = 'Duration must be between 5 and 480 minutes (8 hours)'
+      }
+    }
+
+    // Check for conflicting parameters
+    if ((dateRange.start || dateRange.end) && linkParams.date) {
+      errors.conflictingDates = 'Cannot set both date range and specific date. Please choose one.'
+    }
+
+    if ((timeRange.start || timeRange.end) && linkParams.time) {
+      errors.conflictingTimes = 'Cannot set both time range and specific time. Please choose one.'
     }
 
     setFormErrors(errors)
@@ -230,6 +382,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
     setDateRange({ start: '', end: '' })
     setTimeRange({ start: '', end: '' })
     setFormErrors({})
+    setUrlGenerationError(null)
   }
 
   // Apply configuration
@@ -254,11 +407,14 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={mode === 'set-parameters' ? 'Set Appointment Parameters' : 'Generate Booking Link'}
-      size="3xl"
-      position="center"
+      size="2xl"
+      position="top"
       variant="default"
-      className="max-w-4xl"
-      adaptivePositioning={false}
+      className="max-w-3xl"
+      adaptivePositioning={true}
+      closeOnOverlayClick={true}
+      closeOnEscape={true}
+      zIndex={60}
     >
       <ModalBody className="pb-8">
         {/* Header */}
@@ -444,20 +600,23 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                       <Input
                         type="date"
                         value={dateRange.start}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                        onChange={(e) => updateDateRange('start', e.target.value)}
                         placeholder="Start Date"
                         className="w-full"
                       />
                       <Input
                         type="date"
                         value={dateRange.end}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                        onChange={(e) => updateDateRange('end', e.target.value)}
                         placeholder="End Date"
                         className="w-full"
                       />
                     </div>
                     {formErrors.dateRange && (
                       <p className="text-error-500 text-ios-caption1 mt-1">{formErrors.dateRange}</p>
+                    )}
+                    {formErrors.conflictingDates && (
+                      <p className="text-warning-500 text-ios-caption1 mt-1">{formErrors.conflictingDates}</p>
                     )}
                   </div>
 
@@ -470,20 +629,23 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                       <Input
                         type="time"
                         value={timeRange.start}
-                        onChange={(e) => setTimeRange(prev => ({ ...prev, start: e.target.value }))}
+                        onChange={(e) => updateTimeRange('start', e.target.value)}
                         placeholder="Start Time"
                         className="w-full"
                       />
                       <Input
                         type="time"
                         value={timeRange.end}
-                        onChange={(e) => setTimeRange(prev => ({ ...prev, end: e.target.value }))}
+                        onChange={(e) => updateTimeRange('end', e.target.value)}
                         placeholder="End Time"
                         className="w-full"
                       />
                     </div>
                     {formErrors.timeRange && (
                       <p className="text-error-500 text-ios-caption1 mt-1">{formErrors.timeRange}</p>
+                    )}
+                    {formErrors.conflictingTimes && (
+                      <p className="text-warning-500 text-ios-caption1 mt-1">{formErrors.conflictingTimes}</p>
                     )}
                   </div>
                 </div>
@@ -500,6 +662,9 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                       onChange={(e) => updateParam('date', e.target.value)}
                       className="w-full"
                     />
+                    {formErrors.date && (
+                      <p className="text-error-500 text-ios-caption1 mt-1">{formErrors.date}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-ios-footnote font-medium text-ios-gray-700 dark:text-ios-gray-300 mb-2">
@@ -511,6 +676,9 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                       onChange={(e) => updateParam('time', e.target.value)}
                       className="w-full"
                     />
+                    {formErrors.time && (
+                      <p className="text-error-500 text-ios-caption1 mt-1">{formErrors.time}</p>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -670,6 +838,11 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                   <div className="break-all text-ios-footnote font-mono text-primary-600 dark:text-primary-400">
                     {generatedUrl}
                   </div>
+                  {urlGenerationError && (
+                    <div className="mt-2 p-2 bg-error-50 dark:bg-error-950/20 border border-error-200 dark:border-error-800 rounded">
+                      <p className="text-xs text-error-700 dark:text-error-300">{urlGenerationError}</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Copy Button */}
@@ -756,16 +929,26 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                     </div>
                   )}
 
-                  {(dateRange.start || dateRange.end || linkParams.date) && (
+                  {(linkParams.date || dateRange.start || dateRange.end) && (
                     <div>
                       <span className="text-ios-caption1 font-medium text-ios-gray-700 dark:text-ios-gray-300">
                         Date:
                       </span>
                       <div className="text-ios-caption1 text-ios-gray-600 dark:text-ios-gray-400 mt-1">
                         {linkParams.date ? (
-                          `Specific: ${linkParams.date}`
+                          <span className="flex items-center gap-1">
+                            <span>Specific: {linkParams.date}</span>
+                            <span className="px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded text-xs">Active</span>
+                          </span>
                         ) : dateRange.start && dateRange.end ? (
-                          `Range: ${dateRange.start} to ${dateRange.end}`
+                          <span className="flex items-center gap-1">
+                            <span>Range: {dateRange.start} to {dateRange.end}</span>
+                            <span className="px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded text-xs">Active</span>
+                          </span>
+                        ) : dateRange.start ? (
+                          <span className="text-warning-600 dark:text-warning-400">Incomplete range: {dateRange.start} to ?</span>
+                        ) : dateRange.end ? (
+                          <span className="text-warning-600 dark:text-warning-400">Incomplete range: ? to {dateRange.end}</span>
                         ) : (
                           'Any date'
                         )}
@@ -773,16 +956,26 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                     </div>
                   )}
 
-                  {(timeRange.start || timeRange.end || linkParams.time) && (
+                  {(linkParams.time || timeRange.start || timeRange.end) && (
                     <div>
                       <span className="text-ios-caption1 font-medium text-ios-gray-700 dark:text-ios-gray-300">
                         Time:
                       </span>
                       <div className="text-ios-caption1 text-ios-gray-600 dark:text-ios-gray-400 mt-1">
                         {linkParams.time ? (
-                          `Specific: ${linkParams.time}`
+                          <span className="flex items-center gap-1">
+                            <span>Specific: {linkParams.time}</span>
+                            <span className="px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded text-xs">Active</span>
+                          </span>
                         ) : timeRange.start && timeRange.end ? (
-                          `Range: ${timeRange.start} to ${timeRange.end}`
+                          <span className="flex items-center gap-1">
+                            <span>Range: {timeRange.start} to {timeRange.end}</span>
+                            <span className="px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded text-xs">Active</span>
+                          </span>
+                        ) : timeRange.start ? (
+                          <span className="text-warning-600 dark:text-warning-400">Incomplete range: {timeRange.start} to ?</span>
+                        ) : timeRange.end ? (
+                          <span className="text-warning-600 dark:text-warning-400">Incomplete range: ? to {timeRange.end}</span>
                         ) : (
                           'Any time'
                         )}

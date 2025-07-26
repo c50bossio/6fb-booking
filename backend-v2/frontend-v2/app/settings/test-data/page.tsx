@@ -34,6 +34,12 @@ const InfoIcon = () => (
   </svg>
 )
 
+const ArrowLeftIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+  </svg>
+)
+
 interface TestDataStatus {
   has_test_data: boolean
   counts?: {
@@ -206,11 +212,21 @@ export default function TestDataPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Test Data Management</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage sample data to help you explore and learn the platform
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Test Data Management</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage sample data to help you explore and learn the platform
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/settings')}
+          className="flex items-center space-x-2"
+        >
+          <ArrowLeftIcon />
+          <span>Back to Settings</span>
+        </Button>
       </div>
 
       {/* Status Card */}

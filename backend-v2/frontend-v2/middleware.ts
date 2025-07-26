@@ -31,6 +31,8 @@ const publicRoutes = [
   '/cookies',
   '/offline',
   '/calendar-showcase',
+  '/calendar', // Allow calendar to always show full interface
+  '/test-modal', // Temporary for testing ShareBookingModal
   '/service-worker.js',
   '/manifest.json',
 ]
@@ -45,9 +47,7 @@ const FORBIDDEN_ROUTES: Record<string, string> = {
   '/auth/signin': '/login',
   '/auth/login': '/login',
   
-  // Demo routes (disabled per consolidation plan)
-  '/demo': '/',
-  '/demo/login': '/login',
+  // Deprecated demo routes only
   '/try-demo': '/',
   '/live-demo': '/',
   
@@ -81,14 +81,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301) // Permanent redirect
   }
   
-  // Block access to demo routes entirely (per consolidation plan)
-  const demoRoutes = ['/demo', '/try-demo', '/live-demo']
-  if (demoRoutes.some(route => path.startsWith(route))) {
+  // Block access to deprecated demo routes only
+  const blockedDemoRoutes = ['/try-demo', '/live-demo']
+  // Allow all /demo/* routes for development and showcasing
+  
+  if (blockedDemoRoutes.some(route => path.startsWith(route))) {
     const url = new URL('/', request.url)
     url.searchParams.set('error', 'demo_disabled')
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🚫 Blocked demo route per consolidation plan: ${path} → /`)
+      console.log(`🚫 Blocked deprecated demo route: ${path} → /`)
     }
     
     return NextResponse.redirect(url, 301)
@@ -116,7 +118,7 @@ export function middleware(request: NextRequest) {
   const isAdminRoute = adminRoutes.some(route => path === route || path.startsWith(route + '/'))
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/appointments', '/clients', '/analytics', '/settings', '/calendar']
+  const protectedRoutes = ['/dashboard', '/appointments', '/clients', '/analytics', '/settings']
   const isProtectedRoute = protectedRoutes.some(route => path === route || path.startsWith(route + '/'))
   
   // Simplified auth page handling - always allow access to login/register

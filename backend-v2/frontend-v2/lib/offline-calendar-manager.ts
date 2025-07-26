@@ -477,7 +477,7 @@ class OfflineCalendarManager {
   private async syncAppointmentToServer(appointment: OfflineAppointment): Promise<OfflineAppointment> {
     // Implementation would sync with actual API
     // For now, simulate API call
-    const response = await fetch('/api/v1/appointments', {
+    const response = await fetch('/api/v2/appointments', {
       method: appointment.isOfflineCreated ? 'POST' : 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -504,7 +504,7 @@ class OfflineCalendarManager {
   }
 
   private async deleteAppointmentFromServer(id: string): Promise<void> {
-    const response = await fetch(`/api/v1/appointments/${id}`, {
+    const response = await fetch(`/api/v2/appointments/${id}`, {
       method: 'DELETE'
     });
 

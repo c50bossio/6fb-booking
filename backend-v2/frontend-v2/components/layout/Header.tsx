@@ -134,12 +134,33 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
     // You could show a toast notification here
   }
 
-  // Generate booking URL for the user's organization
+  // Generate environment-aware booking URL for the user's organization
   const getBookingUrl = () => {
-    const baseUrl = window.location.origin
+    // Determine base URL based on environment
+    let baseUrl = window.location.origin
+    
+    // Handle different environments
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname
+      
+      // Map development/staging URLs to production-like URLs for sharing
+      if (hostname === 'localhost') {
+        // Use a more professional URL for sharing even in development
+        baseUrl = 'https://bookedbarber.com'
+      } else if (hostname.includes('staging')) {
+        baseUrl = 'https://staging.bookedbarber.com'
+      } else if (hostname.includes('vercel.app') || hostname.includes('render.com')) {
+        // Keep deployment URLs as-is for testing
+        baseUrl = window.location.origin
+      }
+    }
+    
+    // Generate organization-specific or default booking URL
     if (user?.organization?.slug) {
       return `${baseUrl}/${user.organization.slug}`
     }
+    
+    // Fallback to generic booking page
     return `${baseUrl}/book`
   }
 

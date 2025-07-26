@@ -11,8 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { 
   CurrencyDollarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowArrowTrendingUpIcon,
+  ArrowArrowTrendingDownIcon,
   CalendarIcon,
   ClockIcon,
   ArrowDownTrayIcon,
@@ -151,9 +151,9 @@ export default function EarningsPage() {
 
   const getGrowthIcon = (growth: number) => {
     if (growth > 0) {
-      return <TrendingUpIcon className="w-4 h-4 text-green-600" />
+      return <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
     } else if (growth < 0) {
-      return <TrendingDownIcon className="w-4 h-4 text-red-600" />
+      return <ArrowTrendingDownIcon className="w-4 h-4 text-red-600" />
     }
     return null
   }

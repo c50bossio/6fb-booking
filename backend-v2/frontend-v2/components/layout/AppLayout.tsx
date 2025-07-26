@@ -26,7 +26,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // Define public routes that don't require authentication
   const publicRoutes = ['/', '/login', '/register', '/check-email', '/verify-email', '/forgot-password', '/reset-password', '/terms', '/privacy', '/cookies', '/agents', '/book']
-  const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/reset-password/') || pathname.startsWith('/agents/') || pathname.startsWith('/verify-email/') || pathname.startsWith('/book/')
+  const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/reset-password/') || pathname.startsWith('/agents/') || pathname.startsWith('/verify-email/') || pathname.startsWith('/book/') || pathname.startsWith('/demo/')
 
   const [user, setUser] = useState<User | null>(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -109,12 +109,15 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [pathname, mounted])
 
-  // Auto-collapse sidebar on mobile
+  // Auto-collapse sidebar on mobile - simplified
   useEffect(() => {
-    if (mounted && isMobile) {
-      setSidebarCollapsed(true)
+    if (mounted) {
+      // Auto-collapse on mobile, but allow manual override
+      if (isMobile && !sidebarCollapsed) {
+        setSidebarCollapsed(true)
+      }
     }
-  }, [mounted, isMobile])
+  }, [mounted, isMobile]) // Removed sidebarCollapsed from dependencies
 
   // Generate breadcrumbs based on current path
   const getBreadcrumbs = () => {
@@ -159,13 +162,13 @@ export function AppLayout({ children }: AppLayoutProps) {
     return breadcrumbs
   }
 
-  // Prevent hydration issues by not rendering anything until mounted
+  // Prevent hydration issues by not rendering complex UI until mounted
   if (!mounted) {
     return (
       <ThemeProvider defaultTheme="system" storageKey="6fb-theme">
         <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100">
-          {/* Render children for public routes even when not mounted */}
-          {isPublicRoute && children}
+          {/* Always render children to prevent content shift */}
+          {children}
         </div>
       </ThemeProvider>
     )
@@ -284,59 +287,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         )}
 
-        {/* Default layout during SSR/initial load - shows desktop layout */}
-        {!mounted && !isPublicRoute && (
-          <div className="flex min-h-screen">
-            {/* Sidebar */}
-            <Sidebar
-              user={user}
-              collapsed={sidebarCollapsed}
-              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-            />
-            
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col">
-              {/* Header */}
-              <Header
-                user={user}
-                breadcrumbs={getBreadcrumbs()}
-                onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-                showMenuToggle={false}
-              />
-              
-              {/* Page Content */}
-              <main className="flex-1">
-                <div>
-                  {error && !isPublicRoute ? (
-                    <div className="p-6">
-                      <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-ios-lg p-4">
-                        <div className="flex">
-                          <div className="flex-shrink-0">
-                            <svg className="h-5 w-5 text-warning-500" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <div className="ml-3">
-                            <h3 className="text-sm font-medium text-warning-800 dark:text-warning-200">
-                              Connection Issue
-                            </h3>
-                            <div className="mt-2 text-sm text-warning-700 dark:text-warning-300">
-                              <p>{error}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <ErrorBoundary>
-                      {children}
-                    </ErrorBoundary>
-                  )}
-                </div>
-              </main>
-            </div>
-          </div>
-        )}
+        {/* Removed redundant SSR layout to prevent hydration issues */}
 
         {/* Public Route Layout - Simple layout for login, register, etc. */}
         {isPublicRoute && (

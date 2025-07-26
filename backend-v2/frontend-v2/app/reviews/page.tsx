@@ -155,7 +155,7 @@ function ReviewCard({ review, onRespond, onView }: ReviewCardProps) {
                   {review.response_status === ReviewResponseStatus.FAILED && (
                     <XCircleIcon className="w-3 h-3" />
                   )}
-                  <span className="capitalize">{review.response_status.replace('_', ' ')}</span>
+                  <span className="capitalize">{review.response_status.replace('_', &apos; &apos;)}</span>
                 </span>
               </Badge>
               

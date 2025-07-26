@@ -371,7 +371,7 @@ function CustomerOverview({ summary, userRole }: { summary: any; userRole?: stri
               <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <div>
                   <p className="font-medium">At Risk</p>
-                  <p className="text-sm text-gray-600">Haven't visited in 60+ days</p>
+                  <p className="text-sm text-gray-600">Haven&apos;t visited in 60+ days</p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold">{summary.atRiskClients}</p>

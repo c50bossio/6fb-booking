@@ -139,9 +139,9 @@ export const routeAccessControl: RouteAccess[] = [
   },
   {
     path: '/calendar',
-    allowedRoles: ['barber', 'admin', 'super_admin', 'shop_owner', 'shop_manager', 'receptionist', 'individual_barber'],
-    requiresAuth: true,
-    description: 'Calendar and scheduling'
+    allowedRoles: [],
+    requiresAuth: false,
+    description: 'Public calendar that always shows full interface'
   },
   {
     path: '/appointments',
@@ -255,6 +255,12 @@ export const routeAccessControl: RouteAccess[] = [
     allowedRoles: [],
     requiresAuth: false,
     description: 'Calendar demo page'
+  },
+  {
+    path: '/test-modal',
+    allowedRoles: [],
+    requiresAuth: false,
+    description: 'ShareBookingModal test page'
   }
 ]
 

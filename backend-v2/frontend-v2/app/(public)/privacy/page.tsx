@@ -48,7 +48,7 @@ const PrivacyPolicyPage = () => {
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <h4 className="font-medium text-blue-800 mb-2">We collect minimal data</h4>
-              <p className="text-sm text-blue-700">Only what's necessary to provide our booking service</p>
+              <p className="text-sm text-blue-700">Only what&apos;s necessary to provide our booking service</p>
             </div>
             <div>
               <h4 className="font-medium text-blue-800 mb-2">You have control</h4>
@@ -434,7 +434,7 @@ const PrivacyPolicyPage = () => {
           </div>
 
           <div>
-            <h4 className="font-medium mb-2">8.3 Erasure ("Right to be Forgotten")</h4>
+            <h4 className="font-medium mb-2">8.3 Erasure (&quot;Right to be Forgotten&quot;)</h4>
             <LegalList items={[
               'Request deletion of data',
               'Exceptions for legal obligations',
