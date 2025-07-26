@@ -17,10 +17,15 @@ interface QRCodeGeneratorProps {
   description?: string;
   defaultSize?: QRCodeSize;
   showSizeSelector?: boolean;
+  showColorSelector?: boolean;
   showDownloadButton?: boolean;
   showShareButton?: boolean;
   showCopyButton?: boolean;
   className?: string;
+  customColors?: {
+    dark: string;
+    light: string;
+  };
 }
 
 export default function QRCodeGenerator({
@@ -29,18 +34,24 @@ export default function QRCodeGenerator({
   description = 'Scan this QR code to book an appointment',
   defaultSize = 'medium',
   showSizeSelector = true,
+  showColorSelector = false,
   showDownloadButton = true,
   showShareButton = true,
   showCopyButton = true,
   className = '',
+  customColors,
 }: QRCodeGeneratorProps) {
   const [qrCodeData, setQrCodeData] = useState<QRCodeGenerationResult | null>(null);
   const [selectedSize, setSelectedSize] = useState<QRCodeSize>(defaultSize);
+  const [selectedColors, setSelectedColors] = useState({
+    dark: customColors?.dark || '#059669', // Teal-600
+    light: customColors?.light || '#FFFFFF'
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Generate QR code when URL or size changes
+  // Generate QR code when URL, size, or colors change
   useEffect(() => {
     if (!bookingUrl) {
       setError('Booking URL is required');
@@ -53,14 +64,25 @@ export default function QRCodeGenerator({
     }
 
     generateQRCode();
-  }, [bookingUrl, selectedSize]);
+  }, [bookingUrl, selectedSize, selectedColors]);
 
   const generateQRCode = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await generateBookingQRCode(bookingUrl, selectedSize);
+      // Import the generateQRCodeForDownload function for custom colors
+      const { generateQRCodeForDownload } = await import('../../lib/qr-code-service');
+      
+      const options = {
+        size: selectedSize,
+        format: 'png' as const,
+        errorCorrectionLevel: 'M' as const,
+        margin: 4,
+        color: selectedColors,
+      };
+
+      const result = await generateQRCodeForDownload(bookingUrl, options);
       setQrCodeData(result);
     } catch (err) {
       console.error('Failed to generate QR code:', err);
@@ -118,6 +140,17 @@ export default function QRCodeGenerator({
     { value: 'large', label: 'Large', pixels: 512 },
   ];
 
+  const colorPresets = [
+    { name: 'Teal', dark: '#059669', light: '#FFFFFF' },
+    { name: 'Blue', dark: '#2563EB', light: '#FFFFFF' },
+    { name: 'Purple', dark: '#7C3AED', light: '#FFFFFF' },
+    { name: 'Pink', dark: '#DB2777', light: '#FFFFFF' },
+    { name: 'Black', dark: '#000000', light: '#FFFFFF' },
+    { name: 'Dark Blue', dark: '#1E3A8A', light: '#F0F9FF' },
+    { name: 'Dark Green', dark: '#166534', light: '#F0FDF4' },
+    { name: 'Maroon', dark: '#7F1D1D', light: '#FEF2F2' },
+  ];
+
   return (
     <div className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
       {/* Header */}
@@ -149,6 +182,93 @@ export default function QRCodeGenerator({
                 </span>
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Color Selector */}
+      {showColorSelector && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            QR Code Colors
+          </label>
+          <div className="space-y-4">
+            {/* Color Presets */}
+            <div>
+              <span className="text-xs text-gray-600 dark:text-gray-400 mb-2 block">Presets</span>
+              <div className="flex flex-wrap gap-2">
+                {colorPresets.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => setSelectedColors({ dark: preset.dark, light: preset.light })}
+                    className={`flex items-center gap-2 px-3 py-2 text-xs rounded-md border transition-colors ${
+                      selectedColors.dark === preset.dark && selectedColors.light === preset.light
+                        ? 'bg-teal-50 border-teal-300 text-teal-700'
+                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex">
+                      <div 
+                        className="w-3 h-3 rounded-l" 
+                        style={{ backgroundColor: preset.dark }}
+                      />
+                      <div 
+                        className="w-3 h-3 rounded-r border-l border-gray-300" 
+                        style={{ backgroundColor: preset.light }}
+                      />
+                    </div>
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Colors */}
+            <div>
+              <span className="text-xs text-gray-600 dark:text-gray-400 mb-2 block">Custom</span>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    Foreground
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={selectedColors.dark}
+                      onChange={(e) => setSelectedColors(prev => ({ ...prev, dark: e.target.value }))}
+                      className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={selectedColors.dark}
+                      onChange={(e) => setSelectedColors(prev => ({ ...prev, dark: e.target.value }))}
+                      className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      placeholder="#000000"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    Background
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={selectedColors.light}
+                      onChange={(e) => setSelectedColors(prev => ({ ...prev, light: e.target.value }))}
+                      className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={selectedColors.light}
+                      onChange={(e) => setSelectedColors(prev => ({ ...prev, light: e.target.value }))}
+                      className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      placeholder="#FFFFFF"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
