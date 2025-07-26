@@ -172,12 +172,24 @@ The remote staging environment does **NOT** have our recently implemented authen
 - **Status**: Waiting for Render deployment (~5-10 minutes)
 - **Expected V2 Available**: ~02:15 EST
 
-### 2025-07-26 02:30 EST - EXTENDED DEPLOYMENT
-- **Service Status**: STILL UNAVAILABLE (15+ minutes)
-- **Health Check**: Connection timeouts continuing
-- **Frontend**: Also unavailable (both services down)
-- **Network**: DNS resolving, server responding to ping
-- **Analysis**: Extended deployment or potential build failure
+### 2025-07-26 02:50 EST - RENDER DEPLOYMENT FAILURE
+- **Service Status**: ONLINE - NO DEPLOYMENT ACTIVITY FOR 15+ MINUTES
+- **Critical Issue**: Multiple deployment triggers completely ignored by Render
+- **Attempts**: 2 force commits pushed, no deployment started
+- **Headers**: Show `x-api-version: v2.0` but 0 actual V2 endpoints
+- **Analysis**: Render auto-deploy configuration problem or branch mismatch
+
+### 2025-07-26 02:35 EST - FIRST FORCE TRIGGER  
+- **Action**: Added deployment trigger file (commit ee33dc018)
+- **Result**: No deployment started after 10+ minutes
+- **Second Action**: Modified main.py startup message (commit fc8a78799)
+- **Result**: Still no deployment activity
+
+### 2025-07-26 02:30 EST - SERVICE RECOVERED
+- **Service Status**: BACK ONLINE after 20+ minute deployment
+- **Critical Finding**: V2 endpoints NOT deployed (0 found)
+- **V1 Endpoints**: 454 active (auth endpoints working)
+- **Issue**: Render deployed successfully but wrong code version
 
 ### 2025-07-26 02:20 EST - DEPLOYMENT IN PROGRESS  
 - **Service Status**: UNAVAILABLE (deployment rebuilding)

@@ -10,6 +10,8 @@ from routers import unified_analytics
 
 # Import V2 API endpoints for Six Figure Barber enhancements
 from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization
+# Import deployment test endpoint
+from test_deployment_endpoint import router as test_deployment_router
 # service_templates temporarily disabled due to FastAPI error
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
@@ -367,6 +369,9 @@ app.include_router(upselling.router, prefix="/api/v2")  # Upselling tracking and
 app.include_router(ai_upselling.router, prefix="/api/v2")  # AI Agent for autonomous upselling
 app.include_router(calendar_revenue_optimization.router, prefix="/api/v2")  # Calendar revenue optimization - Six Figure Barber methodology
 app.include_router(search.router, prefix="/api/v2")  # Global search functionality
+
+# DEPLOYMENT TEST ENDPOINT - Remove after deployment verification
+app.include_router(test_deployment_router, prefix="/api/v2")
 
 @app.get("/")
 def root():
