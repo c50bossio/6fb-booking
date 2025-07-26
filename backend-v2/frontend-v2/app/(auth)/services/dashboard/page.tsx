@@ -147,7 +147,7 @@ export default function ServiceDashboardPage() {
       underperformingServices,
       sixFBCompliance
     }
-  }, [])
+  }, [calculate6FBCompliance])
 
   const calculate6FBCompliance = useCallback((services: Service[], analytics: any) => {
     // Mock calculation - in real implementation, this would be more sophisticated

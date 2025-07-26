@@ -53,11 +53,7 @@ export default function WebhookManagementPage() {
     'client.updated'
   ]
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
@@ -149,7 +145,11 @@ export default function WebhookManagementPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const createWebhook = async () => {
     if (!newWebhook.name.trim() || !newWebhook.url.trim() || newWebhook.events.length === 0) {

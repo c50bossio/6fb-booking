@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Brain, TrendingUp, Zap, Eye, Settings, Activity, Clock, Target, BarChart3, AlertCircle, CreditCard } from 'lucide-react'
 import AIAgentPricingDisplay from '@/components/ai/AIAgentPricingDisplay'
 import { useToast } from '@/components/ui/use-toast'
@@ -100,7 +100,7 @@ export default function AIAgentDashboard() {
     return response.json()
   }
 
-  const fetchAIData = async () => {
+  const fetchAIData = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -122,7 +122,7 @@ export default function AIAgentDashboard() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   const executeOpportunity = async (opportunity: AIOpportunity) => {
     try {
@@ -194,7 +194,7 @@ export default function AIAgentDashboard() {
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchAIData, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchAIData])
 
   if (isLoading && !status) {
     return (

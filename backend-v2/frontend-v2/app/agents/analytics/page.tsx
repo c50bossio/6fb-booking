@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, MessageSquare, Users, Bot } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -63,11 +63,7 @@ export default function AgentAnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('30d')
 
-  useEffect(() => {
-    loadAnalytics()
-  }, [dateRange])
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -116,7 +112,11 @@ export default function AgentAnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [dateRange])
+
+  useEffect(() => {
+    loadAnalytics()
+  }, [loadAnalytics])
 
   const formatCurrency = (amount: number | undefined | null) => {
     const value = amount ?? 0

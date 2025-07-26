@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { webhooksAPI, getProfile, WebhookStats } from '../../../lib/api'
 import WebhookConfiguration from '../../../components/WebhookConfiguration'
@@ -19,11 +19,7 @@ export default function WebhooksPage() {
   const [error, setError] = useState('')
   const [selectedWebhookId, setSelectedWebhookId] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadInitialData()
-  }, [])
-
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -45,7 +41,11 @@ export default function WebhooksPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    loadInitialData()
+  }, [loadInitialData])
 
   const refreshStats = async () => {
     try {
