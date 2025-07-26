@@ -12,6 +12,7 @@ from db import get_db
 from utils.url_shortener import url_shortener
 
 router = APIRouter(
+    prefix="/short-urls",
     tags=["short-urls"]
 )
 

@@ -329,7 +329,7 @@ app.include_router(webhook_management.router, prefix="/api/v2")  # Re-enabled wi
 app.include_router(enterprise.router, prefix="/api/v2")
 app.include_router(marketing.router, prefix="/api/v2")
 # Replaced with unified_analytics.router - see consolidated analytics below
-app.include_router(short_urls.router, prefix="/s")  # Prefix for branded short URLs to avoid conflicts
+app.include_router(short_urls.router, prefix="/api/v2")  # Short URL management API
 app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v2
 # Email analytics consolidated into unified_analytics.router
 app.include_router(test_data.router, prefix="/api/v2")
