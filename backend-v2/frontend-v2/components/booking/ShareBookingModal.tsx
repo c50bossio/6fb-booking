@@ -16,7 +16,6 @@ import { Modal, ModalBody } from '../ui/Modal'
 import { Card } from '@/components/ui/card'
 import LinkCustomizer from './LinkCustomizer'
 import QRCodeGenerator from './QRCodeGenerator'
-import { shortUrlService } from '@/lib/short-url-service'
 import { 
   ModalNavigationProvider, 
   ModalNavigationContent, 
@@ -24,19 +23,15 @@ import {
   type ModalPageType 
 } from '../ui/ModalNavigation'
 import {
-  LinkIcon,
   CodeBracketIcon,
   QrCodeIcon,
   EnvelopeIcon,
   ShareIcon,
-  DocumentDuplicateIcon,
   CheckIcon,
   CogIcon,
-  ChartBarIcon,
   ClipboardDocumentIcon,
   ChevronRightIcon,
   ChevronDownIcon,
-  CalendarIcon,
 } from '@heroicons/react/24/outline'
 
 type SubscriptionTier = 'basic' | 'professional' | 'enterprise'
@@ -78,10 +73,6 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
   const [shareCount, setShareCount] = useState(0)
   const [showRecentLinks, setShowRecentLinks] = useState(false)
   const [customizerMode, setCustomizerMode] = useState<'set-parameters' | 'quick'>('set-parameters')
-  const [currentUrl, setCurrentUrl] = useState(bookingUrl)
-  const [isGeneratingUrl, setIsGeneratingUrl] = useState(false)
-  const [urlError, setUrlError] = useState<string | null>(null)
-  const [urlIsShort, setUrlIsShort] = useState(false)
 
 
   // Feature availability - all features are now free
@@ -269,102 +260,60 @@ ${businessName}`
             </div>
 
             {/* Link Display Card */}
-            <div className={`p-4 rounded-lg border transition-all duration-200 ${
-              urlIsShort 
-                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
-                : isGeneratingUrl 
-                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
-                : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'
-            }`}>
-              {isGeneratingUrl ? (
-                <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  <div>
-                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                      Creating your link...
-                    </p>
+            <div className="p-4 rounded-lg border bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1 min-w-0">
+                    <a
+                      href={getCustomUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-lg font-mono font-medium truncate block hover:underline transition-colors duration-200 text-gray-700 dark:text-gray-300"
+                      title={getCustomUrl()}
+                    >
+                      {getCustomUrl()}
+                    </a>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
+                  
+                  {/* Action Buttons */}
                   <div className="flex items-center space-x-2">
-                    <div className="flex-1 min-w-0">
-                      <a
-                        href={getCustomUrl()}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`text-lg font-mono font-medium truncate block hover:underline transition-colors duration-200 ${
-                          urlIsShort 
-                            ? 'text-green-700 dark:text-green-300' 
-                            : 'text-gray-700 dark:text-gray-300'
-                        }`}
-                        title={getCustomUrl()}
-                      >
-                        {getCustomUrl()}
-                      </a>
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex items-center space-x-2">
-                      {/* Quick QR Button */}
-                      <button
-                        onClick={() => setShowQuickQR(true)}
-                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
-                        title="Quick QR code"
-                      >
-                        <QrCodeIcon className="w-5 h-5" />
-                      </button>
+                    {/* Quick QR Button */}
+                    <button
+                      onClick={() => setShowQuickQR(true)}
+                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                      title="Quick QR code"
+                    >
+                      <QrCodeIcon className="w-5 h-5" />
+                    </button>
 
-                      {/* Copy Button */}
-                      <button
-                        onClick={() => copyToClipboard(getCustomUrl(), 'copy-link')}
-                        disabled={isLinkExpired()}
-                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                          isLinkExpired()
-                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
-                            : urlIsShort
-                            ? 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
-                            : 'bg-primary-600 hover:bg-primary-700 text-white shadow-sm'
-                        }`}
-                        title={isLinkExpired() ? "Link has expired" : "Copy link to clipboard"}
-                      >
-                        {isLinkExpired() ? (
-                          <div className="flex items-center space-x-1">
-                            <CalendarIcon className="w-4 h-4" />
-                            <span>Expired</span>
-                          </div>
-                        ) : copiedOption === 'copy-link' ? (
-                          <div className="flex items-center space-x-1">
-                            <CheckIcon className="w-4 h-4" />
-                            <span>Copied!</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center space-x-1">
-                            <ClipboardDocumentIcon className="w-4 h-4" />
-                            <span>Copy Link</span>
-                          </div>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Clean Status Message */}
-                  {!isGeneratingUrl && (
-                    <div className="flex items-center space-x-2 text-sm">
-                      {urlIsShort ? (
-                        <div className="flex items-center space-x-1 text-green-700 dark:text-green-300">
+                    {/* Copy Button */}
+                    <button
+                      onClick={() => copyToClipboard(getCustomUrl(), 'copy-link')}
+                      className="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 bg-primary-600 hover:bg-primary-700 text-white shadow-sm"
+                      title="Copy link to clipboard"
+                    >
+                      {copiedOption === 'copy-link' ? (
+                        <div className="flex items-center space-x-1">
                           <CheckIcon className="w-4 h-4" />
-                          <span className="font-medium">Branded link created successfully</span>
+                          <span>Copied!</span>
                         </div>
                       ) : (
-                        <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
-                          <span>Using secure booking URL</span>
+                        <div className="flex items-center space-x-1">
+                          <ClipboardDocumentIcon className="w-4 h-4" />
+                          <span>Copy Link</span>
                         </div>
                       )}
-                    </div>
-                  )}
+                    </button>
+                  </div>
                 </div>
-              )}
+
+                {/* Status Message */}
+                <div className="flex items-center space-x-2 text-sm">
+                  <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
+                    <span>Secure booking URL ready to share</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -373,7 +322,7 @@ ${businessName}`
         <button
           onClick={() => {
             onClose()
-            router.push('/marketing/links')
+            router.push('/marketing/booking-links')
           }}
           className="w-full flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 group"
         >
