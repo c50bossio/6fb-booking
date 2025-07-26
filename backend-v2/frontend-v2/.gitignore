@@ -41,4 +41,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.tsjest.env.js
+next-env.d.ts
+
+# jest environment files
+jest.env.js

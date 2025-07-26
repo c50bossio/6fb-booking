@@ -146,7 +146,7 @@ export class TestDataFactory {
         { date: 'Wed', revenue: 640, appointments: 10, averageTicket: 64.00, tips: 96, totalRevenue: 736 },
         { date: 'Thu', revenue: 720, appointments: 11, averageTicket: 65.45, tips: 108, totalRevenue: 828 },
         { date: 'Fri', revenue: 880, appointments: 13, averageTicket: 67.69, tips: 132, totalRevenue: 1012 },
-        { date: 'Sat', revenue: 1100, apartments: 16, averageTicket: 68.75, tips: 165, totalRevenue: 1265 },
+        { date: 'Sat', revenue: 1100, appointments: 16, averageTicket: 68.75, tips: 165, totalRevenue: 1265 },
         { date: 'Sun', revenue: 0, appointments: 0, averageTicket: 0, tips: 0, totalRevenue: 0 }
       ],
       

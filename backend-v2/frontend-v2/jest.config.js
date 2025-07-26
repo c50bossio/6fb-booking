@@ -21,8 +21,8 @@ const customJestConfig = {
   },
   testEnvironment: 'jest-environment-jsdom',
   testMatch: [
-    '<rootDir>/__tests__/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/__tests__/**/*.(test|spec).{js,jsx,ts,tsx}',
+    '<rootDir>/**/__tests__/**/*.(test|spec).{js,jsx,ts,tsx}',
     '<rootDir>/**/*.(test|spec).{js,jsx,ts,tsx}'
   ],
   collectCoverageFrom: [
@@ -51,7 +51,11 @@ const customJestConfig = {
     '.*\\.spec\\.(ts|js|tsx)$', // Exclude Playwright spec files
     '.*/playwright.*', // Exclude any playwright-related files
     '.*/e2e/.*\\.(ts|js|tsx)$', // Exclude E2E test files in subdirectories
-    '.*\\.e2e\\.(test|spec)\\.(ts|js|tsx)$' // Exclude E2E test files with e2e in name
+    '.*\\.e2e\\.(test|spec)\\.(ts|js|tsx)$', // Exclude E2E test files with e2e in name
+    '.*helpers?\\.(ts|js|tsx)$', // Exclude helper files
+    '.*config\\.(ts|js|tsx)$', // Exclude config files
+    '.*utils\\.(ts|js|tsx)$', // Exclude utility files that aren't tests
+    'template\\.(ts|js|tsx)$' // Exclude template files
   ],
   transform: {
     // Use babel-jest to transpile tests with the next/babel preset

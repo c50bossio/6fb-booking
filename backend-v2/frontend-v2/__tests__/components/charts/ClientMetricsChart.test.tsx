@@ -249,8 +249,8 @@ describe('ClientMetricsChart', () => {
       const chartOptions = JSON.parse(chartElement.getAttribute('data-chart-options') || '{}');
       
       expect(chartOptions.plugins.tooltip.callbacks).toBeDefined();
-      expect(typeof chartOptions.plugins.tooltip.callbacks.label).toBe('function');
-      expect(typeof chartOptions.plugins.tooltip.callbacks.afterLabel).toBe('function');
+      expect(chartOptions.plugins.tooltip.callbacks.label).toBe('[Function]');
+      expect(chartOptions.plugins.tooltip.callbacks.afterLabel).toBe('[Function]');
     });
   });
 
