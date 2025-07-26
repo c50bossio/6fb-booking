@@ -37,7 +37,7 @@ Base.metadata.create_all(bind=engine)
 async def lifespan(app: FastAPI):
     # Startup
     logger = logging.getLogger(__name__)
-    logger.info("🚀 Starting BookedBarber V2 backend...")
+    logger.info("🚀 Starting BookedBarber V2 backend... (V2 AUTH DEPLOYMENT TEST)")
     
     # Initialize Redis cache
     try:
