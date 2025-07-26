@@ -75,10 +75,6 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
   const [showQRCode, setShowQRCode] = useState(false)
   const [showShareMethods, setShowShareMethods] = useState(false)
   const [showQuickQR, setShowQuickQR] = useState(false)
-  const [showLinkOptions, setShowLinkOptions] = useState(false)
-  const [customLinkName, setCustomLinkName] = useState('')
-  const [linkExpiration, setLinkExpiration] = useState<string>('')
-  const [enableExpiration, setEnableExpiration] = useState(false)
   const [shareCount, setShareCount] = useState(0)
   const [showRecentLinks, setShowRecentLinks] = useState(false)
   const [customizerMode, setCustomizerMode] = useState<'set-parameters' | 'quick'>('set-parameters')
@@ -87,18 +83,6 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
   const [urlError, setUrlError] = useState<string | null>(null)
   const [urlIsShort, setUrlIsShort] = useState(false)
 
-  // Generate URL when parameters change (but not on initial mount with empty name)
-  useEffect(() => {
-    // Only generate URL if we have a custom name or expiration settings
-    if (customLinkName.trim() || (enableExpiration && linkExpiration)) {
-      generateUrl()
-    } else {
-      // Reset to original booking URL when no customization
-      setCurrentUrl(bookingUrl)
-      setUrlIsShort(false)
-      setUrlError(null)
-    }
-  }, [customLinkName, linkExpiration, enableExpiration, bookingUrl])
 
   // Feature availability - all features are now free
   const features = {
@@ -126,78 +110,14 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
       setShareCount(prev => prev + 1) // Increment share count
       setTimeout(() => setCopiedOption(null), 2000)
       
-      // Save to recent links if it's a custom link
-      if (customLinkName) {
-        saveToRecentLinks(text, customLinkName)
-      }
+      // Note: Custom link creation moved to dedicated /marketing/links page
     } catch (err) {
       console.error('Failed to copy:', err)
     }
   }
 
-  // Generate URL using short URL service
-  const generateUrl = async () => {
-    setIsGeneratingUrl(true)
-    setUrlError(null)
-
-    try {
-      const description = `${businessName} booking link${customLinkName ? ` - ${customLinkName}` : ''}`
-      
-      const result = await shortUrlService.createBookingShortUrlWithFallback(
-        bookingUrl,
-        customLinkName || undefined,
-        enableExpiration && linkExpiration ? linkExpiration : undefined,
-        description
-      )
-
-      setCurrentUrl(result.url)
-      setUrlIsShort(result.isShortUrl)
-      
-      if (result.error && !result.isShortUrl) {
-        setUrlError('Service temporarily unavailable. Using secure booking link instead.')
-      }
-
-    } catch (error) {
-      console.error('Error generating URL:', error)
-      // Fallback to original URL
-      setCurrentUrl(bookingUrl)
-      setUrlIsShort(false)
-      setUrlError('Service temporarily unavailable. Using secure booking link instead.')
-    } finally {
-      setIsGeneratingUrl(false)
-    }
-  }
-
-  // Get current URL (synchronous for compatibility)
-  const getCustomUrl = () => currentUrl
-
-  // Check if link is expired
-  const isLinkExpired = () => {
-    if (!enableExpiration || !linkExpiration) return false
-    const expiryDate = new Date(linkExpiration)
-    const now = new Date()
-    return now > expiryDate
-  }
-
-  // Get expiration status display
-  const getExpirationStatus = () => {
-    if (!enableExpiration || !linkExpiration) return null
-    
-    const expiryDate = new Date(linkExpiration)
-    const now = new Date()
-    const diffTime = expiryDate.getTime() - now.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
-    if (diffTime < 0) {
-      return { type: 'expired', message: 'Link expired', class: 'text-red-600 dark:text-red-400' }
-    } else if (diffDays <= 1) {
-      return { type: 'expiring', message: 'Expires today', class: 'text-amber-600 dark:text-amber-400' }
-    } else if (diffDays <= 3) {
-      return { type: 'expiring', message: `Expires in ${diffDays} days`, class: 'text-amber-600 dark:text-amber-400' }
-    } else {
-      return { type: 'valid', message: `Expires ${expiryDate.toLocaleDateString()}`, class: 'text-green-600 dark:text-green-400' }
-    }
-  }
+  // Get current URL (simplified - just return the booking URL)
+  const getCustomUrl = () => bookingUrl
 
   // Save to recent links (localStorage)
   const saveToRecentLinks = (url: string, name: string) => {
@@ -342,27 +262,9 @@ ${businessName}`
                 <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
                   Your Booking Link
                 </h3>
-                {urlIsShort && (
-                  <div className="flex items-center space-x-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
-                    <CheckIcon className="w-3 h-3" />
-                    <span>Branded</span>
-                  </div>
-                )}
-                {isGeneratingUrl && (
-                  <div className="flex items-center space-x-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
-                    <div className="w-3 h-3 border border-blue-700 border-t-transparent rounded-full animate-spin"></div>
-                    <span>Creating...</span>
-                  </div>
-                )}
               </div>
               <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                 {shareCount > 0 && <span>Shared {shareCount} times</span>}
-                {getExpirationStatus() && (
-                  <span className={`flex items-center space-x-1 ${getExpirationStatus()?.class}`}>
-                    <CalendarIcon className="w-3 h-3" />
-                    <span>{getExpirationStatus()?.message}</span>
-                  </span>
-                )}
               </div>
             </div>
 
@@ -467,90 +369,21 @@ ${businessName}`
           </div>
         </div>
 
-        {/* Link Options - Collapsible */}
-        <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-          <button
-            onClick={() => setShowLinkOptions(!showLinkOptions)}
-            className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
-          >
-            <div className="flex items-center space-x-3">
-              <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <div>
-                <p className="font-medium text-gray-900 dark:text-gray-100">Link Options</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Customize link name and expiration</p>
-              </div>
-            </div>
-            <ChevronRightIcon className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showLinkOptions ? 'rotate-90' : ''}`} />
-          </button>
-          
-          {showLinkOptions && (
-            <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="pt-4 space-y-4">
-                {/* Custom Link Name Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Custom link name (optional)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={customLinkName}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        // Only allow alphanumeric characters and hyphens
-                        const sanitized = value.replace(/[^a-zA-Z0-9-\s]/g, '').substring(0, 50)
-                        setCustomLinkName(sanitized)
-                      }}
-                      placeholder="e.g., summer-special, downtown-location"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                    {customLinkName.length > 40 && (
-                      <div className="absolute right-2 top-2 text-xs text-amber-600 dark:text-amber-400">
-                        {customLinkName.length}/50
-                      </div>
-                    )}
-                  </div>
-                  {customLinkName.trim() && (
-                    <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        Attempting to create branded link...
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Link Expiration */}
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={enableExpiration}
-                      onChange={(e) => setEnableExpiration(e.target.checked)}
-                      className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Set expiration date</span>
-                  </label>
-                  {enableExpiration && (
-                    <div className="flex-1">
-                      <input
-                        type="date"
-                        value={linkExpiration}
-                        min={new Date().toISOString().split('T')[0]} // Prevent past dates
-                        onChange={(e) => setLinkExpiration(e.target.value)}
-                        className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                      {linkExpiration && new Date(linkExpiration) < new Date() && (
-                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                          Expiration date cannot be in the past
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Create Custom Link - Navigate to dedicated page */}
+        <button
+          onClick={() => {
+            onClose()
+            router.push('/marketing/links')
+          }}
+          className="w-full flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 group"
+        >
+          <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-300" />
+          <div className="text-left flex-1">
+            <p className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-300">Create Custom Link</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Branded links, expiration dates, analytics & QR codes</p>
+          </div>
+          <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-300" />
+        </button>
 
         {/* Recent Links Dropdown */}
         {getRecentLinks().length > 0 && (
