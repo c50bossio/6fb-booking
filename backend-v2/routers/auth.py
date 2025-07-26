@@ -1101,13 +1101,12 @@ async def logout(
     clear_auth_cookies(response)
     
     if success:
-        audit_logger.info(
-            "User logout successful",
-            extra={
-                "user_id": current_user.id,
+        audit_logger.log_auth_event(
+            "logout_success",
+            user_id=current_user.id,
+            ip_address=client_ip,
+            details={
                 "user_email": current_user.email,
-                "ip_address": client_ip,
-                "action": "logout",
                 "token_blacklisted": True,
                 "cookies_cleared": True
             }
@@ -1115,13 +1114,13 @@ async def logout(
     else:
         # Even if blacklisting fails, we should still report success to the user
         # to avoid revealing internal system details
-        audit_logger.warning(
-            "Logout token blacklisting failed",
-            extra={
-                "user_id": current_user.id,
+        audit_logger.log_auth_event(
+            "logout_failed",
+            user_id=current_user.id,
+            ip_address=client_ip,
+            details={
                 "user_email": current_user.email,
-                "ip_address": client_ip,
-                "action": "logout_failed",
+                "reason": "token_blacklisting_failed",
                 "cookies_cleared": True
             }
         )
@@ -1152,13 +1151,12 @@ async def logout_all(
     response = JSONResponse(content=response_data)
     clear_auth_cookies(response)
     
-    audit_logger.info(
-        "User logout from all devices",
-        extra={
-            "user_id": current_user.id,
+    audit_logger.log_auth_event(
+        "logout_all_success",
+        user_id=current_user.id,
+        ip_address=client_ip,
+        details={
             "user_email": current_user.email,
-            "ip_address": client_ip,
-            "action": "logout_all",
             "tokens_blacklisted": blacklisted_count,
             "cookies_cleared": True
         }

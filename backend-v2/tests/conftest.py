@@ -186,3 +186,44 @@ def disable_rate_limiting(monkeypatch):
     
     # Restore original environment
     settings.environment = original_env
+
+
+@pytest.fixture(scope="function")
+def clear_token_blacklist():
+    """Clear token blacklist before each test"""
+    from services.token_blacklist import get_token_blacklist_service
+    
+    # Get the blacklist service and clear it
+    blacklist_service = get_token_blacklist_service()
+    
+    # If using Redis, flush the test database
+    if blacklist_service.use_redis:
+        try:
+            # Clear all blacklist keys
+            keys = blacklist_service.redis_client.keys("blacklist:*")
+            if keys:
+                blacklist_service.redis_client.delete(*keys)
+            user_keys = blacklist_service.redis_client.keys("user_blacklist:*")
+            if user_keys:
+                blacklist_service.redis_client.delete(*user_keys)
+        except Exception:
+            pass
+    else:
+        # Clear in-memory blacklist
+        blacklist_service.blacklist_memory.clear()
+    
+    yield
+    
+    # Clean up after test
+    if blacklist_service.use_redis:
+        try:
+            keys = blacklist_service.redis_client.keys("blacklist:*")
+            if keys:
+                blacklist_service.redis_client.delete(*keys)
+            user_keys = blacklist_service.redis_client.keys("user_blacklist:*")
+            if user_keys:
+                blacklist_service.redis_client.delete(*user_keys)
+        except Exception:
+            pass
+    else:
+        blacklist_service.blacklist_memory.clear()
