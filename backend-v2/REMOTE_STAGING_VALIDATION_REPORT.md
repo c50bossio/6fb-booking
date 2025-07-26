@@ -163,7 +163,37 @@ The remote staging environment does **NOT** have our recently implemented authen
 
 ---
 
-**Status**: Deployment pipeline investigation  
-**Finding**: V2 auth endpoints configured in main.py but not deploying to Render  
-**Next Action**: Trigger manual deployment to resolve pipeline issue  
-**Estimated Time to V2 Staging**: 1-2 hours (manual deployment trigger)
+## 🕐 Deployment Timeline
+
+### 2025-07-26 02:06 EST - DEPLOYMENT FIX APPLIED
+- **Issue Identified**: Git merge conflicts in main.py preventing V2 deployment
+- **Fix Applied**: Resolved conflicts, cleaned duplicate routers, restored V2 auth config
+- **Commit**: f6a15553d pushed to staging branch
+- **Status**: Waiting for Render deployment (~5-10 minutes)
+- **Expected V2 Available**: ~02:15 EST
+
+### 2025-07-26 02:30 EST - EXTENDED DEPLOYMENT
+- **Service Status**: STILL UNAVAILABLE (15+ minutes)
+- **Health Check**: Connection timeouts continuing
+- **Frontend**: Also unavailable (both services down)
+- **Network**: DNS resolving, server responding to ping
+- **Analysis**: Extended deployment or potential build failure
+
+### 2025-07-26 02:20 EST - DEPLOYMENT IN PROGRESS  
+- **Service Status**: UNAVAILABLE (deployment rebuilding)
+- **Health Check**: Failing (expected during deployment)
+- **V2 Endpoints**: Still being deployed
+- **Estimated Completion**: 02:25-02:30 EST (EXCEEDED)
+
+### Previous Status (02:06 EST)
+- **V1 Endpoints**: 445 (was active)
+- **V2 Endpoints**: 0 (deployment triggered)
+- **Auth Endpoints**: 23 (all V1)
+
+---
+
+**Status**: DEPLOYMENT FIX APPLIED - WAITING FOR RENDER  
+**Finding**: Git merge conflicts in main.py were blocking V2 deployment  
+**Fix Applied**: Resolved merge conflicts, pushed clean main.py to staging branch (commit f6a15553d)  
+**Current State**: Render deployment in progress (~5-10 minutes)  
+**Next Test**: Verify V2 endpoints become available after deployment completes
