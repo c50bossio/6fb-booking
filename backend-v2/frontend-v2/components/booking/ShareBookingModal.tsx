@@ -136,19 +136,11 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
 
   // Generate URL using short URL service
   const generateUrl = async () => {
-    console.log('🔧 generateUrl called with:', { customLinkName, enableExpiration, linkExpiration, bookingUrl })
     setIsGeneratingUrl(true)
     setUrlError(null)
 
     try {
       const description = `${businessName} booking link${customLinkName ? ` - ${customLinkName}` : ''}`
-      
-      console.log('🔧 Calling shortUrlService with:', {
-        bookingUrl,
-        customLinkName: customLinkName || undefined,
-        expirationDate: enableExpiration && linkExpiration ? linkExpiration : undefined,
-        description
-      })
       
       const result = await shortUrlService.createBookingShortUrlWithFallback(
         bookingUrl,
@@ -157,22 +149,19 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
         description
       )
 
-      console.log('🔧 shortUrlService result:', result)
-
       setCurrentUrl(result.url)
       setUrlIsShort(result.isShortUrl)
       
       if (result.error && !result.isShortUrl) {
-        console.log('🔧 Setting error:', result.error)
-        setUrlError(`Short URL creation failed: ${result.error}. Using fallback URL.`)
+        setUrlError('Service temporarily unavailable. Using secure booking link instead.')
       }
 
     } catch (error) {
-      console.error('🔧 Error generating URL:', error)
+      console.error('Error generating URL:', error)
       // Fallback to original URL
       setCurrentUrl(bookingUrl)
       setUrlIsShort(false)
-      setUrlError('Failed to generate custom URL. Using default booking URL.')
+      setUrlError('Service temporarily unavailable. Using secure booking link instead.')
     } finally {
       setIsGeneratingUrl(false)
     }
