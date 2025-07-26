@@ -384,13 +384,13 @@ export default function TemplatesPage() {
                         <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400">From: Your Business Name</p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">To: client@example.com</p>
-                          <p className="text-sm font-medium mt-2">Subject: {selectedTemplate.subject || &apos;Email Subject&apos;}</p>
+                          <p className="text-sm font-medium mt-2">Subject: {selectedTemplate.subject || 'Email Subject'}</p>
                         </div>
                         <div className="prose dark:prose-dark max-w-none">
-                          <p>Hi {&apos;{{client_name}}&apos;},</p>
+                          <p>Hi {'{{client_name}}'},</p>
                           <p>This is a preview of your {selectedTemplate.name} template.</p>
                           <p>Your actual content would appear here with all the personalized variables replaced.</p>
-                          <p>Best regards,<br />{&apos;{{business_name}}&apos;}</p>
+                          <p>Best regards,<br />{'{{business_name}}'}</p>
                         </div>
                       </div>
                     ) : (

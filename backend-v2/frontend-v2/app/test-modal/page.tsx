@@ -62,22 +62,22 @@ export default function TestModalPage() {
                 Open ShareBookingModal (Enhanced)
               </button>
               
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">🎉 NEW: Clean Short URLs!</h4>
-                <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                  <li>• <strong>Short URL Generation:</strong> Creates branded bkdbrbr.com links</li>
-                  <li>• <strong>Clean URLs:</strong> No more ugly timestamps or long query strings</li>
-                  <li>• <strong>Custom Names:</strong> Use custom names as short codes when possible</li>
-                  <li>• <strong>Smart Fallback:</strong> Falls back to regular URLs if shortening fails</li>
-                  <li>• <strong>Loading States:</strong> Shows progress during URL generation</li>
-                  <li>• <strong>Enhanced History:</strong> Tracks short URL status in recent links</li>
-                  <li>• <strong>QR Code Integration:</strong> 8 color presets + custom color picker</li>
-                  <li>• <strong>Modal Navigation:</strong> Smart internal/external page routing</li>
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">✨ ENHANCED: Intuitive Short URL Experience!</h4>
+                <ul className="text-sm text-green-800 dark:text-green-200 space-y-1">
+                  <li>• <strong>Fixed 500 Errors:</strong> Resolved API endpoint mismatch issue</li>
+                  <li>• <strong>Prominent Short URLs:</strong> Branded links shown first, not as afterthought</li>
+                  <li>• <strong>Smart Preview:</strong> See your branded link before it's created</li>
+                  <li>• <strong>Clear Loading States:</strong> "Creating your branded link..." feedback</li>
+                  <li>• <strong>Visual Success States:</strong> Green checkmark when branded link is ready</li>
+                  <li>• <strong>Better Error Handling:</strong> Clear explanation when shortening fails</li>
+                  <li>• <strong>Improved Copy Button:</strong> "Copy Branded Link" vs "Copy Link"</li>
+                  <li>• <strong>Professional Design:</strong> Feels integrated, not "slapped on"</li>
                 </ul>
-                <div className="mt-3 p-3 bg-blue-100 dark:bg-blue-800/30 rounded">
-                  <p className="text-xs text-blue-700 dark:text-blue-200">
-                    <strong>Before:</strong> https://bookedbarber.com/book?ref=test&expires=1798156800000<br/>
-                    <strong>After:</strong> https://bkdbrbr.com/test (clean, trackable, professional)
+                <div className="mt-3 p-3 bg-green-100 dark:bg-green-800/30 rounded">
+                  <p className="text-xs text-green-700 dark:text-green-200">
+                    <strong>Old UX:</strong> Confusing preview of ugly URL → hope for short URL → frequent errors<br/>
+                    <strong>New UX:</strong> Clean preview → clear feedback → reliable branded links → success confirmation
                   </p>
                 </div>
               </div>

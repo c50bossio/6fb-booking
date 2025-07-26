@@ -226,7 +226,7 @@ export default function MyBookingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>{format(new Date(booking.start_time), &apos;EEEE, MMMM d, yyyy&apos;)}</span>
+                  <span>{format(new Date(booking.start_time), 'EEEE, MMMM d, yyyy')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
@@ -297,11 +297,11 @@ export default function MyBookingsPage() {
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>{format(new Date(booking.start_time), &apos;MMM d, yyyy&apos;)}</span>
+                  <span>{format(new Date(booking.start_time), 'MMM d, yyyy')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  <span>{format(new Date(booking.start_time), &apos;h:mm a&apos;)}</span>
+                  <span>{format(new Date(booking.start_time), 'h:mm a')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4" />
@@ -386,7 +386,7 @@ export default function MyBookingsPage() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4" />
-                              <span>{format(new Date(booking.start_time), &apos;EEEE, MMMM d, yyyy&apos;)}</span>
+                              <span>{format(new Date(booking.start_time), 'EEEE, MMMM d, yyyy')}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4" />
@@ -481,11 +481,11 @@ export default function MyBookingsPage() {
                           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4" />
-                              <span>{format(new Date(booking.start_time), &apos;MMM d, yyyy&apos;)}</span>
+                              <span>{format(new Date(booking.start_time), 'MMM d, yyyy')}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4" />
-                              <span>{format(new Date(booking.start_time), &apos;h:mm a&apos;)}</span>
+                              <span>{format(new Date(booking.start_time), 'h:mm a')}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <DollarSign className="w-4 h-4" />

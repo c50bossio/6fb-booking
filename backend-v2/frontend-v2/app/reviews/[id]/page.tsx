@@ -416,7 +416,7 @@ export default function ReviewDetailPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="flex items-center space-x-2">
-                    <span>{review.reviewer_name || &apos;Anonymous&apos;}</span>
+                    <span>{review.reviewer_name || 'Anonymous'}</span>
                     {review.is_verified && (
                       <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
                         Verified

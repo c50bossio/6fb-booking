@@ -352,9 +352,14 @@ ${businessName}`
               )}
             </div>
             {customLinkName.trim() && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Preview: {getCustomUrl()}
-              </p>
+              <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                <p className="text-xs font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  Your branded link will be:
+                </p>
+                <p className="text-sm font-mono text-blue-700 dark:text-blue-300">
+                  https://bkdbrbr.com/{customLinkName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10)}
+                </p>
+              </div>
             )}
           </div>
 
@@ -387,107 +392,165 @@ ${businessName}`
             )}
           </div>
 
-          {/* Main Link Display with Actions */}
-          <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                Your booking link
-              </p>
+          {/* Enhanced Link Display */}
+          <div className="space-y-3">
+            {/* Link Status Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                  {urlIsShort ? 'Your Branded Link' : 'Your Booking Link'}
+                </h3>
+                {urlIsShort && (
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+                    <CheckIcon className="w-3 h-3" />
+                    <span>Branded</span>
+                  </div>
+                )}
+                {isGeneratingUrl && (
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+                    <div className="w-3 h-3 border border-blue-700 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Creating...</span>
+                  </div>
+                )}
+              </div>
               <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                 {shareCount > 0 && <span>Shared {shareCount} times</span>}
-                {urlIsShort && (
-                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded text-xs font-medium">
-                    Short URL
-                  </span>
-                )}
-                {customLinkName.trim() && (
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
-                    Custom: {customLinkName}
-                  </span>
-                )}
                 {getExpirationStatus() && (
                   <span className={`flex items-center space-x-1 ${getExpirationStatus()?.class}`}>
                     <CalendarIcon className="w-3 h-3" />
                     <span>{getExpirationStatus()?.message}</span>
                   </span>
                 )}
-                {isGeneratingUrl && (
-                  <span className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
-                    <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span>Generating...</span>
-                  </span>
-                )}
               </div>
             </div>
-            
-            <div className="flex items-center space-x-2">
-              <div className="flex-1 min-w-0">
-                <a
-                  href={getCustomUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-mono text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 truncate block underline decoration-dotted underline-offset-2 transition-colors duration-200"
-                  title={getCustomUrl()}
-                >
-                  {getCustomUrl()}
-                </a>
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-1">
-                {/* Quick QR Button */}
-                <button
-                  onClick={() => setShowQuickQR(true)}
-                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors duration-200"
-                  title="Quick QR code"
-                >
-                  <QrCodeIcon className="w-4 h-4" />
-                </button>
 
-                {/* Copy Button */}
-                <button
-                  onClick={() => copyToClipboard(getCustomUrl(), 'copy-link')}
-                  disabled={isLinkExpired() || isGeneratingUrl}
-                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                    isLinkExpired() || isGeneratingUrl
-                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
-                      : 'bg-primary-600 hover:bg-primary-700 text-white'
-                  }`}
-                  title={
-                    isLinkExpired() ? "Link has expired" : 
-                    isGeneratingUrl ? "Generating URL..." : 
-                    "Copy URL"
-                  }
-                >
-                  {isLinkExpired() ? (
-                    <div className="flex items-center space-x-1">
-                      <CalendarIcon className="w-4 h-4" />
-                      <span>Expired</span>
+            {/* Link Display Card */}
+            <div className={`p-4 rounded-lg border transition-all duration-200 ${
+              urlIsShort 
+                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                : isGeneratingUrl 
+                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
+                : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'
+            }`}>
+              {isGeneratingUrl ? (
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div>
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                      Creating your branded link...
+                    </p>
+                    <p className="text-xs text-blue-700 dark:text-blue-300">
+                      This will be much cleaner than a long URL
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex-1 min-w-0">
+                      <a
+                        href={getCustomUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`text-lg font-mono font-medium truncate block hover:underline transition-colors duration-200 ${
+                          urlIsShort 
+                            ? 'text-green-700 dark:text-green-300' 
+                            : 'text-gray-700 dark:text-gray-300'
+                        }`}
+                        title={getCustomUrl()}
+                      >
+                        {getCustomUrl()}
+                      </a>
                     </div>
-                  ) : isGeneratingUrl ? (
-                    <div className="flex items-center space-x-1">
-                      <div className="w-4 h-4 border border-gray-600 border-t-transparent rounded-full animate-spin"></div>
-                      <span>Loading</span>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex items-center space-x-2">
+                      {/* Quick QR Button */}
+                      <button
+                        onClick={() => setShowQuickQR(true)}
+                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                        title="Quick QR code"
+                      >
+                        <QrCodeIcon className="w-5 h-5" />
+                      </button>
+
+                      {/* Copy Button */}
+                      <button
+                        onClick={() => copyToClipboard(getCustomUrl(), 'copy-link')}
+                        disabled={isLinkExpired()}
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                          isLinkExpired()
+                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                            : urlIsShort
+                            ? 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
+                            : 'bg-primary-600 hover:bg-primary-700 text-white shadow-sm'
+                        }`}
+                        title={isLinkExpired() ? "Link has expired" : "Copy link to clipboard"}
+                      >
+                        {isLinkExpired() ? (
+                          <div className="flex items-center space-x-1">
+                            <CalendarIcon className="w-4 h-4" />
+                            <span>Expired</span>
+                          </div>
+                        ) : copiedOption === 'copy-link' ? (
+                          <div className="flex items-center space-x-1">
+                            <CheckIcon className="w-4 h-4" />
+                            <span>Copied!</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-1">
+                            <ClipboardDocumentIcon className="w-4 h-4" />
+                            <span>{urlIsShort ? 'Copy Branded Link' : 'Copy Link'}</span>
+                          </div>
+                        )}
+                      </button>
                     </div>
-                  ) : copiedOption === 'copy-link' ? (
-                    <div className="flex items-center space-x-1">
-                      <CheckIcon className="w-4 h-4" />
-                      <span>Copied!</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-1">
-                      <ClipboardDocumentIcon className="w-4 h-4" />
-                      <span>Copy</span>
+                  </div>
+
+                  {/* Enhanced Status Message */}
+                  {urlIsShort && !isGeneratingUrl && (
+                    <div className="flex items-center space-x-2 text-sm">
+                      <div className="flex items-center space-x-1 text-green-700 dark:text-green-300">
+                        <CheckIcon className="w-4 h-4" />
+                        <span className="font-medium">Success!</span>
+                      </div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Your branded link is ready to share
+                      </span>
                     </div>
                   )}
-                </button>
-              </div>
+                  
+                  {!urlIsShort && !isGeneratingUrl && customLinkName.trim() && (
+                    <div className="flex items-center space-x-2 text-sm text-amber-700 dark:text-amber-300">
+                      <span className="font-medium">Note:</span>
+                      <span>Using secure booking URL (short URL unavailable)</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             
-            {/* URL Error Display */}
+            {/* Enhanced Error Display */}
             {urlError && (
-              <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <p className="text-xs text-amber-700 dark:text-amber-300">{urlError}</p>
+              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <div className="flex-shrink-0 w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
+                      Short URL Unavailable
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      {urlError.includes('500') 
+                        ? 'Service temporarily unavailable. Using secure booking link instead.' 
+                        : urlError
+                      }
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>

@@ -549,7 +549,7 @@ export default function BookPage() {
                 }`}>
                   3
                 </div>
-                <span className="ml-2 font-medium hidden sm:inline">{isAuthenticated === false ? 'Info' : &apos;Confirm&apos;}</span>
+                <span className="ml-2 font-medium hidden sm:inline">{isAuthenticated === false ? 'Info' : 'Confirm'}</span>
               </div>
               
               {/* Show additional steps for guests */}
@@ -1175,7 +1175,7 @@ export default function BookPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-blue-900">What&apos;s Next?</h3>
+                  <h3 className="text-sm font-medium text-blue-900">What's Next?</h3>
                   <p className="text-sm text-blue-700 mt-1">
                     You'll receive a confirmation email shortly. Please arrive 5-10 minutes early for your appointment.
                   </p>

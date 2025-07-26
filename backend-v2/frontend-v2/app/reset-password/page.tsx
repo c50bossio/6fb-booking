@@ -171,19 +171,19 @@ function ResetPasswordForm() {
                 <p className="text-xs text-gray-600">Password must contain:</p>
                 <div className="space-y-1">
                   <div className={`text-xs flex items-center ${passwordStrength.hasMinLength ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span className="mr-2">{passwordStrength.hasMinLength ? '✓' : &apos;○&apos;}</span>
+                    <span className="mr-2">{passwordStrength.hasMinLength ? '✓' : '○'}</span>
                     At least 8 characters
                   </div>
                   <div className={`text-xs flex items-center ${passwordStrength.hasUpperCase ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span className="mr-2">{passwordStrength.hasUpperCase ? '✓' : &apos;○&apos;}</span>
+                    <span className="mr-2">{passwordStrength.hasUpperCase ? '✓' : '○'}</span>
                     One uppercase letter
                   </div>
                   <div className={`text-xs flex items-center ${passwordStrength.hasLowerCase ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span className="mr-2">{passwordStrength.hasLowerCase ? '✓' : &apos;○&apos;}</span>
+                    <span className="mr-2">{passwordStrength.hasLowerCase ? '✓' : '○'}</span>
                     One lowercase letter
                   </div>
                   <div className={`text-xs flex items-center ${passwordStrength.hasDigit ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span className="mr-2">{passwordStrength.hasDigit ? '✓' : &apos;○&apos;}</span>
+                    <span className="mr-2">{passwordStrength.hasDigit ? '✓' : '○'}</span>
                     One number
                   </div>
                 </div>
