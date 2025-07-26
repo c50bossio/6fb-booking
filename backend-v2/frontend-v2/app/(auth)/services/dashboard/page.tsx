@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   BarChart3, 
@@ -76,11 +76,7 @@ export default function ServiceDashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [dateRange, setDateRange] = useState('30d')
 
-  useEffect(() => {
-    loadData()
-  }, [dateRange])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -107,9 +103,13 @@ export default function ServiceDashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [dateRange, router, calculateMetrics])
 
-  const calculateMetrics = (services: Service[], analytics: any): ServiceMetrics => {
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const calculateMetrics = useCallback((services: Service[], analytics: any): ServiceMetrics => {
     const activeServices = services.filter(s => s.is_active)
     const packageServices = services.filter(s => s.is_package)
     
@@ -147,9 +147,9 @@ export default function ServiceDashboardPage() {
       underperformingServices,
       sixFBCompliance
     }
-  }
+  }, [])
 
-  const calculate6FBCompliance = (services: Service[], analytics: any) => {
+  const calculate6FBCompliance = useCallback((services: Service[], analytics: any) => {
     // Mock calculation - in real implementation, this would be more sophisticated
     let score = 0
     const opportunities: string[] = []
@@ -180,7 +180,7 @@ export default function ServiceDashboardPage() {
     else if (score >= 50) tier = 'growth'
 
     return { score, tier, opportunities }
-  }
+  }, [])
 
   const handleBulkAction = async (action: string) => {
     // Implement bulk actions

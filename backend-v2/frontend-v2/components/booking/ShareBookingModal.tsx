@@ -617,7 +617,6 @@ ${businessName}`
               )}
             </div>
         )}
-      </div>
 
       {/* QR Code - Collapsible */}
       <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
