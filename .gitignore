@@ -210,3 +210,7 @@ aws_credentials*
 backend-v2/aws_credentials*
 backend-v2/production_keys*
 
+6fb-barber-onboarding/
+6fb-dashboard-onboarding/
+6fb-infrastructure-polish/
+mcp-servers/
