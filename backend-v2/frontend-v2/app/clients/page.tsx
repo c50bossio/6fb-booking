@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getClients, deleteClient, updateCustomerType, searchClients, type Client } from '@/lib/api'
@@ -28,11 +28,7 @@ export default function ClientsPage() {
   const VIRTUAL_SCROLLING_THRESHOLD = 100
   const shouldUseVirtualScrolling = clients.length > VIRTUAL_SCROLLING_THRESHOLD
 
-  useEffect(() => {
-    loadClients()
-  }, [page, customerTypeFilter])
-
-  const loadClients = async () => {
+  const loadClients = useCallback(async () => {
     try {
       setLoading(true)
       const data = await getClients({
@@ -52,7 +48,11 @@ export default function ClientsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, customerTypeFilter, search, router])
+
+  useEffect(() => {
+    loadClients()
+  }, [loadClients])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()

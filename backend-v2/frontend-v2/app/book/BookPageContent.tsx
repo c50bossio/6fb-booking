@@ -121,7 +121,7 @@ export default function BookPage() {
         setStep(3)
       }
     }
-  }, [searchParams])
+  }, [searchParams, selectedDate, selectedService])
 
   // Check authentication status and optionally fetch user's existing bookings
   useEffect(() => {

@@ -86,10 +86,18 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
   const [urlError, setUrlError] = useState<string | null>(null)
   const [urlIsShort, setUrlIsShort] = useState(false)
 
-  // Generate URL when parameters change
+  // Generate URL when parameters change (but not on initial mount with empty name)
   useEffect(() => {
-    generateUrl()
-  }, [customLinkName, linkExpiration, enableExpiration])
+    // Only generate URL if we have a custom name or expiration settings
+    if (customLinkName.trim() || (enableExpiration && linkExpiration)) {
+      generateUrl()
+    } else {
+      // Reset to original booking URL when no customization
+      setCurrentUrl(bookingUrl)
+      setUrlIsShort(false)
+      setUrlError(null)
+    }
+  }, [customLinkName, linkExpiration, enableExpiration, bookingUrl])
 
   // Feature availability - all features are now free
   const features = {
@@ -128,28 +136,39 @@ const ShareBookingModal: React.FC<ShareBookingModalProps> = ({
 
   // Generate URL using short URL service
   const generateUrl = async () => {
+    console.log('🔧 generateUrl called with:', { customLinkName, enableExpiration, linkExpiration, bookingUrl })
     setIsGeneratingUrl(true)
     setUrlError(null)
 
     try {
       const description = `${businessName} booking link${customLinkName ? ` - ${customLinkName}` : ''}`
       
+      console.log('🔧 Calling shortUrlService with:', {
+        bookingUrl,
+        customLinkName: customLinkName || undefined,
+        expirationDate: enableExpiration && linkExpiration ? linkExpiration : undefined,
+        description
+      })
+      
       const result = await shortUrlService.createBookingShortUrlWithFallback(
         bookingUrl,
-        customLinkName,
+        customLinkName || undefined,
         enableExpiration && linkExpiration ? linkExpiration : undefined,
         description
       )
+
+      console.log('🔧 shortUrlService result:', result)
 
       setCurrentUrl(result.url)
       setUrlIsShort(result.isShortUrl)
       
       if (result.error && !result.isShortUrl) {
+        console.log('🔧 Setting error:', result.error)
         setUrlError(`Short URL creation failed: ${result.error}. Using fallback URL.`)
       }
 
     } catch (error) {
-      console.error('Error generating URL:', error)
+      console.error('🔧 Error generating URL:', error)
       // Fallback to original URL
       setCurrentUrl(bookingUrl)
       setUrlIsShort(false)

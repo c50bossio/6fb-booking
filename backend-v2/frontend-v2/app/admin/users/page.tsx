@@ -300,7 +300,7 @@ function AdminUsersPageContent() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Are you sure you want to change <strong>{pendingRoleChange.userName}</strong>'s role to{' '}
+                  Are you sure you want to change <strong>{pendingRoleChange.userName}</strong>&apos;s role to{' '}
                   <strong>{getRoleInfo(pendingRoleChange.newRole).label}</strong>?
                 </p>
                 <div className="flex gap-3 justify-end">

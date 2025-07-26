@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getMyBookings, cancelBooking, updateBooking, rescheduleBooking, appointmentsAPI, type BookingResponse, type SlotsResponse, type TimeSlot } from '../../lib/api'
 import { format } from 'date-fns'
@@ -24,11 +24,7 @@ export default function MyBookingsPage() {
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
 
-  useEffect(() => {
-    loadBookings()
-  }, [])
-
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
@@ -46,7 +42,11 @@ export default function MyBookingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    loadBookings()
+  }, [loadBookings])
 
   const [cancelConfirmation, setCancelConfirmation] = useState<{ isOpen: boolean; bookingId: number | null }>({
     isOpen: false,

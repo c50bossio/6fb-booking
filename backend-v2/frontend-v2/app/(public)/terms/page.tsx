@@ -38,8 +38,8 @@ const TermsOfServicePage = () => {
     >
       <LegalSection title="1. Agreement to Terms">
         <p>
-          By accessing or using BookedBarber ("the Service"), operated by [Your Company Name] ("we," "us," or "our"), 
-          you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, 
+          By accessing or using BookedBarber (&ldquo;the Service&rdquo;), operated by [Your Company Name] (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), 
+          you agree to be bound by these Terms of Service (&ldquo;Terms&rdquo;). If you disagree with any part of these terms, 
           you do not have permission to access the Service.
         </p>
       </LegalSection>

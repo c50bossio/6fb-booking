@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { 
@@ -50,11 +50,7 @@ export default function ClientDetailPage() {
     tags: ''
   })
 
-  useEffect(() => {
-    loadClientData()
-  }, [clientId])
-
-  const loadClientData = async () => {
+  const loadClientData = useCallback(async () => {
     try {
       setLoading(true)
       const [clientData, historyData, analyticsData, recommendationsData, commPrefsData] = await Promise.all([
@@ -89,7 +85,11 @@ export default function ClientDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [clientId, router])
+
+  useEffect(() => {
+    loadClientData()
+  }, [loadClientData])
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
