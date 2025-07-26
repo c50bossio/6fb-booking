@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from datetime import timedelta
 import logging
@@ -199,16 +200,34 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
         "token_type": "bearer"
     }
     
-    # If there are headers to add, we need to return a Response object
-    if headers:
-        from fastapi.responses import JSONResponse
-        
-        response = JSONResponse(content=response_data)
-        for header, value in headers.items():
-            response.headers[header] = value
-        return response
+    # Create response with cookies and headers
+    from fastapi.responses import JSONResponse
+    from utils.cookie_auth import set_auth_cookies, generate_csrf_token
     
-    return response_data
+    response = JSONResponse(content=response_data)
+    
+    # Set security headers if any
+    for header, value in headers.items():
+        response.headers[header] = value
+    
+    # Generate CSRF token for additional protection
+    csrf_token = generate_csrf_token()
+    
+    # Set secure authentication cookies
+    set_auth_cookies(response, access_token, refresh_token, csrf_token)
+    
+    # Add CSRF token to response data
+    response_data["csrf_token"] = csrf_token
+    response = JSONResponse(content=response_data)
+    
+    # Re-set cookies after creating new response
+    set_auth_cookies(response, access_token, refresh_token, csrf_token)
+    
+    # Set security headers again
+    for header, value in headers.items():
+        response.headers[header] = value
+    
+    return response
 
 @router.post("/refresh", response_model=schemas.Token)
 @refresh_rate_limit
@@ -1058,3 +1077,91 @@ async def validate_password_endpoint(
         "warnings": validation_result.warnings,
         "recommendations": validation_result.recommendations
     }
+
+@router.post("/logout")
+async def logout(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Logout user by blacklisting their current token and clearing cookies."""
+    from services.token_blacklist import blacklist_token
+    from utils.cookie_auth import clear_auth_cookies
+    from fastapi.responses import JSONResponse
+    
+    token = credentials.credentials
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Blacklist the current token
+    success = blacklist_token(token, "logout")
+    
+    # Create response and clear authentication cookies
+    response_data = {"message": "Logged out successfully"}
+    response = JSONResponse(content=response_data)
+    clear_auth_cookies(response)
+    
+    if success:
+        audit_logger.info(
+            "User logout successful",
+            extra={
+                "user_id": current_user.id,
+                "user_email": current_user.email,
+                "ip_address": client_ip,
+                "action": "logout",
+                "token_blacklisted": True,
+                "cookies_cleared": True
+            }
+        )
+    else:
+        # Even if blacklisting fails, we should still report success to the user
+        # to avoid revealing internal system details
+        audit_logger.warning(
+            "Logout token blacklisting failed",
+            extra={
+                "user_id": current_user.id,
+                "user_email": current_user.email,
+                "ip_address": client_ip,
+                "action": "logout_failed",
+                "cookies_cleared": True
+            }
+        )
+    
+    return response
+
+@router.post("/logout-all")
+async def logout_all(
+    request: Request,
+    current_user: models.User = Depends(get_current_user)
+):
+    """Logout user from all devices by blacklisting all their tokens and clearing cookies."""
+    from services.token_blacklist import get_token_blacklist_service
+    from utils.cookie_auth import clear_auth_cookies
+    from fastapi.responses import JSONResponse
+    
+    client_ip = request.client.host if request.client else "unknown"
+    blacklist_service = get_token_blacklist_service()
+    
+    # Blacklist all tokens for this user
+    blacklisted_count = blacklist_service.blacklist_user_tokens(
+        current_user.email, 
+        "logout_all"
+    )
+    
+    # Create response and clear authentication cookies
+    response_data = {"message": "Logged out from all devices successfully"}
+    response = JSONResponse(content=response_data)
+    clear_auth_cookies(response)
+    
+    audit_logger.info(
+        "User logout from all devices",
+        extra={
+            "user_id": current_user.id,
+            "user_email": current_user.email,
+            "ip_address": client_ip,
+            "action": "logout_all",
+            "tokens_blacklisted": blacklisted_count,
+            "cookies_cleared": True
+        }
+    )
+    
+    return response

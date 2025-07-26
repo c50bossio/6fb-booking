@@ -66,8 +66,17 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ) -> User:
-    """Get the current authenticated user from JWT token."""
+    """Get the current authenticated user from JWT token with blacklist checking."""
     token = credentials.credentials
+    
+    # Check if token is blacklisted first
+    from services.token_blacklist import is_token_blacklisted
+    if is_token_blacklisted(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     
     try:
         payload = decode_token(token)
@@ -76,6 +85,16 @@ async def get_current_user(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Check if user is globally blacklisted
+        from services.token_blacklist import get_token_blacklist_service
+        blacklist_service = get_token_blacklist_service()
+        if blacklist_service.is_user_blacklisted(email):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User access has been revoked",
                 headers={"WWW-Authenticate": "Bearer"},
             )
     except JWTError:
