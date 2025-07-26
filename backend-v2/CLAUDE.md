@@ -1287,5 +1287,55 @@ Before marking ANY task complete:
 - Utility functions
 - Static components
 
+## 📱 Frontend Page Architecture & User Roles
+
+### Page Purpose & Audience Clarity
+
+Understanding the correct purpose and audience for each page is critical to maintaining proper separation between client-facing tools and staff-facing tools.
+
+#### **Calendar Page** (`/calendar`)
+- **Audience**: Barbers, shop owners, managers (internal staff)
+- **Purpose**: Staff calendar for appointment management and coordination
+- **Features**: View all appointments, manage schedules, staff coordination
+- **NOT for**: Client booking (that's handled by separate booking funnel)
+
+#### **Booking Funnel** (Client-facing booking process)
+- **Audience**: Customers booking appointments
+- **Purpose**: Step-by-step booking process for clients
+- **Flow**: Service selection → Time slot selection → Payment → Confirmation
+- **Separate from**: Internal staff calendar tools
+
+#### **My Schedule Page** (`/my-schedule`)
+- **Audience**: Individual barbers
+- **Purpose**: Personal availability management + view own appointments
+- **Features**: Set working hours, manage time off, see personal bookings in unified view
+- **Focus**: Individual barber's personal schedule management
+
+#### **My Bookings Page** (`/bookings`)
+- **Audience**: Barbers managing their appointments
+- **Purpose**: Detailed appointment actions and management
+- **Features**: Cancel, reschedule, view client details, appointment history
+- **Focus**: Individual appointment management and modifications
+
+### Architecture Principles
+
+1. **Clear Separation**: Client tools vs Staff tools are completely separate
+2. **Role-Based Access**: Each page serves specific user roles
+3. **Single Responsibility**: Each page has one clear purpose
+4. **No Overlap**: Avoid duplicating functionality across pages
+
+### Navigation Structure
+```
+Staff Tools:
+├── Calendar (all appointments view)
+├── My Schedule (personal availability + bookings)
+└── My Bookings (appointment management)
+
+Client Tools:
+└── Booking Funnel (separate from staff tools)
+```
+
+This architecture ensures barbers have the right tools for their workflow while keeping client booking separate and focused.
+
 ---
-Last updated: 2025-07-04
+Last updated: 2025-07-26
