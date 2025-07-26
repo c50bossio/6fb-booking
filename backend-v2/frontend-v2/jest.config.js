@@ -8,8 +8,6 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  // Load test environment variables
-  setupFiles: ['<rootDir>/jest.env.js'],
   testTimeout: 15000, // Increase timeout to 15 seconds for complex tests
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you based on your tsconfig.json paths)
