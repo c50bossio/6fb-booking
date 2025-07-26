@@ -1,0 +1,315 @@
+{
+  "dashboard": {
+    "title": "BookedBarber V2 - Production Infrastructure Dashboard",
+    "description": "Real-time monitoring for enterprise-scale barbershop platform",
+    "version": "1.0.0",
+    "updated": "2025-07-26",
+    "panels": [
+      {
+        "id": "infrastructure_overview",
+        "title": "Infrastructure Health Overview",
+        "type": "status_grid",
+        "metrics": [
+          {
+            "name": "API Health",
+            "endpoint": "https://api.bookedbarber.com/health",
+            "expected_status": 200,
+            "alert_threshold": "< 200 OR > 299"
+          },
+          {
+            "name": "Frontend Health", 
+            "endpoint": "https://bookedbarber.com",
+            "expected_status": 200,
+            "alert_threshold": "< 200 OR > 299"
+          },
+          {
+            "name": "Database Connections",
+            "metric": "db_active_connections",
+            "target": "< 45 (of 50 max)",
+            "alert_threshold": "> 45"
+          },
+          {
+            "name": "Redis Cache",
+            "metric": "redis_memory_usage", 
+            "target": "< 80%",
+            "alert_threshold": "> 90%"
+          }
+        ]
+      },
+      {
+        "id": "performance_metrics",
+        "title": "Performance Metrics",
+        "type": "time_series",
+        "time_range": "last_24h",
+        "metrics": [
+          {
+            "name": "API Response Time (P95)",
+            "query": "percentile(api_response_time, 95)",
+            "target": "< 200ms",
+            "alert_threshold": "> 500ms",
+            "color": "#2ecc71"
+          },
+          {
+            "name": "Database Query Time (P95)",
+            "query": "percentile(db_query_duration, 95)", 
+            "target": "< 50ms",
+            "alert_threshold": "> 100ms",
+            "color": "#3498db"
+          },
+          {
+            "name": "Cache Hit Ratio",
+            "query": "cache_hits / (cache_hits + cache_misses) * 100",
+            "target": "> 90%",
+            "alert_threshold": "< 80%", 
+            "color": "#f39c12"
+          },
+          {
+            "name": "Concurrent Users",
+            "query": "active_sessions_count",
+            "target": "Tracking toward 10,000",
+            "alert_threshold": "> 8000 (scale alert)",
+            "color": "#9b59b6"
+          }
+        ]
+      },
+      {
+        "id": "security_monitoring",
+        "title": "Security & Rate Limiting",
+        "type": "security_panel",
+        "metrics": [
+          {
+            "name": "Rate Limit Violations",
+            "query": "rate_limit_violations_per_minute",
+            "alert_threshold": "> 10/minute",
+            "action": "Block IP after 5 violations"
+          },
+          {
+            "name": "Failed Auth Attempts", 
+            "query": "failed_auth_attempts_per_hour",
+            "alert_threshold": "> 50/hour from single IP",
+            "action": "Account lockout after 5 attempts"
+          },
+          {
+            "name": "SSL Certificate Status",
+            "endpoint": "https://api.bookedbarber.com",
+            "check": "ssl_expiry_days",
+            "alert_threshold": "< 30 days"
+          },
+          {
+            "name": "Security Headers",
+            "endpoint": "https://api.bookedbarber.com",
+            "check": "security_headers_present",
+            "required": ["X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection"]
+          }
+        ]
+      },
+      {
+        "id": "business_metrics",
+        "title": "Business Intelligence",
+        "type": "business_panel",
+        "metrics": [
+          {
+            "name": "Appointments Created (24h)",
+            "query": "count(appointments) WHERE created_at > now() - interval '24 hours'",
+            "target": "Growth tracking"
+          },
+          {
+            "name": "Revenue Processed (24h)",
+            "query": "sum(payments.amount) WHERE status = 'succeeded' AND created_at > now() - interval '24 hours'",
+            "format": "currency"
+          },
+          {
+            "name": "Active Barbers",
+            "query": "count(distinct users) WHERE role = 'barber' AND last_login > now() - interval '7 days'"
+          },
+          {
+            "name": "Client Retention Rate",
+            "query": "client_retention_percentage_30_days",
+            "target": "> 80%"
+          }
+        ]
+      },
+      {
+        "id": "infrastructure_capacity",
+        "title": "Infrastructure Capacity",
+        "type": "capacity_panel",
+        "metrics": [
+          {
+            "name": "CPU Usage",
+            "query": "avg(cpu_usage_percent)",
+            "alert_threshold": "> 80%",
+            "auto_scale": "Add instance at 75%"
+          },
+          {
+            "name": "Memory Usage",
+            "query": "avg(memory_usage_percent)",
+            "alert_threshold": "> 85%",
+            "auto_scale": "Add instance at 80%"
+          },
+          {
+            "name": "Disk Usage",
+            "query": "avg(disk_usage_percent)",
+            "alert_threshold": "> 90%"
+          },
+          {
+            "name": "Network I/O",
+            "query": "avg(network_io_mbps)",
+            "monitor": "bandwidth_utilization"
+          }
+        ]
+      },
+      {
+        "id": "error_tracking",
+        "title": "Error Tracking & Alerting", 
+        "type": "error_panel",
+        "metrics": [
+          {
+            "name": "Error Rate (API)",
+            "query": "error_count / total_requests * 100",
+            "alert_threshold": "> 1%",
+            "severity": "high"
+          },
+          {
+            "name": "5xx Errors",
+            "query": "count(status_code) WHERE status_code >= 500",
+            "alert_threshold": "> 5/minute",
+            "severity": "critical"
+          },
+          {
+            "name": "Database Errors",
+            "query": "database_connection_errors + query_timeout_errors",
+            "alert_threshold": "> 2/minute",
+            "severity": "high"
+          },
+          {
+            "name": "JavaScript Errors (Frontend)",
+            "source": "sentry",
+            "alert_threshold": "> 10/minute",
+            "severity": "medium"
+          }
+        ]
+      }
+    ],
+    "alerts": [
+      {
+        "name": "Critical Infrastructure Down",
+        "condition": "api_health != 200 OR frontend_health != 200",
+        "severity": "critical",
+        "notification": ["slack", "email", "sms"],
+        "escalation": "immediate"
+      },
+      {
+        "name": "Performance Degradation",
+        "condition": "api_response_time_p95 > 500ms OR db_query_time_p95 > 100ms",
+        "severity": "high", 
+        "notification": ["slack", "email"],
+        "escalation": "15_minutes"
+      },
+      {
+        "name": "Security Incident",
+        "condition": "rate_limit_violations > 10/minute OR failed_auth > 50/hour",
+        "severity": "high",
+        "notification": ["slack", "email"],
+        "action": "auto_block_ip"
+      },
+      {
+        "name": "Capacity Warning",
+        "condition": "concurrent_users > 8000 OR cpu_usage > 80%",
+        "severity": "medium",
+        "notification": ["slack"],
+        "action": "prepare_scaling"
+      }
+    ],
+    "integrations": {
+      "render": {
+        "api_key": "${RENDER_API_KEY}",
+        "services": [
+          "bookedbarber-backend-production",
+          "bookedbarber-frontend-production",
+          "bookedbarber-prod-db",
+          "bookedbarber-prod-redis"
+        ]
+      },
+      "sentry": {
+        "dsn": "${SENTRY_DSN}",
+        "environment": "production"
+      },
+      "slack": {
+        "webhook_url": "${SLACK_WEBHOOK_URL}",
+        "channel": "#production-alerts"
+      },
+      "datadog": {
+        "api_key": "${DATADOG_API_KEY}",
+        "app_key": "${DATADOG_APP_KEY}"
+      }
+    },
+    "refresh_intervals": {
+      "real_time": "10s",
+      "performance": "30s", 
+      "business": "5m",
+      "capacity": "1m"
+    }
+  },
+  "infrastructure_polish_validation": {
+    "security_components": [
+      {
+        "component": "Enhanced Security Middleware",
+        "file": "backend-v2/middleware/enhanced_security.py",
+        "validation": "OWASP headers present in responses"
+      },
+      {
+        "component": "Configuration Security",
+        "file": "backend-v2/middleware/configuration_security.py", 
+        "validation": "No sensitive data in responses"
+      },
+      {
+        "component": "Financial Security",
+        "file": "backend-v2/middleware/financial_security.py",
+        "validation": "PCI-compliant payment handling"
+      }
+    ],
+    "database_components": [
+      {
+        "component": "Connection Pool Config",
+        "file": "backend-v2/database/connection_pool_config.py",
+        "validation": "50 base + 20 overflow connections configured"
+      },
+      {
+        "component": "PostgreSQL Config",
+        "file": "backend-v2/database/postgresql_config.py",
+        "validation": "Enterprise-scale parameters set"
+      }
+    ],
+    "deployment_components": [
+      {
+        "component": "Production Render Config",
+        "file": "render.production.yaml",
+        "validation": "High-performance settings configured"
+      },
+      {
+        "component": "Production Deployment Script",
+        "file": "scripts/deploy-production-render.py",
+        "validation": "Automated deployment with monitoring"
+      }
+    ]
+  },
+  "success_metrics": {
+    "capacity": {
+      "target": "10,000+ concurrent users",
+      "current_optimized": "2,000-5,000 users",
+      "scaling_path": "Horizontal scaling ready"
+    },
+    "performance": {
+      "api_response": "< 200ms (P95)",
+      "database_query": "< 50ms (P95)", 
+      "cache_hit_ratio": "> 90%",
+      "uptime_sla": "99.9%"
+    },
+    "security": {
+      "owasp_compliance": "Top 10 coverage complete",
+      "data_encryption": "AES-256-GCM implemented",
+      "rate_limiting": "Redis-backed with IP blocking",
+      "mfa_support": "TOTP authentication ready"
+    }
+  }
+}
