@@ -2,15 +2,19 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, subMonths, addMonths, startOfWeek, endOfWeek, subDays, addDays } from 'date-fns'
+import { AnalyticsService, type AnalyticsReport } from '@/services/analytics_service'
+import RevenueChart from '@/components/charts/RevenueChart'
+import ClientMetricsChart from '@/components/charts/ClientMetricsChart'
+import ServicePerformanceChart from '@/components/charts/ServicePerformanceChart'
 import {
   CurrencyDollarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   ClockIcon,
   UserGroupIcon,
   ChartBarIcon,
   StarIcon,
-  TargetIcon,
+  BoltIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   InformationCircleIcon,
@@ -18,7 +22,11 @@ import {
   CheckCircleIcon,
   LightBulbIcon,
   FireIcon,
-  CogIcon
+  CogIcon,
+  ChartPieIcon,
+  DocumentArrowDownIcon,
+  CalendarIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -122,6 +130,8 @@ export default function RevenueOptimizationPanel({
   const [selectedPeriod, setSelectedPeriod] = useState<'day' | 'week' | 'month'>('day')
   const [showOptimizationTips, setShowOptimizationTips] = useState(true)
   const [revenueTarget, setRevenueTarget] = useState(100000) // Six Figure Target
+  const [activeTab, setActiveTab] = useState<'overview' | 'charts' | 'clients' | 'services' | 'predictions'>('overview')
+  const [chartType, setChartType] = useState<'line' | 'bar'>('line')
 
   // Calculate date ranges based on selected period
   const dateRanges = useMemo(() => {
@@ -149,6 +159,17 @@ export default function RevenueOptimizationPanel({
         }
     }
   }, [selectedDate, selectedPeriod])
+
+  // Generate comprehensive analytics report
+  const analyticsReport = useMemo((): AnalyticsReport => {
+    const period = {
+      start: dateRanges.current.start,
+      end: dateRanges.current.end,
+      type: selectedPeriod
+    }
+    
+    return AnalyticsService.generateReport(appointments, clients, period)
+  }, [appointments, clients, dateRanges, selectedPeriod])
 
   // Calculate comprehensive revenue metrics aligned with 6FB methodology
   const revenueMetrics = useMemo((): RevenueMetrics => {
@@ -227,7 +248,7 @@ export default function RevenueOptimizationPanel({
         title: 'Revenue Growth Below Target',
         description: 'Consider increasing premium service offerings or raising prices',
         action: 'optimize_pricing',
-        icon: TrendingUpIcon,
+        icon: ArrowTrendingUpIcon,
         color: 'text-red-600 bg-red-50'
       })
     }
@@ -279,7 +300,7 @@ export default function RevenueOptimizationPanel({
         title: 'Behind Six Figure Goal',
         description: 'Need to accelerate growth to reach annual target',
         action: 'accelerate_growth',
-        icon: TargetIcon,
+        icon: BoltIcon,
         color: 'text-orange-600 bg-orange-50'
       })
     }
@@ -296,7 +317,7 @@ export default function RevenueOptimizationPanel({
   const getPerformanceIcon = (value: number, threshold: { good: number; average: number }) => {
     if (value >= threshold.good) return CheckCircleIcon
     if (value >= threshold.average) return ExclamationTriangleIcon
-    return TrendingDownIcon
+    return ArrowTrendingDownIcon
   }
 
   const formatCurrency = (amount: number) => {
@@ -321,7 +342,7 @@ export default function RevenueOptimizationPanel({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <TrendingUpIcon className="h-5 w-5 mr-2 text-green-600" />
+              <ArrowTrendingUpIcon className="h-5 w-5 mr-2 text-green-600" />
               Revenue Optimization
             </h2>
             <p className="text-sm text-gray-600">Six Figure Barber Performance Analytics</p>
@@ -336,24 +357,77 @@ export default function RevenueOptimizationPanel({
               <option value="week">This Week</option>
               <option value="month">This Month</option>
             </select>
+            
+            {activeTab === 'charts' && (
+              <select
+                value={chartType}
+                onChange={(e) => setChartType(e.target.value as 'line' | 'bar')}
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="line">Line Chart</option>
+                <option value="bar">Bar Chart</option>
+              </select>
+            )}
+            
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowOptimizationTips(!showOptimizationTips)}
+              onClick={() => {
+                const csvData = AnalyticsService.exportRevenueCSV(analyticsReport.revenueData)
+                const blob = new Blob([csvData], { type: 'text/csv' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `revenue-report-${format(selectedDate, 'yyyy-MM-dd')}.csv`
+                a.click()
+                URL.revokeObjectURL(url)
+              }}
             >
-              <LightBulbIcon className="h-4 w-4 mr-1" />
-              Tips
+              <DocumentArrowDownIcon className="h-4 w-4 mr-1" />
+              Export
             </Button>
           </div>
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8 px-4" aria-label="Tabs">
+          {[
+            { id: 'overview', name: 'Overview', icon: EyeIcon },
+            { id: 'charts', name: 'Charts', icon: ChartBarIcon },
+            { id: 'clients', name: 'Clients', icon: UserGroupIcon },
+            { id: 'services', name: 'Services', icon: StarIcon },
+            { id: 'predictions', name: 'Forecast', icon: ArrowTrendingUpIcon }
+          ].map((tab) => {
+            const Icon = tab.icon
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`${
+                  activeTab === tab.id
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+              >
+                <Icon className="w-4 h-4 mr-2" />
+                {tab.name}
+              </button>
+            )
+          })}
+        </nav>
+      </div>
+
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Six Figure Progress */}
-        <Card className="border-l-4 border-l-green-500">
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <>
+            {/* Six Figure Progress */}
+            <Card className="border-l-4 border-l-green-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center">
-              <TargetIcon className="h-5 w-5 mr-2 text-green-600" />
+              <BoltIcon className="h-5 w-5 mr-2 text-green-600" />
               Six Figure Progress
             </CardTitle>
           </CardHeader>
@@ -565,7 +639,7 @@ export default function RevenueOptimizationPanel({
                 onClick={() => onOptimizationAction?.('set_goals', { current: revenueMetrics.monthly_revenue })}
               >
                 <div className="text-center">
-                  <TargetIcon className="h-5 w-5 mx-auto mb-1" />
+                  <BoltIcon className="h-5 w-5 mx-auto mb-1" />
                   <div className="text-sm font-medium">Set Goals</div>
                 </div>
               </Button>
@@ -594,6 +668,367 @@ export default function RevenueOptimizationPanel({
             </div>
           </CardContent>
         </Card>
+          </>
+        )}
+
+        {/* Charts Tab */}
+        {activeTab === 'charts' && (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <ChartBarIcon className="h-5 w-5 mr-2 text-blue-600" />
+                  Revenue Trends
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RevenueChart
+                  data={analyticsReport.revenueData}
+                  type={chartType}
+                  height={350}
+                  showAppointments={true}
+                  showTips={true}
+                  period={selectedPeriod}
+                />
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Revenue vs Appointments</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RevenueChart
+                    data={analyticsReport.revenueData}
+                    type="bar"
+                    height={250}
+                    showAppointments={true}
+                    showTips={false}
+                    period={selectedPeriod}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Performance Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Total Revenue</span>
+                      <span className="font-semibold">{formatCurrency(analyticsReport.summary.totalRevenue)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Growth Rate</span>
+                      <span className={`font-semibold ${analyticsReport.summary.growthRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatPercentage(analyticsReport.summary.growthRate)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Average Ticket</span>
+                      <span className="font-semibold">{formatCurrency(analyticsReport.summary.averageTicket)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Six Figure Progress</span>
+                      <span className="font-semibold text-green-600">
+                        {formatPercentage(analyticsReport.summary.sixFigureProgress)}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
+
+        {/* Clients Tab */}
+        {activeTab === 'clients' && (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center">
+                    <ChartPieIcon className="h-5 w-5 mr-2 text-purple-600" />
+                    Client Distribution
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ClientMetricsChart
+                    metrics={analyticsReport.clientMetrics}
+                    type="doughnut"
+                    height={300}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Client Performance Metrics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ClientMetricsChart
+                    metrics={analyticsReport.clientMetrics}
+                    type="bar"
+                    height={300}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Client Insights</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{analyticsReport.clientMetrics.totalClients}</div>
+                    <div className="text-sm text-blue-700">Total Active Clients</div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      {analyticsReport.clientMetrics.newClients} new this period
+                    </div>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {formatCurrency(analyticsReport.clientMetrics.averageLifetimeValue)}
+                    </div>
+                    <div className="text-sm text-green-700">Average Lifetime Value</div>
+                    <div className="text-xs text-green-600 mt-1">
+                      {analyticsReport.clientMetrics.vipClients} VIP clients
+                    </div>
+                  </div>
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {formatPercentage(analyticsReport.clientMetrics.retentionRate)}
+                    </div>
+                    <div className="text-sm text-purple-700">Retention Rate</div>
+                    <div className="text-xs text-purple-600 mt-1">
+                      {analyticsReport.clientMetrics.returningClients} returning clients
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {/* Services Tab */}
+        {activeTab === 'services' && (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <StarIcon className="h-5 w-5 mr-2 text-yellow-600" />
+                  Service Performance Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Performance Metric
+                  </label>
+                  <select
+                    value={analyticsReport.serviceMetrics.length > 0 ? 'revenue' : 'revenue'}
+                    onChange={(e) => {
+                      // This would update the chart metric in a real implementation
+                      console.log('Metric changed:', e.target.value)
+                    }}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="revenue">Revenue</option>
+                    <option value="bookings">Bookings Count</option>
+                    <option value="averagePrice">Average Price</option>
+                    <option value="profitMargin">Profit Margin</option>
+                  </select>
+                </div>
+                <ServicePerformanceChart
+                  services={analyticsReport.serviceMetrics}
+                  metric="revenue"
+                  height={400}
+                  showPremiumIndicator={true}
+                />
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Service Mix Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {analyticsReport.serviceMetrics.slice(0, 5).map((service, index) => (
+                      <div key={service.serviceId} className="flex items-center justify-between p-2 rounded border">
+                        <div className="flex items-center">
+                          <div className={`w-3 h-3 rounded-full mr-3 ${service.isPremium ? 'bg-purple-500' : 'bg-green-500'}`} />
+                          <div>
+                            <div className="font-medium text-sm">{service.serviceName}</div>
+                            <div className="text-xs text-gray-500">#{service.popularityRank} most popular</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">{formatCurrency(service.revenue)}</div>
+                          <div className="text-xs text-gray-500">{service.bookings} bookings</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Premium vs Standard Services</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {['Premium', 'Standard'].map((type, index) => {
+                      const isPremium = type === 'Premium'
+                      const typeServices = analyticsReport.serviceMetrics.filter(s => s.isPremium === isPremium)
+                      const totalRevenue = typeServices.reduce((sum, s) => sum + s.revenue, 0)
+                      const totalBookings = typeServices.reduce((sum, s) => sum + s.bookings, 0)
+                      
+                      return (
+                        <div key={type} className={`p-4 rounded-lg ${isPremium ? 'bg-purple-50' : 'bg-green-50'}`}>
+                          <div className={`text-lg font-bold ${isPremium ? 'text-purple-600' : 'text-green-600'}`}>
+                            {formatCurrency(totalRevenue)}
+                          </div>
+                          <div className={`text-sm ${isPremium ? 'text-purple-700' : 'text-green-700'}`}>
+                            {type} Services Revenue
+                          </div>
+                          <div className={`text-xs ${isPremium ? 'text-purple-600' : 'text-green-600'} mt-1`}>
+                            {totalBookings} bookings • {typeServices.length} services
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
+
+        {/* Predictions Tab */}
+        {activeTab === 'predictions' && (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <ArrowTrendingUpIcon className="h-5 w-5 mr-2 text-blue-600" />
+                  Revenue Forecasting
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {formatCurrency(analyticsReport.predictive.projectedMonthlyRevenue)}
+                    </div>
+                    <div className="text-sm text-blue-700">Projected Monthly Revenue</div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      Based on current trends
+                    </div>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {formatCurrency(analyticsReport.predictive.projectedAnnualRevenue)}
+                    </div>
+                    <div className="text-sm text-green-700">Projected Annual Revenue</div>
+                    <div className="text-xs text-green-600 mt-1">
+                      {formatPercentage(analyticsReport.predictive.sixFigureGoalProgress)} to six figures
+                    </div>
+                  </div>
+                  <div className="p-4 bg-orange-50 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {analyticsReport.predictive.timeToGoal < 999 ? `${analyticsReport.predictive.timeToGoal}mo` : 'TBD'}
+                    </div>
+                    <div className="text-sm text-orange-700">Time to Six Figure Goal</div>
+                    <div className="text-xs text-orange-600 mt-1">
+                      At current growth rate
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-3">Seasonal Revenue Trends</h4>
+                  <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+                    {analyticsReport.predictive.seasonalTrends.map((trend, index) => (
+                      <div key={trend.month} className="text-center p-2 bg-gray-50 rounded">
+                        <div className="text-xs font-medium text-gray-600">{trend.month}</div>
+                        <div className={`text-sm font-bold ${trend.multiplier > 1.1 ? 'text-green-600' : trend.multiplier < 0.9 ? 'text-red-600' : 'text-gray-700'}`}>
+                          {(trend.multiplier * 100).toFixed(0)}%
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {(trend.confidence * 100).toFixed(0)}% confidence
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Alert className="border-l-4 border-l-blue-500">
+                  <InformationCircleIcon className="h-4 w-4" />
+                  <AlertDescription>
+                    <div className="font-medium">Predictive Analytics Insights</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Growth Rate: <strong>{formatPercentage(analyticsReport.predictive.growthRate)}</strong> • 
+                      Confidence: <strong>{formatPercentage(analyticsReport.predictive.confidenceLevel * 100)}</strong>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">AI-Powered Recommendations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analyticsReport.recommendations.slice(0, 3).map((rec, index) => {
+                    const IconComponent = rec.type === 'revenue' ? CurrencyDollarIcon :
+                                        rec.type === 'client' ? UserGroupIcon :
+                                        rec.type === 'service' ? StarIcon : CogIcon
+                    return (
+                      <Alert key={index} className={`border-l-4 ${
+                        rec.priority === 'high' ? 'border-l-red-500' :
+                        rec.priority === 'medium' ? 'border-l-yellow-500' : 'border-l-blue-500'
+                      }`}>
+                        <IconComponent className="h-4 w-4" />
+                        <AlertDescription>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">{rec.title}</div>
+                              <div className="text-sm text-gray-600 mt-1">{rec.description}</div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Potential Impact: <strong>+{rec.potentialImpact}%</strong> • 
+                                Timeframe: <strong>{rec.timeframe}</strong>
+                              </div>
+                            </div>
+                            <Badge variant={rec.priority === 'high' ? 'destructive' : 'secondary'}>
+                              {rec.priority}
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-2"
+                            onClick={() => onOptimizationAction?.(rec.type, rec)}
+                          >
+                            Take Action
+                          </Button>
+                        </AlertDescription>
+                      </Alert>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   )

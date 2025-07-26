@@ -16,7 +16,7 @@ import {
   SparklesIcon,
   ChartBarIcon,
   LightBulbIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
   ClockIcon,
@@ -151,7 +151,7 @@ const MobileAIDrawer: React.FC<MobileAIDrawerProps> = ({
     switch (insight.type) {
       case 'opportunity':
         return {
-          icon: <TrendingUpIcon className="w-5 h-5" />,
+          icon: <ArrowTrendingUpIcon className="w-5 h-5" />,
           bgColor: 'bg-green-50',
           borderColor: 'border-green-200',
           textColor: 'text-green-800',
@@ -336,7 +336,7 @@ const MobileAIDrawer: React.FC<MobileAIDrawerProps> = ({
 
           <Card className="bg-amber-50 border-amber-200">
             <CardContent className="p-4 text-center">
-              <TrendingUpIcon className="w-6 h-6 mx-auto text-amber-600 mb-2" />
+              <ArrowTrendingUpIcon className="w-6 h-6 mx-auto text-amber-600 mb-2" />
               <div className="text-2xl font-bold text-amber-800">
                 ${analytics.avgAppointmentValue}
               </div>
