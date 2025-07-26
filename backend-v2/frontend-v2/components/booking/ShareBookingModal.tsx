@@ -360,12 +360,9 @@ ${businessName}`
               )}
             </div>
             {customLinkName.trim() && (
-              <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
-                <p className="text-xs font-medium text-blue-900 dark:text-blue-100 mb-1">
-                  Your branded link will be:
-                </p>
-                <p className="text-sm font-mono text-blue-700 dark:text-blue-300">
-                  https://bkdbrbr.com/{customLinkName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10)}
+              <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Attempting to create branded link...
                 </p>
               </div>
             )}
@@ -400,13 +397,13 @@ ${businessName}`
             )}
           </div>
 
-          {/* Enhanced Link Display */}
+          {/* Simplified Link Display */}
           <div className="space-y-3">
             {/* Link Status Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                  {urlIsShort ? 'Your Branded Link' : 'Your Booking Link'}
+                  Your Booking Link
                 </h3>
                 {urlIsShort && (
                   <div className="flex items-center space-x-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
@@ -442,13 +439,10 @@ ${businessName}`
             }`}>
               {isGeneratingUrl ? (
                 <div className="flex items-center space-x-3">
-                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                   <div>
                     <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                      Creating your branded link...
-                    </p>
-                    <p className="text-xs text-blue-700 dark:text-blue-300">
-                      This will be much cleaner than a long URL
+                      Creating your link...
                     </p>
                   </div>
                 </div>
@@ -508,59 +502,31 @@ ${businessName}`
                         ) : (
                           <div className="flex items-center space-x-1">
                             <ClipboardDocumentIcon className="w-4 h-4" />
-                            <span>{urlIsShort ? 'Copy Branded Link' : 'Copy Link'}</span>
+                            <span>Copy Link</span>
                           </div>
                         )}
                       </button>
                     </div>
                   </div>
 
-                  {/* Enhanced Status Message */}
-                  {urlIsShort && !isGeneratingUrl && (
+                  {/* Clean Status Message */}
+                  {!isGeneratingUrl && (
                     <div className="flex items-center space-x-2 text-sm">
-                      <div className="flex items-center space-x-1 text-green-700 dark:text-green-300">
-                        <CheckIcon className="w-4 h-4" />
-                        <span className="font-medium">Success!</span>
-                      </div>
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Your branded link is ready to share
-                      </span>
-                    </div>
-                  )}
-                  
-                  {!urlIsShort && !isGeneratingUrl && customLinkName.trim() && (
-                    <div className="flex items-center space-x-2 text-sm text-amber-700 dark:text-amber-300">
-                      <span className="font-medium">Note:</span>
-                      <span>Using secure booking URL (short URL unavailable)</span>
+                      {urlIsShort ? (
+                        <div className="flex items-center space-x-1 text-green-700 dark:text-green-300">
+                          <CheckIcon className="w-4 h-4" />
+                          <span className="font-medium">Branded link created successfully</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
+                          <span>Using secure booking URL</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               )}
             </div>
-            
-            {/* Enhanced Error Display */}
-            {urlError && (
-              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <div className="flex items-start space-x-2">
-                  <div className="flex-shrink-0 w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
-                      Short URL Unavailable
-                    </p>
-                    <p className="text-xs text-amber-700 dark:text-amber-300">
-                      {urlError.includes('500') 
-                        ? 'Service temporarily unavailable. Using secure booking link instead.' 
-                        : urlError
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Recent Links Dropdown */}

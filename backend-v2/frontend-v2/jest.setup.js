@@ -40,6 +40,33 @@ jest.mock('next/link', () => ({
   },
 }))
 
+// Mock Lucide React icons
+jest.mock('lucide-react', () => ({
+  ChevronLeftIcon: () => <span data-testid="chevron-left-icon">←</span>,
+  ChevronRightIcon: () => <span data-testid="chevron-right-icon">→</span>,
+  ArrowPathIcon: () => <span data-testid="arrow-path-icon">↻</span>,
+  X: () => <span data-testid="x-icon">×</span>,
+  Calendar: () => <span data-testid="calendar-icon">📅</span>,
+  Clock: () => <span data-testid="clock-icon">🕐</span>,
+  User: () => <span data-testid="user-icon">👤</span>,
+  Users: () => <span data-testid="users-icon">👥</span>,
+  DollarSign: () => <span data-testid="dollar-sign-icon">$</span>,
+  TrendingUp: () => <span data-testid="trending-up-icon">📈</span>,
+  BarChart: () => <span data-testid="bar-chart-icon">📊</span>,
+  PieChart: () => <span data-testid="pie-chart-icon">🥧</span>,
+}))
+
+// Mock Heroicons
+jest.mock('@heroicons/react/24/outline', () => ({
+  ChevronLeftIcon: (props) => <span {...props} data-testid="heroicon-chevron-left">←</span>,
+  ChevronRightIcon: (props) => <span {...props} data-testid="heroicon-chevron-right">→</span>,
+  ArrowPathIcon: (props) => <span {...props} data-testid="heroicon-arrow-path">↻</span>,
+  CalendarIcon: (props) => <span {...props} data-testid="heroicon-calendar">📅</span>,
+  ClockIcon: (props) => <span {...props} data-testid="heroicon-clock">🕐</span>,
+  UserIcon: (props) => <span {...props} data-testid="heroicon-user">👤</span>,
+  UsersIcon: (props) => <span {...props} data-testid="heroicon-users">👥</span>,
+}))
+
 // Mock Web APIs not available in Jest environment
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),

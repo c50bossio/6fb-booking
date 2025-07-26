@@ -13,7 +13,36 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { jest } from '@jest/globals'
-import RevenueAnalyticsDemo from '@/app/demo/revenue-analytics/page'
+
+// Mock all problematic modules first
+jest.mock('lucide-react', () => ({
+  X: () => <span data-testid="x-icon">×</span>,
+  Calendar: () => <span data-testid="calendar-icon">📅</span>,
+  Clock: () => <span data-testid="clock-icon">🕐</span>,
+  User: () => <span data-testid="user-icon">👤</span>,
+  Users: () => <span data-testid="users-icon">👥</span>,
+  DollarSign: () => <span data-testid="dollar-sign-icon">$</span>,
+  TrendingUp: () => <span data-testid="trending-up-icon">📈</span>,
+  BarChart: () => <span data-testid="bar-chart-icon">📊</span>,
+  PieChart: () => <span data-testid="pie-chart-icon">🥧</span>,
+}))
+
+jest.mock('@heroicons/react/24/outline', () => ({
+  ChevronLeftIcon: (props: any) => <span {...props} data-testid="heroicon-chevron-left">←</span>,
+  ChevronRightIcon: (props: any) => <span {...props} data-testid="heroicon-chevron-right">→</span>,
+  ArrowPathIcon: (props: any) => <span {...props} data-testid="heroicon-arrow-path">↻</span>,
+}))
+
+// Mock all the complex dependencies
+jest.mock('@/components/UnifiedCalendar', () => {
+  return function MockUnifiedCalendar() {
+    return <div data-testid="unified-calendar">Mocked Unified Calendar</div>
+  }
+})
+
+jest.mock('@/types/calendar', () => ({
+  CalendarView: 'day'
+}))
 
 // Mock the main component to isolate page-level testing
 jest.mock('@/components/calendar/CalendarRevenueOptimizationDemo', () => {
@@ -27,6 +56,9 @@ jest.mock('@/components/calendar/CalendarRevenueOptimizationDemo', () => {
     )
   }
 })
+
+// Now import the component after mocks are set up
+import RevenueAnalyticsDemo from '@/app/demo/revenue-analytics/page'
 
 describe('Revenue Analytics Demo Page', () => {
   beforeEach(() => {

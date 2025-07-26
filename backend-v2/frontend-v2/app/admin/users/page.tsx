@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getAllUsers, updateUserRole, getProfile, type User } from '@/lib/api'
 import AccessControl from '@/components/auth/AccessControl'
@@ -38,16 +38,7 @@ function AdminUsersPageContent() {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [pendingRoleChange, setPendingRoleChange] = useState<{ userId: number; newRole: string; userName: string } | null>(null)
 
-  useEffect(() => {
-    loadUsers()
-    loadCurrentUser()
-  }, [])
-
-  useEffect(() => {
-    filterUsers()
-  }, [users, searchTerm, roleFilter])
-
-  const loadCurrentUser = async () => {
+  const loadCurrentUser = useCallback(async () => {
     try {
       const user = await getProfile()
       // Ensure role is always defined
@@ -58,9 +49,9 @@ function AdminUsersPageContent() {
     } catch (error) {
       console.error('Failed to load current user:', error)
     }
-  }
+  }, [])
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true)
       const allUsers = await getAllUsers()
@@ -78,9 +69,9 @@ function AdminUsersPageContent() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
 
-  const filterUsers = () => {
+  const filterUsers = useCallback(() => {
     let filtered = [...users]
     
     // Search filter
@@ -97,7 +88,16 @@ function AdminUsersPageContent() {
     }
     
     setFilteredUsers(filtered)
-  }
+  }, [users, searchTerm, roleFilter])
+
+  useEffect(() => {
+    loadUsers()
+    loadCurrentUser()
+  }, [loadUsers, loadCurrentUser])
+
+  useEffect(() => {
+    filterUsers()
+  }, [filterUsers])
 
   const handleRoleChange = (userId: number, newRole: string, userName: string) => {
     // Show confirmation modal

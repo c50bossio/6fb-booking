@@ -11,8 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { 
   CurrencyDollarIcon,
-  ArrowArrowTrendingUpIcon,
-  ArrowArrowTrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CalendarIcon,
   ClockIcon,
   ArrowDownTrayIcon,
