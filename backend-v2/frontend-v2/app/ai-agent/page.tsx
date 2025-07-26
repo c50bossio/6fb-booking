@@ -399,7 +399,7 @@ export default function AIAgentDashboard() {
                         <div className="mb-4">
                           <p className="text-sm text-gray-600 mb-2">AI-Generated Message</p>
                           <div className="bg-gray-50 rounded p-3 text-sm italic">
-                            "{opp.personalized_message}"
+                            &ldquo;{opp.personalized_message}&rdquo;
                           </div>
                         </div>
                         

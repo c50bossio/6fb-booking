@@ -108,7 +108,7 @@ export default function SocialAuthCallbackPage({
               <CheckCircle className="h-12 w-12 mx-auto text-green-600" />
               <h2 className="text-xl font-semibold">Success!</h2>
               <p className="text-muted-foreground">
-                You've successfully signed in with {getProviderName()}.
+                You&rsquo;ve successfully signed in with {getProviderName()}.
               </p>
               <p className="text-sm text-muted-foreground">
                 Redirecting you now...
@@ -125,7 +125,7 @@ export default function SocialAuthCallbackPage({
               <div className="text-center space-y-4">
                 <h2 className="text-xl font-semibold">Authentication Failed</h2>
                 <p className="text-muted-foreground">
-                  We couldn't complete your sign in with {getProviderName()}.
+                  We couldn&rsquo;t complete your sign in with {getProviderName()}.
                 </p>
                 <div className="flex gap-2 justify-center">
                   <button

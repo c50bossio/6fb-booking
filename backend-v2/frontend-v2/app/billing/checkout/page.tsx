@@ -71,7 +71,7 @@ export default function CheckoutPage() {
       // The StripePaymentForm handles attaching the payment method
       // Here we just need to redirect to success or handle subscription creation
       
-      // For now, we'll redirect to the dashboard with a success message
+      // For now, we&rsquo;ll redirect to the dashboard with a success message
       setCheckoutState({ step: 'success' })
       
       // Redirect after a short delay
@@ -354,7 +354,7 @@ export default function CheckoutPage() {
                       </p>
                       <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                         Adding a payment method now ensures seamless service after your trial. 
-                        You won't be charged until {new Date(trialStatus.trial_expires_at || '').toLocaleDateString()}.
+                        You won&rsquo;t be charged until {new Date(trialStatus.trial_expires_at || '').toLocaleDateString()}.
                       </p>
                     </div>
                   </div>
