@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile } from '../../../lib/api'
 import { Key, Plus, Copy, Trash2, Eye, EyeOff } from 'lucide-react'
@@ -24,11 +24,7 @@ export default function ApiKeysPage() {
   const [newKeyName, setNewKeyName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
@@ -71,7 +67,11 @@ export default function ApiKeysPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const createApiKey = async () => {
     if (!newKeyName.trim()) return

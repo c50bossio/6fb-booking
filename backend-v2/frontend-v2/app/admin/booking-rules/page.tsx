@@ -34,11 +34,7 @@ export default function AdminBookingRulesPage() {
   const [showRuleEditor, setShowRuleEditor] = useState(false)
   const [showVisualBuilder, setShowVisualBuilder] = useState(false)
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
@@ -67,7 +63,11 @@ export default function AdminBookingRulesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleDeleteRule = async (ruleId: number) => {
     if (!confirm('Are you sure you want to delete this rule?')) return
