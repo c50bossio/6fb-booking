@@ -93,7 +93,7 @@ services:
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: 7
       
       # CORS Settings
-      CORS_ORIGINS: http://localhost:3000,http://frontend:3000,https://bookedbarber.com,https://staging.bookedbarber.com
+      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,https://crispy-barnacle-6vg56v56jprf6w5-3000.app.github.dev"
       
       # External Services
       STRIPE_PUBLISHABLE_KEY: pk_test_your_stripe_key_here
