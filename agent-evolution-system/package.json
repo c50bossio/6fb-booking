@@ -1,0 +1,59 @@
+{
+  "name": "agent-evolution-system",
+  "version": "1.0.0",
+  "description": "Comprehensive AI Agent Evolution System with feedback loops and optimization",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "backend:dev": "nodemon backend/server.js",
+    "frontend:dev": "cd frontend && npm start",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "cd frontend && npm run build",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "migrate": "node backend/migrations/migrate.js",
+    "seed": "node backend/migrations/seed.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "compression": "^1.7.4",
+    "rate-limiter-flexible": "^3.0.8",
+    "pg": "^8.11.3",
+    "mongoose": "^7.6.3",
+    "redis": "^4.6.10",
+    "simple-git": "^3.20.0",
+    "semantic-release": "^22.0.5",
+    "node-cron": "^3.0.2",
+    "winston": "^3.11.0",
+    "joi": "^17.11.0",
+    "dotenv": "^16.3.1",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^9.0.1",
+    "natural": "^6.7.0",
+    "ml-regression": "^6.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.2",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "@types/jest": "^29.5.5"
+  },
+  "keywords": [
+    "ai-agents",
+    "machine-learning",
+    "optimization",
+    "feedback-loops",
+    "version-control"
+  ],
+  "author": "Agent Evolution Team",
+  "license": "MIT"
+}
