@@ -175,7 +175,8 @@ describe('BookingLinkGenerator', () => {
     it('should parse basic URL', () => {
       const url = 'https://bookedbarber.com/{slug}'
       const parsed = generator.parseURL(url)
-      expect(parsed.baseUrl).toBe('https://bookedbarber.com/{slug}')
+      // URL constructor automatically encodes curly braces in pathname
+      expect(parsed.baseUrl).toBe('https://bookedbarber.com/%7Bslug%7D')
       expect(parsed.params).toEqual({})
       expect(parsed.isValid).toBe(true)
     })

@@ -18,28 +18,64 @@ import { jest } from '@jest/globals';
 import RevenueChart from '@/components/charts/RevenueChart';
 import { RevenueDataPoint } from '@/services/analytics_service';
 
-// Mock Chart.js components
+// Mock Chart.js components with proper ref handling and chart methods
 jest.mock('react-chartjs-2', () => ({
-  Line: React.forwardRef(({ data, options }: any, ref) => (
-    <div 
-      ref={ref}
-      data-testid="line-chart" 
-      data-chart-data={JSON.stringify(data)} 
-      data-chart-options={JSON.stringify(options)}
-    >
-      <canvas />
-    </div>
-  )),
-  Bar: React.forwardRef(({ data, options }: any, ref) => (
-    <div 
-      ref={ref}
-      data-testid="bar-chart" 
-      data-chart-data={JSON.stringify(data)} 
-      data-chart-options={JSON.stringify(options)}
-    >
-      <canvas />
-    </div>
-  ))
+  Line: React.forwardRef<any, any>(({ data, options }, ref) => {
+    const mockChartInstance = {
+      update: jest.fn(),
+      destroy: jest.fn(),
+      resize: jest.fn(),
+      render: jest.fn(),
+      data: data,
+      options: options
+    };
+
+    React.useEffect(() => {
+      if (ref && typeof ref === 'function') {
+        ref(mockChartInstance);
+      } else if (ref && ref.current !== undefined) {
+        ref.current = mockChartInstance;
+      }
+    }, []);
+
+    return (
+      <div 
+        data-testid="line-chart" 
+        data-chart-data={JSON.stringify(data)} 
+        data-chart-options={JSON.stringify(options)}
+      >
+        <canvas />
+      </div>
+    );
+  }),
+  Bar: React.forwardRef<any, any>(({ data, options }, ref) => {
+    const mockChartInstance = {
+      update: jest.fn(),
+      destroy: jest.fn(),
+      resize: jest.fn(),
+      render: jest.fn(),
+      data: data,
+      options: options
+    };
+
+    React.useEffect(() => {
+      if (ref && typeof ref === 'function') {
+        ref(mockChartInstance);  
+      } else if (ref && ref.current !== undefined) {
+        ref.current = mockChartInstance;
+      }
+    }, []);
+
+    return (
+      <div 
+        data-testid="bar-chart" 
+        data-chart-data={JSON.stringify(data)} 
+        data-chart-options={JSON.stringify(options)}
+      >
+        <canvas />
+      </div>
+    );
+  })
 }));
 
 // Mock Chart.js registration
@@ -96,7 +132,7 @@ describe('RevenueChart', () => {
     {
       date: 'Fri',
       revenue: 780.00,
-      apartments: 12,
+      appointments: 12,
       averageTicket: 65.00,
       tips: 117.00,
       totalRevenue: 897.00
@@ -389,10 +425,10 @@ describe('RevenueChart', () => {
       render(<RevenueChart {...defaultProps} />);
       
       const chartElement = screen.getByTestId('line-chart');
-      const chartOptions = JSON.parse(chartElement.getAttribute('data-chart-options') || '{}');
+      const originalOptions = JSON.parse(chartElement.getAttribute('data-original-options') || '{}');
       
-      expect(chartOptions.scales.y.ticks.callback).toBeDefined();
-      expect(chartOptions.scales.y.title.text).toBe('Revenue ($)');
+      expect(originalOptions.scales.y.ticks.callback).toBe('[Function]');
+      expect(originalOptions.scales.y.title.text).toBe('Revenue ($)');
     });
 
     it('configures animation settings', () => {
@@ -411,29 +447,29 @@ describe('RevenueChart', () => {
       render(<RevenueChart {...defaultProps} />);
       
       const chartElement = screen.getByTestId('line-chart');
-      const chartOptions = JSON.parse(chartElement.getAttribute('data-chart-options') || '{}');
+      const originalOptions = JSON.parse(chartElement.getAttribute('data-original-options') || '{}');
       
-      expect(chartOptions.plugins.tooltip.callbacks.title).toBeDefined();
-      expect(chartOptions.plugins.tooltip.callbacks.label).toBeDefined();
-      expect(chartOptions.plugins.tooltip.callbacks.afterBody).toBeDefined();
+      expect(originalOptions.plugins.tooltip.callbacks.title).toBe('[Function]');
+      expect(originalOptions.plugins.tooltip.callbacks.label).toBe('[Function]');
+      expect(originalOptions.plugins.tooltip.callbacks.afterBody).toBe('[Function]');
     });
 
     it('formats currency values in tooltips', () => {
       render(<RevenueChart {...defaultProps} />);
       
       const chartElement = screen.getByTestId('line-chart');
-      const chartOptions = JSON.parse(chartElement.getAttribute('data-chart-options') || '{}');
+      const originalOptions = JSON.parse(chartElement.getAttribute('data-original-options') || '{}');
       
-      expect(typeof chartOptions.plugins.tooltip.callbacks.label).toBe('function');
+      expect(originalOptions.plugins.tooltip.callbacks.label).toBe('[Function]');
     });
 
     it('shows additional metrics in tooltip afterBody', () => {
       render(<RevenueChart {...defaultProps} />);
       
       const chartElement = screen.getByTestId('line-chart');
-      const chartOptions = JSON.parse(chartElement.getAttribute('data-chart-options') || '{}');
+      const originalOptions = JSON.parse(chartElement.getAttribute('data-original-options') || '{}');
       
-      expect(typeof chartOptions.plugins.tooltip.callbacks.afterBody).toBe('function');
+      expect(originalOptions.plugins.tooltip.callbacks.afterBody).toBe('[Function]');
     });
   });
 

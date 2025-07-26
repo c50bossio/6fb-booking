@@ -58,11 +58,14 @@ describe('Billing Security Tests', () => {
     mockSecureHeaders = secureEnv.headers
     
     // Mock document for CSRF token retrieval
-    Object.defineProperty(document, 'querySelector', {
-      value: jest.fn().mockReturnValue({
-        getAttribute: jest.fn().mockReturnValue(mockCSRFToken)
-      })
-    })
+    jest.spyOn(document, 'querySelector').mockReturnValue({
+      getAttribute: jest.fn().mockReturnValue(mockCSRFToken)
+    } as any)
+  })
+
+  afterEach(() => {
+    // Clean up all mocks after each test
+    jest.restoreAllMocks()
   })
 
   describe('PCI Compliance', () => {

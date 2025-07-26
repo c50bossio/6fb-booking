@@ -204,13 +204,13 @@ export class AnalyticsService {
       const revenue = intervalAppointments.reduce((sum, apt) => sum + apt.price, 0)
       const tips = intervalAppointments.reduce((sum, apt) => sum + (apt.tips || 0), 0)
       const totalRevenue = revenue + tips
-      const appointments = intervalAppointments.length
-      const averageTicket = appointments > 0 ? totalRevenue / appointments : 0
+      const appointmentCount = intervalAppointments.length
+      const averageTicket = appointmentCount > 0 ? totalRevenue / appointmentCount : 0
 
       return {
         date: period.type === 'day' ? format(intervalDate, 'HH:mm') : format(intervalDate, 'MMM d'),
         revenue,
-        appointments,
+        appointments: appointmentCount,
         averageTicket,
         tips,
         totalRevenue

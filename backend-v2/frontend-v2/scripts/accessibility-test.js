@@ -6,8 +6,6 @@
  */
 
 const puppeteer = require('puppeteer');
-const { createRequire } = require('module');
-const require = createRequire(import.meta.url || __filename);
 const fs = require('fs').promises;
 const path = require('path');
 

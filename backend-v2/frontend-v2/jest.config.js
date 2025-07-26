@@ -8,6 +8,8 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  // Load test environment variables
+  setupFiles: ['<rootDir>/jest.env.js'],
   testTimeout: 15000, // Increase timeout to 15 seconds for complex tests
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you based on your tsconfig.json paths)
@@ -18,6 +20,11 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/$1',
   },
   testEnvironment: 'jest-environment-jsdom',
+  testMatch: [
+    '<rootDir>/__tests__/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/**/*.(test|spec).{js,jsx,ts,tsx}'
+  ],
   collectCoverageFrom: [
     'components/**/*.{js,jsx,ts,tsx}',
     'app/**/*.{js,jsx,ts,tsx}',
@@ -37,16 +44,30 @@ const customJestConfig = {
       statements: 80,
     },
   },
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/', 
+    '<rootDir>/node_modules/', 
+    '<rootDir>/tests/', // Exclude Playwright tests directory
+    '.*\\.spec\\.(ts|js|tsx)$', // Exclude Playwright spec files
+    '.*/playwright.*', // Exclude any playwright-related files
+    '.*/e2e/.*\\.(ts|js|tsx)$', // Exclude E2E test files in subdirectories
+    '.*\\.e2e\\.(test|spec)\\.(ts|js|tsx)$' // Exclude E2E test files with e2e in name
+  ],
   transform: {
     // Use babel-jest to transpile tests with the next/babel preset
     // https://jestjs.io/docs/configuration#transform-string-pathtotransformer--pathtotransformer-object
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(lucide-react|@heroicons)/)',
+    '/node_modules/(?!(lucide-react|@heroicons|chart\\.js|react-chartjs-2|@stripe|@lucide)/).*',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  globals: {
+    'ts-jest': {
+      useESM: true
+    }
+  },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   watchPlugins: [
     'jest-watch-typeahead/filename',

@@ -302,7 +302,7 @@ describe('ModalNavigationProvider', () => {
 
   describe('External Navigation', () => {
     it('handles external navigation through callback', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
       render(
         <ModalNavigationProvider onExternalNavigation={mockOnExternalNavigation}>
@@ -318,7 +318,7 @@ describe('ModalNavigationProvider', () => {
     });
 
     it('falls back to window.open when no callback provided', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
       const mockWindowOpen = jest.fn();
       Object.defineProperty(window, 'open', { value: mockWindowOpen, writable: true });
 
@@ -334,7 +334,7 @@ describe('ModalNavigationProvider', () => {
     });
 
     it('handles public pages as external navigation', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
       const PublicNavigationTest = () => {
         const { navigateTo } = useModalNavigation();
@@ -471,7 +471,7 @@ describe('ModalNavigationProvider', () => {
 
   describe('Edge Cases and Error Handling', () => {
     it('handles navigation back at beginning of stack', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
       render(
         <ModalNavigationProvider>
