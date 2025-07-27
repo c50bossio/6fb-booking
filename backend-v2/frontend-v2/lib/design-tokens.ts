@@ -1,6 +1,15 @@
 /**
- * Design Tokens for 6FB Booking Platform
- * A premium, professional design system for a luxury barber booking experience
+ * Enterprise Design Tokens for 6FB AI Agent System
+ * Professional design system for barbershop business intelligence platform
+ * Built on Six Figure Barber methodology with enterprise-grade UX patterns
+ * 
+ * Features:
+ * - Executive dashboard design tokens
+ * - AI agent interface styling
+ * - Professional barbershop aesthetic
+ * - WCAG 2.1 AA accessibility compliance
+ * - Mobile-first responsive design
+ * - Dark mode support with proper contrast
  */
 
 export const colors = {
@@ -239,4 +248,218 @@ export const blur = {
   xl: '24px',
   '2xl': '40px',
   '3xl': '64px',
+}
+
+// ===========================
+// ENTERPRISE UX ENHANCEMENTS
+// ===========================
+
+// Executive Dashboard Color Palette
+export const dashboard = {
+  executive: {
+    primary: colors.primary[600],
+    secondary: colors.accent[800],
+    background: colors.gray[50],
+    surface: '#ffffff',
+    border: colors.gray[200],
+  },
+  
+  analytics: {
+    revenue: '#22c55e',      // Green for revenue
+    conversion: '#a855f7',   // Purple for conversions
+    clients: '#3b82f6',      // Blue for client metrics
+    bookings: '#f59e0b',     // Orange for bookings
+    growth: '#059669',       // Dark green for growth
+  },
+  
+  status: {
+    active: '#22c55e',
+    pending: '#f59e0b',
+    inactive: '#6b7280',
+    error: '#ef4444',
+    warning: '#f59e0b',
+  }
+}
+
+// AI Agent Interface Tokens
+export const aiAgent = {
+  chat: {
+    background: colors.gray[50],
+    userMessage: colors.primary[500],
+    aiMessage: colors.gray[100],
+    border: colors.gray[200],
+    text: colors.gray[900],
+  },
+  
+  coaching: {
+    primary: colors.primary[600],
+    secondary: colors.accent[600],
+    accent: '#8b5cf6',       // Purple for AI insights
+    success: '#059669',      // Green for achievements
+    warning: '#d97706',      // Orange for recommendations
+  },
+  
+  performance: {
+    excellent: '#059669',    // Dark green
+    good: '#22c55e',        // Green
+    average: '#f59e0b',     // Orange
+    poor: '#ef4444',        // Red
+    improving: '#3b82f6',   // Blue
+  }
+}
+
+// Professional Typography Scale
+export const professionalTypography = {
+  display: {
+    large: ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],
+    medium: ['3rem', { lineHeight: '1.15', letterSpacing: '-0.02em', fontWeight: '700' }],
+    small: ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.01em', fontWeight: '600' }],
+  },
+  
+  executive: {
+    title: ['2rem', { lineHeight: '1.25', letterSpacing: '-0.01em', fontWeight: '700' }],
+    subtitle: ['1.5rem', { lineHeight: '1.3', letterSpacing: '-0.005em', fontWeight: '600' }],
+    body: ['1.125rem', { lineHeight: '1.6', fontWeight: '400' }],
+    caption: ['0.875rem', { lineHeight: '1.5', fontWeight: '500' }],
+  },
+  
+  interface: {
+    label: ['0.875rem', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.01em' }],
+    button: ['1rem', { lineHeight: '1.5', fontWeight: '600' }],
+    input: ['1rem', { lineHeight: '1.5', fontWeight: '400' }],
+    overline: ['0.75rem', { lineHeight: '1.4', fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase' }],
+  }
+}
+
+// Component Spacing for Enterprise UX
+export const componentSpacing = {
+  dashboard: {
+    header: '4rem',         // 64px
+    section: '3rem',        // 48px
+    card: '1.5rem',         // 24px
+    content: '2rem',        // 32px
+    sidebar: '20rem',       // 320px
+  },
+  
+  form: {
+    field: '1.5rem',        // 24px
+    group: '2rem',          // 32px
+    section: '3rem',        // 48px
+  },
+  
+  navigation: {
+    item: '0.75rem',        // 12px
+    group: '1.5rem',        // 24px
+    section: '2rem',        // 32px
+  }
+}
+
+// Enterprise Card Variants
+export const cardVariants = {
+  default: {
+    background: '#ffffff',
+    border: colors.gray[200],
+    shadow: shadows.sm,
+    radius: borderRadius.lg,
+  },
+  
+  elevated: {
+    background: '#ffffff',
+    border: colors.gray[200],
+    shadow: shadows.md,
+    radius: borderRadius.xl,
+    borderAccent: colors.primary[500],
+  },
+  
+  hero: {
+    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+    border: colors.primary[200],
+    shadow: shadows.lg,
+    radius: borderRadius.xl,
+    borderAccent: colors.primary[500],
+  },
+  
+  analytics: {
+    background: '#ffffff',
+    border: colors.gray[100],
+    shadow: shadows.xs,
+    radius: borderRadius.lg,
+    borderTop: '3px solid',
+  }
+}
+
+// Mobile Touch Targets (44px minimum)
+export const touchTargets = {
+  minimum: '44px',
+  comfortable: '48px',
+  large: '56px',
+}
+
+// Professional Animation Curves
+export const enterpriseAnimations = {
+  easing: {
+    smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    springy: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+    bouncy: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+    sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
+  },
+  
+  duration: {
+    instant: '0ms',
+    fast: '150ms',
+    normal: '200ms',
+    slow: '300ms',
+    slower: '500ms',
+  }
+}
+
+// Accessibility Standards
+export const accessibility = {
+  contrast: {
+    normal: 4.5,      // WCAG AA for normal text
+    large: 3.0,       // WCAG AA for large text
+    enhanced: 7.0,    // WCAG AAA standard
+  },
+  
+  focus: {
+    width: '2px',
+    style: 'solid',
+    color: colors.primary[600],
+    offset: '2px',
+    borderRadius: borderRadius.sm,
+  },
+  
+  touchTarget: touchTargets.minimum,
+  
+  reducedMotion: {
+    duration: '0.01ms',
+    iterations: 1,
+  }
+}
+
+// Dark Mode Tokens
+export const darkMode = {
+  background: {
+    primary: '#0f0f0f',     // Main dark background
+    secondary: '#1a1a1a',   // Elevated surfaces
+    tertiary: '#262626',    // Cards and components
+  },
+  
+  text: {
+    primary: 'rgba(255, 255, 255, 0.87)',     // High emphasis
+    secondary: 'rgba(255, 255, 255, 0.60)',   // Medium emphasis
+    tertiary: 'rgba(255, 255, 255, 0.38)',    // Low emphasis
+    disabled: 'rgba(255, 255, 255, 0.20)',    // Disabled
+  },
+  
+  border: {
+    primary: 'rgba(255, 255, 255, 0.12)',
+    secondary: 'rgba(255, 255, 255, 0.08)',
+  },
+  
+  primary: {
+    ...colors.primary,
+    500: '#2dd4bf',         // Lighter teal for dark mode
+    600: '#14b8a6',
+  }
 }
