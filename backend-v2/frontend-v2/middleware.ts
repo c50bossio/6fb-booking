@@ -35,6 +35,9 @@ const publicRoutes = [
   '/test-modal', // Temporary for testing ShareBookingModal
   '/service-worker.js',
   '/manifest.json',
+  '/icon', // PWA icon endpoint (with dynamic sizing)
+  '/apple-icon', // Apple-specific icon endpoint
+  '/favicon.ico', // Legacy favicon
 ]
 
 // List of routes that require admin role
@@ -207,8 +210,10 @@ export const config = {
      * - api (API routes)
      * - _next (all Next.js internal routes)
      * - favicon.ico (favicon file)
+     * - icon (PWA icons)
+     * - apple-icon (Apple icons)
      * - public folder
      */
-    '/((?!api|_next|favicon.ico|public).*)',
+    '/((?!api|_next|favicon\\.ico|icon|apple-icon|public).*)',
   ],
 }
