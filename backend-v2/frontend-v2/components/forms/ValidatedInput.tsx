@@ -136,6 +136,20 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
             aria-describedby={
               showError ? `${props.id}-error` : helperText ? `${props.id}-helper` : undefined
             }
+            aria-label={label || props.placeholder || `${type} input`}
+            autoComplete={
+              type === 'email' ? 'email' :
+              type === 'password' ? 'current-password' :
+              type === 'tel' ? 'tel' :
+              props.name === 'firstName' || props.name === 'first_name' ? 'given-name' :
+              props.name === 'lastName' || props.name === 'last_name' ? 'family-name' :
+              props.name === 'phone' ? 'tel' :
+              props.name === 'address' ? 'street-address' :
+              props.name === 'city' ? 'address-level2' :
+              props.name === 'state' ? 'address-level1' :
+              props.name === 'zip' || props.name === 'zipCode' ? 'postal-code' :
+              props.autoComplete || 'off'
+            }
             {...(({ size, ...rest }) => rest)(props)}
           />
           

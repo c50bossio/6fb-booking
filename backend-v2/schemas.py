@@ -2063,7 +2063,7 @@ class AppointmentResponse(BaseModel):
     barber_id: Optional[int] = None
     client_id: Optional[int] = None
     service_id: Optional[int] = None
-    service_name: str
+    service_name: Optional[str] = None
     start_time: datetime
     duration_minutes: int
     price: float

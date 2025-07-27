@@ -142,10 +142,11 @@ export default function RootLayout({
           />
         )}
         
-        {/* iOS Web App Capabilities */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        {/* iOS Web App Capabilities - Updated for modern PWA standards */}
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Booked Barber" />
+        <meta name="application-name" content="Booked Barber" />
         
         {/* Font preloading is handled automatically by Next.js Google Fonts */}
         

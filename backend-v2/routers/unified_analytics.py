@@ -229,6 +229,7 @@ def check_ai_analytics_consent(user_id: int, db: Session) -> bool:
 @safe_endpoint
 async def get_analytics_dashboard(
     request: Request,
+    user_id: Optional[int] = Query(None, description="Specific user ID for analytics"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -236,16 +237,75 @@ async def get_analytics_dashboard(
     permission_checker = get_permission_checker(current_user=current_user, db=db)
     permission_checker.require_permission(Permission.VIEW_ANALYTICS)
     
-    user_ids = get_organization_user_ids(current_user, db)
+    # Determine target user
+    target_user_id = user_id if user_id else current_user.id
+    
+    # Verify access to the requested user's data
+    if target_user_id != current_user.id:
+        if current_user.role not in ["admin", "super_admin"]:
+            user_ids = get_organization_user_ids(current_user, db)
+            if target_user_id not in user_ids:
+                raise HTTPException(status_code=403, detail="Access denied to this user's analytics")
+    
     analytics_service = AnalyticsService(db)
     
-    return {
-        "revenue": analytics_service.get_revenue_analytics(user_ids=user_ids),
-        "appointments": analytics_service.get_appointment_analytics(user_ids=user_ids),
-        "clients": analytics_service.get_client_retention_metrics(user_id=user_ids[0] if user_ids else None),
-        "performance": analytics_service.get_barber_performance_metrics(user_ids=user_ids),
-        "six_figure_barber": analytics_service.get_comparative_analytics(current_user.id)
-    }
+    try:
+        if user_id:
+            # Return analytics for specific user
+            return {
+                "revenue": analytics_service.get_revenue_analytics(user_ids=[target_user_id]),
+                "appointments": analytics_service.get_appointment_analytics(user_ids=[target_user_id]),
+                "clients": analytics_service.get_client_retention_metrics(user_id=target_user_id),
+                "performance": analytics_service.get_barber_performance_metrics(barber_id=target_user_id),
+                "six_figure_barber": analytics_service.get_comparative_analytics(target_user_id)
+            }
+        else:
+            # Return analytics for current user's organization
+            user_ids = get_organization_user_ids(current_user, db)
+            return {
+                "revenue": analytics_service.get_revenue_analytics(user_ids=user_ids),
+                "appointments": analytics_service.get_appointment_analytics(user_ids=user_ids),
+                "clients": analytics_service.get_client_retention_metrics(user_id=user_ids[0] if user_ids else None),
+                "performance": analytics_service.get_barber_performance_metrics(barber_id=current_user.id),
+                "six_figure_barber": analytics_service.get_comparative_analytics(current_user.id)
+            }
+    except Exception as e:
+        logger.error(f"Error getting analytics dashboard: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve analytics: {str(e)}")
+
+@router.get("/dashboard/{user_id}")
+@safe_endpoint
+async def get_analytics_dashboard_for_user(
+    user_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get comprehensive analytics dashboard data for a specific user"""
+    permission_checker = get_permission_checker(current_user=current_user, db=db)
+    permission_checker.require_permission(Permission.VIEW_ANALYTICS)
+    
+    # Verify access to the requested user's data
+    if current_user.id != user_id:
+        # Check if current user has admin privileges or is in same organization
+        if current_user.role not in ["admin", "super_admin"]:
+            user_ids = get_organization_user_ids(current_user, db)
+            if user_id not in user_ids:
+                raise HTTPException(status_code=403, detail="Access denied to this user's analytics")
+    
+    analytics_service = AnalyticsService(db)
+    
+    try:
+        return {
+            "revenue": analytics_service.get_revenue_analytics(user_ids=[user_id]),
+            "appointments": analytics_service.get_appointment_analytics(user_ids=[user_id]),
+            "clients": analytics_service.get_client_retention_metrics(user_id=user_id),
+            "performance": analytics_service.get_barber_performance_metrics(barber_id=user_id),
+            "six_figure_barber": analytics_service.get_comparative_analytics(user_id)
+        }
+    except Exception as e:
+        logger.error(f"Error getting analytics dashboard for user {user_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve analytics: {str(e)}")
 
 @router.get("/revenue")
 @safe_endpoint

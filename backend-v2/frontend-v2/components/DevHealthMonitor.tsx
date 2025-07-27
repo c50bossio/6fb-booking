@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, Server, Database, AlertCircle, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
@@ -43,7 +43,7 @@ export function DevHealthMonitor() {
       return;
     }
 
-    const checkHealth = async () => {
+    const checkHealth = useCallback(async () => {
       // Detect if we're in GitHub Codespaces
       const isCodespaces = window.location.hostname.includes('.app.github.dev');
       const backendUrl = isCodespaces 
@@ -60,10 +60,13 @@ export function DevHealthMonitor() {
       // Check Backend API
       try {
         const startTime = Date.now();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
         const response = await fetch(`${backendBaseUrl}/health`, {
           method: 'GET',
-          signal: AbortSignal.timeout(5000)
+          signal: controller.signal
         }).catch(() => null);
+        clearTimeout(timeoutId);
         
         const responseTime = Date.now() - startTime;
         
@@ -87,10 +90,13 @@ export function DevHealthMonitor() {
 
       // Check Redis (via backend endpoint)
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
         const response = await fetch(`${backendBaseUrl}/api/v2/health/redis`, {
           method: 'GET',
-          signal: AbortSignal.timeout(3000)
+          signal: controller.signal
         }).catch(() => null);
+        clearTimeout(timeoutId);
         
         setServices(prev => prev.map(s => 
           s.name === 'Redis Cache' ? {
@@ -120,7 +126,7 @@ export function DevHealthMonitor() {
       });
 
       setLastCheck(new Date());
-    };
+    }, []);
 
     // Initial check
     checkHealth();
@@ -133,7 +139,7 @@ export function DevHealthMonitor() {
 
   if (!isVisible) return null;
 
-  const allHealthy = services.every(s => s.status === 'up');
+  const allHealthy = useMemo(() => services.every(s => s.status === 'up'), [services]);
 
   return (
     <div className="fixed bottom-4 right-4 w-80 z-50">
