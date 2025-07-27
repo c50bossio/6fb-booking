@@ -130,13 +130,94 @@ export async function getRecentItems(
 }
 
 /**
+ * Semantic search using Voyage.ai embeddings
+ */
+export async function semanticSearch(
+  query: string,
+  options: {
+    type?: 'all' | 'barbers' | 'services'
+    limit?: number
+    minSimilarity?: number
+    signal?: AbortSignal
+  } = {}
+): Promise<SearchResponse> {
+  const { type = 'all', limit = 10, minSimilarity = 0.5, signal } = options
+  
+  const params = new URLSearchParams({
+    q: query,
+    type,
+    limit: limit.toString(),
+    min_similarity: minSimilarity.toString()
+  })
+  
+  const response = await fetch(`${API_BASE}/api/v2/search/semantic?${params}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    signal
+  })
+  
+  if (!response.ok) {
+    if (response.status === 503) {
+      // Semantic search unavailable - fallback to regular search
+      return globalSearch(query, { limit, signal })
+    }
+    throw new Error(`Semantic search failed: ${response.statusText}`)
+  }
+  
+  return response.json()
+}
+
+/**
+ * Get personalized recommendations
+ */
+export async function getRecommendations(
+  options: {
+    limit?: number
+    signal?: AbortSignal
+  } = {}
+): Promise<SearchResponse> {
+  const { limit = 5, signal } = options
+  
+  const params = new URLSearchParams({
+    limit: limit.toString()
+  })
+  
+  const response = await fetch(`${API_BASE}/api/v2/search/recommendations?${params}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    signal
+  })
+  
+  if (!response.ok) {
+    // Return empty response on error to not break UX
+    return {
+      query: 'recommendations',
+      results: [],
+      total: 0,
+      categories: {},
+      took_ms: 0
+    }
+  }
+  
+  return response.json()
+}
+
+/**
  * Search hook for React components
  */
 export function createSearchHook() {
   return {
     search: globalSearch,
+    semanticSearch,
     suggestions: getSearchSuggestions,
-    recent: getRecentItems
+    recent: getRecentItems,
+    recommendations: getRecommendations
   }
 }
 

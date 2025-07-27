@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { globalSearch, getSearchSuggestions, getRecentItems } from '@/lib/api/search'
+import { globalSearch, semanticSearch, getSearchSuggestions, getRecentItems, getRecommendations } from '@/lib/api/search'
 import type { SearchResult, SearchResponse } from '@/lib/api/search'
 
 interface UseSearchOptions {
@@ -14,6 +14,9 @@ interface UseSearchOptions {
   maxSuggestions?: number
   searchLimit?: number
   category?: string
+  useSemanticSearch?: boolean
+  searchType?: 'all' | 'barbers' | 'services'
+  minSimilarity?: number
 }
 
 interface UseSearchReturn {
@@ -22,15 +25,21 @@ interface UseSearchReturn {
   results: SearchResult[]
   suggestions: string[]
   recentItems: SearchResult[]
+  recommendations: SearchResult[]
   isLoading: boolean
   isLoadingSuggestions: boolean
+  isLoadingRecommendations: boolean
   error: string | null
+  isSemanticSearchEnabled: boolean
   
   // Actions
   setQuery: (query: string) => void
   search: (query: string) => Promise<void>
+  semanticSearch: (query: string) => Promise<void>
   clearSearch: () => void
   selectResult: (result: SearchResult) => void
+  loadRecommendations: () => Promise<void>
+  toggleSemanticSearch: () => void
   
   // Metadata
   totalResults: number
@@ -44,7 +53,10 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
     minQueryLength = 1,
     maxSuggestions = 8,
     searchLimit = 20,
-    category
+    category,
+    useSemanticSearch = true,
+    searchType = 'all',
+    minSimilarity = 0.5
   } = options
   
   // State
@@ -52,9 +64,12 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
   const [results, setResults] = useState<SearchResult[]>([])
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [recentItems, setRecentItems] = useState<SearchResult[]>([])
+  const [recommendations, setRecommendations] = useState<SearchResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isSemanticSearchEnabled, setIsSemanticSearchEnabled] = useState(useSemanticSearch)
   const [searchMetadata, setSearchMetadata] = useState({
     totalResults: 0,
     categories: {} as Record<string, number>,
@@ -67,7 +82,7 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
   
   // Search function
-  const performSearch = useCallback(async (searchQuery: string) => {
+  const performSearch = useCallback(async (searchQuery: string, forceSemanticSearch?: boolean) => {
     if (!searchQuery || searchQuery.length < minQueryLength) {
       setResults([])
       setSearchMetadata({ totalResults: 0, categories: {}, searchTime: 0 })
@@ -86,11 +101,17 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
       setIsLoading(true)
       setError(null)
       
-      const response = await globalSearch(searchQuery, {
+      // Choose search method
+      const useSemantic = forceSemanticSearch ?? isSemanticSearchEnabled
+      const searchFn = useSemantic ? semanticSearch : globalSearch
+      
+      const response = await searchFn(searchQuery, {
         limit: searchLimit,
         category,
+        type: searchType,
+        minSimilarity,
         signal: searchAbortController.current.signal
-      })
+      } as any)
       
       setResults(response.results)
       setSearchMetadata({
@@ -108,7 +129,7 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [minQueryLength, searchLimit, category])
+  }, [minQueryLength, searchLimit, category, isSemanticSearchEnabled, searchType, minSimilarity])
   
   // Suggestions function
   const loadSuggestions = useCallback(async (searchQuery: string) => {
@@ -143,7 +164,7 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
     }
   }, [maxSuggestions])
   
-  // Load recent items on mount
+  // Load recent items and recommendations on mount
   useEffect(() => {
     async function loadRecent() {
       try {
@@ -156,6 +177,20 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
     }
     
     loadRecent()
+  }, [])
+  
+  // Load recommendations function
+  const loadRecommendations = useCallback(async () => {
+    try {
+      setIsLoadingRecommendations(true)
+      const recommendationsResponse = await getRecommendations({ limit: 10 })
+      setRecommendations(recommendationsResponse.results)
+    } catch (err) {
+      // Silently fail for recommendations
+      setRecommendations([])
+    } finally {
+      setIsLoadingRecommendations(false)
+    }
   }, [])
   
   // Debounced search effect
@@ -181,6 +216,21 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
     setQuery(searchQuery)
     await performSearch(searchQuery)
   }, [performSearch])
+  
+  // Semantic search function (can be called directly)
+  const performSemanticSearch = useCallback(async (searchQuery: string) => {
+    setQuery(searchQuery)
+    await performSearch(searchQuery, true)
+  }, [performSearch])
+  
+  // Toggle semantic search
+  const toggleSemanticSearch = useCallback(() => {
+    setIsSemanticSearchEnabled(prev => !prev)
+    // Re-search with current query if exists
+    if (query) {
+      performSearch(query)
+    }
+  }, [query, performSearch])
   
   // Clear search
   const clearSearch = useCallback(() => {
@@ -230,15 +280,21 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
     results,
     suggestions,
     recentItems,
+    recommendations,
     isLoading,
     isLoadingSuggestions,
+    isLoadingRecommendations,
     error,
+    isSemanticSearchEnabled,
     
     // Actions
     setQuery,
     search,
+    semanticSearch: performSemanticSearch,
     clearSearch,
     selectResult,
+    loadRecommendations,
+    toggleSemanticSearch,
     
     // Metadata
     totalResults: searchMetadata.totalResults,

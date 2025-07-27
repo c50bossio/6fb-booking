@@ -15,6 +15,7 @@ from db import get_db
 from dependencies import get_current_user
 from models import User, Appointment, Service
 from utils.role_permissions import Permission, get_permission_checker, PermissionChecker
+from services.semantic_search_service import semantic_search, SemanticMatch
 
 
 router = APIRouter(prefix="/search", tags=["search"])
@@ -183,6 +184,212 @@ async def global_search(
         raise HTTPException(
             status_code=500,
             detail=f"Search failed: {str(e)}"
+        )
+
+
+@router.get("/semantic", response_model=SearchResponse)
+async def semantic_search_endpoint(
+    q: str = Query(..., min_length=1, max_length=100, description="Search query"),
+    type: str = Query("all", description="Search type: all, barbers, services"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum number of results"),
+    min_similarity: float = Query(0.5, ge=0.0, le=1.0, description="Minimum similarity threshold"),
+    current_user: User = Depends(get_current_user),
+    permission_checker: PermissionChecker = Depends(get_permission_checker),
+    db: Session = Depends(get_db)
+):
+    """
+    Semantic search using Voyage.ai embeddings.
+    
+    Provides intelligent matching for:
+    - Barbers based on skills and descriptions
+    - Services based on natural language queries
+    - Smart recommendations based on context
+    """
+    start_time = datetime.now()
+    
+    results = []
+    categories = {
+        "barbers": 0,
+        "services": 0
+    }
+    
+    try:
+        # Check if semantic search is available
+        if not semantic_search.is_available():
+            raise HTTPException(
+                status_code=503,
+                detail="Semantic search is temporarily unavailable. Please try keyword search."
+            )
+        
+        # Search barbers
+        if type in ["all", "barbers"] and \
+           permission_checker.has_permission(Permission.VIEW_ALL_CLIENTS):
+            
+            barber_matches = await semantic_search.find_similar_barbers(
+                query=q,
+                db=db,
+                limit=limit // 2 if type == "all" else limit,
+                min_similarity=min_similarity
+            )
+            
+            for match in barber_matches:
+                results.append(SearchResult(
+                    id=match.entity_id,
+                    type="barber",
+                    title=match.title,
+                    subtitle=f"Similarity: {match.similarity_score:.0%}",
+                    url=f"/barbers/{match.entity_id}",
+                    metadata={
+                        **match.metadata,
+                        "similarity_score": match.similarity_score,
+                        "search_type": "semantic"
+                    },
+                    score=match.similarity_score
+                ))
+                categories["barbers"] += 1
+        
+        # Search services
+        if type in ["all", "services"] and \
+           permission_checker.has_permission(Permission.VIEW_SERVICES):
+            
+            service_matches = await semantic_search.find_similar_services(
+                query=q,
+                db=db,
+                limit=limit // 2 if type == "all" else limit,
+                min_similarity=min_similarity
+            )
+            
+            for match in service_matches:
+                results.append(SearchResult(
+                    id=match.entity_id,
+                    type="service",
+                    title=match.title,
+                    subtitle=f"${match.metadata.get('price', 0)} - {match.metadata.get('duration', 0)} min (Similarity: {match.similarity_score:.0%})",
+                    url=f"/services/{match.entity_id}",
+                    metadata={
+                        **match.metadata,
+                        "similarity_score": match.similarity_score,
+                        "search_type": "semantic"
+                    },
+                    score=match.similarity_score
+                ))
+                categories["services"] += 1
+        
+        # Sort by similarity score (highest first)
+        results.sort(key=lambda x: x.score, reverse=True)
+        
+        # Limit total results
+        results = results[:limit]
+        total = len(results)
+        
+        # Calculate search time
+        end_time = datetime.now()
+        took_ms = int((end_time - start_time).total_seconds() * 1000)
+        
+        return SearchResponse(
+            query=q,
+            results=results,
+            total=total,
+            categories=categories,
+            took_ms=took_ms
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Semantic search failed: {str(e)}"
+        )
+
+
+@router.get("/recommendations", response_model=SearchResponse)
+async def get_recommendations(
+    limit: int = Query(5, ge=1, le=20, description="Maximum number of recommendations"),
+    current_user: User = Depends(get_current_user),
+    permission_checker: PermissionChecker = Depends(get_permission_checker),
+    db: Session = Depends(get_db)
+):
+    """
+    Get personalized recommendations for the current user.
+    
+    For clients: Recommended barbers based on appointment history
+    For barbers: Popular services and client preferences
+    """
+    start_time = datetime.now()
+    
+    results = []
+    categories = {"recommendations": 0}
+    
+    try:
+        if current_user.unified_role == "CLIENT":
+            # Recommend barbers for client
+            if permission_checker.has_permission(Permission.VIEW_ALL_CLIENTS):
+                barber_recommendations = await semantic_search.recommend_barber_for_client(
+                    client_id=current_user.id,
+                    db=db,
+                    limit=limit
+                )
+                
+                for match in barber_recommendations:
+                    results.append(SearchResult(
+                        id=match.entity_id,
+                        type="barber",
+                        title=match.title,
+                        subtitle=f"Recommended for you (Match: {match.similarity_score:.0%})",
+                        url=f"/book?barber={match.entity_id}",
+                        metadata={
+                            **match.metadata,
+                            "recommendation_score": match.similarity_score,
+                            "recommendation_type": "barber_for_client"
+                        },
+                        score=match.similarity_score
+                    ))
+                    categories["recommendations"] += 1
+        
+        else:
+            # For barbers/owners - could add service recommendations or client insights
+            # For now, return popular services
+            popular_services = db.query(Service).filter(
+                Service.is_active == True
+            ).limit(limit).all()
+            
+            for service in popular_services:
+                results.append(SearchResult(
+                    id=service.id,
+                    type="service",
+                    title=service.name,
+                    subtitle=f"Popular service - ${service.price}",
+                    url=f"/services/{service.id}",
+                    metadata={
+                        "price": float(service.price),
+                        "duration": service.duration,
+                        "recommendation_type": "popular_service"
+                    },
+                    score=0.7
+                ))
+                categories["recommendations"] += 1
+        
+        # Sort by score
+        results.sort(key=lambda x: x.score, reverse=True)
+        total = len(results)
+        
+        # Calculate search time
+        end_time = datetime.now()
+        took_ms = int((end_time - start_time).total_seconds() * 1000)
+        
+        return SearchResponse(
+            query="recommendations",
+            results=results,
+            total=total,
+            categories=categories,
+            took_ms=took_ms
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get recommendations: {str(e)}"
         )
 
 

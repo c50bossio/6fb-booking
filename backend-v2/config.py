@@ -121,6 +121,10 @@ class Settings(BaseSettings):
     google_ai_api_key: str = ""  # Set GOOGLE_AI_API_KEY environment variable
     google_ai_default_model: str = "gemini-pro"
     
+    # Voyage.ai Embeddings
+    voyage_api_key: str = ""  # Set VOYAGE_API_KEY environment variable
+    voyage_default_model: str = "voyage-3-large"
+    
     # AI Provider Settings
     default_ai_provider: str = "anthropic"  # Default AI provider to use
     ai_temperature: float = 0.7  # Default temperature for AI responses
@@ -378,6 +382,8 @@ class Settings(BaseSettings):
                 self.openai_api_key = get_secret('OPENAI_API_KEY', required=False) or ""
             if not self.google_ai_api_key:
                 self.google_ai_api_key = get_secret('GOOGLE_AI_API_KEY', required=False) or ""
+            if not self.voyage_api_key:
+                self.voyage_api_key = get_secret('VOYAGE_API_KEY', required=False) or ""
                 
             logger.info("Secrets loaded securely from environment variables")
             
