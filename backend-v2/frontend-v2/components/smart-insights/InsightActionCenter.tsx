@@ -97,7 +97,18 @@ export function InsightActionCenter({
       const params = new URLSearchParams()
       if (userId) params.append('user_id', userId.toString())
       
-      const response = await fetch(`/api/v2/smart-insights/actions?${params}`)
+      // Get authentication token
+      const token = localStorage.getItem('token')
+      if (!token) {
+        throw new Error('Authentication required')
+      }
+      
+      const response = await fetch(`/api/v2/smart-insights/actions?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
