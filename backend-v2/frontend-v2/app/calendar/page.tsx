@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { GamifiedBarberProfile, demoBarberData } from '@/components/GamifiedBarberProfile'
 
 export default function CalendarPage() {
   const [appointments, setAppointments] = useState([])
@@ -90,6 +91,24 @@ export default function CalendarPage() {
           ✅ <strong>Calendar Debug: WORKING!</strong> Demo data loaded successfully. API authentication fallback is functioning properly.
         </div>
 
+        {/* Tier Achievement Celebration Banner */}
+        <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-4 rounded-lg mb-6 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="text-3xl">🎉</div>
+              <div>
+                <h3 className="font-bold text-lg">MILESTONE UNLOCKED!</h3>
+                <p className="text-purple-100">Diego Rivera just reached POPULAR tier! New rate: $55</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-purple-200">Achievement Streak</div>
+              <div className="text-2xl font-bold">🔥 3 weeks</div>
+            </div>
+          </div>
+        </div>
+
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Appointments Panel */}
           <div className="lg:col-span-2">
@@ -138,60 +157,76 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          {/* Barbers Panel */}
+          {/* Gamified Barbers Panel */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">
-                  Barbers ({barbers.length})
-                </h2>
-              </div>
-              <div className="p-6">
+            <div className="space-y-4">
+              {/* Performance Leaderboard */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <span className="text-2xl">🏆</span>
+                    Performance Leaderboard
+                  </h2>
+                  <div className="text-sm text-gray-500">This Week</div>
+                </div>
+                
                 <div className="space-y-3">
-                  {barbers.map((barber) => (
-                    <div key={barber.id} className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-white">
-                          {barber.name.split(' ').map(n => n[0]).join('')}
-                        </span>
+                  {demoBarberData
+                    .sort((a, b) => b.metrics.tierScore - a.metrics.tierScore)
+                    .map((barber, index) => (
+                    <div key={barber.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white font-bold text-sm">
+                        {index + 1}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {barber.name}
-                        </p>
-                        <p className="text-sm text-gray-500 truncate">
-                          {barber.email}
-                        </p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900">{barber.name}</span>
+                          <span className="text-lg">{barber.currentTier.emoji}</span>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Score: {barber.metrics.tierScore} • ${barber.currentTier.rate}/service
+                        </div>
                       </div>
-                      <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Available
-                      </div>
+                      {barber.isNewTierUnlocked && (
+                        <div className="text-2xl animate-bounce">🎉</div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="mt-6 bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-sm font-medium text-gray-900">Quick Stats</h3>
-              </div>
-              <div className="p-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Today&apos;s Appointments</span>
-                    <span className="text-sm font-medium text-gray-900">{appointments.length}</span>
+              
+              {/* Revenue Insights Panel */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-2xl">💰</span>
+                  <h3 className="font-semibold text-green-900">Revenue Insights</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-green-700">Avg Rate This Week</span>
+                    <span className="font-bold text-green-800">$58.33</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Active Barbers</span>
-                    <span className="text-sm font-medium text-gray-900">{barbers.length}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-green-700">Tier Improvements</span>
+                    <span className="font-bold text-green-800">+2 barbers</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Data Source</span>
-                    <span className="text-sm font-medium text-blue-600">Demo Data</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-green-700">Revenue Impact</span>
+                    <span className="font-bold text-green-800">+12% this month</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Individual Barber Profiles */}
+              <div className="space-y-4">
+                {demoBarberData.map((barber) => (
+                  <GamifiedBarberProfile
+                    key={barber.id}
+                    barber={barber}
+                    showDetailed={false}
+                    onBooking={() => console.log(`Book with ${barber.name}`)}
+                  />
+                ))}
               </div>
             </div>
           </div>
