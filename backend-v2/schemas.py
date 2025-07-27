@@ -650,7 +650,7 @@ class ClientList(BaseModel):
 
 
 class ClientHistory(BaseModel):
-    appointments: List[BookingResponse]
+    appointments: List['BookingResponse']
     total_appointments: int
     total_spent: float
     average_ticket: float
@@ -3107,6 +3107,10 @@ class LocationUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 # Model rebuilds to resolve forward references
+RegistrationResponse.model_rebuild()
+CompleteRegistrationResponse.model_rebuild()
+ClientRegistrationResponse.model_rebuild()
 SMSConversationResponse.model_rebuild()
 OrganizationResponse.model_rebuild()
 UserOrganizationResponse.model_rebuild()
+ClientHistory.model_rebuild()
