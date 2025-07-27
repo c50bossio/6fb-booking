@@ -59,7 +59,13 @@ async def get_smart_insights_dashboard(
         
         # Check if requesting data for another user
         if user_id and user_id != current_user.id:
-            if not checker.has_permission(Permission.VIEW_FINANCIAL_ANALYTICS):
+            # Allow admin users and those with analytics permissions to view other users' insights
+            if not checker.has_any_permission([
+                Permission.VIEW_FINANCIAL_ANALYTICS,
+                Permission.VIEW_ALL_ANALYTICS,
+                Permission.SYSTEM_ADMIN,
+                Permission.MANAGE_PLATFORM
+            ]):
                 raise HTTPException(
                     status_code=403, 
                     detail="Insufficient permissions to view insights for other users"
@@ -130,7 +136,13 @@ async def get_priority_insight(
         target_user_id = user_id if user_id else current_user.id
         
         if user_id and user_id != current_user.id:
-            if not checker.has_permission(Permission.VIEW_FINANCIAL_ANALYTICS):
+            # Allow admin users and those with analytics permissions to view other users' insights
+            if not checker.has_any_permission([
+                Permission.VIEW_FINANCIAL_ANALYTICS,
+                Permission.VIEW_ALL_ANALYTICS,
+                Permission.SYSTEM_ADMIN,
+                Permission.MANAGE_PLATFORM
+            ]):
                 raise HTTPException(status_code=403, detail="Insufficient permissions")
         
         # Get insights
@@ -182,7 +194,13 @@ async def get_insights_by_category(
         target_user_id = user_id if user_id else current_user.id
         
         if user_id and user_id != current_user.id:
-            if not checker.has_permission(Permission.VIEW_FINANCIAL_ANALYTICS):
+            # Allow admin users and those with analytics permissions to view other users' insights
+            if not checker.has_any_permission([
+                Permission.VIEW_FINANCIAL_ANALYTICS,
+                Permission.VIEW_ALL_ANALYTICS,
+                Permission.SYSTEM_ADMIN,
+                Permission.MANAGE_PLATFORM
+            ]):
                 raise HTTPException(status_code=403, detail="Insufficient permissions")
         
         # Get insights
@@ -229,7 +247,13 @@ async def get_quick_actions(
         target_user_id = user_id if user_id else current_user.id
         
         if user_id and user_id != current_user.id:
-            if not checker.has_permission(Permission.VIEW_FINANCIAL_ANALYTICS):
+            # Allow admin users and those with analytics permissions to view other users' insights
+            if not checker.has_any_permission([
+                Permission.VIEW_FINANCIAL_ANALYTICS,
+                Permission.VIEW_ALL_ANALYTICS,
+                Permission.SYSTEM_ADMIN,
+                Permission.MANAGE_PLATFORM
+            ]):
                 raise HTTPException(status_code=403, detail="Insufficient permissions")
         
         # Get insights

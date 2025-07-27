@@ -93,6 +93,9 @@ ROLE_PERMISSIONS: Dict[str, Set[Permission]] = {
     # Platform roles
     UnifiedUserRole.SUPER_ADMIN.value: set(Permission),  # All permissions
     
+    # Legacy admin role fallback (for users not yet migrated)
+    "admin": set(Permission),  # All permissions
+    
     UnifiedUserRole.PLATFORM_ADMIN.value: {
         Permission.SYSTEM_ADMIN,
         Permission.VIEW_ALL_ORGANIZATIONS,
