@@ -49,7 +49,7 @@ export async function globalSearch(
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
     },
     signal
   })
@@ -84,7 +84,7 @@ export async function getSearchSuggestions(
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
     },
     signal
   })
@@ -116,7 +116,7 @@ export async function getRecentItems(
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
     },
     signal
   })

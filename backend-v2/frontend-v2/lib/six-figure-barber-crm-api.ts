@@ -15,7 +15,7 @@ const API_BASE_URL = '/api/v2/six-figure-barber/crm';
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('token');
   return {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',

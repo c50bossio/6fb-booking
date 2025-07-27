@@ -110,19 +110,19 @@ export class SmartInsightsAPI {
   private baseUrl: string
   private token: string | null
 
-  constructor(baseUrl: string = '') {
+  constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') {
     this.baseUrl = baseUrl
     this.token = null
   }
 
   /**
-   * Get authentication token from cookies
+   * Get authentication token from localStorage
    */
   private getAuthToken(): string | null {
     if (typeof window === 'undefined') return null
     
-    // Try to get token from cookies
-    return getCookie('access_token') as string || null
+    // Get token from localStorage (consistent with main auth system)
+    return localStorage.getItem('token')
   }
 
   /**
