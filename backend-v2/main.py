@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 # Import tracking models to register them with SQLAlchemy
-from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks
+from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks, smart_insights
 # Consolidated analytics router (replaces: analytics, ai_analytics, marketing_analytics, email_analytics)
 from routers import unified_analytics
 
@@ -372,6 +372,7 @@ app.include_router(ai_upselling.router, prefix="/api/v2")  # AI Agent for autono
 app.include_router(calendar_revenue_optimization.router, prefix="/api/v2")  # Calendar revenue optimization - Six Figure Barber methodology
 app.include_router(six_figure_barber_analytics.router, prefix="/api/v2")  # Six Figure Barber methodology core analytics
 app.include_router(six_figure_barber_crm.router, prefix="/api/v2")  # Six Figure Barber CRM system
+app.include_router(smart_insights.router)  # Smart Insights Hub - intelligent consolidation of all analytics
 app.include_router(search.router, prefix="/api/v2")  # Global search functionality
 
 # DEPLOYMENT TEST ENDPOINT - Remove after deployment verification
