@@ -125,6 +125,33 @@ from .guest_booking import (
     GuestBooking, GuestBookingNotification
 )
 
+# Location Models (import from separate file)
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+try:
+    from location_models import (
+        BarbershopLocation, BarberLocation, ChairInventory, ChairAssignmentHistory, 
+        CompensationPlan, CompensationModel, LocationStatus, ChairStatus, ChairType
+    )
+    # Alias for backwards compatibility
+    Location = BarbershopLocation
+except ImportError:
+    # Create dummy classes if location_models not available
+    class Location:
+        pass
+    class BarbershopLocation:
+        pass
+    class BarberLocation:
+        pass
+    class ChairInventory:
+        pass
+    class ChairAssignmentHistory:
+        pass
+    class CompensationPlan:
+        pass
+
 __all__ = [
     # Main models from parent models.py
     'UnifiedUserRole', 'User', 'Appointment', 'Payment', 'Service', 'BarberAvailability',
@@ -172,5 +199,8 @@ __all__ = [
     'SixFBComplianceScore', 'SixFBComplianceCheck', 'SixFBImprovementTask',
     'SixFBBenchmark', 'SixFBComplianceHistory',
     # Guest Booking Models
-    'GuestBooking', 'GuestBookingNotification'
+    'GuestBooking', 'GuestBookingNotification',
+    # Location Models
+    'Location', 'BarbershopLocation', 'BarberLocation', 'ChairInventory', 'ChairAssignmentHistory',
+    'CompensationPlan', 'CompensationModel', 'LocationStatus', 'ChairStatus', 'ChairType'
 ]

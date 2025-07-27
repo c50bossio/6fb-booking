@@ -6,7 +6,7 @@ Extends existing security models for franchise network operations
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from database import Base
+from .base import Base
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 import enum

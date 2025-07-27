@@ -12,7 +12,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 30s
@@ -75,7 +74,7 @@ services:
       GIT_REPOSITORY_PATH: /app/agent-prompts
       LOG_LEVEL: ${LOG_LEVEL:-info}
     ports:
-      - "3001:3001"
+      - "3003:3001"
     volumes:
       - ./agent-prompts:/app/agent-prompts
       - agent_logs:/app/logs
@@ -99,19 +98,18 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
+      dockerfile: Dockerfile.frontend.dev
     container_name: agent-evolution-frontend
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:3001}
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:3003}
     ports:
-      - "3000:3000"
+      - "3002:3000"
     volumes:
-      - ./frontend:/app/frontend:ro
-      - frontend_build:/app/frontend/build
+      - ./frontend:/app:rw
+      - /app/node_modules
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s

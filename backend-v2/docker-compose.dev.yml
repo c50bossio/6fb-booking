@@ -64,7 +64,7 @@ services:
     build:
       context: ./frontend-v2
       dockerfile: Dockerfile
-      target: runner
+      target: development
       args:
         # Build-time environment variables
         NEXT_PUBLIC_API_URL: http://localhost:8000
@@ -93,7 +93,6 @@ services:
     volumes:
       - ./frontend-v2:/app
       - /app/node_modules
-      - /app/.next
     ports:
       - "3000:3000"
     networks:
