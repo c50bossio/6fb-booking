@@ -1,2 +1,1036 @@
 INFO:     Will watch for changes in these directories: ['/Users/bossio/6fb-booking/backend-v2']
-ERROR:    [Errno 48] Address already in use
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [80202] using WatchFiles
+WARNING:services.subscription_service:Stripe API key not configured - using mock mode
+INFO:services.redis_service:Redis connection pool initialized successfully to redis://localhost:6379
+INFO:services.redis_service:Environment: development, Max connections: 20
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+WARNING:services.gmb_service:Google OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+WARNING:services.meta_business_service:Meta Business OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'allow_population_by_field_name' has been renamed to 'populate_by_name'
+  warnings.warn(message, UserWarning)
+WARNING:services.conversion_tracking_service:Google Tag Manager server-side not fully configured
+WARNING:services.conversion_tracking_service:Meta Conversions API not fully configured
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.marketing_rate_limit:Marketing rate limiter initialized with limits: {'overview': 30, 'trends': 30, 'channels': 30, 'funnel': 30, 'realtime': 120, 'health': 120, 'export': 5, 'campaigns': 60, 'default': 20}
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:config.sentry:🔕 Sentry DSN not configured - error tracking disabled
+INFO:services.observability_service:📊 Observability Service initialized
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for stripe
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for sendgrid
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for twilio
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for google_calendar
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for database
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for redis
+INFO:services.circuit_breaker_service:🔌 Circuit Breaker Service initialized
+INFO:services.sentry_monitoring:Sentry monitoring services initialized
+INFO:services.sre_orchestrator:🚀 SRE Orchestrator initialized with 99.99% uptime target
+INFO:main:🔧 Development mode: Using lightweight middleware stack
+INFO:main:⚡ Skipping heavy middleware: RequestValidation, MultiTenancy, FinancialSecurity, MFA
+INFO:main:CORS configured for environment 'development' with 2 origins
+INFO:main:Allowed origins: ['http://localhost:3000', 'http://localhost:3001']
+INFO:services.automated_recovery_service:📋 Registered recovery plan: database_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: redis_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: high_cpu_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: api_endpoint_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: external_service_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: payment_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: memory_leak_recovery
+INFO:services.automated_recovery_service:🔧 Automated Recovery Service initialized
+INFO:     Started server process [80234]
+INFO:     Waiting for application startup.
+INFO:middleware.sre_middleware:📊 SRE Middleware initialized
+INFO:main:🚀 Starting BookedBarber V2 backend with SRE... (99.99% UPTIME TARGET)
+INFO:services.observability_service:✅ Observability background tasks started
+INFO:main:✅ Observability service started
+INFO:main:✅ SRE orchestrator monitoring started
+INFO:main:🎯 SRE system initialized - targeting 99.99% uptime
+INFO:services.sre_orchestrator:🎯 Starting comprehensive SRE monitoring...
+INFO:stripe:message='Request to Stripe api' method=get path=https://api.stripe.com/v1/account
+INFO:stripe:message='Stripe API response' path=https://api.stripe.com/v1/account response_code=200
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:GET Request: https://api.twilio.com/2010-04-01/Accounts/ACdev_placeholder_sid_for_development.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/8.11.0 (Darwin arm64) Python/3.12.7
+INFO:twilio.http_client:X-Twilio-Client : python-8.11.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --
+INFO:twilio.http_client:Response Status Code: 401
+INFO:twilio.http_client:Response Headers: {'Content-Type': 'application/json', 'Content-Length': '134', 'Connection': 'keep-alive', 'Date': 'Sun, 27 Jul 2025 16:25:59 GMT', 'X-API-Domain': 'api.twilio.com', 'X-Verification-Disclosure': 'Message Accepted. Pending content verification for US/Canada destination numbers:', 'Www-Authenticate': 'Basic realm="Twilio API"', 'Twilio-Request-Id': 'RQ772ee8bbce49db17e4e7723926d0d41f', 'X-Shenanigans': 'none', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Idempotency-Key', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'ETag', 'Access-Control-Allow-Credentials': 'true', 'X-Powered-By': 'AT-5000', 'X-Home-Region': 'us1', 'X-Cache': 'Error from cloudfront', 'Via': '1.1 f465fdeca906afa0539bb462afc69502.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'MIA3-C3', 'X-Amz-Cf-Id': 'cAtJAW9p6YbQPlhjlRUW97kL1Uhc6y_Hnt5f7DFyEnjmmrQQJ75bOQ=='}
+INFO:services.redis_cache:✅ Redis connection established successfully
+INFO:services.startup_cache:✅ Redis cache service initialized successfully
+INFO:services.startup_cache:🔥 Cache warmed up: 3 services, 2 locations, 1 configs in 1.1ms
+INFO:services.startup_cache:✅ Cache warmup completed successfully
+INFO:main:✅ Cache initialization completed: {'cache_enabled': True, 'redis_connected': True, 'cache_warmed': True, 'warnings': [], 'errors': [], 'services_cached': 3, 'locations_cached': 2, 'config_cached': 1, 'warmup_time_ms': 1}
+ERROR:main:❌ Performance monitoring initialization failed: No module named 'aioredis'
+INFO:     Application startup complete.
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60184 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60174 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60170 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60240 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60254 - "GET /api/v2/analytics/dashboard HTTP/1.1" 403 Forbidden
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Sendgrid service failure detected (ID: sendgrid_failure_1753633568, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident sendgrid_failure_1753633568
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for sendgrid
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Twilio service failure detected (ID: twilio_failure_1753633568, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident twilio_failure_1753633568
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for twilio
+INFO:     127.0.0.1:60284 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60306 - "GET /api/v2/appointments/all/list HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:60330 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60333 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60362 - "GET /api/v2/search/recent HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:60371 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60434 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60455 - "GET /api/v2/analytics/dashboard/7 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60494 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60496 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60559 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60615 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60650 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60652 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60728 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60789 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60828 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60830 - "GET /health/ HTTP/1.1" 200 OK
+INFO:stripe:message='Request to Stripe api' method=get path=https://api.stripe.com/v1/account
+INFO:stripe:message='Stripe API response' path=https://api.stripe.com/v1/account response_code=200
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:GET Request: https://api.twilio.com/2010-04-01/Accounts/ACdev_placeholder_sid_for_development.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/8.11.0 (Darwin arm64) Python/3.12.7
+INFO:twilio.http_client:X-Twilio-Client : python-8.11.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --
+INFO:twilio.http_client:Response Status Code: 401
+INFO:twilio.http_client:Response Headers: {'Content-Type': 'application/json', 'Content-Length': '134', 'Connection': 'keep-alive', 'Date': 'Sun, 27 Jul 2025 16:27:00 GMT', 'X-API-Domain': 'api.twilio.com', 'X-Verification-Disclosure': 'Message Accepted. Pending content verification for US/Canada destination numbers:', 'Www-Authenticate': 'Basic realm="Twilio API"', 'Twilio-Request-Id': 'RQ49e6f086834d50cd5dab35ba4019bf1f', 'X-Shenanigans': 'none', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Idempotency-Key', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'ETag', 'Access-Control-Allow-Credentials': 'true', 'X-Powered-By': 'AT-5000', 'X-Home-Region': 'us1', 'X-Cache': 'Error from cloudfront', 'Via': '1.1 dcaec0b05596b42ef5dab9e145ac961e.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'MIA3-C3', 'X-Amz-Cf-Id': 'D29uFGqt2IBDP-G2oDXYZ-4HpMErMJNISYBzOK1a6JtGuGag-Liq5w=='}
+WARNING:  WatchFiles detected changes in 'routers/unified_analytics.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:services.observability_service:⏹️ Observability service stopped
+INFO:main:✅ SRE services stopped
+INFO:services.startup_cache:✅ Cache service shutdown completed
+INFO:main:✅ Cache shutdown completed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [80234]
+WARNING:services.subscription_service:Stripe API key not configured - using mock mode
+INFO:services.redis_service:Redis connection pool initialized successfully to redis://localhost:6379
+INFO:services.redis_service:Environment: development, Max connections: 20
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+WARNING:services.gmb_service:Google OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+WARNING:services.meta_business_service:Meta Business OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'allow_population_by_field_name' has been renamed to 'populate_by_name'
+  warnings.warn(message, UserWarning)
+WARNING:services.conversion_tracking_service:Google Tag Manager server-side not fully configured
+WARNING:services.conversion_tracking_service:Meta Conversions API not fully configured
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.marketing_rate_limit:Marketing rate limiter initialized with limits: {'overview': 30, 'trends': 30, 'channels': 30, 'funnel': 30, 'realtime': 120, 'health': 120, 'export': 5, 'campaigns': 60, 'default': 20}
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:config.sentry:🔕 Sentry DSN not configured - error tracking disabled
+INFO:services.observability_service:📊 Observability Service initialized
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for stripe
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for sendgrid
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for twilio
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for google_calendar
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for database
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for redis
+INFO:services.circuit_breaker_service:🔌 Circuit Breaker Service initialized
+INFO:services.sentry_monitoring:Sentry monitoring services initialized
+INFO:services.sre_orchestrator:🚀 SRE Orchestrator initialized with 99.99% uptime target
+INFO:main:🔧 Development mode: Using lightweight middleware stack
+INFO:main:⚡ Skipping heavy middleware: RequestValidation, MultiTenancy, FinancialSecurity, MFA
+INFO:main:CORS configured for environment 'development' with 2 origins
+INFO:main:Allowed origins: ['http://localhost:3000', 'http://localhost:3001']
+INFO:services.automated_recovery_service:📋 Registered recovery plan: database_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: redis_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: high_cpu_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: api_endpoint_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: external_service_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: payment_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: memory_leak_recovery
+INFO:services.automated_recovery_service:🔧 Automated Recovery Service initialized
+INFO:     Started server process [81085]
+INFO:     Waiting for application startup.
+INFO:middleware.sre_middleware:📊 SRE Middleware initialized
+INFO:main:🚀 Starting BookedBarber V2 backend with SRE... (99.99% UPTIME TARGET)
+INFO:services.observability_service:✅ Observability background tasks started
+INFO:main:✅ Observability service started
+INFO:main:✅ SRE orchestrator monitoring started
+INFO:main:🎯 SRE system initialized - targeting 99.99% uptime
+INFO:services.sre_orchestrator:🎯 Starting comprehensive SRE monitoring...
+INFO:stripe:message='Request to Stripe api' method=get path=https://api.stripe.com/v1/account
+INFO:stripe:message='Stripe API response' path=https://api.stripe.com/v1/account response_code=200
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:GET Request: https://api.twilio.com/2010-04-01/Accounts/ACdev_placeholder_sid_for_development.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/8.11.0 (Darwin arm64) Python/3.12.7
+INFO:twilio.http_client:X-Twilio-Client : python-8.11.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --
+INFO:twilio.http_client:Response Status Code: 401
+INFO:twilio.http_client:Response Headers: {'Content-Type': 'application/json', 'Content-Length': '134', 'Connection': 'keep-alive', 'Date': 'Sun, 27 Jul 2025 16:27:06 GMT', 'X-API-Domain': 'api.twilio.com', 'X-Verification-Disclosure': 'Message Accepted. Pending content verification for US/Canada destination numbers:', 'Www-Authenticate': 'Basic realm="Twilio API"', 'Twilio-Request-Id': 'RQ6f7c90f0dda211ca51c1af7a21d6e376', 'X-Shenanigans': 'none', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Idempotency-Key', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'ETag', 'Access-Control-Allow-Credentials': 'true', 'X-Powered-By': 'AT-5000', 'X-Home-Region': 'us1', 'X-Cache': 'Error from cloudfront', 'Via': '1.1 639cc143f6b6769351df58109d6b2b18.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'MIA3-C3', 'X-Amz-Cf-Id': 'TGzwvllKg6zHDs82doot3oQUmmxZrVgzRJiiVZLOwK8Jwjxnb2cHEw=='}
+INFO:services.redis_cache:✅ Redis connection established successfully
+INFO:services.startup_cache:✅ Redis cache service initialized successfully
+INFO:services.startup_cache:🔥 Cache warmed up: 3 services, 2 locations, 1 configs in 0.6ms
+INFO:services.startup_cache:✅ Cache warmup completed successfully
+INFO:main:✅ Cache initialization completed: {'cache_enabled': True, 'redis_connected': True, 'cache_warmed': True, 'warnings': [], 'errors': [], 'services_cached': 3, 'locations_cached': 2, 'config_cached': 1, 'warmup_time_ms': 0}
+ERROR:main:❌ Performance monitoring initialization failed: No module named 'aioredis'
+INFO:     Application startup complete.
+INFO:     127.0.0.1:60912 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60941 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60960 - "GET /api/v2/analytics/dashboard/7 HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:60962 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61036 - "GET /health/ HTTP/1.1" 200 OK
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Sendgrid service failure detected (ID: sendgrid_failure_1753633635, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident sendgrid_failure_1753633635
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for sendgrid
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Twilio service failure detected (ID: twilio_failure_1753633635, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident twilio_failure_1753633635
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for twilio
+INFO:     127.0.0.1:61075 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61101 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61122 - "GET /health/ HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'routers/unified_analytics.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:services.observability_service:⏹️ Observability service stopped
+INFO:main:✅ SRE services stopped
+INFO:services.startup_cache:✅ Cache service shutdown completed
+INFO:main:✅ Cache shutdown completed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [81085]
+WARNING:services.subscription_service:Stripe API key not configured - using mock mode
+INFO:services.redis_service:Redis connection pool initialized successfully to redis://localhost:6379
+INFO:services.redis_service:Environment: development, Max connections: 20
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+WARNING:services.gmb_service:Google OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+WARNING:services.meta_business_service:Meta Business OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'allow_population_by_field_name' has been renamed to 'populate_by_name'
+  warnings.warn(message, UserWarning)
+WARNING:services.conversion_tracking_service:Google Tag Manager server-side not fully configured
+WARNING:services.conversion_tracking_service:Meta Conversions API not fully configured
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.marketing_rate_limit:Marketing rate limiter initialized with limits: {'overview': 30, 'trends': 30, 'channels': 30, 'funnel': 30, 'realtime': 120, 'health': 120, 'export': 5, 'campaigns': 60, 'default': 20}
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:config.sentry:🔕 Sentry DSN not configured - error tracking disabled
+INFO:services.observability_service:📊 Observability Service initialized
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for stripe
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for sendgrid
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for twilio
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for google_calendar
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for database
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for redis
+INFO:services.circuit_breaker_service:🔌 Circuit Breaker Service initialized
+INFO:services.sentry_monitoring:Sentry monitoring services initialized
+INFO:services.sre_orchestrator:🚀 SRE Orchestrator initialized with 99.99% uptime target
+INFO:main:🔧 Development mode: Using lightweight middleware stack
+INFO:main:⚡ Skipping heavy middleware: RequestValidation, MultiTenancy, FinancialSecurity, MFA
+INFO:main:CORS configured for environment 'development' with 2 origins
+INFO:main:Allowed origins: ['http://localhost:3000', 'http://localhost:3001']
+INFO:services.automated_recovery_service:📋 Registered recovery plan: database_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: redis_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: high_cpu_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: api_endpoint_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: external_service_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: payment_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: memory_leak_recovery
+INFO:services.automated_recovery_service:🔧 Automated Recovery Service initialized
+INFO:     Started server process [81390]
+INFO:     Waiting for application startup.
+INFO:middleware.sre_middleware:📊 SRE Middleware initialized
+INFO:main:🚀 Starting BookedBarber V2 backend with SRE... (99.99% UPTIME TARGET)
+INFO:services.observability_service:✅ Observability background tasks started
+INFO:main:✅ Observability service started
+INFO:main:✅ SRE orchestrator monitoring started
+INFO:main:🎯 SRE system initialized - targeting 99.99% uptime
+INFO:services.sre_orchestrator:🎯 Starting comprehensive SRE monitoring...
+INFO:stripe:message='Request to Stripe api' method=get path=https://api.stripe.com/v1/account
+INFO:stripe:message='Stripe API response' path=https://api.stripe.com/v1/account response_code=200
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:GET Request: https://api.twilio.com/2010-04-01/Accounts/ACdev_placeholder_sid_for_development.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/8.11.0 (Darwin arm64) Python/3.12.7
+INFO:twilio.http_client:X-Twilio-Client : python-8.11.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --
+INFO:twilio.http_client:Response Status Code: 401
+INFO:twilio.http_client:Response Headers: {'Content-Type': 'application/json', 'Content-Length': '134', 'Connection': 'keep-alive', 'Date': 'Sun, 27 Jul 2025 16:27:34 GMT', 'X-API-Domain': 'api.twilio.com', 'X-Verification-Disclosure': 'Message Accepted. Pending content verification for US/Canada destination numbers:', 'Www-Authenticate': 'Basic realm="Twilio API"', 'Twilio-Request-Id': 'RQ7e5d816c4eb9abcad96cac84f38283b4', 'X-Shenanigans': 'none', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Idempotency-Key', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'ETag', 'Access-Control-Allow-Credentials': 'true', 'X-Powered-By': 'AT-5000', 'X-Home-Region': 'us1', 'X-Cache': 'Error from cloudfront', 'Via': '1.1 510b3d76707714d228d1f658d3b5fb54.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'MIA3-C3', 'X-Amz-Cf-Id': 'nHxl2Xno7I71F-hMiPzq1RCdxOjhaDIBSqyGyfPRyVN6DCubvRECGg=='}
+INFO:services.redis_cache:✅ Redis connection established successfully
+INFO:services.startup_cache:✅ Redis cache service initialized successfully
+INFO:services.startup_cache:🔥 Cache warmed up: 3 services, 2 locations, 1 configs in 0.7ms
+INFO:services.startup_cache:✅ Cache warmup completed successfully
+INFO:main:✅ Cache initialization completed: {'cache_enabled': True, 'redis_connected': True, 'cache_warmed': True, 'warnings': [], 'errors': [], 'services_cached': 3, 'locations_cached': 2, 'config_cached': 1, 'warmup_time_ms': 0}
+ERROR:main:❌ Performance monitoring initialization failed: No module named 'aioredis'
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61246 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61250 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61277 - "GET /api/v2/analytics/dashboard?user_id=7 HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:61307 - "GET /health/ HTTP/1.1" 200 OK
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Sendgrid service failure detected (ID: sendgrid_failure_1753633662, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident sendgrid_failure_1753633662
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for sendgrid
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Twilio service failure detected (ID: twilio_failure_1753633662, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident twilio_failure_1753633662
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for twilio
+INFO:     127.0.0.1:61343 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61391 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61398 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61473 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61522 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61571 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61577 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61648 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61732 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61787 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61798 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61841 - "GET /health/ HTTP/1.1" 200 OK
+INFO:services.token_blacklist:Token blacklist using Redis for storage
+INFO:     127.0.0.1:61877 - "GET /api/v2/search/recent?limit=10 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61877 - "GET /api/v2/search/recent?limit=10 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61877 - "GET /api/v2/analytics/dashboard/7 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61877 - "GET /api/v2/appointments/all/list HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61877 - "OPTIONS /api/v2/auth/refresh HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61880 - "OPTIONS /api/v2/auth/refresh HTTP/1.1" 200 OK
+AUDIT AUTH: token_refresh_success, User: 7, IP: 127.0.0.1, Details: {'token_rotated': True}
+AUDIT AUTH: token_refresh_success, User: 7, IP: 127.0.0.1, Details: {'token_rotated': True}
+INFO:     127.0.0.1:61877 - "POST /api/v2/auth/refresh HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61882 - "POST /api/v2/auth/refresh HTTP/1.1" 200 OK
+ERROR:middleware.sre_middleware:❌ Request error: 25 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'appointments', 0, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 1, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 2, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 3, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 4, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 5, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 6, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 8, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 11, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 13, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 14, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 15, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 16, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 17, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 18, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 19, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 20, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 21, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 22, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 23, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 24, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 25, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 26, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 27, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 28, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+Traceback (most recent call last):
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/anyio/streams/memory.py", line 98, in receive
+    return self.receive_nowait()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/anyio/streams/memory.py", line 93, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/middleware/base.py", line 148, in call_next
+    message = await recv_stream.receive()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/anyio/streams/memory.py", line 118, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/bossio/6fb-booking/backend-v2/middleware/sre_middleware.py", line 99, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/middleware/base.py", line 154, in call_next
+    raise app_exc
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/middleware/base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/routing.py", line 327, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/routing.py", line 176, in serialize_response
+    raise ResponseValidationError(
+fastapi.exceptions.ResponseValidationError: 25 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'appointments', 0, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 1, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 2, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 3, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 4, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 5, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 6, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 8, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 11, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 13, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 14, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 15, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 16, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 17, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 18, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 19, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 20, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 21, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 22, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 23, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 24, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 25, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 26, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 27, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 28, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+
+INFO:     127.0.0.1:61882 - "GET /api/v2/appointments/all/list HTTP/1.1" 500 Internal Server Error
+ERROR:routers.unified_analytics:Error getting analytics dashboard: AnalyticsService.get_barber_performance_metrics() got an unexpected keyword argument 'user_ids'
+INFO:     127.0.0.1:61882 - "GET /api/v2/analytics/dashboard?user_id=7 HTTP/1.1" 500 Internal Server Error
+ERROR:routers.unified_analytics:Error getting analytics dashboard for user 7: AnalyticsService.get_barber_performance_metrics() got an unexpected keyword argument 'user_ids'
+INFO:     127.0.0.1:61882 - "GET /api/v2/analytics/dashboard/7 HTTP/1.1" 500 Internal Server Error
+ERROR:middleware.sre_middleware:❌ Request error: 25 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'appointments', 0, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 1, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 2, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 3, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 4, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 5, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 6, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 8, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 11, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 13, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 14, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 15, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 16, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 17, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 18, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 19, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 20, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 21, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 22, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 23, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 24, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 25, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 26, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 27, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 28, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+Traceback (most recent call last):
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/anyio/streams/memory.py", line 98, in receive
+    return self.receive_nowait()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/anyio/streams/memory.py", line 93, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/middleware/base.py", line 148, in call_next
+    message = await recv_stream.receive()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/anyio/streams/memory.py", line 118, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/bossio/6fb-booking/backend-v2/middleware/sre_middleware.py", line 99, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/middleware/base.py", line 154, in call_next
+    raise app_exc
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/middleware/base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/routing.py", line 327, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/routing.py", line 176, in serialize_response
+    raise ResponseValidationError(
+fastapi.exceptions.ResponseValidationError: 25 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'appointments', 0, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 1, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 2, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 3, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 4, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 5, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 6, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 8, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 11, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 13, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 14, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 15, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 16, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 17, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 18, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 19, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 20, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 21, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 22, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 23, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 24, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 25, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 26, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 27, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+  {'type': 'string_type', 'loc': ('response', 'appointments', 28, 'service_name'), 'msg': 'Input should be a valid string', 'input': None}
+
+INFO:     127.0.0.1:61882 - "GET /api/v2/appointments/all/list HTTP/1.1" 500 Internal Server Error
+ERROR:routers.unified_analytics:Error getting analytics dashboard: AnalyticsService.get_barber_performance_metrics() got an unexpected keyword argument 'user_ids'
+INFO:     127.0.0.1:61882 - "GET /api/v2/analytics/dashboard?user_id=7 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:61932 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61974 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61981 - "GET /health/ HTTP/1.1" 200 OK
+INFO:stripe:message='Request to Stripe api' method=get path=https://api.stripe.com/v1/account
+INFO:stripe:message='Stripe API response' path=https://api.stripe.com/v1/account response_code=200
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:GET Request: https://api.twilio.com/2010-04-01/Accounts/ACdev_placeholder_sid_for_development.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/8.11.0 (Darwin arm64) Python/3.12.7
+INFO:twilio.http_client:X-Twilio-Client : python-8.11.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --
+INFO:twilio.http_client:Response Status Code: 401
+INFO:twilio.http_client:Response Headers: {'Content-Type': 'application/json', 'Content-Length': '134', 'Connection': 'keep-alive', 'Date': 'Sun, 27 Jul 2025 16:28:34 GMT', 'X-API-Domain': 'api.twilio.com', 'X-Verification-Disclosure': 'Message Accepted. Pending content verification for US/Canada destination numbers:', 'Www-Authenticate': 'Basic realm="Twilio API"', 'Twilio-Request-Id': 'RQ7731fab6bbf4f2b4dc9e8a667018d643', 'X-Shenanigans': 'none', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Idempotency-Key', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'ETag', 'Access-Control-Allow-Credentials': 'true', 'X-Powered-By': 'AT-5000', 'X-Home-Region': 'us1', 'X-Cache': 'Error from cloudfront', 'Via': '1.1 9a28211412e847247d8938b4854bacc4.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'TPA52-P1', 'X-Amz-Cf-Id': 'sbyMMPawn_ayv0eilK1-qZkt5wLBoAZGuGWNrXFVf3oHow1l4Gtaew=='}
+INFO:     127.0.0.1:62041 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62073 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62110 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62113 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62177 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62218 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62253 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+WARNING:  WatchFiles detected changes in 'routers/unified_analytics.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:services.observability_service:⏹️ Observability service stopped
+INFO:main:✅ SRE services stopped
+INFO:services.startup_cache:✅ Cache service shutdown completed
+INFO:main:✅ Cache shutdown completed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [81390]
+WARNING:services.subscription_service:Stripe API key not configured - using mock mode
+INFO:services.redis_service:Redis connection pool initialized successfully to redis://localhost:6379
+INFO:services.redis_service:Environment: development, Max connections: 20
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+WARNING:services.gmb_service:Google OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+WARNING:services.meta_business_service:Meta Business OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'allow_population_by_field_name' has been renamed to 'populate_by_name'
+  warnings.warn(message, UserWarning)
+WARNING:services.conversion_tracking_service:Google Tag Manager server-side not fully configured
+WARNING:services.conversion_tracking_service:Meta Conversions API not fully configured
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.marketing_rate_limit:Marketing rate limiter initialized with limits: {'overview': 30, 'trends': 30, 'channels': 30, 'funnel': 30, 'realtime': 120, 'health': 120, 'export': 5, 'campaigns': 60, 'default': 20}
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:config.sentry:🔕 Sentry DSN not configured - error tracking disabled
+INFO:services.observability_service:📊 Observability Service initialized
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for stripe
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for sendgrid
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for twilio
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for google_calendar
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for database
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for redis
+INFO:services.circuit_breaker_service:🔌 Circuit Breaker Service initialized
+INFO:services.sentry_monitoring:Sentry monitoring services initialized
+INFO:services.sre_orchestrator:🚀 SRE Orchestrator initialized with 99.99% uptime target
+INFO:main:🔧 Development mode: Using lightweight middleware stack
+INFO:main:⚡ Skipping heavy middleware: RequestValidation, MultiTenancy, FinancialSecurity, MFA
+INFO:main:CORS configured for environment 'development' with 2 origins
+INFO:main:Allowed origins: ['http://localhost:3001', 'http://localhost:3000']
+INFO:services.automated_recovery_service:📋 Registered recovery plan: database_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: redis_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: high_cpu_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: api_endpoint_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: external_service_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: payment_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: memory_leak_recovery
+INFO:services.automated_recovery_service:🔧 Automated Recovery Service initialized
+INFO:     Started server process [82643]
+INFO:     Waiting for application startup.
+INFO:middleware.sre_middleware:📊 SRE Middleware initialized
+INFO:main:🚀 Starting BookedBarber V2 backend with SRE... (99.99% UPTIME TARGET)
+INFO:services.observability_service:✅ Observability background tasks started
+INFO:main:✅ Observability service started
+INFO:main:✅ SRE orchestrator monitoring started
+INFO:main:🎯 SRE system initialized - targeting 99.99% uptime
+INFO:services.sre_orchestrator:🎯 Starting comprehensive SRE monitoring...
+INFO:stripe:message='Request to Stripe api' method=get path=https://api.stripe.com/v1/account
+INFO:stripe:message='Stripe API response' path=https://api.stripe.com/v1/account response_code=200
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:GET Request: https://api.twilio.com/2010-04-01/Accounts/ACdev_placeholder_sid_for_development.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/8.11.0 (Darwin arm64) Python/3.12.7
+INFO:twilio.http_client:X-Twilio-Client : python-8.11.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --
+INFO:twilio.http_client:Response Status Code: 401
+INFO:twilio.http_client:Response Headers: {'Content-Type': 'application/json', 'Content-Length': '134', 'Connection': 'keep-alive', 'Date': 'Sun, 27 Jul 2025 16:29:08 GMT', 'X-API-Domain': 'api.twilio.com', 'X-Verification-Disclosure': 'Message Accepted. Pending content verification for US/Canada destination numbers:', 'Www-Authenticate': 'Basic realm="Twilio API"', 'Twilio-Request-Id': 'RQ7434e723cc477bd698ae5fd7d6317360', 'X-Shenanigans': 'none', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Idempotency-Key', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'ETag', 'Access-Control-Allow-Credentials': 'true', 'X-Powered-By': 'AT-5000', 'X-Home-Region': 'us1', 'X-Cache': 'Error from cloudfront', 'Via': '1.1 639cc143f6b6769351df58109d6b2b18.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'MIA3-C3', 'X-Amz-Cf-Id': 'W4LutXG6O4jq8CkLt-0x-rvDSMjSSkvj2fVSx7NIc1J6myZr3ocV3g=='}
+INFO:services.redis_cache:✅ Redis connection established successfully
+INFO:services.startup_cache:✅ Redis cache service initialized successfully
+INFO:services.startup_cache:🔥 Cache warmed up: 3 services, 2 locations, 1 configs in 0.5ms
+INFO:services.startup_cache:✅ Cache warmup completed successfully
+INFO:main:✅ Cache initialization completed: {'cache_enabled': True, 'redis_connected': True, 'cache_warmed': True, 'warnings': [], 'errors': [], 'services_cached': 3, 'locations_cached': 2, 'config_cached': 1, 'warmup_time_ms': 0}
+ERROR:main:❌ Performance monitoring initialization failed: No module named 'aioredis'
+INFO:     Application startup complete.
+INFO:     127.0.0.1:62260 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62321 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62260 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62355 - "GET /health/ HTTP/1.1" 200 OK
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Sendgrid service failure detected (ID: sendgrid_failure_1753633757, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident sendgrid_failure_1753633757
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for sendgrid
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Twilio service failure detected (ID: twilio_failure_1753633757, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident twilio_failure_1753633757
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for twilio
+WARNING:  WatchFiles detected changes in 'routers/unified_analytics.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:services.observability_service:⏹️ Observability service stopped
+INFO:main:✅ SRE services stopped
+INFO:services.startup_cache:✅ Cache service shutdown completed
+INFO:main:✅ Cache shutdown completed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [82643]
+WARNING:services.subscription_service:Stripe API key not configured - using mock mode
+INFO:services.redis_service:Redis connection pool initialized successfully to redis://localhost:6379
+INFO:services.redis_service:Environment: development, Max connections: 20
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+WARNING:services.gmb_service:Google OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+WARNING:services.meta_business_service:Meta Business OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'allow_population_by_field_name' has been renamed to 'populate_by_name'
+  warnings.warn(message, UserWarning)
+WARNING:services.conversion_tracking_service:Google Tag Manager server-side not fully configured
+WARNING:services.conversion_tracking_service:Meta Conversions API not fully configured
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.marketing_rate_limit:Marketing rate limiter initialized with limits: {'overview': 30, 'trends': 30, 'channels': 30, 'funnel': 30, 'realtime': 120, 'health': 120, 'export': 5, 'campaigns': 60, 'default': 20}
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:config.sentry:🔕 Sentry DSN not configured - error tracking disabled
+INFO:services.observability_service:📊 Observability Service initialized
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for stripe
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for sendgrid
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for twilio
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for google_calendar
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for database
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for redis
+INFO:services.circuit_breaker_service:🔌 Circuit Breaker Service initialized
+INFO:services.sentry_monitoring:Sentry monitoring services initialized
+INFO:services.sre_orchestrator:🚀 SRE Orchestrator initialized with 99.99% uptime target
+INFO:main:🔧 Development mode: Using lightweight middleware stack
+INFO:main:⚡ Skipping heavy middleware: RequestValidation, MultiTenancy, FinancialSecurity, MFA
+INFO:main:CORS configured for environment 'development' with 2 origins
+INFO:main:Allowed origins: ['http://localhost:3001', 'http://localhost:3000']
+INFO:services.automated_recovery_service:📋 Registered recovery plan: database_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: redis_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: high_cpu_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: api_endpoint_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: external_service_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: payment_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: memory_leak_recovery
+INFO:services.automated_recovery_service:🔧 Automated Recovery Service initialized
+INFO:     Started server process [82807]
+INFO:     Waiting for application startup.
+INFO:middleware.sre_middleware:📊 SRE Middleware initialized
+INFO:main:🚀 Starting BookedBarber V2 backend with SRE... (99.99% UPTIME TARGET)
+INFO:services.observability_service:✅ Observability background tasks started
+INFO:main:✅ Observability service started
+INFO:main:✅ SRE orchestrator monitoring started
+INFO:main:🎯 SRE system initialized - targeting 99.99% uptime
+INFO:services.sre_orchestrator:🎯 Starting comprehensive SRE monitoring...
+INFO:stripe:message='Request to Stripe api' method=get path=https://api.stripe.com/v1/account
+INFO:stripe:message='Stripe API response' path=https://api.stripe.com/v1/account response_code=200
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:GET Request: https://api.twilio.com/2010-04-01/Accounts/ACdev_placeholder_sid_for_development.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/8.11.0 (Darwin arm64) Python/3.12.7
+INFO:twilio.http_client:X-Twilio-Client : python-8.11.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --
+INFO:twilio.http_client:Response Status Code: 401
+INFO:twilio.http_client:Response Headers: {'Content-Type': 'application/json', 'Content-Length': '134', 'Connection': 'keep-alive', 'Date': 'Sun, 27 Jul 2025 16:29:23 GMT', 'X-API-Domain': 'api.twilio.com', 'X-Verification-Disclosure': 'Message Accepted. Pending content verification for US/Canada destination numbers:', 'Www-Authenticate': 'Basic realm="Twilio API"', 'Twilio-Request-Id': 'RQd367ac7df50aeae640c670576ef89fb5', 'X-Shenanigans': 'none', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Idempotency-Key', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'ETag', 'Access-Control-Allow-Credentials': 'true', 'X-Powered-By': 'AT-5000', 'X-Home-Region': 'us1', 'X-Cache': 'Error from cloudfront', 'Via': '1.1 510b3d76707714d228d1f658d3b5fb54.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'MIA3-C3', 'X-Amz-Cf-Id': 'Cp73y_yT5W12cRu-EsFdiG_pfciq_dg_Kfa48a5ETrD6WWkxnvPWNw=='}
+INFO:services.redis_cache:✅ Redis connection established successfully
+INFO:services.startup_cache:✅ Redis cache service initialized successfully
+INFO:services.startup_cache:🔥 Cache warmed up: 3 services, 2 locations, 1 configs in 1.8ms
+INFO:services.startup_cache:✅ Cache warmup completed successfully
+INFO:main:✅ Cache initialization completed: {'cache_enabled': True, 'redis_connected': True, 'cache_warmed': True, 'warnings': [], 'errors': [], 'services_cached': 3, 'locations_cached': 2, 'config_cached': 1, 'warmup_time_ms': 1}
+ERROR:main:❌ Performance monitoring initialization failed: No module named 'aioredis'
+INFO:     Application startup complete.
+INFO:     127.0.0.1:62395 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62461 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62395 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62520 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62539 - "GET /health HTTP/1.1" 200 OK
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Sendgrid service failure detected (ID: sendgrid_failure_1753633772, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident sendgrid_failure_1753633772
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for sendgrid
+ERROR:services.sre_orchestrator:🚨 INCIDENT CREATED: Twilio service failure detected (ID: twilio_failure_1753633772, Severity: high)
+INFO:services.sre_orchestrator:🔧 Triggering automated response for incident twilio_failure_1753633772
+WARNING:services.sre_orchestrator:⚡ Circuit breaker activated for twilio
+INFO:     127.0.0.1:62576 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62605 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62620 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62642 - "GET /api/v2/analytics/dashboard?user_id=7 HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:62653 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62710 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62744 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62746 - "GET /api/v2/appointments/all/list HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:62754 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62825 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62874 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62910 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62935 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62976 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63058 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63089 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:stripe:message='Request to Stripe api' method=get path=https://api.stripe.com/v1/account
+INFO:stripe:message='Stripe API response' path=https://api.stripe.com/v1/account response_code=200
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:GET Request: https://api.twilio.com/2010-04-01/Accounts/ACdev_placeholder_sid_for_development.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/8.11.0 (Darwin arm64) Python/3.12.7
+INFO:twilio.http_client:X-Twilio-Client : python-8.11.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --
+INFO:twilio.http_client:Response Status Code: 401
+INFO:twilio.http_client:Response Headers: {'Content-Type': 'application/json', 'Content-Length': '134', 'Connection': 'keep-alive', 'Date': 'Sun, 27 Jul 2025 16:30:24 GMT', 'X-API-Domain': 'api.twilio.com', 'X-Verification-Disclosure': 'Message Accepted. Pending content verification for US/Canada destination numbers:', 'Www-Authenticate': 'Basic realm="Twilio API"', 'Twilio-Request-Id': 'RQ7424b86bf740fa564add64bcd7c44106', 'X-Shenanigans': 'none', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Idempotency-Key', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'ETag', 'Access-Control-Allow-Credentials': 'true', 'X-Powered-By': 'AT-5000', 'X-Home-Region': 'us1', 'X-Cache': 'Error from cloudfront', 'Via': '1.1 8a2938ef23315abea01680685781527c.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'TPA52-P1', 'X-Amz-Cf-Id': 'IhrUONhnFf8mIi344VFyvJ20Om5PSTPX1xj_HuiHpmKMaUnVYtDh-g=='}
+INFO:     127.0.0.1:63101 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63167 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63229 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63260 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63272 - "GET /health/ HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'schemas.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:services.observability_service:⏹️ Observability service stopped
+INFO:main:✅ SRE services stopped
+INFO:services.startup_cache:✅ Cache service shutdown completed
+INFO:main:✅ Cache shutdown completed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [82807]
+WARNING:services.subscription_service:Stripe API key not configured - using mock mode
+INFO:services.redis_service:Redis connection pool initialized successfully to redis://localhost:6379
+INFO:services.redis_service:Environment: development, Max connections: 20
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+WARNING:services.gmb_service:Google OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+WARNING:services.meta_business_service:Meta Business OAuth credentials not configured
+/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_config.py:318: UserWarning: Valid config keys have changed in V2:
+* 'allow_population_by_field_name' has been renamed to 'populate_by_name'
+  warnings.warn(message, UserWarning)
+WARNING:services.conversion_tracking_service:Google Tag Manager server-side not fully configured
+WARNING:services.conversion_tracking_service:Meta Conversions API not fully configured
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Anthropic provider
+INFO:services.ai_providers.ai_provider_manager:Initialized OpenAI provider
+INFO:services.ai_providers.ai_provider_manager:Initialized Google provider
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.rate_limiter:Using Redis-based rate limiter
+INFO:utils.marketing_rate_limit:Marketing rate limiter initialized with limits: {'overview': 30, 'trends': 30, 'channels': 30, 'funnel': 30, 'realtime': 120, 'health': 120, 'export': 5, 'campaigns': 60, 'default': 20}
+INFO:services.notification_service:SendGrid client initialized successfully
+INFO:services.notification_service:Twilio client initialized successfully
+INFO:config.sentry:🔕 Sentry DSN not configured - error tracking disabled
+INFO:services.observability_service:📊 Observability Service initialized
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for stripe
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for sendgrid
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for twilio
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for google_calendar
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for database
+INFO:services.circuit_breaker_service:📋 Registered circuit breaker for redis
+INFO:services.circuit_breaker_service:🔌 Circuit Breaker Service initialized
+INFO:services.sentry_monitoring:Sentry monitoring services initialized
+INFO:services.sre_orchestrator:🚀 SRE Orchestrator initialized with 99.99% uptime target
+INFO:main:🔧 Development mode: Using lightweight middleware stack
+INFO:main:⚡ Skipping heavy middleware: RequestValidation, MultiTenancy, FinancialSecurity, MFA
+INFO:main:CORS configured for environment 'development' with 2 origins
+INFO:main:Allowed origins: ['http://localhost:3000', 'http://localhost:3001']
+INFO:services.automated_recovery_service:📋 Registered recovery plan: database_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: redis_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: high_cpu_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: api_endpoint_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: external_service_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: payment_recovery
+INFO:services.automated_recovery_service:📋 Registered recovery plan: memory_leak_recovery
+INFO:services.automated_recovery_service:🔧 Automated Recovery Service initialized
+INFO:     Started server process [83908]
+INFO:     Waiting for application startup.
+INFO:middleware.sre_middleware:📊 SRE Middleware initialized
+INFO:main:🚀 Starting BookedBarber V2 backend with SRE... (99.99% UPTIME TARGET)
+INFO:services.observability_service:✅ Observability background tasks started
+INFO:main:✅ Observability service started
+INFO:main:✅ SRE orchestrator monitoring started
+INFO:main:🎯 SRE system initialized - targeting 99.99% uptime
+INFO:services.sre_orchestrator:🎯 Starting comprehensive SRE monitoring...
+INFO:stripe:message='Request to Stripe api' method=get path=https://api.stripe.com/v1/account
+INFO:stripe:message='Stripe API response' path=https://api.stripe.com/v1/account response_code=200
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:GET Request: https://api.twilio.com/2010-04-01/Accounts/ACdev_placeholder_sid_for_development.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/8.11.0 (Darwin arm64) Python/3.12.7
+INFO:twilio.http_client:X-Twilio-Client : python-8.11.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --
+INFO:twilio.http_client:Response Status Code: 401
+INFO:twilio.http_client:Response Headers: {'Content-Type': 'application/json', 'Content-Length': '134', 'Connection': 'keep-alive', 'Date': 'Sun, 27 Jul 2025 16:30:45 GMT', 'X-API-Domain': 'api.twilio.com', 'X-Verification-Disclosure': 'Message Accepted. Pending content verification for US/Canada destination numbers:', 'Www-Authenticate': 'Basic realm="Twilio API"', 'Twilio-Request-Id': 'RQ7ca8187e43b3a1d81e8140a5faea61c7', 'X-Shenanigans': 'none', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Idempotency-Key', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'ETag', 'Access-Control-Allow-Credentials': 'true', 'X-Powered-By': 'AT-5000', 'X-Home-Region': 'us1', 'X-Cache': 'Error from cloudfront', 'Via': '1.1 a4ec388ef7c4d5eb6558eadec72bab76.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'TPA52-P1', 'X-Amz-Cf-Id': '6Oq4kKf93euCMkkKnaOZbGVuctTOx9PRM8qEPSDc8cw7mfa8Wa8XOg=='}
+INFO:services.redis_cache:✅ Redis connection established successfully
+INFO:services.startup_cache:✅ Redis cache service initialized successfully
+INFO:services.startup_cache:🔥 Cache warmed up: 3 services, 2 locations, 1 configs in 0.8ms
+INFO:services.startup_cache:✅ Cache warmup completed successfully
+INFO:main:✅ Cache initialization completed: {'cache_enabled': True, 'redis_connected': True, 'cache_warmed': True, 'warnings': [], 'errors': [], 'services_cached': 3, 'locations_cached': 2, 'config_cached': 1, 'warmup_time_ms': 0}
+ERROR:main:❌ Performance monitoring initialization failed: No module named 'aioredis'
+INFO:     Application startup complete.
+INFO:     127.0.0.1:63372 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63400 - "GET /health/ HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8000/health/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET http://localhost:3000/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63440 - "GET /health/ HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:services.observability_service:⏹️ Observability service stopped
+INFO:main:✅ SRE services stopped
+INFO:services.startup_cache:✅ Cache service shutdown completed
+INFO:main:✅ Cache shutdown completed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [83908]
+INFO:     Stopping reloader process [80202]
