@@ -119,7 +119,7 @@ export class BrowserCacheManager {
   private async checkContainerRestart(): Promise<void> {
     try {
       // Simple health check to detect backend restart
-      const response = await fetch('/api/health', {
+      const response = await fetch('http://localhost:8000/health/', {
         method: 'GET',
         cache: 'no-cache',
         signal: AbortSignal.timeout(5000)

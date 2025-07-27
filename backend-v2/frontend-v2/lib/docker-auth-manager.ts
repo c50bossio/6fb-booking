@@ -249,7 +249,7 @@ class DockerAuthManager {
 
     try {
       // Simple health check to detect if backend restarted
-      const response = await fetch('/api/health', {
+      const response = await fetch('http://localhost:8000/health/', {
         method: 'GET',
         cache: 'no-cache',
       });

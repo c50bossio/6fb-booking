@@ -489,7 +489,7 @@ export function ConnectionQuality() {
 
       try {
         const start = Date.now()
-        await fetch('/api/health', { method: 'HEAD', cache: 'no-cache' })
+        await fetch('http://localhost:8000/health/', { method: 'HEAD', cache: 'no-cache' })
         const latency = Date.now() - start
 
         let quality: 'excellent' | 'good' | 'poor'

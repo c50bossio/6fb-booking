@@ -33,11 +33,11 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
   if (!userRole && tokenFromCookie) {
     try {
       const tokenPayload = JSON.parse(Buffer.from(tokenFromCookie.split('.')[1], 'base64').toString())
-      userRole = tokenPayload.role || 
+      userRole = (tokenPayload.role || 
                  tokenPayload.user_role || 
                  tokenPayload.unified_role ||
                  tokenPayload.sub_role ||
-                 'barber' // Default to barber for calendar access
+                 'barber').toLowerCase() // Normalize to lowercase and default to barber for calendar access
       
       if (process.env.NODE_ENV === 'development') {
         console.log('Auth middleware debug:', {
@@ -50,7 +50,7 @@ export function enhancedAuthMiddleware(request: NextRequest): NextResponse | nul
       if (process.env.NODE_ENV === 'development') {
         console.log('JWT parsing error:', error)
       }
-      userRole = 'barber' // Default fallback for calendar access
+      userRole = 'barber' // Default fallback for calendar access (already lowercase)
     }
   }
 
@@ -112,12 +112,12 @@ export function extractUserRoleFromToken(token: string): string | null {
     
     const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString())
     
-    // Try multiple possible role field names
-    const userRole = payload.role || 
+    // Try multiple possible role field names and normalize to lowercase
+    const userRole = (payload.role || 
                      payload.user_role || 
                      payload.unified_role ||
                      payload.sub_role ||
-                     'barber' // Default to barber for calendar access
+                     'barber').toLowerCase() // Default to barber for calendar access
     
     if (process.env.NODE_ENV === 'development') {
       console.log('Role extraction from JWT:', {
@@ -135,7 +135,7 @@ export function extractUserRoleFromToken(token: string): string | null {
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
     }
-    return 'barber' // Default fallback for calendar access
+    return 'barber' // Default fallback for calendar access (already lowercase)
   }
 }
 

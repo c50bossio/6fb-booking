@@ -62,7 +62,7 @@ export function ProductionSafeDevMonitor({ className }: ProductionSafeDevMonitor
       const start = Date.now()
       
       // Check backend health
-      const backendResponse = await fetch('/api/health').catch(() => null)
+      const backendResponse = await fetch('http://localhost:8000/health/').catch(() => null)
       const backendHealthy = backendResponse?.ok || false
       
       const responseTime = Date.now() - start

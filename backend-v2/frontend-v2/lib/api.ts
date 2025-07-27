@@ -157,11 +157,11 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
           // Extract and update user role from refreshed token
           try {
             const tokenPayload = JSON.parse(atob(data.access_token.split('.')[1]))
-            const userRole = tokenPayload.role || 
+            const userRole = (tokenPayload.role || 
                             tokenPayload.user_role || 
                             tokenPayload.unified_role ||
                             tokenPayload.sub_role ||
-                            'barber'
+                            'barber').toLowerCase()
             document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
             localStorage.setItem('user_role', userRole)
           } catch (error) {
@@ -298,12 +298,12 @@ export async function login(email: string, password: string) {
     try {
       const tokenPayload = JSON.parse(atob(response.access_token.split('.')[1]))
       
-      // Try multiple possible role field names from JWT payload
-      const userRole = tokenPayload.role || 
+      // Try multiple possible role field names from JWT payload and normalize to lowercase
+      const userRole = (tokenPayload.role || 
                       tokenPayload.user_role || 
                       tokenPayload.unified_role ||
                       tokenPayload.sub_role ||
-                      'barber' // Default to barber instead of user for calendar access
+                      'barber').toLowerCase() // Default to barber and normalize to lowercase
       
       console.log('JWT role extraction debug:', {
         sub: tokenPayload.sub,
