@@ -2,7 +2,7 @@ import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOp
 import { toast } from '@/hooks/use-toast'
 import { getEnhancedErrorMessage, formatErrorForToast, ErrorContext } from './error-messages'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 // Service categories for pricing validation
 export enum ServiceCategoryEnum {

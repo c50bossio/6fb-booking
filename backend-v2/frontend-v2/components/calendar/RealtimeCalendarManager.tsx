@@ -442,7 +442,7 @@ export default function RealtimeCalendarManager({
                       <TooltipTrigger asChild>
                         <div className="relative">
                           <Avatar className="h-6 w-6">
-                            <AvatarImage src={user.avatar} />
+                            {user.avatar && <AvatarImage src={user.avatar} />}
                             <AvatarFallback className="text-xs">
                               {user.name.charAt(0).toUpperCase()}
                             </AvatarFallback>

@@ -48,6 +48,14 @@ export default function SixFigureAnalyticsDashboard({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [targetIncome, setTargetIncome] = useState(100000)
+  
+  // Check authentication state on mount
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    setIsAuthenticated(!!token)
+  }, [])
   const [retryCount, setRetryCount] = useState(0)
   const [insights, setInsights] = useState<CoachingInsight[]>([])
   const [currentInsightIndex, setCurrentInsightIndex] = useState(0)
@@ -155,6 +163,13 @@ export default function SixFigureAnalyticsDashboard({
       setLoading(true)
       setError(null)
       
+      // Check if user is authenticated before making API calls
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      if (!token) {
+        console.log('No authentication token found, showing guest message')
+        setError('Please log in to view your Six Figure Analytics dashboard')
+        return
+      }
       
       // Fetch both metrics and progress data in parallel
       const [metricsData, progressTracking] = await Promise.all([
@@ -165,18 +180,29 @@ export default function SixFigureAnalyticsDashboard({
         })
       ])
       
+      console.log('Raw Six Figure Analytics response:', metricsData)
+      
+      // Check if this is an error response from the API
+      if (metricsData && typeof metricsData === 'object' && 'error' in metricsData) {
+        console.error('API returned error response:', metricsData.error)
+        throw new Error(`Analytics API Error: ${(metricsData.error as any)?.message || 'Unknown analytics service error'}`)
+      }
       
       // Validate metrics data structure before setting state
       if (!metricsData || typeof metricsData !== 'object') {
         throw new Error('Invalid metrics data structure received from API')
       }
       
-      // Check for required fields
+      // Check for required fields in successful response
       const requiredFields: (keyof SixFigureBarberMetrics)[] = ['current_performance', 'targets', 'recommendations']
       const missingFields = requiredFields.filter(field => !metricsData[field])
       if (missingFields.length > 0) {
-        throw new Error(`Missing required fields: ${missingFields.join(', ')}`)
+        console.error('Received data from API:', metricsData)
+        console.error('Expected structure with fields:', requiredFields)
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}. This indicates a backend data structure issue that needs to be resolved.`)
       }
+      
+      console.log('Successfully validated Six Figure Analytics data structure')
       
       setMetrics(metricsData)
       setProgressData(progressTracking)
@@ -194,15 +220,33 @@ export default function SixFigureAnalyticsDashboard({
     } catch (err) {
       console.error('Failed to fetch Six Figure Barber data:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to load analytics data'
-      setError(errorMessage)
+      const errorStatus = (err as any)?.status
+      
+      // Handle specific authentication-related errors
+      if (errorStatus === 401 || 
+          errorMessage.includes('credentials') || 
+          errorMessage.includes('token') || 
+          errorMessage.includes('unauthorized') ||
+          errorMessage.includes('Not authenticated')) {
+        setError('Your session has expired. Please log in to access your analytics dashboard.')
+      } else if (errorMessage.includes('Missing required fields')) {
+        // This suggests an API response structure issue
+        setError('Unable to load analytics data. Please try again or contact support.')
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchMetrics()
-  }, [userId, timeRange, targetIncome])
+    if (isAuthenticated === true) {
+      fetchMetrics()
+    } else if (isAuthenticated === false) {
+      setLoading(false)
+    }
+  }, [userId, timeRange, targetIncome, isAuthenticated])
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1)
@@ -237,6 +281,17 @@ export default function SixFigureAnalyticsDashboard({
     if (!metrics) return 0
     return (metrics.current_performance.monthly_revenue / metrics.targets.monthly_revenue_target) * 100
   }, [metrics])
+
+  // Show authentication message if not authenticated
+  if (isAuthenticated === false) {
+    return (
+      <ErrorDisplay 
+        error="Please log in to view your Six Figure Analytics dashboard"
+        onRetry={() => window.location.href = '/login'}
+        retryLabel="Go to Login"
+      />
+    )
+  }
 
   if (loading) {
     return (

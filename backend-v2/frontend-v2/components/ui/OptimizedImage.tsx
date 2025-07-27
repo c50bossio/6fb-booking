@@ -56,9 +56,12 @@ export const OptimizedImage = React.forwardRef<HTMLImageElement, OptimizedImageP
   decorative = false,
   ...props
 }, ref) => {
+  // Validate src to prevent undefined/invalid values
+  const validSrc = src && src !== 'undefined' && typeof src === 'string' ? src : fallbackSrc || '/images/placeholder.svg'
+  
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
-  const [currentSrc, setCurrentSrc] = useState(src)
+  const [currentSrc, setCurrentSrc] = useState(validSrc)
   const { elementRef, isLoaded } = useLazyLoading()
   const imageRef = useRef<HTMLImageElement>(null)
 

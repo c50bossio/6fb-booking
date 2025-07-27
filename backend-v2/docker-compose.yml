@@ -165,6 +165,10 @@ services:
       NODE_ENV: development
       PORT: 3000
       
+      # Internal Docker network URL for server-side proxy
+      DOCKER_BACKEND_URL: http://bookedbarber-backend:8000
+      NEXT_INTERNAL_API_URL: http://bookedbarber-backend:8000
+      
       # External Services (Frontend Safe Keys Only)
       NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_your_stripe_key_here
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: your_google_client_id.apps.googleusercontent.com

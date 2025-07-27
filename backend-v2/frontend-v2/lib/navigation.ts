@@ -480,6 +480,16 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
+  // Six Figure Barber Dashboard - Premium methodology tracking
+  {
+    name: 'Six Figure Barber',
+    href: '/dashboard/six-figure-barber',
+    icon: ArrowTrendingUpIcon,
+    roles: ['barber', 'admin', 'super_admin'],
+    description: 'Premium Six Figure Barber methodology dashboard and analytics',
+    isNew: true
+  },
+  
   // Analytics Hub - Unified analytics dashboard
   {
     name: 'Analytics',
@@ -758,6 +768,14 @@ export const quickActions: QuickAction[] = [
     icon: CalendarIcon,
     description: 'View today\'s appointments',
     roles: ['barber'],
+    color: 'primary'
+  },
+  {
+    name: 'Six Figure Barber',
+    href: '/dashboard/six-figure-barber',
+    icon: ArrowTrendingUpIcon,
+    description: 'Track methodology performance',
+    roles: ['barber', 'admin', 'super_admin'],
     color: 'primary'
   },
   {

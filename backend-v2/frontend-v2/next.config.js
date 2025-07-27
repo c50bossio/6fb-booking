@@ -381,17 +381,19 @@ const nextConfig = {
 
   // Rewrites for API proxy
   async rewrites() {
+    // Use internal Docker service name when running in container, fallback to external URL for browser requests
+    const backendUrl = process.env.NEXT_INTERNAL_API_URL || process.env.DOCKER_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://bookedbarber-backend:8000';
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/:path*`,
+        destination: `${backendUrl}/api/:path*`,
       },
     ]
   },
 
   // Environment variables
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://bookedbarber-backend:8000',
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     NEXT_PUBLIC_CDN_PROVIDER: process.env.NEXT_PUBLIC_CDN_PROVIDER || 'disabled',
     NEXT_PUBLIC_CLOUDFLARE_DOMAIN: process.env.NEXT_PUBLIC_CLOUDFLARE_DOMAIN || '',

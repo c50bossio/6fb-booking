@@ -139,6 +139,12 @@ export class ImageOptimizer {
       format?: string
     } = {}
   ): string {
+    // Validate src parameter to prevent undefined URLs
+    if (!src || src === 'undefined' || typeof src !== 'string') {
+      console.warn('ImageOptimizer.optimizeUrl: Invalid src parameter', src)
+      return '/images/placeholder.svg' // Return a default placeholder
+    }
+
     if (src.startsWith('data:') || src.startsWith('blob:')) {
       return src
     }

@@ -124,7 +124,7 @@ async def get_all_commission_rates(
     permission_checker: PermissionChecker = Depends(get_permission_checker)
 ):
     """Get commission rates for all barbers (admin only)"""
-    permission_checker.check_permission(Permission.VIEW_ALL_ANALYTICS)
+    permission_checker.require_permission(Permission.VIEW_ALL_ANALYTICS)
     
     try:
         rate_manager = CommissionRateManager(db)
@@ -160,7 +160,7 @@ async def update_commission_rate(
     permission_checker: PermissionChecker = Depends(get_permission_checker)
 ):
     """Update commission rate for a barber (admin only)"""
-    permission_checker.check_permission(Permission.MANAGE_FINANCIAL_SETTINGS)
+    permission_checker.require_permission(Permission.MANAGE_FINANCIAL_SETTINGS)
     
     try:
         rate_manager = CommissionRateManager(db)

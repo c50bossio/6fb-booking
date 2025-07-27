@@ -131,6 +131,19 @@ class User(Base):
     # Note: need to use string reference since BarbershopLocation is defined in location_models.py
     # locations = relationship("BarbershopLocation", secondary="barber_locations", back_populates="barbers")
     
+    # Six Figure Barber methodology relationships
+    six_fb_revenue_metrics = relationship("SixFBRevenueMetrics", back_populates="user", cascade="all, delete-orphan")
+    six_fb_revenue_goals = relationship("SixFBRevenueGoals", back_populates="user", cascade="all, delete-orphan")
+    six_fb_client_profiles = relationship("SixFBClientValueProfile", back_populates="user", cascade="all, delete-orphan")
+    six_fb_dashboards = relationship("SixFBMethodologyDashboard", back_populates="user", cascade="all, delete-orphan")
+    
+    # Six Figure Barber CRM relationships
+    six_fb_crm_communications = relationship("SixFBClientCommunication", back_populates="user", cascade="all, delete-orphan")
+    six_fb_crm_engagements = relationship("SixFBClientEngagementHistory", back_populates="user", cascade="all, delete-orphan")
+    six_fb_crm_workflows = relationship("SixFBAutomatedWorkflow", back_populates="user", cascade="all, delete-orphan")
+    six_fb_crm_workflow_executions = relationship("SixFBWorkflowExecution", back_populates="user", cascade="all, delete-orphan")
+    six_fb_crm_analytics = relationship("SixFBClientAnalyticsSummary", back_populates="user", cascade="all, delete-orphan")
+    
     @property
     def is_trial_active(self) -> bool:
         """Check if user's trial is still active"""
@@ -552,6 +565,19 @@ class Client(Base):
     appointments = relationship("Appointment", back_populates="client", foreign_keys="Appointment.client_id")
     preferred_barber = relationship("User", foreign_keys=[preferred_barber_id])
     created_by = relationship("User", foreign_keys=[created_by_id])
+    
+    # Six Figure Barber methodology relationships
+    six_fb_value_profile = relationship("SixFBClientValueProfile", back_populates="client", uselist=False, cascade="all, delete-orphan")
+    
+    # Six Figure Barber CRM relationships
+    six_fb_crm_communications = relationship("SixFBClientCommunication", back_populates="client", cascade="all, delete-orphan")
+    six_fb_crm_engagements = relationship("SixFBClientEngagementHistory", back_populates="client", cascade="all, delete-orphan")
+    six_fb_crm_journey_stages = relationship("SixFBClientJourneyStage", back_populates="client", cascade="all, delete-orphan")
+    six_fb_crm_touchpoint_plans = relationship("SixFBClientTouchpointPlan", back_populates="client", cascade="all, delete-orphan")
+    six_fb_crm_workflow_executions = relationship("SixFBWorkflowExecution", back_populates="client", cascade="all, delete-orphan")
+    six_fb_crm_behavior_analytics = relationship("SixFBClientBehaviorAnalytics", back_populates="client", cascade="all, delete-orphan")
+    six_fb_crm_communication_profiles = relationship("SixFBClientCommunicationProfile", back_populates="client", cascade="all, delete-orphan")
+    six_fb_crm_tier_history = relationship("SixFBClientValueTierHistory", back_populates="client", cascade="all, delete-orphan")
     
     @property
     def name(self) -> str:

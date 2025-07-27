@@ -64,6 +64,10 @@ import {
   EfficiencyTrends
 } from '@/lib/six-figure-barber-api'
 
+// Import intelligent analytics components
+import { SmartAlertsWidget } from '../analytics/SmartAlertsWidget'
+import { TrendPredictionOverlay } from '../analytics/TrendPredictionOverlay'
+
 interface BusinessEfficiencyAnalyticsProps {
   className?: string
 }
@@ -438,10 +442,20 @@ export function BusinessEfficiencyAnalytics({ className }: BusinessEfficiencyAna
           {/* Efficiency Trends Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Efficiency Trends Over Time</CardTitle>
-              <CardDescription>
-                Performance trends for the last {trendPeriod} days
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Efficiency Trends Over Time</CardTitle>
+                  <CardDescription>
+                    Performance trends for the last {trendPeriod} days
+                  </CardDescription>
+                </div>
+                <TrendPredictionOverlay 
+                  metricName="booking_utilization"
+                  daysAhead={30}
+                  chartType="line"
+                  compact={true}
+                />
+              </div>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -516,6 +530,14 @@ export function BusinessEfficiencyAnalytics({ className }: BusinessEfficiencyAna
         </TabsContent>
 
         <TabsContent value="insights" className="space-y-6">
+          {/* Smart Alerts for Efficiency */}
+          <SmartAlertsWidget 
+            maxAlerts={5}
+            compact={false}
+            showActions={true}
+            className="mb-6"
+          />
+
           {/* Efficiency Insights */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>

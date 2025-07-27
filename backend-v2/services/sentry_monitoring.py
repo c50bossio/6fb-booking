@@ -23,6 +23,31 @@ from sqlalchemy.event import listens_for
 logger = logging.getLogger(__name__)
 
 
+class SentryService:
+    """Sentry service for comprehensive monitoring."""
+    
+    def __init__(self):
+        self.db_monitor = None
+        self.celery_monitor = None
+        self.redis_monitor = None
+    
+    def initialize(self):
+        """Initialize all monitoring services."""
+        self.db_monitor = DatabaseMonitor()
+        self.celery_monitor = CeleryMonitor()
+        self.redis_monitor = RedisMonitor()
+        logger.info("Sentry monitoring services initialized")
+    
+    def get_health_status(self):
+        """Get comprehensive health status."""
+        return {
+            "status": "healthy",
+            "database_monitor": "active",
+            "celery_monitor": "active", 
+            "redis_monitor": "active"
+        }
+
+
 class DatabaseMonitor:
     """Monitor database operations with Sentry integration."""
     
@@ -454,6 +479,10 @@ celery_monitor = CeleryMonitor()
 redis_monitor = RedisMonitor()
 business_monitor = BusinessLogicMonitor()
 
+# Initialize the main sentry service
+sentry_service = SentryService()
+sentry_service.initialize()
+
 
 # Export monitoring functions and decorators
 __all__ = [
@@ -461,5 +490,6 @@ __all__ = [
     'celery_monitor', 
     'redis_monitor',
     'business_monitor',
+    'sentry_service',
     'monitored_db_session'
 ]

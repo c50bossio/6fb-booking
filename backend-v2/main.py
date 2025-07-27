@@ -10,6 +10,8 @@ from routers import unified_analytics
 
 # Import V2 API endpoints for Six Figure Barber enhancements
 from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization, six_figure_barber_analytics, six_figure_barber_crm
+# Import enhanced Six Figure Barber analytics
+from routers import six_figure_enhanced_analytics
 # Import deployment test endpoint
 from test_deployment_endpoint import router as test_deployment_router
 # service_templates temporarily disabled due to FastAPI error
@@ -39,7 +41,29 @@ Base.metadata.create_all(bind=engine)
 async def lifespan(app: FastAPI):
     # Startup
     logger = logging.getLogger(__name__)
-    logger.info("🚀 Starting BookedBarber V2 backend... (V2 AUTH FORCE DEPLOY 02:45)")
+    logger.info("🚀 Starting BookedBarber V2 backend with SRE... (99.99% UPTIME TARGET)")
+    
+    # Initialize SRE services first for monitoring startup
+    try:
+        from services.sre_orchestrator import sre_orchestrator
+        from services.observability_service import observability_service
+        from services.automated_recovery_service import recovery_service
+        
+        # Start observability service
+        await observability_service.start()
+        logger.info("✅ Observability service started")
+        
+        # Start SRE orchestrator monitoring
+        # Don't await - let it run in background
+        import asyncio
+        asyncio.create_task(sre_orchestrator.start_monitoring())
+        logger.info("✅ SRE orchestrator monitoring started")
+        
+        logger.info("🎯 SRE system initialized - targeting 99.99% uptime")
+        
+    except Exception as e:
+        logger.error(f"❌ SRE system initialization failed: {e}")
+        # Continue without SRE rather than fail startup
     
     # Initialize Redis cache
     try:
@@ -50,15 +74,42 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ Cache initialization failed: {e}")
         # Continue without cache rather than fail startup
     
+    # Initialize enterprise performance monitoring
+    try:
+        from services.performance_monitoring import performance_tracker
+        from services.enterprise_cache_system import enterprise_cache
+        from services.performance_regression_detector import regression_detector
+        
+        # Start performance monitoring
+        performance_tracker.start_monitoring()
+        
+        # Warm enterprise cache with commonly accessed data
+        cache_warm_functions = {
+            "services_list": lambda: [], # Would fetch from database
+            "locations_list": lambda: [], # Would fetch from database
+        }
+        await enterprise_cache.warm_cache(cache_warm_functions)
+        
+        logger.info("✅ Enterprise performance monitoring initialized")
+        
+    except Exception as e:
+        logger.error(f"❌ Performance monitoring initialization failed: {e}")
+        # Continue without performance monitoring rather than fail startup
+    
     yield
     
     # Shutdown
     try:
+        # Stop SRE services
+        from services.observability_service import observability_service
+        await observability_service.stop()
+        logger.info("✅ SRE services stopped")
+        
         from services.startup_cache import shutdown_cache
         await shutdown_cache()
         logger.info("✅ Cache shutdown completed")
     except Exception as e:
-        logger.error(f"❌ Cache shutdown failed: {e}")
+        logger.error(f"❌ Shutdown failed: {e}")
 
 # Create FastAPI app with lifespan management
 app = FastAPI(title="6FB Booking API v2", lifespan=lifespan)
@@ -126,6 +177,9 @@ async def startup_event():
 # Add Redis caching middleware
 from middleware.cache_middleware import SmartCacheMiddleware
 
+# Add SRE middleware for comprehensive monitoring
+from middleware.sre_middleware import SREMiddleware
+
 # Add security middleware
 import logging
 import os
@@ -139,6 +193,13 @@ ENABLE_DEVELOPMENT_MODE = os.getenv("ENABLE_DEVELOPMENT_MODE", "true").lower() =
 if ENVIRONMENT == "development" and ENABLE_DEVELOPMENT_MODE:
     # Lightweight middleware stack for development
     logger.info("🔧 Development mode: Using lightweight middleware stack")
+    
+    # Add SRE middleware first for monitoring (lightweight mode)
+    app.add_middleware(SREMiddleware, 
+                      enable_tracing=True,
+                      enable_circuit_breakers=False,  # Disabled in dev
+                      enable_performance_monitoring=True,
+                      enable_business_metrics=True)
     
     # Add smart cache middleware for development
     app.add_middleware(SmartCacheMiddleware, enable_cache=True)
@@ -155,6 +216,13 @@ else:
     
     # Add enhanced security middleware stack
     environment = ENVIRONMENT if ENVIRONMENT != "development" else "production"
+    
+    # Add SRE middleware first for comprehensive monitoring (production mode)
+    app.add_middleware(SREMiddleware, 
+                      enable_tracing=True,
+                      enable_circuit_breakers=True,
+                      enable_performance_monitoring=True,
+                      enable_business_metrics=True)
     
     # Add configuration security middleware (first for critical security validation)
     config_security_middleware = ConfigurationSecurityMiddleware(app, check_interval_minutes=30)
@@ -296,6 +364,17 @@ app.add_middleware(CORSMiddleware, **cors_config)
 
 # Include health router (no prefix for easy access)
 app.include_router(health.router)
+# Include health router with v2 prefix for API compatibility (using a copy to avoid conflicts)
+from routers.health import router as health_router_copy
+app.include_router(health_router_copy, prefix="/api/v2")
+
+# Include SRE monitoring router for 99.99% uptime management
+from routers import sre_monitoring
+app.include_router(sre_monitoring.router, prefix="/api/v2")
+
+# Include performance monitoring and dashboard routers
+from routers import performance_dashboard
+app.include_router(performance_dashboard.router, prefix="/api/v2")  # Enterprise performance monitoring
 
 # Include routers with API versioning
 app.include_router(auth.router, prefix="/api/v2")
@@ -372,6 +451,7 @@ app.include_router(ai_upselling.router, prefix="/api/v2")  # AI Agent for autono
 app.include_router(calendar_revenue_optimization.router, prefix="/api/v2")  # Calendar revenue optimization - Six Figure Barber methodology
 app.include_router(six_figure_barber_analytics.router, prefix="/api/v2")  # Six Figure Barber methodology core analytics
 app.include_router(six_figure_barber_crm.router, prefix="/api/v2")  # Six Figure Barber CRM system
+app.include_router(six_figure_enhanced_analytics.router)  # Enhanced Six Figure Barber Analytics with Advanced Features
 app.include_router(smart_insights.router)  # Smart Insights Hub - intelligent consolidation of all analytics
 app.include_router(search.router, prefix="/api/v2")  # Global search functionality
 

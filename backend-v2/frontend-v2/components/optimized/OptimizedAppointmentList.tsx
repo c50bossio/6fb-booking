@@ -104,7 +104,7 @@ const AppointmentItem = memo(({
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={appointment.client_avatar} />
+            {appointment.client_avatar && <AvatarImage src={appointment.client_avatar} />}
             <AvatarFallback>
               {appointment.client_name.split(' ').map(n => n[0]).join('').toUpperCase()}
             </AvatarFallback>

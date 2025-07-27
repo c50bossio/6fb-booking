@@ -5,8 +5,8 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from '@/components/providers/QueryProvider'
-import CookieConsent from '@/components/CookieConsent'
-import { DevHealthMonitor } from '@/components/DevHealthMonitor'
+import { UXOptimizedCookieConsent } from '@/components/UXOptimizedCookieConsent'
+import { ProductionSafeDevMonitor } from '@/components/ProductionSafeDevMonitor'
 import { ToastProvider } from '@/hooks/useToast'
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
 import { ServiceWorkerUpdate } from '@/components/ServiceWorkerUpdate'
@@ -183,8 +183,8 @@ export default function RootLayout({
                 {children}
               </AppLayout>
               <Toaster />
-              <CookieConsent />
-              <DevHealthMonitor />
+              <UXOptimizedCookieConsent />
+              <ProductionSafeDevMonitor />
               {process.env.NODE_ENV === 'production' && (
                 <>
                   <PWAInstallPrompt />

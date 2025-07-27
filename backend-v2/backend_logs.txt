@@ -1,0 +1,2 @@
+INFO:     Will watch for changes in these directories: ['/Users/bossio/6fb-booking/backend-v2']
+ERROR:    [Errno 48] Address already in use

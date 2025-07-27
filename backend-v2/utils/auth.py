@@ -157,6 +157,19 @@ async def get_current_user_optional(
     except (JWTError, HTTPException):
         return None
 
+
+async def get_current_admin_user(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """Get the current user and verify they have admin privileges."""
+    # Check if user has admin role (adjust based on your role system)
+    if current_user.role not in ["admin", "super_admin", "platform_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions. Admin access required."
+        )
+    return current_user
+
 def authenticate_user(db: Session, email: str, password: str):
     """Authenticate a user by email and password."""
     user = db.query(User).filter(User.email == email).first()

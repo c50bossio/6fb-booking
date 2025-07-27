@@ -46,10 +46,15 @@ class Permission(Enum):
     CANCEL_SUBSCRIPTION = "cancel_subscription"
     
     # Analytics permissions
+    VIEW_ANALYTICS = "view_analytics"
     VIEW_BASIC_ANALYTICS = "view_basic_analytics"
     VIEW_ADVANCED_ANALYTICS = "view_advanced_analytics"
     VIEW_FINANCIAL_ANALYTICS = "view_financial_analytics"
+    VIEW_AI_ANALYTICS = "view_ai_analytics"
+    VIEW_MARKETING_ANALYTICS = "view_marketing_analytics"
+    VIEW_ALL_ANALYTICS = "view_all_analytics"
     EXPORT_ANALYTICS = "export_analytics"
+    EXPORT_DATA = "export_data"
     
     # Service management
     VIEW_SERVICES = "view_services"
@@ -67,6 +72,8 @@ class Permission(Enum):
     VIEW_SETTINGS = "view_settings"
     UPDATE_SETTINGS = "update_settings"
     MANAGE_INTEGRATIONS = "manage_integrations"
+    MANAGE_FINANCIAL_SETTINGS = "manage_financial_settings"
+    MANAGE_BUSINESS_SETTINGS = "manage_business_settings"
     
     # Organization permissions
     VIEW_ORGANIZATION = "view_organization"
@@ -90,8 +97,17 @@ ROLE_PERMISSIONS: Dict[str, Set[Permission]] = {
         Permission.SYSTEM_ADMIN,
         Permission.VIEW_ALL_ORGANIZATIONS,
         Permission.MANAGE_PLATFORM,
+        Permission.VIEW_ANALYTICS,
+        Permission.VIEW_BASIC_ANALYTICS,
+        Permission.VIEW_ADVANCED_ANALYTICS,
         Permission.VIEW_FINANCIAL_ANALYTICS,
+        Permission.VIEW_AI_ANALYTICS,
+        Permission.VIEW_MARKETING_ANALYTICS,
+        Permission.VIEW_ALL_ANALYTICS,
         Permission.EXPORT_ANALYTICS,
+        Permission.EXPORT_DATA,
+        Permission.MANAGE_FINANCIAL_SETTINGS,
+        Permission.MANAGE_BUSINESS_SETTINGS,
     },
     
     # Business owner roles
@@ -113,10 +129,15 @@ ROLE_PERMISSIONS: Dict[str, Set[Permission]] = {
         Permission.MANAGE_BILLING,
         Permission.UPDATE_SUBSCRIPTION,
         Permission.CANCEL_SUBSCRIPTION,
+        Permission.VIEW_ANALYTICS,
         Permission.VIEW_BASIC_ANALYTICS,
         Permission.VIEW_ADVANCED_ANALYTICS,
         Permission.VIEW_FINANCIAL_ANALYTICS,
+        Permission.VIEW_AI_ANALYTICS,
+        Permission.VIEW_MARKETING_ANALYTICS,
+        Permission.VIEW_ALL_ANALYTICS,
         Permission.EXPORT_ANALYTICS,
+        Permission.EXPORT_DATA,
         Permission.VIEW_SERVICES,
         Permission.CREATE_SERVICES,
         Permission.UPDATE_SERVICES,
@@ -128,6 +149,7 @@ ROLE_PERMISSIONS: Dict[str, Set[Permission]] = {
         Permission.VIEW_SETTINGS,
         Permission.UPDATE_SETTINGS,
         Permission.MANAGE_INTEGRATIONS,
+        Permission.MANAGE_FINANCIAL_SETTINGS,
         Permission.VIEW_ORGANIZATION,
         Permission.UPDATE_ORGANIZATION,
         Permission.DELETE_ORGANIZATION,
@@ -153,10 +175,15 @@ ROLE_PERMISSIONS: Dict[str, Set[Permission]] = {
         Permission.MANAGE_BILLING,
         Permission.UPDATE_SUBSCRIPTION,
         Permission.CANCEL_SUBSCRIPTION,
+        Permission.VIEW_ANALYTICS,
         Permission.VIEW_BASIC_ANALYTICS,
         Permission.VIEW_ADVANCED_ANALYTICS,
         Permission.VIEW_FINANCIAL_ANALYTICS,
+        Permission.VIEW_AI_ANALYTICS,
+        Permission.VIEW_MARKETING_ANALYTICS,
+        Permission.VIEW_ALL_ANALYTICS,
         Permission.EXPORT_ANALYTICS,
+        Permission.EXPORT_DATA,
         Permission.VIEW_SERVICES,
         Permission.CREATE_SERVICES,
         Permission.UPDATE_SERVICES,
@@ -168,6 +195,7 @@ ROLE_PERMISSIONS: Dict[str, Set[Permission]] = {
         Permission.VIEW_SETTINGS,
         Permission.UPDATE_SETTINGS,
         Permission.MANAGE_INTEGRATIONS,
+        Permission.MANAGE_FINANCIAL_SETTINGS,
         Permission.VIEW_ORGANIZATION,
         Permission.UPDATE_ORGANIZATION,
     },
@@ -191,6 +219,7 @@ ROLE_PERMISSIONS: Dict[str, Set[Permission]] = {
         Permission.VIEW_SETTINGS,
         Permission.UPDATE_SETTINGS,
         Permission.MANAGE_INTEGRATIONS,
+        Permission.MANAGE_FINANCIAL_SETTINGS,
     },
     
     # Staff roles

@@ -392,7 +392,7 @@ export default function CalendarClientManager({
                     >
                       <div className="flex items-start space-x-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={client.profile_image} />
+                          {client.profile_image && <AvatarImage src={client.profile_image} />}
                           <AvatarFallback className="text-sm font-medium">
                             {client.first_name.charAt(0)}{client.last_name.charAt(0)}
                           </AvatarFallback>
@@ -465,7 +465,7 @@ export default function CalendarClientManager({
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage src={selectedClient.profile_image} />
+                      {selectedClient.profile_image && <AvatarImage src={selectedClient.profile_image} />}
                       <AvatarFallback className="text-lg font-semibold">
                         {selectedClient.first_name.charAt(0)}{selectedClient.last_name.charAt(0)}
                       </AvatarFallback>

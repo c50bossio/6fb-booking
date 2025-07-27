@@ -119,7 +119,7 @@ export function AppointmentsWidget({
         {appointments.map((appointment) => (
           <div key={appointment.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
             <Avatar className="w-8 h-8">
-              <AvatarImage src={appointment.clientAvatar} />
+              {appointment.clientAvatar && <AvatarImage src={appointment.clientAvatar} />}
               <AvatarFallback className="text-xs">
                 {appointment.clientName.charAt(0)}
               </AvatarFallback>
