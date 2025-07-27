@@ -454,6 +454,9 @@ app.include_router(six_figure_barber_crm.router, prefix="/api/v2")  # Six Figure
 app.include_router(six_figure_enhanced_analytics.router)  # Enhanced Six Figure Barber Analytics with Advanced Features
 app.include_router(smart_insights.router)  # Smart Insights Hub - intelligent consolidation of all analytics
 app.include_router(search.router, prefix="/api/v2")  # Global search functionality
+# Include search health and management router
+from routers import search_health
+app.include_router(search_health.router)  # Search health endpoints (includes /api/v2 prefix in router definition)
 
 # DEPLOYMENT TEST ENDPOINT - Remove after deployment verification
 app.include_router(test_deployment_router, prefix="/api/v2")
