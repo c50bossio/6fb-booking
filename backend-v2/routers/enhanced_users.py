@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/users", tags=["users", "timezone"])
 
-
 @router.get("/me/timezone", response_model=schemas.TimezoneInfo)
 def get_my_timezone(
     current_user: models.User = Depends(get_current_user)
@@ -33,7 +32,6 @@ def get_my_timezone(
         offset=timezone_info['current_offset'],
         display_name=timezone_info['display_name']
     )
-
 
 @router.put("/me/timezone")
 def update_my_timezone(
@@ -72,7 +70,6 @@ def update_my_timezone(
         )
     
     return {"message": "Timezone updated successfully"}
-
 
 @router.post("/me/timezone/detect")
 def detect_and_set_timezone(
@@ -151,7 +148,6 @@ def detect_and_set_timezone(
         "message": "Timezone auto-detected and set successfully"
     }
 
-
 @router.get("/me/timezone/business-hours")
 def get_business_hours_in_my_timezone(
     date: Optional[str] = Query(None, description="Date in YYYY-MM-DD format (defaults to today)"),
@@ -199,7 +195,6 @@ def get_business_hours_in_my_timezone(
         "timezone_info": timezone_service.get_timezone_info(user_timezone)
     }
 
-
 @router.get("/me/timezone/conversion-log")
 def get_my_timezone_conversions(
     limit: int = Query(50, ge=1, le=100, description="Number of records to return"),
@@ -241,7 +236,6 @@ def get_my_timezone_conversions(
         "limit": limit,
         "offset": offset
     }
-
 
 @router.get("/timezone/allowed")
 def get_allowed_timezones(
@@ -288,7 +282,6 @@ def get_allowed_timezones(
             detail="Failed to get allowed timezones"
         )
 
-
 @router.post("/timezone/sync-cache")
 def sync_timezone_cache(
     db: Session = Depends(get_db),
@@ -311,7 +304,6 @@ def sync_timezone_cache(
         )
     
     return {"message": "Timezone cache synchronized successfully"}
-
 
 @router.get("/timezone/cache")
 def get_timezone_cache(

@@ -17,13 +17,11 @@ from services.error_monitoring_service import (
 )
 from utils.auth import get_current_admin_user
 
-
 router = APIRouter(
     prefix="/error-monitoring",
     tags=["Error Monitoring"],
     dependencies=[]  # Add admin auth when needed: [Depends(get_current_admin_user)]
 )
-
 
 @router.get("/dashboard", response_model=Dict[str, Any])
 async def get_error_monitoring_dashboard():
@@ -36,7 +34,6 @@ async def get_error_monitoring_dashboard():
             status_code=500, 
             detail=f"Failed to get dashboard data: {str(e)}"
         )
-
 
 @router.get("/errors", response_model=Dict[str, Any])
 async def get_errors(
@@ -138,7 +135,6 @@ async def get_errors(
             detail=f"Failed to get errors: {str(e)}"
         )
 
-
 @router.get("/errors/{error_id}", response_model=Dict[str, Any])
 async def get_error_details(error_id: str):
     """Get detailed information about a specific error"""
@@ -182,7 +178,6 @@ async def get_error_details(error_id: str):
             detail=f"Failed to get error details: {str(e)}"
         )
 
-
 @router.post("/errors/{error_id}/resolve")
 async def resolve_error(
     error_id: str,
@@ -213,7 +208,6 @@ async def resolve_error(
             status_code=500, 
             detail=f"Failed to resolve error: {str(e)}"
         )
-
 
 @router.post("/capture")
 async def capture_error_manually(
@@ -250,7 +244,6 @@ async def capture_error_manually(
             status_code=500, 
             detail=f"Failed to capture error: {str(e)}"
         )
-
 
 @router.get("/metrics", response_model=Dict[str, Any])
 async def get_error_metrics(
@@ -343,7 +336,6 @@ async def get_error_metrics(
             detail=f"Failed to get metrics: {str(e)}"
         )
 
-
 @router.get("/patterns", response_model=Dict[str, Any])
 async def get_error_patterns(limit: int = Query(20, description="Number of patterns to return")):
     """Get error patterns for analysis"""
@@ -394,7 +386,6 @@ async def get_error_patterns(limit: int = Query(20, description="Number of patte
             detail=f"Failed to get error patterns: {str(e)}"
         )
 
-
 @router.get("/business-impact", response_model=Dict[str, Any])
 async def get_business_impact_summary():
     """Get business impact summary for Six Figure Barber workflows"""
@@ -406,7 +397,6 @@ async def get_business_impact_summary():
             status_code=500, 
             detail=f"Failed to get business impact summary: {str(e)}"
         )
-
 
 @router.get("/health", response_model=Dict[str, Any])
 async def get_error_monitoring_health():
@@ -460,7 +450,6 @@ async def get_error_monitoring_health():
             detail=f"Failed to get monitoring health: {str(e)}"
         )
 
-
 @router.post("/test/create-error")
 async def create_test_error(
     message: str = "Test error for monitoring system validation",
@@ -506,6 +495,5 @@ async def create_test_error(
             status_code=500, 
             detail=f"Failed to create test error: {str(e)}"
         )
-
 
 import asyncio

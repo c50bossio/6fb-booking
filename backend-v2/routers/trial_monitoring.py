@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/trial-monitoring", tags=["trial-monitoring"])
 
-
 def verify_cron_token(x_cron_token: Optional[str] = Header(None)):
     """
     Verify cron job token for automated trial monitoring.
@@ -35,7 +34,6 @@ def verify_cron_token(x_cron_token: Optional[str] = Header(None)):
             detail="Invalid or missing cron token"
         )
     return True
-
 
 @router.post("/send-expiration-warnings")
 async def send_expiration_warnings(
@@ -70,7 +68,6 @@ async def send_expiration_warnings(
             detail=f"Failed to process trial warnings: {str(e)}"
         )
 
-
 @router.post("/process-expired-trials")
 async def process_expired_trials(
     db: Session = Depends(get_db),
@@ -99,7 +96,6 @@ async def process_expired_trials(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process expired trials: {str(e)}"
         )
-
 
 @router.get("/statistics")
 async def get_trial_statistics(
@@ -133,7 +129,6 @@ async def get_trial_statistics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get trial statistics: {str(e)}"
         )
-
 
 @router.get("/expiring-soon")
 async def get_trials_expiring_soon(
@@ -182,7 +177,6 @@ async def get_trials_expiring_soon(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get expiring trials: {str(e)}"
         )
-
 
 @router.get("/expired")
 async def get_expired_trials(

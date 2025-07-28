@@ -1,10 +1,9 @@
 """Pydantic schemas for guest booking functionality."""
 
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 import re
-
 
 class GuestBookingBase(BaseModel):
     """Base schema for guest booking data."""
@@ -18,7 +17,8 @@ class GuestBookingBase(BaseModel):
     marketing_consent: bool = False
     reminder_preference: str = Field("email", pattern="^(email|sms|both|none)$")
     
-    @validator('guest_phone')
+    @field_validator('guest_phone')
+    @classmethod
     def validate_phone(cls, v):
         """Validate phone number format."""
         # Remove all non-numeric characters
@@ -30,20 +30,19 @@ class GuestBookingBase(BaseModel):
         
         return v
     
-    @validator('appointment_datetime')
+    @field_validator('appointment_datetime')
+    @classmethod
     def validate_future_datetime(cls, v):
         """Ensure appointment is in the future."""
         if v <= datetime.utcnow():
             raise ValueError('Appointment datetime must be in the future')
         return v
 
-
 class GuestBookingCreate(GuestBookingBase):
     """Schema for creating a guest booking."""
     barber_id: Optional[int] = None  # Optional if organization has default barber
     referral_source: Optional[str] = None
     booking_page_url: Optional[str] = None
-    
 
 class GuestBookingUpdate(BaseModel):
     """Schema for updating a guest booking."""
@@ -52,13 +51,13 @@ class GuestBookingUpdate(BaseModel):
     notes: Optional[str] = Field(None, max_length=500)
     reminder_preference: Optional[str] = Field(None, pattern="^(email|sms|both|none)$")
     
-    @validator('appointment_datetime')
+    @field_validator('appointment_datetime')
+    @classmethod
     def validate_future_datetime(cls, v):
         """Ensure appointment is in the future."""
         if v and v <= datetime.utcnow():
             raise ValueError('Appointment datetime must be in the future')
         return v
-
 
 class GuestBookingResponse(BaseModel):
     """Schema for guest booking response."""
@@ -85,15 +84,14 @@ class GuestBookingResponse(BaseModel):
     reminder_preference: str
     created_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class GuestBookingLookup(BaseModel):
     """Schema for looking up a guest booking."""
     confirmation_code: str
     email_or_phone: str
-
 
 class PublicAvailabilitySlot(BaseModel):
     """Schema for available time slots."""
@@ -104,7 +102,6 @@ class PublicAvailabilitySlot(BaseModel):
     barber_id: Optional[int] = None
     barber_name: Optional[str] = None
 
-
 class PublicAvailabilityResponse(BaseModel):
     """Schema for availability response."""
     date: str  # YYYY-MM-DD format
@@ -112,7 +109,6 @@ class PublicAvailabilityResponse(BaseModel):
     timezone: str
     slots: List[PublicAvailabilitySlot]
     next_available_date: Optional[str] = None
-    
 
 class PublicServiceInfo(BaseModel):
     """Schema for public service information."""
@@ -124,9 +120,9 @@ class PublicServiceInfo(BaseModel):
     is_active: bool
     category: Optional[str] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class PublicBarberInfo(BaseModel):
     """Schema for public barber information."""
@@ -137,7 +133,6 @@ class PublicBarberInfo(BaseModel):
     specialties: Optional[List[str]] = None
     rating: Optional[float] = None
     review_count: Optional[int] = None
-    
 
 class BookingConfirmationEmail(BaseModel):
     """Schema for booking confirmation email data."""
@@ -154,7 +149,6 @@ class BookingConfirmationEmail(BaseModel):
     organization_phone: Optional[str]
     organization_address: Optional[str]
     booking_url: str
-    
 
 class BookingReminderNotification(BaseModel):
     """Schema for booking reminder notification."""

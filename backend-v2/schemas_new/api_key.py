@@ -2,28 +2,29 @@
 Pydantic schemas for API key management.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-
 
 class APIKeyCreate(BaseModel):
     """Schema for creating a new API key."""
     name: str = Field(..., min_length=1, max_length=255, description="Name for the API key")
     key_type: str = Field(..., description="Type of key: webhook, integration, internal, partner, test")
-    permissions: List[str] = Field(..., min_items=1, description="List of permissions for the key")
+    permissions: List[str] = Field(..., min_length=1, description="List of permissions for the key")
     expires_in_days: Optional[int] = Field(None, gt=0, le=3650, description="Days until expiration (max 10 years)")
     user_id: Optional[int] = Field(None, description="User ID (admin only)")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
     
-    @validator('key_type')
+    @field_validator('key_type')
+    @classmethod
     def validate_key_type(cls, v):
         valid_types = ["webhook", "integration", "internal", "partner", "test"]
         if v not in valid_types:
             raise ValueError(f"Invalid key type. Must be one of: {', '.join(valid_types)}")
         return v
     
-    @validator('permissions')
+    @field_validator('permissions')
+    @classmethod
     def validate_permissions(cls, v):
         # Basic permission format validation
         for perm in v:
@@ -36,7 +37,6 @@ class APIKeyCreate(BaseModel):
         
         return v
 
-
 class APIKeyResponse(BaseModel):
     """Schema for API key creation response."""
     id: int
@@ -48,9 +48,9 @@ class APIKeyResponse(BaseModel):
     created_at: datetime
     message: str = Field(..., description="Important message about key storage")
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class APIKeyListResponse(BaseModel):
     """Schema for API key list response (no actual key shown)."""
@@ -67,19 +67,17 @@ class APIKeyListResponse(BaseModel):
     revoked_at: Optional[datetime]
     revoked_reason: Optional[str]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class APIKeyRotate(BaseModel):
     """Schema for API key rotation request."""
     # No additional fields needed - key_id is in URL
 
-
 class APIKeyRevoke(BaseModel):
     """Schema for API key revocation request."""
     reason: str = Field(..., min_length=1, max_length=500, description="Reason for revocation")
-
 
 class APIKeyValidation(BaseModel):
     """Schema for API key validation response."""

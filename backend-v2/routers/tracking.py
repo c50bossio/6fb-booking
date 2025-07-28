@@ -30,7 +30,6 @@ from utils.rate_limiter import RateLimiter
 # Import Meta tracking endpoints
 from routers.meta_tracking import router as meta_tracking_router
 
-
 router = APIRouter(
     prefix="/api/v1/tracking",
     tags=["tracking"],
@@ -43,7 +42,6 @@ router.include_router(meta_tracking_router, prefix="", tags=["meta-tracking"])
 # Initialize services
 tracking_service = ConversionTrackingService()
 rate_limiter = RateLimiter(requests_per_minute=100)  # Limit tracking requests
-
 
 @router.post("/event", response_model=ConversionEventResponse)
 async def track_conversion_event(
@@ -78,7 +76,6 @@ async def track_conversion_event(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/events/batch", response_model=List[ConversionEventResponse])
 async def track_conversion_events_batch(
@@ -135,7 +132,6 @@ async def track_conversion_events_batch(
     
     return tracked_events
 
-
 @router.get("/analytics", response_model=ConversionAnalytics)
 async def get_conversion_analytics(
     start_date: Optional[datetime] = Query(None, description="Start date for analytics"),
@@ -159,7 +155,6 @@ async def get_conversion_analytics(
     )
     return analytics
 
-
 @router.get("/attribution", response_model=AttributionReport)
 async def get_attribution_report(
     model: AttributionModel = Query(AttributionModel.DATA_DRIVEN, description="Attribution model to use"),
@@ -182,7 +177,6 @@ async def get_attribution_report(
         end_date=end_date
     )
     return report
-
 
 @router.get("/config", response_model=TrackingConfigResponse)
 async def get_tracking_configuration(
@@ -209,7 +203,6 @@ async def get_tracking_configuration(
     
     return config
 
-
 @router.put("/config", response_model=TrackingConfigResponse)
 async def update_tracking_configuration(
     config_update: TrackingConfigUpdate,
@@ -228,7 +221,6 @@ async def update_tracking_configuration(
     )
     return config
 
-
 @router.post("/config/test", response_model=PlatformTestResponse)
 async def test_platform_connection(
     test_request: PlatformTestRequest,
@@ -244,7 +236,6 @@ async def test_platform_connection(
         config=test_request.config
     )
     return PlatformTestResponse(**result)
-
 
 # Conversion Goals endpoints
 
@@ -264,7 +255,6 @@ async def get_conversion_goals(
     
     goals = query.order_by(ConversionGoal.created_at.desc()).all()
     return goals
-
 
 @router.post("/goals", response_model=ConversionGoalResponse)
 async def create_conversion_goal(
@@ -295,7 +285,6 @@ async def create_conversion_goal(
     db.refresh(goal)
     
     return goal
-
 
 @router.put("/goals/{goal_id}", response_model=ConversionGoalResponse)
 async def update_conversion_goal(
@@ -336,7 +325,6 @@ async def update_conversion_goal(
     
     return goal
 
-
 @router.delete("/goals/{goal_id}")
 async def delete_conversion_goal(
     goal_id: int,
@@ -356,7 +344,6 @@ async def delete_conversion_goal(
     db.commit()
     
     return {"message": "Goal deleted successfully"}
-
 
 # Campaign Tracking endpoints
 
@@ -389,7 +376,6 @@ async def get_campaign_tracking(
     campaigns = query.order_by(CampaignTracking.created_at.desc()).all()
     return campaigns
 
-
 @router.post("/campaigns", response_model=CampaignTrackingResponse)
 async def create_campaign_tracking(
     campaign_data: CampaignTrackingCreate,
@@ -420,7 +406,6 @@ async def create_campaign_tracking(
     db.refresh(campaign)
     
     return campaign
-
 
 @router.put("/campaigns/{campaign_id}/metrics")
 async def update_campaign_metrics(
@@ -462,7 +447,6 @@ async def update_campaign_metrics(
     db.refresh(campaign)
     
     return campaign
-
 
 @router.post("/campaigns/sync")
 async def sync_campaign_data(
@@ -518,7 +502,6 @@ async def sync_campaign_data(
         "errors": errors,
         "message": f"Synced {synced_count} campaigns"
     }
-
 
 # Health check endpoint
 @router.get("/health")

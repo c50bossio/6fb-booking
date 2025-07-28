@@ -23,7 +23,6 @@ router = APIRouter(
     tags=["database"]
 )
 
-
 # Response models
 class DatabaseHealthResponse(BaseModel):
     overall_healthy: bool
@@ -31,7 +30,6 @@ class DatabaseHealthResponse(BaseModel):
     replicas: List[Dict[str, Any]]
     timestamp: datetime
     read_replicas_enabled: bool
-
 
 class ConnectionPoolMetrics(BaseModel):
     name: str
@@ -42,25 +40,21 @@ class ConnectionPoolMetrics(BaseModel):
     utilization_percent: float
     total_available: int
 
-
 class ConnectionPoolHealth(BaseModel):
     healthy: bool
     warnings: List[str]
     metrics: Dict[str, Any]
-
 
 class DatabaseStats(BaseModel):
     config: Dict[str, Any]
     connections: Dict[str, Any]
     performance: Optional[Dict[str, Any]] = None
 
-
 class ReplicaLagResponse(BaseModel):
     replica_name: str
     lag_seconds: Optional[float]
     healthy: bool
     last_checked: datetime
-
 
 @router.get("/health", response_model=DatabaseHealthResponse)
 async def get_database_health(
@@ -85,7 +79,6 @@ async def get_database_health(
         logger.error(f"Failed to get database health: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve database health")
 
-
 @router.get("/pool-health", response_model=ConnectionPoolHealth)
 async def get_connection_pool_health(
     current_user: User = Depends(get_current_user)
@@ -100,7 +93,6 @@ async def get_connection_pool_health(
     except Exception as e:
         logger.error(f"Failed to get pool health: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve pool health")
-
 
 @router.get("/stats", response_model=DatabaseStats)
 async def get_database_statistics(
@@ -119,7 +111,6 @@ async def get_database_statistics(
     except Exception as e:
         logger.error(f"Failed to get database stats: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve database statistics")
-
 
 @router.get("/pool-metrics")
 async def get_pool_metrics(
@@ -147,7 +138,6 @@ async def get_pool_metrics(
     except Exception as e:
         logger.error(f"Failed to get pool metrics: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve pool metrics")
-
 
 @router.get("/replica-lag")
 async def get_replica_lag(
@@ -216,7 +206,6 @@ async def get_replica_lag(
     except Exception as e:
         logger.error(f"Failed to check replica lag: {e}")
         raise HTTPException(status_code=500, detail="Failed to check replica lag")
-
 
 @router.post("/test-connection")
 async def test_database_connection(
@@ -292,7 +281,6 @@ async def test_database_connection(
         logger.error(f"Failed to test database connections: {e}")
         raise HTTPException(status_code=500, detail="Failed to test database connections")
 
-
 @router.post("/optimize-pools")
 async def optimize_connection_pools(
     background_tasks: BackgroundTasks,
@@ -325,7 +313,6 @@ async def optimize_connection_pools(
         "message": "Connection pool optimization initiated",
         "timestamp": datetime.utcnow()
     }
-
 
 @router.get("/performance-history")
 async def get_performance_history(
@@ -368,7 +355,6 @@ async def get_performance_history(
         logger.error(f"Failed to get performance history: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve performance history")
 
-
 @router.get("/configuration")
 async def get_database_configuration(
     current_user: User = Depends(get_current_user)
@@ -402,7 +388,6 @@ async def get_database_configuration(
     except Exception as e:
         logger.error(f"Failed to get database configuration: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve database configuration")
-
 
 # Include router in main application
 __all__ = ["router"]

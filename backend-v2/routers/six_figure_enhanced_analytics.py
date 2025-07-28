@@ -29,7 +29,6 @@ from services.professional_growth_planning_system import ProfessionalGrowthPlann
 router = APIRouter(prefix="/api/v2/six-figure-enhanced", tags=["Six Figure Enhanced Analytics"])
 logger = logging.getLogger(__name__)
 
-
 # ============================================================================
 # ADVANCED CLIENT RELATIONSHIP MANAGEMENT ENDPOINTS
 # ============================================================================
@@ -76,7 +75,6 @@ async def map_client_journey_automatically(
         logger.error(f"Error mapping client journey: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Journey mapping failed: {str(e)}")
 
-
 @router.get("/client-relationship/portfolio-optimization")
 async def optimize_client_journey_portfolio(
     db: Session = Depends(get_db),
@@ -104,7 +102,6 @@ async def optimize_client_journey_portfolio(
     except Exception as e:
         logger.error(f"Error optimizing portfolio: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Portfolio optimization failed: {str(e)}")
-
 
 @router.get("/client-relationship/personalized-recommendations/{client_id}")
 async def generate_personalized_service_recommendations(
@@ -136,7 +133,6 @@ async def generate_personalized_service_recommendations(
     except Exception as e:
         logger.error(f"Error generating recommendations: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Recommendation generation failed: {str(e)}")
-
 
 @router.post("/client-relationship/recommendation-feedback/{client_id}")
 async def track_recommendation_success(
@@ -171,7 +167,6 @@ async def track_recommendation_success(
         logger.error(f"Error tracking recommendation feedback: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Feedback tracking failed: {str(e)}")
 
-
 @router.get("/client-relationship/ltv-enhancement/{client_id}")
 async def track_client_lifetime_value_enhancement(
     client_id: int,
@@ -203,7 +198,6 @@ async def track_client_lifetime_value_enhancement(
         logger.error(f"Error tracking LTV enhancement: {str(e)}")
         raise HTTPException(status_code=500, detail=f"LTV enhancement failed: {str(e)}")
 
-
 @router.get("/client-relationship/portfolio-ltv-insights")
 async def generate_portfolio_ltv_insights(
     db: Session = Depends(get_db),
@@ -231,7 +225,6 @@ async def generate_portfolio_ltv_insights(
     except Exception as e:
         logger.error(f"Error generating portfolio LTV insights: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Portfolio LTV insights failed: {str(e)}")
-
 
 # ============================================================================
 # AI-POWERED UPSELLING ENGINE ENDPOINTS
@@ -268,7 +261,6 @@ async def generate_ai_upselling_recommendations(
     except Exception as e:
         logger.error(f"Error generating AI upselling recommendations: {str(e)}")
         raise HTTPException(status_code=500, detail=f"AI upselling generation failed: {str(e)}")
-
 
 @router.post("/upselling/optimize-timing/{client_id}")
 async def optimize_upselling_timing(
@@ -309,7 +301,6 @@ async def optimize_upselling_timing(
         logger.error(f"Error optimizing upselling timing: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Timing optimization failed: {str(e)}")
 
-
 @router.get("/upselling/dynamic-pricing/{service_id}")
 async def optimize_dynamic_pricing(
     service_id: int,
@@ -342,7 +333,6 @@ async def optimize_dynamic_pricing(
         logger.error(f"Error optimizing dynamic pricing: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Dynamic pricing optimization failed: {str(e)}")
 
-
 @router.post("/upselling/value-based-pricing")
 async def implement_value_based_pricing(
     db: Session = Depends(get_db),
@@ -370,7 +360,6 @@ async def implement_value_based_pricing(
     except Exception as e:
         logger.error(f"Error implementing value-based pricing: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Value-based pricing implementation failed: {str(e)}")
-
 
 @router.get("/upselling/cross-selling-opportunities/{client_id}")
 async def identify_cross_selling_opportunities(
@@ -402,7 +391,6 @@ async def identify_cross_selling_opportunities(
     except Exception as e:
         logger.error(f"Error identifying cross-selling opportunities: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Cross-selling identification failed: {str(e)}")
-
 
 # ============================================================================
 # SERVICE EXCELLENCE TRACKING ENDPOINTS
@@ -451,7 +439,6 @@ async def monitor_real_time_service_quality(
         logger.error(f"Error monitoring service quality: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Service quality monitoring failed: {str(e)}")
 
-
 @router.get("/service-excellence/consistency-tracking")
 async def track_service_consistency(
     time_period_days: int = Query(30, ge=7, le=90),
@@ -483,7 +470,6 @@ async def track_service_consistency(
         logger.error(f"Error tracking service consistency: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Consistency tracking failed: {str(e)}")
 
-
 @router.get("/service-excellence/satisfaction-prediction/{appointment_id}")
 async def predict_client_satisfaction(
     appointment_id: int,
@@ -514,7 +500,6 @@ async def predict_client_satisfaction(
     except Exception as e:
         logger.error(f"Error predicting client satisfaction: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Satisfaction prediction failed: {str(e)}")
-
 
 @router.post("/service-excellence/proactive-intervention/{appointment_id}")
 async def implement_proactive_interventions(
@@ -548,7 +533,6 @@ async def implement_proactive_interventions(
         logger.error(f"Error implementing intervention: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Intervention implementation failed: {str(e)}")
 
-
 @router.get("/service-excellence/time-optimization")
 async def optimize_service_time_efficiency(
     service_type: Optional[str] = None,
@@ -579,7 +563,6 @@ async def optimize_service_time_efficiency(
     except Exception as e:
         logger.error(f"Error optimizing service time: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Service time optimization failed: {str(e)}")
-
 
 # ============================================================================
 # PROFESSIONAL GROWTH PLANNING ENDPOINTS
@@ -616,7 +599,6 @@ async def conduct_comprehensive_skill_assessment(
         logger.error(f"Error conducting skill assessment: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Skill assessment failed: {str(e)}")
 
-
 @router.get("/professional-growth/skill-progress/{skill_name}")
 async def track_skill_development_progress(
     skill_name: str,
@@ -648,7 +630,6 @@ async def track_skill_development_progress(
         logger.error(f"Error tracking skill progress: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Skill progress tracking failed: {str(e)}")
 
-
 @router.get("/professional-growth/ai-skill-recommendations")
 async def generate_ai_powered_skill_recommendations(
     db: Session = Depends(get_db),
@@ -676,7 +657,6 @@ async def generate_ai_powered_skill_recommendations(
     except Exception as e:
         logger.error(f"Error generating AI skill recommendations: {str(e)}")
         raise HTTPException(status_code=500, detail=f"AI skill recommendations failed: {str(e)}")
-
 
 @router.post("/professional-growth/revenue-goal-framework")
 async def create_revenue_goal_framework(
@@ -719,7 +699,6 @@ async def create_revenue_goal_framework(
         logger.error(f"Error creating revenue goal framework: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Revenue goal framework creation failed: {str(e)}")
 
-
 @router.get("/professional-growth/revenue-goal-progress/{goal_id}")
 async def monitor_revenue_goal_progress(
     goal_id: int,
@@ -750,7 +729,6 @@ async def monitor_revenue_goal_progress(
     except Exception as e:
         logger.error(f"Error monitoring revenue goal progress: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Revenue goal monitoring failed: {str(e)}")
-
 
 # ============================================================================
 # COMPREHENSIVE DASHBOARD ENDPOINTS
@@ -821,7 +799,6 @@ async def get_comprehensive_six_figure_insights(
         logger.error(f"Error generating comprehensive insights: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Comprehensive insights failed: {str(e)}")
 
-
 @router.get("/dashboard/mobile-summary")
 async def get_mobile_optimized_summary(
     db: Session = Depends(get_db),
@@ -881,7 +858,6 @@ async def get_mobile_optimized_summary(
     except Exception as e:
         logger.error(f"Error generating mobile summary: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Mobile summary failed: {str(e)}")
-
 
 # ============================================================================
 # HEALTH CHECK AND SYSTEM STATUS

@@ -72,7 +72,7 @@ def test_registration():
         
         # Test 5: Database connection
         print("\n5️⃣ Testing database connection...")
-        from database import get_db
+        from db import get_db
         db = next(get_db())
         print("✅ Database connection passed")
         

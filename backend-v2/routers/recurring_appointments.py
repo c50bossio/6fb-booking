@@ -21,7 +21,6 @@ router = APIRouter(
     tags=["recurring-appointments"]
 )
 
-
 @router.post("/patterns", response_model=schemas.RecurringPatternResponse)
 def create_recurring_pattern(
     pattern_data: schemas.RecurringPatternCreate,
@@ -52,7 +51,6 @@ def create_recurring_pattern(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/patterns", response_model=List[schemas.RecurringPatternResponse])
 def get_recurring_patterns(
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
@@ -71,7 +69,6 @@ def get_recurring_patterns(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/patterns/{pattern_id}", response_model=schemas.RecurringPatternResponse)
 def get_recurring_pattern(
     pattern_id: int,
@@ -89,7 +86,6 @@ def get_recurring_pattern(
         raise HTTPException(status_code=404, detail="Recurring pattern not found")
     
     return pattern
-
 
 @router.put("/patterns/{pattern_id}", response_model=schemas.RecurringPatternResponse)
 def update_recurring_pattern(
@@ -116,7 +112,6 @@ def update_recurring_pattern(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.delete("/patterns/{pattern_id}")
 def delete_recurring_pattern(
     pattern_id: int,
@@ -138,7 +133,6 @@ def delete_recurring_pattern(
         return {"message": "Recurring pattern deactivated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/patterns/{pattern_id}/generate")
 def generate_appointments(
@@ -179,7 +173,6 @@ def generate_appointments(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/upcoming")
 def get_upcoming_appointments(
     days_ahead: int = Query(30, ge=1, le=365, description="Number of days ahead to look"),
@@ -204,7 +197,6 @@ def get_upcoming_appointments(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.post("/patterns/{pattern_id}/cancel")
 def cancel_recurring_series(
     pattern_id: int,
@@ -227,7 +219,6 @@ def cancel_recurring_series(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.put("/appointments/{appointment_id}/modify")
 def modify_single_occurrence(
@@ -263,7 +254,6 @@ def modify_single_occurrence(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/patterns/{pattern_id}/preview")
 def preview_pattern_occurrences(
@@ -303,7 +293,6 @@ def preview_pattern_occurrences(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 # Enhanced Recurring Appointment Endpoints
 
@@ -352,7 +341,6 @@ def generate_appointments_enhanced(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 # Recurring Series Management
 
 @router.post("/series", response_model=schemas.RecurringSeriesResponse)
@@ -377,7 +365,6 @@ def create_recurring_series(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/series", response_model=List[schemas.RecurringSeriesResponse])
 def get_recurring_series(
     series_status: Optional[str] = Query(None, description="Filter by series status"),
@@ -394,7 +381,6 @@ def get_recurring_series(
         query = query.filter(models.RecurringAppointmentSeries.series_status == series_status)
     
     return query.order_by(models.RecurringAppointmentSeries.created_at.desc()).all()
-
 
 @router.get("/series/{series_id}", response_model=schemas.RecurringSeriesResponse)
 def get_recurring_series_details(
@@ -413,7 +399,6 @@ def get_recurring_series_details(
         raise HTTPException(status_code=404, detail="Recurring series not found")
     
     return series
-
 
 @router.put("/series/{series_id}", response_model=schemas.RecurringSeriesResponse)
 def update_recurring_series(
@@ -441,7 +426,6 @@ def update_recurring_series(
     
     return series
 
-
 # Appointment Series Management
 
 @router.post("/appointments/manage")
@@ -465,7 +449,6 @@ def manage_appointment_series(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/appointments/{appointment_id}/series-info")
 def get_appointment_series_info(
@@ -514,7 +497,6 @@ def get_appointment_series_info(
     
     return series_info
 
-
 # Conflict Detection and Resolution
 
 @router.post("/conflicts/detect")
@@ -559,7 +541,6 @@ def detect_appointment_conflicts(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 # Blackout Date Management
 
 @router.post("/blackouts", response_model=schemas.BlackoutDateResponse)
@@ -582,7 +563,6 @@ def create_blackout_date(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/blackouts", response_model=List[schemas.BlackoutDateResponse])
 def get_blackout_dates(
@@ -617,7 +597,6 @@ def get_blackout_dates(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.put("/blackouts/{blackout_id}", response_model=schemas.BlackoutDateResponse)
 def update_blackout_date(
     blackout_id: int,
@@ -641,7 +620,6 @@ def update_blackout_date(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.delete("/blackouts/{blackout_id}")
 def delete_blackout_date(
     blackout_id: int,
@@ -660,7 +638,6 @@ def delete_blackout_date(
         raise HTTPException(status_code=404, detail="Blackout date not found")
     
     return {"message": "Blackout date deleted successfully"}
-
 
 @router.get("/blackouts/{blackout_id}/impact")
 def get_blackout_impact(
@@ -682,7 +659,6 @@ def get_blackout_impact(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/blackouts/check")
 def check_blackout_conflicts(

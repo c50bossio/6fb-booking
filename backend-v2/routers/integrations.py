@@ -36,7 +36,6 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)]
 )
 
-
 @router.post("/connect", response_model=dict)
 async def initiate_oauth_connection(
     request: OAuthInitiateRequest,
@@ -89,7 +88,6 @@ async def initiate_oauth_connection(
     except Exception as e:
         logger.error(f"Error initiating OAuth flow: {str(e)}")
         raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @router.get("/callback", response_model=OAuthCallbackResponse)
 async def handle_oauth_callback(
@@ -145,7 +143,6 @@ async def handle_oauth_callback(
             message=f"Failed to complete OAuth flow: {str(e)}"
         )
 
-
 @router.get("/available", response_model=List[dict])
 async def get_available_integrations(
     current_user: User = Depends(get_current_user)
@@ -175,7 +172,6 @@ async def get_available_integrations(
     
     return available
 
-
 @router.get("/status", response_model=List[IntegrationResponse])
 async def get_integration_status(
     integration_type: Optional[IntegrationType] = Query(None, description="Filter by integration type"),
@@ -200,7 +196,6 @@ async def get_integration_status(
     
     return [IntegrationResponse.from_orm(integration) for integration in integrations]
 
-
 @router.get("/{integration_id}", response_model=IntegrationResponse)
 async def get_integration(
     integration_id: int,
@@ -221,7 +216,6 @@ async def get_integration(
         )
     
     return IntegrationResponse.from_orm(integration)
-
 
 @router.put("/{integration_id}", response_model=IntegrationResponse)
 async def update_integration(
@@ -262,7 +256,6 @@ async def update_integration(
         logger.error(f"Error updating integration {integration_id}: {str(e)}")
         raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 @router.delete("/{integration_id}", response_model=IntegrationDisconnectResponse)
 async def disconnect_integration(
     integration_id: int,
@@ -299,7 +292,6 @@ async def disconnect_integration(
         db.rollback()
         logger.error(f"Error deleting integration {integration_id}: {str(e)}")
         raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @router.get("/health/all", response_model=IntegrationHealthSummary)
 async def check_all_integrations_health(
@@ -367,7 +359,6 @@ async def check_all_integrations_health(
         integrations=health_checks
     )
 
-
 @router.get("/health/{integration_id}", response_model=IntegrationHealthCheck)
 async def check_integration_health(
     integration_id: int,
@@ -419,7 +410,6 @@ async def check_integration_health(
             details={"error": str(e)},
             error=str(e)
         )
-
 
 @router.post("/{integration_id}/refresh-token", response_model=IntegrationTokenRefreshResponse)
 async def refresh_integration_token(
@@ -484,7 +474,6 @@ async def refresh_integration_token(
             message=f"Failed to refresh token: {str(e)}"
         )
 
-
 @router.post("/sync", response_model=dict)
 async def sync_integration_data(
     integration_id: int,
@@ -536,7 +525,6 @@ async def sync_integration_data(
             "integration_id": integration.id
         }
 
-
 @router.post("/{integration_id}/test", response_model=dict)
 async def test_integration_connection(
     integration_id: int,
@@ -581,7 +569,6 @@ async def test_integration_connection(
             "message": f"Connection test failed: {str(e)}",
             "integration_id": integration.id
         }
-
 
 # Admin-only endpoints
 @router.get("/admin/all", response_model=List[IntegrationResponse], dependencies=[Depends(get_current_user)])

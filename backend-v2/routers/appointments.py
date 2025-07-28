@@ -9,6 +9,7 @@ import models
 from db import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
+from utils.unified_permissions import UnifiedPermissions, require_permission
 import time as time_module
 
 """
@@ -20,14 +21,12 @@ Designed to replace the mixed booking/appointment terminology over time.
 """
 
 def require_admin_or_enterprise_owner(current_user: schemas.User = Depends(get_current_user)) -> schemas.User:
-    """Allow admin or enterprise owner access"""
-    if current_user.role == "admin":
-        return current_user
-    if hasattr(current_user, 'unified_role') and current_user.unified_role in ["enterprise_owner", "shop_owner", "super_admin"]:
+    """Allow admin or enterprise owner access - Updated for unified permissions"""
+    if UnifiedPermissions.can_manage_appointments(current_user):
         return current_user
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
-        detail="Admin or enterprise owner access required"
+        detail="Appointment management permission required"
     )
 from services import booking_service
 from services.appointment_enhancement import enhance_appointments_list
@@ -648,8 +647,8 @@ def cancel_appointment_alt(
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
-    # Check permissions
-    if (current_user.role not in ["admin", "super_admin"] and 
+    # Check permissions - Updated for unified role system
+    if (not UnifiedPermissions.can_manage_appointments(current_user) and 
         appointment.user_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized to cancel this appointment")
     

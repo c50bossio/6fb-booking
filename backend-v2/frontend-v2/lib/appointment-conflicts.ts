@@ -1,214 +1,371 @@
-/**
- * Advanced appointment conflict detection and resolution system
- * Handles scheduling conflicts, double-booking prevention, and smart resolution suggestions
- */
+'use client'
 
-import { parseAPIDate } from '@/lib/timezone'
-import { addMinutes, isWithinInterval, startOfDay, endOfDay } from 'date-fns'
+/**
+ * Appointment Conflict Detection System
+ * Identifies and resolves scheduling conflicts in the calendar
+ */
 
 export interface Appointment {
   id: number
+  service_name: string
+  client_name: string
+  appointment_date: string
   start_time: string
   end_time?: string
-  duration_minutes?: number
-  barber_id?: number
+  duration?: number
   barber_name?: string
-  client_name?: string
-  service_name: string
-  status: string
+  barber_id?: number
+  status?: string
 }
 
-export interface ConflictInfo {
-  type: 'overlap' | 'adjacent' | 'double_booking' | 'barber_unavailable'
-  severity: 'critical' | 'warning' | 'info'
-  conflictingAppointment: Appointment
-  overlapMinutes: number
-  message: string
+export interface ConflictDetails {
+  id: string
+  type: 'time_overlap' | 'double_booking' | 'barber_unavailable' | 'business_hours'
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  appointment1: Appointment
+  appointment2?: Appointment
+  conflictStart: Date
+  conflictEnd: Date
+  description: string
+  suggestions: ConflictResolution[]
 }
 
 export interface ConflictResolution {
-  type: 'reschedule' | 'adjust_duration' | 'change_barber' | 'split_appointment'
-  suggestedStartTime?: string
-  suggestedEndTime?: string
-  suggestedBarberId?: number
-  adjustedDuration?: number
-  message: string
-  confidence: number // 0-100, how confident we are this is a good solution
+  id: string
+  type: 'reschedule' | 'reassign_barber' | 'adjust_duration' | 'cancel'
+  description: string
+  newStartTime?: Date
+  newEndTime?: Date
+  newBarberId?: number
+  newDuration?: number
+  effort: 'low' | 'medium' | 'high'
+  impact: 'minimal' | 'moderate' | 'significant'
 }
 
-export interface ConflictAnalysis {
-  hasConflicts: boolean
-  conflicts: ConflictInfo[]
-  resolutions: ConflictResolution[]
-  riskScore: number // 0-100, overall scheduling risk
+export interface BusinessHours {
+  [key: string]: { // day of week (0-6)
+    isOpen: boolean
+    openTime: string // "09:00"
+    closeTime: string // "17:00"
+    breaks?: { start: string; end: string }[]
+  }
 }
 
-class AppointmentConflictManager {
-  private readonly BUFFER_TIME_MINUTES = 15 // Default buffer between appointments
-  private readonly WORKING_HOURS = { start: 8, end: 20 } // Default working hours
+export interface BarberAvailability {
+  barberId: number
+  name: string
+  workingHours: BusinessHours
+  timeOff: { start: Date; end: Date; reason: string }[]
+  maxConcurrentAppointments: number
+}
 
-  /**
-   * Analyze conflicts for a new or moved appointment
-   */
-  analyzeConflicts(
-    targetAppointment: Omit<Appointment, 'id'> & { id?: number },
-    existingAppointments: Appointment[],
-    options: {
-      bufferTime?: number
-      checkBarberAvailability?: boolean
-      workingHours?: { start: number; end: number }
-      allowAdjacent?: boolean
-    } = {}
-  ): ConflictAnalysis {
-    const {
-      bufferTime = this.BUFFER_TIME_MINUTES,
-      checkBarberAvailability = true,
-      workingHours = this.WORKING_HOURS,
-      allowAdjacent = false
-    } = options
+/**
+ * Main conflict detection class
+ */
+export class AppointmentConflictDetector {
+  private appointments: Appointment[]
+  private barberAvailability: BarberAvailability[]
+  private businessHours: BusinessHours
 
-    const conflicts: ConflictInfo[] = []
-    const resolutions: ConflictResolution[] = []
-
-    // Parse target appointment times
-    const targetStart = parseAPIDate(targetAppointment.start_time)
-    const targetEnd = this.getAppointmentEndTime(targetAppointment)
-
-    // Filter out the appointment being moved (if it's an update)
-    const relevantAppointments = existingAppointments.filter(
-      apt => apt.id !== targetAppointment.id
-    )
-
-    // Check for direct time conflicts
-    relevantAppointments.forEach(existing => {
-      const existingStart = parseAPIDate(existing.start_time)
-      const existingEnd = this.getAppointmentEndTime(existing)
-
-      // Skip if different barbers (unless checking overall availability)
-      if (checkBarberAvailability && 
-          targetAppointment.barber_id && 
-          existing.barber_id && 
-          targetAppointment.barber_id !== existing.barber_id) {
-        return
-      }
-
-      const conflict = this.detectTimeConflict(
-        { start: targetStart, end: targetEnd },
-        { start: existingStart, end: existingEnd },
-        existing,
-        bufferTime,
-        allowAdjacent
-      )
-
-      if (conflict) {
-        conflicts.push(conflict)
-      }
-    })
-
-    // Check working hours
-    const workingHoursConflict = this.checkWorkingHours(
-      targetStart,
-      targetEnd,
-      workingHours
-    )
-    if (workingHoursConflict) {
-      conflicts.push(workingHoursConflict)
-    }
-
-    // Generate resolution suggestions
-    if (conflicts.length > 0) {
-      const suggestedResolutions = this.generateResolutions(
-        targetAppointment,
-        relevantAppointments,
-        conflicts,
-        { bufferTime, workingHours }
-      )
-      resolutions.push(...suggestedResolutions)
-    }
-
-    const riskScore = this.calculateRiskScore(conflicts)
-
-    return {
-      hasConflicts: conflicts.length > 0,
-      conflicts,
-      resolutions: resolutions.sort((a, b) => b.confidence - a.confidence),
-      riskScore
-    }
+  constructor(
+    appointments: Appointment[],
+    barberAvailability: BarberAvailability[] = [],
+    businessHours: BusinessHours = this.getDefaultBusinessHours()
+  ) {
+    this.appointments = appointments
+    this.barberAvailability = barberAvailability
+    this.businessHours = businessHours
   }
 
   /**
-   * Find the next available time slot for an appointment
+   * Detect all conflicts in the current appointment set
    */
-  findNextAvailableSlot(
-    appointment: Omit<Appointment, 'id'>,
-    existingAppointments: Appointment[],
-    searchOptions: {
-      startAfter?: Date
-      searchDays?: number
-      preferredTimes?: { start: number; end: number }[]
-      bufferTime?: number
-    } = {}
-  ): { start: Date; end: Date; confidence: number } | null {
-    const {
-      startAfter = new Date(),
-      searchDays = 7,
-      preferredTimes = [{ start: 9, end: 17 }],
-      bufferTime = this.BUFFER_TIME_MINUTES
-    } = searchOptions
+  detectAllConflicts(): ConflictDetails[] {
+    const conflicts: ConflictDetails[] = []
 
-    const duration = appointment.duration_minutes || 60
-    const searchStart = startAfter > parseAPIDate(appointment.start_time) 
-      ? startAfter 
-      : parseAPIDate(appointment.start_time)
+    // Check each appointment against all others
+    for (let i = 0; i < this.appointments.length; i++) {
+      const apt1 = this.appointments[i]
+      
+      // Time overlap conflicts
+      for (let j = i + 1; j < this.appointments.length; j++) {
+        const apt2 = this.appointments[j]
+        const timeConflict = this.detectTimeOverlap(apt1, apt2)
+        if (timeConflict) {
+          conflicts.push(timeConflict)
+        }
+      }
 
-    // Search through each day
-    for (let dayOffset = 0; dayOffset < searchDays; dayOffset++) {
-      const searchDay = addMinutes(startOfDay(searchStart), dayOffset * 24 * 60)
+      // Business hours conflicts
+      const businessHoursConflict = this.detectBusinessHoursConflict(apt1)
+      if (businessHoursConflict) {
+        conflicts.push(businessHoursConflict)
+      }
 
-      for (const timeSlot of preferredTimes) {
-        const dayStart = new Date(searchDay)
-        dayStart.setHours(timeSlot.start, 0, 0, 0)
-        
-        const dayEnd = new Date(searchDay)
-        dayEnd.setHours(timeSlot.end, 0, 0, 0)
+      // Barber availability conflicts
+      const barberConflict = this.detectBarberAvailabilityConflict(apt1)
+      if (barberConflict) {
+        conflicts.push(barberConflict)
+      }
+    }
 
-        // Check 15-minute intervals throughout the day
-        for (let minutes = 0; minutes < (timeSlot.end - timeSlot.start) * 60; minutes += 15) {
-          const slotStart = addMinutes(dayStart, minutes)
-          const slotEnd = addMinutes(slotStart, duration + bufferTime)
+    return conflicts
+  }
 
-          if (slotEnd > dayEnd) break
+  /**
+   * Detect conflicts for a specific appointment
+   */
+  detectConflictsForAppointment(appointment: Appointment): ConflictDetails[] {
+    const conflicts: ConflictDetails[] = []
 
-          // Check if this slot conflicts with existing appointments
-          const hasConflict = existingAppointments.some(existing => {
-            if (appointment.barber_id && existing.barber_id && 
-                appointment.barber_id !== existing.barber_id) {
-              return false
-            }
+    // Check against all other appointments
+    this.appointments.forEach(other => {
+      if (other.id !== appointment.id) {
+        const conflict = this.detectTimeOverlap(appointment, other)
+        if (conflict) {
+          conflicts.push(conflict)
+        }
+      }
+    })
 
-            const existingStart = parseAPIDate(existing.start_time)
-            const existingEnd = this.getAppointmentEndTime(existing)
+    // Check business hours
+    const businessHoursConflict = this.detectBusinessHoursConflict(appointment)
+    if (businessHoursConflict) {
+      conflicts.push(businessHoursConflict)
+    }
 
-            return this.timeRangesOverlap(
-              { start: slotStart, end: slotEnd },
-              { start: existingStart, end: existingEnd }
-            )
-          })
+    // Check barber availability
+    const barberConflict = this.detectBarberAvailabilityConflict(appointment)
+    if (barberConflict) {
+      conflicts.push(barberConflict)
+    }
 
-          if (!hasConflict) {
-            const confidence = this.calculateSlotConfidence(
-              slotStart,
-              appointment,
-              existingAppointments
-            )
+    return conflicts
+  }
 
-            return {
-              start: slotStart,
-              end: addMinutes(slotStart, duration),
-              confidence
-            }
+  /**
+   * Check if a proposed time slot would create conflicts
+   */
+  wouldCreateConflict(
+    appointmentId: number,
+    newDate: Date,
+    newTime: string,
+    duration: number = 60
+  ): ConflictDetails[] {
+    const endTime = new Date(newDate)
+    endTime.setMinutes(endTime.getMinutes() + duration)
+
+    const proposedAppointment: Appointment = {
+      id: appointmentId,
+      service_name: 'Proposed',
+      client_name: 'Test',
+      appointment_date: newDate.toISOString(),
+      start_time: newDate.toISOString(),
+      end_time: endTime.toISOString(),
+      duration
+    }
+
+    return this.detectConflictsForAppointment(proposedAppointment)
+  }
+
+  /**
+   * Detect time overlap between two appointments
+   */
+  private detectTimeOverlap(apt1: Appointment, apt2: Appointment): ConflictDetails | null {
+    const start1 = new Date(apt1.start_time)
+    const end1 = this.getAppointmentEndTime(apt1)
+    const start2 = new Date(apt2.start_time)
+    const end2 = this.getAppointmentEndTime(apt2)
+
+    // Check if appointments are on the same date
+    if (start1.toDateString() !== start2.toDateString()) {
+      return null
+    }
+
+    // Check for time overlap
+    const hasOverlap = start1 < end2 && start2 < end1
+
+    if (hasOverlap) {
+      const conflictStart = new Date(Math.max(start1.getTime(), start2.getTime()))
+      const conflictEnd = new Date(Math.min(end1.getTime(), end2.getTime()))
+
+      // Check if same barber (if specified)
+      const sameBarber = apt1.barber_id && apt2.barber_id && apt1.barber_id === apt2.barber_id
+      const severity = sameBarber ? 'critical' : 'high'
+
+      return {
+        id: `overlap_${apt1.id}_${apt2.id}`,
+        type: 'time_overlap',
+        severity,
+        appointment1: apt1,
+        appointment2: apt2,
+        conflictStart,
+        conflictEnd,
+        description: `${apt1.service_name} and ${apt2.service_name} have overlapping times`,
+        suggestions: this.generateResolutionSuggestions(apt1, apt2, 'time_overlap')
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Detect business hours conflicts
+   */
+  private detectBusinessHoursConflict(appointment: Appointment): ConflictDetails | null {
+    const startTime = new Date(appointment.start_time)
+    const endTime = this.getAppointmentEndTime(appointment)
+    const dayOfWeek = startTime.getDay().toString()
+
+    const businessDay = this.businessHours[dayOfWeek]
+    if (!businessDay || !businessDay.isOpen) {
+      return {
+        id: `business_hours_${appointment.id}`,
+        type: 'business_hours',
+        severity: 'high',
+        appointment1: appointment,
+        conflictStart: startTime,
+        conflictEnd: endTime,
+        description: `${appointment.service_name} is scheduled outside business hours`,
+        suggestions: this.generateResolutionSuggestions(appointment, null, 'business_hours')
+      }
+    }
+
+    const openTime = this.parseTime(businessDay.openTime)
+    const closeTime = this.parseTime(businessDay.closeTime)
+    const aptStartTime = startTime.getHours() * 60 + startTime.getMinutes()
+    const aptEndTime = endTime.getHours() * 60 + endTime.getMinutes()
+
+    if (aptStartTime < openTime || aptEndTime > closeTime) {
+      return {
+        id: `business_hours_${appointment.id}`,
+        type: 'business_hours',
+        severity: 'high',
+        appointment1: appointment,
+        conflictStart: startTime,
+        conflictEnd: endTime,
+        description: `${appointment.service_name} extends outside business hours (${businessDay.openTime} - ${businessDay.closeTime})`,
+        suggestions: this.generateResolutionSuggestions(appointment, null, 'business_hours')
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Detect barber availability conflicts
+   */
+  private detectBarberAvailabilityConflict(appointment: Appointment): ConflictDetails | null {
+    if (!appointment.barber_id) return null
+
+    const barber = this.barberAvailability.find(b => b.barberId === appointment.barber_id)
+    if (!barber) return null
+
+    const startTime = new Date(appointment.start_time)
+    const endTime = this.getAppointmentEndTime(appointment)
+
+    // Check if barber has time off
+    const timeOffConflict = barber.timeOff.find(timeOff => 
+      startTime < timeOff.end && endTime > timeOff.start
+    )
+
+    if (timeOffConflict) {
+      return {
+        id: `barber_unavailable_${appointment.id}`,
+        type: 'barber_unavailable',
+        severity: 'critical',
+        appointment1: appointment,
+        conflictStart: startTime,
+        conflictEnd: endTime,
+        description: `${barber.name} is unavailable (${timeOffConflict.reason})`,
+        suggestions: this.generateResolutionSuggestions(appointment, null, 'barber_unavailable')
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Generate resolution suggestions for conflicts
+   */
+  private generateResolutionSuggestions(
+    apt1: Appointment,
+    apt2: Appointment | null,
+    conflictType: ConflictDetails['type']
+  ): ConflictResolution[] {
+    const suggestions: ConflictResolution[] = []
+
+    switch (conflictType) {
+      case 'time_overlap':
+        // Suggest rescheduling the later appointment
+        if (apt2) {
+          const laterApt = new Date(apt1.start_time) > new Date(apt2.start_time) ? apt1 : apt2
+          const suggestedTime = this.findNextAvailableSlot(laterApt)
+          
+          if (suggestedTime) {
+            suggestions.push({
+              id: `reschedule_${laterApt.id}`,
+              type: 'reschedule',
+              description: `Reschedule ${laterApt.service_name} to ${suggestedTime.toLocaleTimeString()}`,
+              newStartTime: suggestedTime,
+              effort: 'low',
+              impact: 'minimal'
+            })
           }
         }
+        break
+
+      case 'business_hours':
+        const suggestedBusinessTime = this.findNextAvailableBusinessSlot(apt1)
+        if (suggestedBusinessTime) {
+          suggestions.push({
+            id: `reschedule_business_${apt1.id}`,
+            type: 'reschedule',
+            description: `Reschedule to ${suggestedBusinessTime.toLocaleTimeString()} during business hours`,
+            newStartTime: suggestedBusinessTime,
+            effort: 'low',
+            impact: 'minimal'
+          })
+        }
+        break
+
+      case 'barber_unavailable':
+        // Suggest reassigning to another barber
+        const availableBarber = this.findAvailableBarber(apt1)
+        if (availableBarber) {
+          suggestions.push({
+            id: `reassign_${apt1.id}`,
+            type: 'reassign_barber',
+            description: `Reassign to ${availableBarber.name}`,
+            newBarberId: availableBarber.barberId,
+            effort: 'low',
+            impact: 'minimal'
+          })
+        }
+        break
+    }
+
+    return suggestions
+  }
+
+  /**
+   * Find next available time slot
+   */
+  private findNextAvailableSlot(appointment: Appointment): Date | null {
+    const startTime = new Date(appointment.start_time)
+    const duration = appointment.duration || 60
+    
+    // Start searching from 30 minutes after the original time
+    const searchStart = new Date(startTime)
+    searchStart.setMinutes(searchStart.getMinutes() + 30)
+
+    // Search for the next 24 hours
+    for (let minutes = 0; minutes < 24 * 60; minutes += 30) {
+      const candidateTime = new Date(searchStart)
+      candidateTime.setMinutes(candidateTime.getMinutes() + minutes)
+
+      if (this.isTimeSlotAvailable(candidateTime, duration, appointment.id)) {
+        return candidateTime
       }
     }
 
@@ -216,282 +373,138 @@ class AppointmentConflictManager {
   }
 
   /**
-   * Get suggestions for resolving scheduling conflicts
+   * Find next available slot during business hours
    */
-  getConflictResolutionSuggestions(
-    analysis: ConflictAnalysis,
-    appointment: Omit<Appointment, 'id'>,
-    existingAppointments: Appointment[],
-    availableBarbers: { id: number; name: string }[] = []
-  ): ConflictResolution[] {
-    const resolutions: ConflictResolution[] = []
+  private findNextAvailableBusinessSlot(appointment: Appointment): Date | null {
+    const startTime = new Date(appointment.start_time)
+    const duration = appointment.duration || 60
 
-    // Suggestion 1: Reschedule to next available slot
-    const nextSlot = this.findNextAvailableSlot(appointment, existingAppointments)
-    if (nextSlot) {
-      resolutions.push({
-        type: 'reschedule',
-        suggestedStartTime: nextSlot.start.toISOString(),
-        suggestedEndTime: nextSlot.end.toISOString(),
-        message: `Move to ${nextSlot.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-        confidence: nextSlot.confidence
-      })
-    }
-
-    // Suggestion 2: Assign different barber
-    if (availableBarbers.length > 1 && appointment.barber_id) {
-      const alternativeBarbers = availableBarbers.filter(b => b.id !== appointment.barber_id)
+    // Search for the next 7 days
+    for (let day = 0; day < 7; day++) {
+      const candidateDate = new Date(startTime)
+      candidateDate.setDate(candidateDate.getDate() + day)
       
-      for (const barber of alternativeBarbers) {
-        const testAppointment = { ...appointment, barber_id: barber.id }
-        const testAnalysis = this.analyzeConflicts(testAppointment, existingAppointments)
-        
-        if (!testAnalysis.hasConflicts) {
-          resolutions.push({
-            type: 'change_barber',
-            suggestedBarberId: barber.id,
-            message: `Assign to ${barber.name}`,
-            confidence: 85
-          })
-          break
+      const dayOfWeek = candidateDate.getDay().toString()
+      const businessDay = this.businessHours[dayOfWeek]
+      
+      if (!businessDay || !businessDay.isOpen) continue
+
+      const openTime = this.parseTime(businessDay.openTime)
+      const closeTime = this.parseTime(businessDay.closeTime)
+
+      // Search within business hours
+      for (let minutes = openTime; minutes <= closeTime - duration; minutes += 30) {
+        const candidateTime = new Date(candidateDate)
+        candidateTime.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0)
+
+        if (this.isTimeSlotAvailable(candidateTime, duration, appointment.id)) {
+          return candidateTime
         }
       }
     }
 
-    // Suggestion 3: Adjust appointment duration
-    if (appointment.duration_minutes && appointment.duration_minutes > 30) {
-      const shorterDuration = Math.max(30, appointment.duration_minutes - 15)
-      const testAppointment = { ...appointment, duration_minutes: shorterDuration }
-      const testAnalysis = this.analyzeConflicts(testAppointment, existingAppointments)
-      
-      if (testAnalysis.conflicts.length < analysis.conflicts.length) {
-        resolutions.push({
-          type: 'adjust_duration',
-          adjustedDuration: shorterDuration,
-          message: `Reduce to ${shorterDuration} minutes`,
-          confidence: 70
-        })
-      }
-    }
-
-    return resolutions.sort((a, b) => b.confidence - a.confidence)
+    return null
   }
 
-  private getAppointmentEndTime(appointment: Omit<Appointment, 'id'>): Date {
+  /**
+   * Find available barber for appointment
+   */
+  private findAvailableBarber(appointment: Appointment): BarberAvailability | null {
+    const startTime = new Date(appointment.start_time)
+    const endTime = this.getAppointmentEndTime(appointment)
+
+    return this.barberAvailability.find(barber => {
+      // Skip current barber
+      if (barber.barberId === appointment.barber_id) return false
+
+      // Check if barber has time off
+      const hasTimeOff = barber.timeOff.some(timeOff =>
+        startTime < timeOff.end && endTime > timeOff.start
+      )
+
+      return !hasTimeOff
+    }) || null
+  }
+
+  /**
+   * Check if a time slot is available
+   */
+  private isTimeSlotAvailable(startTime: Date, duration: number, excludeAppointmentId?: number): boolean {
+    const endTime = new Date(startTime)
+    endTime.setMinutes(endTime.getMinutes() + duration)
+
+    return !this.appointments.some(apt => {
+      if (excludeAppointmentId && apt.id === excludeAppointmentId) return false
+
+      const aptStart = new Date(apt.start_time)
+      const aptEnd = this.getAppointmentEndTime(apt)
+
+      return startTime < aptEnd && endTime > aptStart
+    })
+  }
+
+  /**
+   * Get appointment end time
+   */
+  private getAppointmentEndTime(appointment: Appointment): Date {
     if (appointment.end_time) {
-      return parseAPIDate(appointment.end_time)
+      return new Date(appointment.end_time)
     }
+
+    const startTime = new Date(appointment.start_time)
+    const duration = appointment.duration || 60 // Default 1 hour
+    const endTime = new Date(startTime)
+    endTime.setMinutes(endTime.getMinutes() + duration)
     
-    const start = parseAPIDate(appointment.start_time)
-    const duration = appointment.duration_minutes || 60
-    return addMinutes(start, duration)
+    return endTime
   }
 
-  private detectTimeConflict(
-    target: { start: Date; end: Date },
-    existing: { start: Date; end: Date },
-    existingAppointment: Appointment,
-    bufferTime: number,
-    allowAdjacent: boolean
-  ): ConflictInfo | null {
-    // Add buffer time to check for adequate spacing
-    const targetWithBuffer = {
-      start: addMinutes(target.start, -bufferTime),
-      end: addMinutes(target.end, bufferTime)
+  /**
+   * Parse time string to minutes
+   */
+  private parseTime(timeStr: string): number {
+    const [hours, minutes] = timeStr.split(':').map(Number)
+    return hours * 60 + minutes
+  }
+
+  /**
+   * Get default business hours
+   */
+  private getDefaultBusinessHours(): BusinessHours {
+    return {
+      '0': { isOpen: false, openTime: '09:00', closeTime: '17:00' }, // Sunday
+      '1': { isOpen: true, openTime: '09:00', closeTime: '17:00' },  // Monday
+      '2': { isOpen: true, openTime: '09:00', closeTime: '17:00' },  // Tuesday
+      '3': { isOpen: true, openTime: '09:00', closeTime: '17:00' },  // Wednesday
+      '4': { isOpen: true, openTime: '09:00', closeTime: '17:00' },  // Thursday
+      '5': { isOpen: true, openTime: '09:00', closeTime: '18:00' },  // Friday
+      '6': { isOpen: true, openTime: '09:00', closeTime: '16:00' }   // Saturday
     }
-
-    if (this.timeRangesOverlap(targetWithBuffer, existing)) {
-      const overlapMinutes = this.calculateOverlapMinutes(target, existing)
-      
-      let type: ConflictInfo['type'] = 'overlap'
-      let severity: ConflictInfo['severity'] = 'warning'
-      let message = `Overlaps with ${existingAppointment.client_name || 'appointment'}`
-
-      // Exact time conflict (same start/end)
-      if (target.start.getTime() === existing.start.getTime() && 
-          target.end.getTime() === existing.end.getTime()) {
-        type = 'double_booking'
-        severity = 'critical'
-        message = `Double booking with ${existingAppointment.client_name || 'appointment'}`
-      }
-      // Adjacent appointments without buffer
-      else if (overlapMinutes === 0 && !allowAdjacent) {
-        type = 'adjacent'
-        severity = 'info'
-        message = `Back-to-back with ${existingAppointment.client_name || 'appointment'} (no buffer time)`
-      }
-      // Significant overlap
-      else if (overlapMinutes > bufferTime) {
-        severity = 'critical'
-        message = `${overlapMinutes}min overlap with ${existingAppointment.client_name || 'appointment'}`
-      }
-
-      return {
-        type,
-        severity,
-        conflictingAppointment: existingAppointment,
-        overlapMinutes,
-        message
-      }
-    }
-
-    return null
-  }
-
-  private checkWorkingHours(
-    start: Date,
-    end: Date,
-    workingHours: { start: number; end: number }
-  ): ConflictInfo | null {
-    const startHour = start.getHours()
-    const endHour = end.getHours()
-
-    if (startHour < workingHours.start || endHour > workingHours.end) {
-      return {
-        type: 'barber_unavailable',
-        severity: 'warning',
-        conflictingAppointment: {} as Appointment, // Placeholder
-        overlapMinutes: 0,
-        message: `Outside working hours (${workingHours.start}:00 - ${workingHours.end}:00)`
-      }
-    }
-
-    return null
-  }
-
-  private timeRangesOverlap(
-    range1: { start: Date; end: Date },
-    range2: { start: Date; end: Date }
-  ): boolean {
-    return range1.start < range2.end && range1.end > range2.start
-  }
-
-  private calculateOverlapMinutes(
-    range1: { start: Date; end: Date },
-    range2: { start: Date; end: Date }
-  ): number {
-    const overlapStart = new Date(Math.max(range1.start.getTime(), range2.start.getTime()))
-    const overlapEnd = new Date(Math.min(range1.end.getTime(), range2.end.getTime()))
-    
-    if (overlapStart >= overlapEnd) return 0
-    
-    return Math.round((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60))
-  }
-
-  private generateResolutions(
-    appointment: Omit<Appointment, 'id'>,
-    existingAppointments: Appointment[],
-    conflicts: ConflictInfo[],
-    options: { bufferTime: number; workingHours: { start: number; end: number } }
-  ): ConflictResolution[] {
-    const resolutions: ConflictResolution[] = []
-
-    // Find next available slot
-    const nextSlot = this.findNextAvailableSlot(appointment, existingAppointments)
-    if (nextSlot) {
-      resolutions.push({
-        type: 'reschedule',
-        suggestedStartTime: nextSlot.start.toISOString(),
-        suggestedEndTime: nextSlot.end.toISOString(),
-        message: `Reschedule to ${nextSlot.start.toLocaleString()}`,
-        confidence: nextSlot.confidence
-      })
-    }
-
-    return resolutions
-  }
-
-  private calculateRiskScore(conflicts: ConflictInfo[]): number {
-    if (conflicts.length === 0) return 0
-
-    let score = 0
-    conflicts.forEach(conflict => {
-      switch (conflict.severity) {
-        case 'critical':
-          score += 40
-          break
-        case 'warning':
-          score += 20
-          break
-        case 'info':
-          score += 10
-          break
-      }
-    })
-
-    return Math.min(100, score)
-  }
-
-  private calculateSlotConfidence(
-    slotStart: Date,
-    appointment: Omit<Appointment, 'id'>,
-    existingAppointments: Appointment[]
-  ): number {
-    let confidence = 100
-
-    // Prefer morning slots (9-12)
-    const hour = slotStart.getHours()
-    if (hour >= 9 && hour <= 12) {
-      confidence += 10
-    } else if (hour >= 13 && hour <= 16) {
-      // Afternoon is neutral
-    } else {
-      confidence -= 20
-    }
-
-    // Check nearby appointments for spacing
-    const nearbyAppointments = existingAppointments.filter(apt => {
-      const aptStart = parseAPIDate(apt.start_time)
-      const timeDiff = Math.abs(aptStart.getTime() - slotStart.getTime())
-      return timeDiff < 2 * 60 * 60 * 1000 // Within 2 hours
-    })
-
-    confidence -= nearbyAppointments.length * 5
-
-    return Math.max(0, Math.min(100, confidence))
   }
 }
 
-// Export singleton instance
-export const conflictManager = new AppointmentConflictManager()
+/**
+ * Hook for using conflict detection in React components
+ */
+export function useConflictDetection(
+  appointments: Appointment[],
+  barberAvailability?: BarberAvailability[],
+  businessHours?: BusinessHours
+) {
+  const detector = new AppointmentConflictDetector(appointments, barberAvailability, businessHours)
 
-// Utility functions for common conflict scenarios
-export const ConflictUtils = {
-  /**
-   * Quick check if appointment can be scheduled without conflicts
-   */
-  canSchedule(
-    appointment: Omit<Appointment, 'id'>,
-    existingAppointments: Appointment[]
-  ): boolean {
-    const analysis = conflictManager.analyzeConflicts(appointment, existingAppointments)
-    return !analysis.hasConflicts || analysis.riskScore < 30
-  },
+  const detectAllConflicts = () => detector.detectAllConflicts()
+  
+  const detectConflictsForAppointment = (appointment: Appointment) => 
+    detector.detectConflictsForAppointment(appointment)
+  
+  const wouldCreateConflict = (appointmentId: number, newDate: Date, newTime: string, duration?: number) =>
+    detector.wouldCreateConflict(appointmentId, newDate, newTime, duration)
 
-  /**
-   * Get human-readable conflict summary
-   */
-  getConflictSummary(analysis: ConflictAnalysis): string {
-    if (!analysis.hasConflicts) {
-      return 'No conflicts detected'
-    }
-
-    const criticalCount = analysis.conflicts.filter(c => c.severity === 'critical').length
-    const warningCount = analysis.conflicts.filter(c => c.severity === 'warning').length
-
-    if (criticalCount > 0) {
-      return `${criticalCount} critical conflict${criticalCount > 1 ? 's' : ''} found`
-    } else if (warningCount > 0) {
-      return `${warningCount} scheduling warning${warningCount > 1 ? 's' : ''}`
-    }
-
-    return 'Minor scheduling issues detected'
-  },
-
-  /**
-   * Get best resolution recommendation
-   */
-  getBestResolution(analysis: ConflictAnalysis): ConflictResolution | null {
-    return analysis.resolutions.length > 0 ? analysis.resolutions[0] : null
+  return {
+    detectAllConflicts,
+    detectConflictsForAppointment,
+    wouldCreateConflict,
+    detector
   }
 }

@@ -38,11 +38,9 @@ from utils.auth import get_current_user
 from utils.rate_limit import limiter
 from sqlalchemy import func
 
-
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 review_service = ReviewService()
 gmb_service = GMBService()
-
 
 # Review endpoints
 @router.get("", response_model=dict)
@@ -106,7 +104,6 @@ async def get_reviews(
             detail=f"Failed to get reviews: {str(e)}"
         )
 
-
 # Analytics endpoints (MUST BE BEFORE /{review_id})
 @router.get("/analytics", response_model=ReviewAnalytics)
 @limiter.limit("20/minute")
@@ -136,7 +133,6 @@ async def get_review_analytics(
             detail=f"Failed to get analytics: {str(e)}"
         )
 
-
 # Template endpoints (MUST BE BEFORE /{review_id})
 @router.get("/templates", response_model=List[ReviewTemplateSchema])
 @limiter.limit("30/minute")
@@ -162,7 +158,6 @@ async def get_review_templates(
     
     return [ReviewTemplateSchema.from_orm(template) for template in templates]
 
-
 # Auto-response endpoints (MUST BE BEFORE /{review_id})
 @router.get("/auto-response/stats", response_model=AutoResponseStats)
 @limiter.limit("20/minute")
@@ -187,7 +182,6 @@ async def get_auto_response_stats(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get auto-response stats: {str(e)}"
         )
-
 
 # GMB endpoints (MUST BE BEFORE /{review_id})
 @router.get("/gmb/locations", response_model=List[dict])
@@ -224,7 +218,6 @@ async def get_gmb_locations(
             detail=f"Failed to get GMB locations: {str(e)}"
         )
 
-
 # NOW we can have the generic /{review_id} route
 @router.get("/{review_id}", response_model=ReviewResponseSchema)
 @limiter.limit("60/minute")
@@ -247,7 +240,6 @@ async def get_review(
         )
     
     return ReviewResponseSchema.from_orm(review)
-
 
 # Rest of the routes remain the same...
 @router.post("/{review_id}/respond", response_model=ReviewResponseDisplaySchema)
@@ -284,7 +276,6 @@ async def create_review_response(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create response: {str(e)}"
         )
-
 
 @router.put("/responses/{response_id}", response_model=ReviewResponseDisplaySchema)
 @limiter.limit("20/minute")
@@ -326,7 +317,6 @@ async def update_review_response(
     
     return ReviewResponseDisplaySchema.from_orm(response)
 
-
 @router.post("/responses/{response_id}/send", response_model=dict)
 @limiter.limit("10/minute")
 async def send_review_response(
@@ -361,7 +351,6 @@ async def send_review_response(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to send response: {str(e)}"
         )
-
 
 # Sync endpoints
 @router.post("/sync", response_model=ReviewSyncResponse)
@@ -450,7 +439,6 @@ async def sync_reviews(
             detail=f"Failed to sync reviews: {str(e)}"
         )
 
-
 @router.post("/templates", response_model=ReviewTemplateSchema)
 @limiter.limit("10/minute")
 async def create_review_template(
@@ -478,7 +466,6 @@ async def create_review_template(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create template: {str(e)}"
         )
-
 
 @router.put("/templates/{template_id}", response_model=ReviewTemplateSchema)
 @limiter.limit("20/minute")
@@ -511,7 +498,6 @@ async def update_review_template(
     
     return ReviewTemplateSchema.from_orm(template)
 
-
 @router.delete("/templates/{template_id}", response_model=dict)
 @limiter.limit("20/minute")
 async def delete_review_template(
@@ -536,7 +522,6 @@ async def delete_review_template(
     db.commit()
     
     return {"success": True, "message": "Template deleted successfully"}
-
 
 @router.post("/templates/{template_id}/generate", response_model=ReviewTemplateGenerateResponse)
 @limiter.limit("20/minute")
@@ -602,7 +587,6 @@ async def generate_response_from_template(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate response: {str(e)}"
         )
-
 
 # Bulk operations
 @router.post("/bulk/respond", response_model=BulkResponseResponse)
@@ -723,7 +707,6 @@ async def bulk_generate_responses(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate bulk responses: {str(e)}"
         )
-
 
 # GMB Integration endpoints
 @router.post("/gmb/auth", response_model=GMBAuthResponse)

@@ -1,0 +1,372 @@
+# Business Impact Alert Rules for BookedBarber
+# Revenue-aware alerting with Six Figure Barber methodology integration
+# Prioritizes alerts based on business impact rather than just technical severity
+
+groups:
+  - name: business_impact_critical
+    interval: 30s
+    rules:
+      # High Revenue Impact Alerts
+      - alert: CriticalRevenueImpact
+        expr: business:revenue_impact_rate > 500
+        for: 1m
+        labels:
+          severity: critical
+          priority: p0
+          business_impact: high
+          stakeholder_level: executive
+        annotations:
+          summary: "Critical revenue impact detected"
+          description: "Revenue loss rate is ${{ $value }}/minute (>$500/min threshold)"
+          business_impact: "Direct revenue loss affecting business operations"
+          stakeholder_action: "Immediate executive notification and all-hands response"
+          recovery_target: "2 minutes"
+          runbook_url: "https://docs.bookedbarber.com/runbooks/critical-revenue-impact"
+
+      - alert: BookingSystemRevenueFailure
+        expr: |
+          (rate(booking_failure_total[5m]) / rate(booking_total[5m])) > 0.25
+          and
+          business:revenue_impact_rate > 200
+        for: 2m
+        labels:
+          severity: critical
+          priority: p0
+          business_impact: high
+          sixfb_principle: revenue_optimization
+        annotations:
+          summary: "Booking system failures causing significant revenue loss"
+          description: "{{ $value | humanizePercentage }} booking failure rate with ${{ query \"business:revenue_impact_rate\" | first | value }}/min revenue impact"
+          business_context: "Peak booking periods affected, direct customer acquisition impact"
+          mitigation_priority: "restore_booking_system_immediately"
+
+      - alert: PaymentSystemBusinessFailure
+        expr: |
+          circuit_breaker_state{service="stripe"} == 1
+          and
+          peak_hours_status == 1
+        for: 30s
+        labels:
+          severity: critical
+          priority: p0
+          business_impact: critical
+          sixfb_principle: revenue_optimization
+        annotations:
+          summary: "Payment system failure during peak business hours"
+          description: "Stripe circuit breaker open during peak hours - all payment processing halted"
+          business_impact: "100% payment processing unavailable during highest revenue period"
+          immediate_action: "Enable backup payment processing and notify affected clients"
+          estimated_loss: "${{ query \"avg_over_time(hourly_revenue_rate[1h])\" | first | value }}/hour"
+
+  - name: business_impact_high
+    interval: 60s
+    rules:
+      # Six Figure Barber Principle Violations
+      - alert: SixFBPrincipleImpact_RevenueOptimization
+        expr: sixfb:revenue_optimization_health < 70
+        for: 3m
+        labels:
+          severity: high
+          priority: p1
+          business_impact: medium
+          sixfb_principle: revenue_optimization
+        annotations:
+          summary: "Six Figure Barber revenue optimization principle compromised"
+          description: "Revenue optimization health score: {{ $value }}% (<70% threshold)"
+          business_context: "Core revenue generation systems underperforming"
+          coaching_insight: "Review pricing strategy, booking efficiency, and upselling systems"
+          methodology_impact: "Barber revenue potential reduced by estimated {{ 100 | minus $value }}%"
+
+      - alert: SixFBPrincipleImpact_ClientValue
+        expr: sixfb:client_value_creation_health < 75
+        for: 5m
+        labels:
+          severity: high
+          priority: p1
+          business_impact: medium
+          sixfb_principle: client_value_creation
+        annotations:
+          summary: "Client value creation systems degraded"
+          description: "Client value creation health: {{ $value }}% (<75% threshold)"
+          business_impact: "Client retention and satisfaction at risk"
+          long_term_risk: "Potential client churn and reduced lifetime value"
+          recovery_actions: "Prioritize client communication and service excellence systems"
+
+      # Peak Hours Business Risk
+      - alert: PeakHoursSystemDegradation
+        expr: |
+          peak_hours_status == 1
+          and
+          business_hours:performance_degradation < 80
+        for: 2m
+        labels:
+          severity: high
+          priority: p1
+          business_impact: high
+          business_context: peak_hours
+        annotations:
+          summary: "System performance degraded during peak business hours"
+          description: "Performance score {{ $value }}% during peak hours (<80% threshold)"
+          business_impact: "Revenue opportunities at risk during highest-value period"
+          opportunity_cost: "Estimated ${{ query \"correlation:performance_revenue_impact\" | first | value }}/hour lost"
+          immediate_action: "Scale resources and defer non-critical operations"
+
+      # High-Value Period Alerts
+      - alert: HighValuePeriodSystemIssues
+        expr: |
+          high_value_period_status == 1
+          and
+          (
+            booking_system_health < 90
+            or
+            payment_system_health < 95
+          )
+        for: 1m
+        labels:
+          severity: high
+          priority: p1
+          business_impact: high
+          business_context: high_value_period
+        annotations:
+          summary: "Critical systems degraded during high-value business period"
+          description: "System health compromised during holiday/special event period"
+          business_impact: "Premium pricing and high-volume booking opportunities at risk"
+          stakeholder_notification: "Business operations and executive teams"
+          recovery_urgency: "Maximum - high-revenue period protection required"
+
+  - name: customer_experience_business
+    interval: 45s
+    rules:
+      # Customer Experience with Business Impact
+      - alert: CustomerExperienceDegradation
+        expr: customer_experience:abandonment_impact > 30
+        for: 3m
+        labels:
+          severity: warning
+          priority: p2
+          business_impact: medium
+          experience_type: user_journey
+        annotations:
+          summary: "Customer experience degradation affecting conversions"
+          description: "Abandonment rate increased by {{ $value }}% (>30% threshold)"
+          business_impact: "Conversion funnel compromised, potential client acquisition loss"
+          cx_analysis: "Check mobile experience, page load times, and booking flow"
+          revenue_correlation: "Estimated {{ query \"correlation:latency_conversion_impact\" | first | value }} bookings/hour at risk"
+
+      # Mobile Experience Business Impact
+      - alert: MobileExperienceBusinessImpact
+        expr: |
+          mobile_experience_performance < 70
+          and
+          rate(mobile_booking_attempts[5m]) > 0.3
+        for: 4m
+        labels:
+          severity: warning
+          priority: p2
+          business_impact: medium
+          device_type: mobile
+        annotations:
+          summary: "Mobile experience degradation during active booking period"
+          description: "Mobile performance {{ $value }}% with {{ query \"rate(mobile_booking_attempts[5m])\" | first | value }} bookings/minute"
+          business_context: "Mobile users represent 60%+ of bookings"
+          client_demographic: "Younger clients predominantly affected"
+          action_required: "Optimize mobile booking flow and performance"
+
+      # Booking Conversion Impact
+      - alert: BookingConversionDrop
+        expr: |
+          (
+            rate(booking_success_total[5m]) / 
+            rate(booking_attempts_total[5m])
+          ) < 0.85
+          and
+          rate(booking_attempts_total[5m]) > 0.5
+        for: 3m
+        labels:
+          severity: warning
+          priority: p2
+          business_impact: medium
+          conversion_type: booking
+        annotations:
+          summary: "Booking conversion rate below business threshold"
+          description: "Conversion rate: {{ $value | humanizePercentage }} (<85% threshold)"
+          business_impact: "Client acquisition efficiency compromised"
+          lost_opportunities: "{{ query \"(1 - ($value)) * rate(booking_attempts_total[5m]) * 60\" | first | value }} potential bookings/hour"
+          investigation_focus: "Booking form UX, payment flow, technical errors"
+
+  - name: business_operational_alerts
+    interval: 120s
+    rules:
+      # Business Continuity Monitoring
+      - alert: BusinessContinuityRisk
+        expr: |
+          sum(circuit_breaker_state{state="open"}) > 2
+          and
+          correlation:circuit_breaker_business_impact > 100
+        for: 5m
+        labels:
+          severity: warning
+          priority: p2
+          business_impact: medium
+          operational_type: continuity
+        annotations:
+          summary: "Multiple system dependencies compromised"
+          description: "{{ $value }} circuit breakers open with ${{ query \"correlation:circuit_breaker_business_impact\" | first | value }}/hour impact"
+          business_risk: "Service degradation affecting multiple business functions"
+          continuity_plan: "Activate backup systems and manual procedures"
+          escalation_path: "Business operations team after 15 minutes"
+
+      # Service Level Agreement Risk
+      - alert: SLABusinessRisk
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.01
+          and
+          business:revenue_impact_rate > 50
+        for: 10m
+        labels:
+          severity: warning
+          priority: p2
+          business_impact: low
+          sla_type: availability
+        annotations:
+          summary: "SLA breach risk with business impact"
+          description: "Error rate {{ $value | humanizePercentage }} with ${{ query \"business:revenue_impact_rate\" | first | value }}/min impact"
+          sla_impact: "99.99% uptime target at risk"
+          business_consequence: "Potential SLA penalties and client confidence impact"
+          trend_analysis: "Monitor for sustained degradation over 30-minute window"
+
+  - name: stakeholder_escalation
+    interval: 300s  # 5 minutes
+    rules:
+      # Executive Escalation Triggers
+      - alert: ExecutiveEscalationRequired
+        expr: alert:stakeholder_notification_level >= 4
+        for: 0s  # Immediate
+        labels:
+          severity: critical
+          priority: p0
+          stakeholder_level: executive
+          escalation_type: immediate
+        annotations:
+          summary: "Executive escalation required - high business impact incident"
+          description: "Stakeholder notification level {{ $value }} (>=4 requires executive involvement)"
+          business_impact: "Revenue impact: ${{ query \"business:revenue_impact_rate\" | first | value }}/minute"
+          escalation_actions: |
+            1. Notify CEO/CTO immediately
+            2. Activate incident command center
+            3. Prepare business impact assessment
+            4. Consider external communication plan
+          recovery_coordination: "Executive incident commander required"
+
+      # Business Operations Escalation
+      - alert: BusinessOperationsEscalation
+        expr: |
+          alert:stakeholder_notification_level >= 3
+          and
+          alert:stakeholder_notification_level < 4
+        for: 2m
+        labels:
+          severity: high
+          priority: p1
+          stakeholder_level: business_ops
+          escalation_type: standard
+        annotations:
+          summary: "Business operations escalation - moderate business impact"
+          description: "Business impact level {{ $value }} requires operations team involvement"
+          ops_actions: |
+            1. Assess customer communication needs
+            2. Review business process continuity
+            3. Coordinate with customer success team
+            4. Monitor revenue impact trends
+          communication_plan: "Prepare client-facing status updates if needed"
+
+  - name: recovery_urgency_scoring
+    interval: 60s
+    rules:
+      # High Recovery Urgency
+      - alert: HighRecoveryUrgency
+        expr: alert:recovery_urgency_score > 80
+        for: 1m
+        labels:
+          severity: high
+          priority: p1
+          recovery_urgency: high
+          automation_trigger: enabled
+        annotations:
+          summary: "High recovery urgency - automated recovery recommended"
+          description: "Recovery urgency score: {{ $value }}/100 (>80 threshold)"
+          recovery_actions: |
+            1. Trigger automated recovery procedures
+            2. Scale resources immediately
+            3. Activate circuit breaker resets
+            4. Enable degraded mode operations
+          business_justification: "High business impact justifies aggressive recovery measures"
+          automation_safety: "Pre-approved for automated intervention"
+
+      # Medium Recovery Urgency
+      - alert: MediumRecoveryUrgency
+        expr: |
+          alert:recovery_urgency_score > 60
+          and
+          alert:recovery_urgency_score <= 80
+        for: 3m
+        labels:
+          severity: warning
+          priority: p2
+          recovery_urgency: medium
+          automation_trigger: conditional
+        annotations:
+          summary: "Medium recovery urgency - manual intervention recommended"
+          description: "Recovery urgency score: {{ $value }}/100 (60-80 range)"
+          recovery_approach: "Manual assessment with automated assistance"
+          decision_timeline: "Technical lead approval required within 5 minutes"
+          escalation_path: "Auto-escalate if not acknowledged in 10 minutes"
+
+  - name: methodology_alignment_monitoring
+    interval: 300s  # 5 minutes
+    rules:
+      # Overall Six Figure Barber Methodology Health
+      - alert: SixFBMethodologyDegradation
+        expr: sixfb:overall_methodology_score < 70
+        for: 10m
+        labels:
+          severity: warning
+          priority: p3
+          methodology_impact: overall
+          coaching_required: true
+        annotations:
+          summary: "Six Figure Barber methodology alignment degraded"
+          description: "Overall methodology score: {{ $value }}% (<70% threshold)"
+          principle_breakdown: |
+            Revenue Optimization: {{ query "sixfb:revenue_optimization_health" | first | value }}%
+            Client Value Creation: {{ query "sixfb:client_value_creation_health" | first | value }}%
+            Service Excellence: {{ query "sixfb:service_excellence_health" | first | value }}%
+            Business Efficiency: {{ query "sixfb:business_efficiency_health" | first | value }}%
+            Professional Growth: {{ query "sixfb:professional_growth_health" | first | value }}%
+          coaching_focus: "Systems supporting underperforming principles need attention"
+          business_development: "May impact barber success metrics and program effectiveness"
+
+      # Methodology Principle Critical Failure
+      - alert: SixFBPrincipleCriticalFailure
+        expr: |
+          (
+            sixfb:revenue_optimization_health < 50
+            or
+            sixfb:client_value_creation_health < 50
+          )
+        for: 5m
+        labels:
+          severity: high
+          priority: p1
+          methodology_impact: principle_failure
+          coaching_required: true
+        annotations:
+          summary: "Critical Six Figure Barber principle failure"
+          description: "Core principle health below 50% - immediate intervention required"
+          business_impact: "Barber success methodology fundamentally compromised"
+          coaching_escalation: "Master coach notification required"
+          system_review: "Technical systems supporting failed principle need immediate review"
+          success_risk: "Barber revenue goals and client satisfaction at severe risk"

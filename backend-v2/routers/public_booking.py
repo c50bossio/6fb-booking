@@ -41,7 +41,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-
 class PublicOrganizationData(BaseModel):
     """Public organization data for booking pages"""
     id: int
@@ -60,7 +59,6 @@ class PublicOrganizationData(BaseModel):
     business_hours: Optional[Dict[str, Any]] = None
     tracking_pixels: Optional[PublicTrackingPixels] = None
 
-
 class BookingPageSettings(BaseModel):
     """Custom booking page settings"""
     welcome_message: Optional[str] = None
@@ -69,7 +67,6 @@ class BookingPageSettings(BaseModel):
     show_urgency_timer: bool = True
     custom_services: Optional[list] = None
     custom_colors: Optional[Dict[str, str]] = None
-
 
 @router.get("/organization/{slug}", response_model=PublicOrganizationData)
 async def get_organization_by_slug(
@@ -144,7 +141,6 @@ async def get_organization_by_slug(
         tracking_pixels=tracking_pixels
     )
 
-
 @router.get("/organization/{slug}/settings", response_model=BookingPageSettings)
 async def get_booking_page_settings(
     slug: str,
@@ -177,7 +173,6 @@ async def get_booking_page_settings(
         custom_services=None,
         custom_colors=None
     )
-
 
 @router.get("/organization/{slug}/availability", response_model=PublicAvailabilityResponse)
 @guest_booking_rate_limit
@@ -228,7 +223,6 @@ async def get_organization_availability(
     )
     
     return availability
-
 
 @router.post("/organization/{slug}/book", response_model=GuestBookingResponse)
 @guest_booking_rate_limit
@@ -315,7 +309,6 @@ async def create_public_booking(
             detail="Failed to create booking. Please try again."
         )
 
-
 @router.get("/organization/{slug}/services", response_model=List[PublicServiceInfo])
 @guest_booking_rate_limit
 async def get_organization_services(
@@ -348,7 +341,6 @@ async def get_organization_services(
     
     return services
 
-
 @router.get("/organization/{slug}/barbers", response_model=List[PublicBarberInfo])
 @guest_booking_rate_limit
 async def get_organization_barbers(
@@ -378,7 +370,6 @@ async def get_organization_barbers(
     )
     
     return barbers
-
 
 @router.post("/booking/lookup", response_model=GuestBookingResponse)
 @guest_booking_rate_limit
@@ -434,7 +425,6 @@ async def lookup_booking(
         created_at=guest_booking.created_at
     )
 
-
 @router.post("/booking/{confirmation_code}/cancel")
 @guest_booking_rate_limit
 async def cancel_booking(
@@ -480,7 +470,6 @@ async def cancel_booking(
             detail=str(e)
         )
 
-
 # Landing Page Endpoints
 
 @router.get("/landing/{slug}", response_model=LandingPageResponse)
@@ -516,7 +505,6 @@ async def get_landing_page(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load landing page"
         )
-
 
 @router.post("/landing/{slug}/track")
 @guest_booking_rate_limit
@@ -567,7 +555,6 @@ async def track_landing_page_event(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to track event"
         )
-
 
 @router.get("/landing/presets", response_model=LandingPagePresets)
 async def get_landing_page_presets():

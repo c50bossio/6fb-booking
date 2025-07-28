@@ -69,27 +69,27 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
             models.User.email == user_credentials.email
         ).first()
         
-        # Temporarily disabled for debugging
-        # if user_for_detection:
-        #     detector = get_suspicious_login_detector(db)
-        #     suspicious_alerts = detector.detect_suspicious_login(
-        #         user_id=user_for_detection.id,
-        #         ip_address=client_ip,
-        #         user_agent=user_agent,
-        #         login_success=False
-        #     )
-        #     
-        #     # If high-severity alerts, add additional security headers
-        #     if any(alert.severity in ["critical", "high"] for alert in suspicious_alerts):
-        #         raise HTTPException(
-        #             status_code=status.HTTP_401_UNAUTHORIZED,
-        #             detail="Authentication failed. Account security measures activated.",
-        #             headers={
-        #                 "WWW-Authenticate": "Bearer",
-        #                 "X-Security-Alert": "true",
-        #                 "X-Alert-Level": "high"
-        #             }
-        #         )
+        # Re-enabled suspicious login detection for security
+        if user_for_detection:
+            detector = get_suspicious_login_detector(db)
+            suspicious_alerts = detector.detect_suspicious_login(
+                user_id=user_for_detection.id,
+                ip_address=client_ip,
+                user_agent=user_agent,
+                login_success=False
+            )
+            
+            # If high-severity alerts, add additional security headers
+            if any(alert.severity in ["critical", "high"] for alert in suspicious_alerts):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Authentication failed. Account security measures activated.",
+                    headers={
+                        "WWW-Authenticate": "Bearer",
+                        "X-Security-Alert": "true",
+                        "X-Alert-Level": "high"
+                    }
+                )
         
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -194,38 +194,27 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
         if any(alert.severity in ["medium", "high", "critical"] for alert in suspicious_alerts):
             headers["X-Security-Recommendation"] = "Enable MFA for enhanced security"
     
+    # Generate CSRF token for additional protection
+    from utils.cookie_auth import set_auth_cookies, generate_csrf_token
+    csrf_token = generate_csrf_token()
+    
     response_data = {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "csrf_token": csrf_token
     }
     
-    # Create response with cookies and headers
+    # Create single response with all data
     from fastapi.responses import JSONResponse
-    from utils.cookie_auth import set_auth_cookies, generate_csrf_token
-    
     response = JSONResponse(content=response_data)
     
-    # Set security headers if any
+    # Set security headers
     for header, value in headers.items():
         response.headers[header] = value
-    
-    # Generate CSRF token for additional protection
-    csrf_token = generate_csrf_token()
     
     # Set secure authentication cookies
     set_auth_cookies(response, access_token, refresh_token, csrf_token)
-    
-    # Add CSRF token to response data
-    response_data["csrf_token"] = csrf_token
-    response = JSONResponse(content=response_data)
-    
-    # Re-set cookies after creating new response
-    set_auth_cookies(response, access_token, refresh_token, csrf_token)
-    
-    # Set security headers again
-    for header, value in headers.items():
-        response.headers[header] = value
     
     return response
 

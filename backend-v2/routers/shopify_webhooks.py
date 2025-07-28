@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/webhooks/shopify", tags=["shopify-webhooks"])
 
-
 def verify_shopify_webhook(data: bytes, signature: str, secret: str, timestamp: Optional[str] = None) -> bool:
     """Verify Shopify webhook signature and check for replay attacks"""
     try:
@@ -61,7 +60,6 @@ def verify_shopify_webhook(data: bytes, signature: str, secret: str, timestamp: 
         logger.error(f"Error verifying webhook signature: {str(e)}")
         return False
 
-
 async def get_shopify_integration_from_shop(shop_domain: str, db: Session) -> Integration:
     """Get Shopify integration by shop domain"""
     integration = db.query(Integration).filter(
@@ -76,7 +74,6 @@ async def get_shopify_integration_from_shop(shop_domain: str, db: Session) -> In
         )
     
     return integration
-
 
 @router.post("/products/create")
 @webhook_idempotent(
@@ -132,7 +129,6 @@ async def handle_product_create(
             detail="Failed to process webhook"
         )
 
-
 @router.post("/products/update")
 async def handle_product_update(
     request: Request,
@@ -181,7 +177,6 @@ async def handle_product_update(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to process webhook"
         )
-
 
 @router.post("/products/delete")
 async def handle_product_delete(
@@ -240,7 +235,6 @@ async def handle_product_delete(
             detail="Failed to process webhook"
         )
 
-
 @router.post("/orders/create")
 async def handle_order_create(
     request: Request,
@@ -290,7 +284,6 @@ async def handle_order_create(
             detail="Failed to process webhook"
         )
 
-
 @router.post("/orders/updated")
 async def handle_order_update(
     request: Request,
@@ -339,7 +332,6 @@ async def handle_order_update(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to process webhook"
         )
-
 
 @router.post("/orders/paid")
 async def handle_order_paid(
@@ -407,7 +399,6 @@ async def handle_order_paid(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to process webhook"
         )
-
 
 @router.post("/inventory_levels/update")
 async def handle_inventory_update(
@@ -477,7 +468,6 @@ async def handle_inventory_update(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to process webhook"
         )
-
 
 @router.get("/health")
 async def webhook_health_check():

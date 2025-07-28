@@ -2,13 +2,12 @@
 Pydantic schemas for conversion tracking and attribution.
 """
 
-from pydantic import BaseModel, Field, validator, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 import re
 
 from models.tracking import EventType, AttributionModel, ConversionStatus
-
 
 class ConversionEventCreate(BaseModel):
     """Schema for creating a new conversion event"""
@@ -34,18 +33,19 @@ class ConversionEventCreate(BaseModel):
     utm_content: Optional[str] = Field(None, description="UTM content parameter")
     referrer: Optional[str] = Field(None, description="HTTP referrer")
     
-    @validator('event_value')
+    @field_validator('event_value')
+    @classmethod
     def validate_event_value(cls, v):
         if v is not None and v < 0:
             raise ValueError('Event value must be non-negative')
         return v
     
-    @validator('event_currency')
+    @field_validator('event_currency')
+    @classmethod
     def validate_currency(cls, v):
         if v and len(v) != 3:
             raise ValueError('Currency must be a 3-letter code')
         return v.upper() if v else 'USD'
-
 
 class ConversionEventResponse(BaseModel):
     """Schema for conversion event response"""
@@ -68,9 +68,9 @@ class ConversionEventResponse(BaseModel):
     # Attribution
     attribution_path_id: Optional[int] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class AttributionReport(BaseModel):
     """Schema for attribution reporting"""
@@ -81,7 +81,6 @@ class AttributionReport(BaseModel):
     period_start: datetime
     period_end: datetime
 
-
 class ChannelPerformance(BaseModel):
     """Schema for channel performance metrics"""
     channel: str
@@ -90,7 +89,6 @@ class ChannelPerformance(BaseModel):
     attributed_revenue: float
     conversion_rate: float
     roi: float
-
 
 class ConversionAnalytics(BaseModel):
     """Schema for conversion analytics response"""
@@ -103,7 +101,6 @@ class ConversionAnalytics(BaseModel):
     conversion_funnel: List[Dict[str, Any]]
     period_start: datetime
     period_end: datetime
-
 
 class TrackingConfigUpdate(BaseModel):
     """Schema for updating tracking configuration"""
@@ -130,7 +127,6 @@ class TrackingConfigUpdate(BaseModel):
     conversion_value_rules: Optional[Dict[str, Any]] = None
     excluded_domains: Optional[List[str]] = None
 
-
 class TrackingConfigResponse(BaseModel):
     """Schema for tracking configuration response"""
     id: int
@@ -155,9 +151,9 @@ class TrackingConfigResponse(BaseModel):
     created_at: datetime
     updated_at: Optional[datetime]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class ConversionGoalCreate(BaseModel):
     """Schema for creating a conversion goal"""
@@ -169,7 +165,6 @@ class ConversionGoalCreate(BaseModel):
     value_expression: Optional[str] = Field(None, description="Dynamic value calculation")
     conditions: Optional[Dict[str, Any]] = Field(None, description="Additional conditions")
     is_active: bool = Field(True, description="Whether goal is active")
-
 
 class ConversionGoalResponse(BaseModel):
     """Schema for conversion goal response"""
@@ -188,9 +183,9 @@ class ConversionGoalResponse(BaseModel):
     created_at: datetime
     updated_at: Optional[datetime]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class CampaignTrackingCreate(BaseModel):
     """Schema for creating campaign tracking"""
@@ -202,7 +197,6 @@ class CampaignTrackingCreate(BaseModel):
     end_date: Optional[datetime] = Field(None, description="Campaign end date")
     total_cost: float = Field(0.0, description="Total campaign cost")
     currency: str = Field("USD", description="Currency code")
-
 
 class CampaignTrackingResponse(BaseModel):
     """Schema for campaign tracking response"""
@@ -235,22 +229,20 @@ class CampaignTrackingResponse(BaseModel):
     updated_at: Optional[datetime]
     last_sync_at: Optional[datetime]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class PlatformTestRequest(BaseModel):
     """Schema for testing platform connections"""
     platform: str = Field(..., description="Platform to test (gtm, meta, google_ads)")
     config: Dict[str, Any] = Field(..., description="Platform-specific configuration")
 
-
 class PlatformTestResponse(BaseModel):
     """Schema for platform test response"""
     success: bool
     message: str
     details: Optional[Dict[str, Any]] = None
-
 
 # Customer Pixel Management Schemas
 
@@ -267,30 +259,35 @@ class TrackingPixelUpdate(BaseModel):
     tracking_settings: Optional[Dict[str, Any]] = Field(None, description="Advanced tracking settings")
     
     @field_validator('gtm_container_id')
+    @classmethod
     def validate_gtm_id(cls, v):
         if v and not re.match(r'^GTM-[A-Z0-9]{6,}$', v):
             raise ValueError('Invalid GTM Container ID format. Must be GTM-XXXXXXX')
         return v
     
     @field_validator('ga4_measurement_id')
+    @classmethod
     def validate_ga4_id(cls, v):
         if v and not re.match(r'^G-[A-Z0-9]{10,}$', v):
             raise ValueError('Invalid GA4 Measurement ID format. Must be G-XXXXXXXXXX')
         return v
     
     @field_validator('meta_pixel_id')
+    @classmethod
     def validate_meta_pixel_id(cls, v):
         if v and not re.match(r'^\d{10,20}$', v):
             raise ValueError('Invalid Meta Pixel ID format. Must be numeric')
         return v
     
     @field_validator('google_ads_conversion_id')
+    @classmethod
     def validate_google_ads_id(cls, v):
         if v and not re.match(r'^AW-\d{9,}$', v):
             raise ValueError('Invalid Google Ads Conversion ID format. Must be AW-XXXXXXXXX')
         return v
     
     @field_validator('custom_tracking_code')
+    @classmethod
     def validate_custom_code(cls, v):
         if v:
             # Basic security check - no script tags with src
@@ -301,7 +298,7 @@ class TrackingPixelUpdate(BaseModel):
                 raise ValueError('Custom tracking code too long (max 10000 characters)')
         return v
     
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "example": {
                 "gtm_container_id": "GTM-ABC123",
@@ -316,7 +313,7 @@ class TrackingPixelUpdate(BaseModel):
                 }
             }
         }
-
+)
 
 class TrackingPixelResponse(BaseModel):
     """Schema for tracking pixel response"""
@@ -330,9 +327,9 @@ class TrackingPixelResponse(BaseModel):
     custom_tracking_code: Optional[str] = None
     tracking_settings: Optional[Dict[str, Any]] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class TrackingTestResult(BaseModel):
     """Schema for pixel test results"""
@@ -343,7 +340,7 @@ class TrackingTestResult(BaseModel):
     message: str = Field(..., description="Test result message")
     details: Optional[Dict[str, Any]] = Field(None, description="Additional test details")
     
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "example": {
                 "pixel_type": "gtm",
@@ -356,7 +353,7 @@ class TrackingTestResult(BaseModel):
                 }
             }
         }
-
+)
 
 class PublicTrackingPixels(BaseModel):
     """Schema for public-facing tracking pixels (used on booking pages)"""
@@ -369,9 +366,9 @@ class PublicTrackingPixels(BaseModel):
     custom_tracking_code: Optional[str] = None
     tracking_enabled: bool = True
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class PixelInstructions(BaseModel):
     """Schema for pixel setup instructions"""
@@ -384,7 +381,7 @@ class PixelInstructions(BaseModel):
     validation_regex: str = Field(..., description="Regex pattern for validation")
     help_url: Optional[str] = Field(None, description="URL to official documentation")
     
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "example": {
                 "pixel_type": "gtm",
@@ -400,3 +397,4 @@ class PixelInstructions(BaseModel):
                 "help_url": "https://support.google.com/tagmanager/answer/6103696"
             }
         }
+    )

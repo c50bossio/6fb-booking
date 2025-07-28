@@ -19,7 +19,6 @@ router = APIRouter(prefix="/webhooks/sms", tags=["sms_webhooks"])
 # Initialize Twilio webhook validator
 twilio_validator = RequestValidator(settings.twilio_auth_token) if settings.twilio_auth_token else None
 
-
 @router.post("/incoming")
 async def handle_incoming_sms(request: Request, db: Session = Depends(get_db)):
     """
@@ -80,7 +79,6 @@ async def handle_incoming_sms(request: Request, db: Session = Depends(get_db)):
             detail="Failed to process incoming SMS"
         )
 
-
 @router.post("/status")
 async def handle_sms_status(request: Request, db: Session = Depends(get_db)):
     """
@@ -132,7 +130,6 @@ async def handle_sms_status(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error processing SMS status webhook: {str(e)}")
         return {"status": "error", "error": str(e)}
-
 
 async def process_incoming_customer_message(
     db: Session,
@@ -199,7 +196,6 @@ async def process_incoming_customer_message(
     
     return conversation, message
 
-
 async def update_message_delivery_status(
     db: Session,
     twilio_sid: str,
@@ -253,7 +249,6 @@ async def update_message_delivery_status(
     db.commit()
     
     logger.info(f"Updated SMS message {twilio_sid} status to {status}")
-
 
 @router.get("/test")
 async def test_webhook_endpoint():

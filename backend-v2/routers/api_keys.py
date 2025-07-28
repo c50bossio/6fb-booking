@@ -24,7 +24,6 @@ router = APIRouter(
 
 audit_logger = get_audit_logger()
 
-
 @router.post("", response_model=APIKeyResponse)
 def create_api_key(
     key_data: APIKeyCreate,
@@ -73,7 +72,6 @@ def create_api_key(
             detail=f"Failed to create API key: {str(e)}"
         )
 
-
 @router.get("", response_model=List[APIKeyListResponse])
 def list_api_keys(
     include_revoked: bool = False,
@@ -105,7 +103,6 @@ def list_api_keys(
     )
     
     return [APIKeyListResponse(**key) for key in keys]
-
 
 @router.post("/{key_id}/rotate", response_model=APIKeyResponse)
 def rotate_api_key(
@@ -151,7 +148,6 @@ def rotate_api_key(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to rotate API key: {str(e)}"
         )
-
 
 @router.post("/{key_id}/revoke")
 def revoke_api_key(
@@ -206,7 +202,6 @@ def revoke_api_key(
             detail=f"Failed to revoke API key: {str(e)}"
         )
 
-
 @router.get("/{key_id}", response_model=APIKeyListResponse)
 def get_api_key(
     key_id: int,
@@ -249,7 +244,6 @@ def get_api_key(
         revoked_at=api_key.revoked_at,
         revoked_reason=api_key.revoked_reason
     )
-
 
 @router.get("/permissions/available")
 def get_available_permissions(

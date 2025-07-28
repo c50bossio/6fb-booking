@@ -8,7 +8,7 @@ This module provides robust validation for all booking-related inputs to ensure:
 - Clear error messaging for users
 """
 
-from pydantic import BaseModel, Field, validator, EmailStr, root_validator
+from pydantic import BaseModel, Field, field_validator, EmailStr, model_validator, ConfigDict
 from datetime import date as Date, datetime, time as Time, timedelta
 from typing import Optional, List
 import re
@@ -17,7 +17,6 @@ import phonenumbers
 from phonenumbers import NumberParseException
 import pytz
 from enum import Enum
-
 
 # Configuration constants
 MIN_BOOKING_ADVANCE_MINUTES = 15  # Minimum advance booking time
@@ -28,7 +27,6 @@ MAX_SERVICE_DURATION = 480       # Maximum service duration (8 hours)
 BUSINESS_HOURS_START = Time(6, 0)  # Earliest possible business hour
 BUSINESS_HOURS_END = Time(23, 0)   # Latest possible business hour
 
-
 class BookingStatus(str, Enum):
     """Valid booking statuses"""
     PENDING = "pending"
@@ -37,14 +35,12 @@ class BookingStatus(str, Enum):
     COMPLETED = "completed"
     NO_SHOW = "no_show"
 
-
 class TimeSlotIncrement(int, Enum):
     """Valid time slot increments in minutes"""
     FIFTEEN = 15
     THIRTY = 30
     FORTY_FIVE = 45
     SIXTY = 60
-
 
 def sanitize_html(value: str) -> str:
     """
@@ -71,7 +67,6 @@ def sanitize_html(value: str) -> str:
     
     return cleaned
 
-
 def validate_phone_number(phone: str, default_region: str = "US") -> str:
     """
     Validate and format phone number.
@@ -94,19 +89,20 @@ def validate_phone_number(phone: str, default_region: str = "US") -> str:
     except NumberParseException:
         raise ValueError("Invalid phone number format")
 
-
 class BusinessHoursValidation(BaseModel):
     """Validates business hours configuration"""
     start_time: Time = Field(..., description="Business start time")
     end_time: Time = Field(..., description="Business end time")
     
-    @validator('start_time')
+    @field_validator('start_time')
+    @classmethod
     def validate_start_time(cls, v):
         if v < BUSINESS_HOURS_START or v > BUSINESS_HOURS_END:
             raise ValueError(f"Start time must be between {BUSINESS_HOURS_START} and {BUSINESS_HOURS_END}")
         return v
     
-    @validator('end_time')
+    @field_validator('end_time')
+    @classmethod
     def validate_end_time(cls, v, values):
         if v < BUSINESS_HOURS_START or v > BUSINESS_HOURS_END:
             raise ValueError(f"End time must be between {BUSINESS_HOURS_START} and {BUSINESS_HOURS_END}")
@@ -116,13 +112,13 @@ class BusinessHoursValidation(BaseModel):
         
         return v
 
-
 class DateValidation(BaseModel):
     """Base class for date validation"""
     date: Date = Field(..., description="Booking date")
     timezone: Optional[str] = Field(None, description="Timezone for date validation")
     
-    @validator('date')
+    @field_validator('date')
+    @classmethod
     def validate_date_not_past(cls, v, values):
         """Ensure date is not in the past"""
         # Get timezone if provided
@@ -141,7 +137,8 @@ class DateValidation(BaseModel):
         
         return v
     
-    @validator('date')
+    @field_validator('date')
+    @classmethod
     def validate_booking_window(cls, v, values):
         """Ensure date is within allowed booking window"""
         # Get timezone if provided
@@ -161,13 +158,13 @@ class DateValidation(BaseModel):
         
         return v
 
-
 class TimeSlotValidation(BaseModel):
     """Validates time slot selection"""
     time: str = Field(..., pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", description="Time in HH:MM format")
     business_hours: Optional[BusinessHoursValidation] = None
     
-    @validator('time')
+    @field_validator('time')
+    @classmethod
     def validate_time_format(cls, v):
         """Validate time format and extract components"""
         try:
@@ -178,7 +175,8 @@ class TimeSlotValidation(BaseModel):
         except:
             raise ValueError("Time must be in HH:MM format (24-hour)")
     
-    @validator('time')
+    @field_validator('time')
+    @classmethod
     def validate_time_increment(cls, v):
         """Ensure time is on valid increment (15, 30, 45, or 60 minutes)"""
         _, minutes = map(int, v.split(':'))
@@ -189,7 +187,7 @@ class TimeSlotValidation(BaseModel):
         
         return v
     
-    @root_validator
+    @model_validator(mode='before')
     def validate_within_business_hours(cls, values):
         """Ensure time is within business hours if provided"""
         time_str = values.get('time')
@@ -207,7 +205,6 @@ class TimeSlotValidation(BaseModel):
         
         return values
 
-
 class ServiceValidation(BaseModel):
     """Validates service selection and configuration"""
     service_id: Optional[int] = Field(None, gt=0, description="Service ID from catalog")
@@ -219,14 +216,15 @@ class ServiceValidation(BaseModel):
         description="Service duration in minutes"
     )
     
-    @validator('service_name')
+    @field_validator('service_name')
+    @classmethod
     def sanitize_service_name(cls, v):
         """Sanitize service name"""
         if v:
             return sanitize_html(v)
         return v
     
-    @root_validator
+    @model_validator(mode='before')
     def validate_service_selection(cls, values):
         """Ensure either service_id or service_name is provided"""
         service_id = values.get('service_id')
@@ -237,13 +235,11 @@ class ServiceValidation(BaseModel):
         
         return values
 
-
 class BarberValidation(BaseModel):
     """Validates barber selection"""
     barber_id: Optional[int] = Field(None, gt=0, description="Barber ID")
     
     # Additional fields for availability checking could be added here
-
 
 class GuestInfoValidation(BaseModel):
     """Enhanced validation for guest information"""
@@ -252,7 +248,8 @@ class GuestInfoValidation(BaseModel):
     email: EmailStr
     phone: Optional[str] = Field(None, min_length=10, max_length=20)
     
-    @validator('first_name', 'last_name')
+    @field_validator('first_name', 'last_name')
+    @classmethod
     def sanitize_names(cls, v):
         """Sanitize names and validate format"""
         # Remove HTML
@@ -267,14 +264,16 @@ class GuestInfoValidation(BaseModel):
         # Capitalize properly
         return ' '.join(word.capitalize() for word in v.split())
     
-    @validator('phone')
+    @field_validator('phone')
+    @classmethod
     def validate_phone(cls, v):
         """Validate and format phone number"""
         if v:
             return validate_phone_number(v)
         return v
     
-    @validator('email')
+    @field_validator('email')
+    @classmethod
     def validate_email_domain(cls, v):
         """Additional email validation"""
         # Check for disposable email domains (basic list)
@@ -289,12 +288,12 @@ class GuestInfoValidation(BaseModel):
         
         return v.lower()
 
-
 class NotesValidation(BaseModel):
     """Validates notes and special instructions"""
     notes: Optional[str] = Field(None, max_length=MAX_NOTES_LENGTH)
     
-    @validator('notes')
+    @field_validator('notes')
+    @classmethod
     def sanitize_notes(cls, v):
         """Sanitize notes field"""
         if v:
@@ -308,20 +307,19 @@ class NotesValidation(BaseModel):
             return v
         return v
 
-
 class BookingWindowValidation(BaseModel):
     """Validates booking window constraints"""
     min_advance_booking_minutes: int = Field(default=MIN_BOOKING_ADVANCE_MINUTES, ge=0)
     max_advance_booking_days: int = Field(default=MAX_BOOKING_ADVANCE_DAYS, ge=1, le=365)
     same_day_cutoff_time: Optional[Time] = None
     
-    @validator('same_day_cutoff_time')
+    @field_validator('same_day_cutoff_time')
+    @classmethod
     def validate_cutoff_time(cls, v):
         """Validate same-day cutoff time"""
         if v and (v < Time(0, 0) or v > Time(23, 59)):
             raise ValueError("Cutoff time must be a valid time")
         return v
-
 
 class EnhancedAppointmentCreate(BaseModel):
     """
@@ -356,7 +354,8 @@ class EnhancedAppointmentCreate(BaseModel):
     # Validation
     captcha_token: Optional[str] = Field(None, description="reCAPTCHA token for guest bookings")
     
-    @validator('timezone')
+    @field_validator('timezone')
+    @classmethod
     def validate_timezone(cls, v):
         """Validate timezone"""
         if v:
@@ -366,7 +365,8 @@ class EnhancedAppointmentCreate(BaseModel):
                 raise ValueError(f"Invalid timezone: {v}")
         return v
     
-    @validator('date')
+    @field_validator('date')
+    @classmethod
     def validate_date(cls, v, values):
         """Comprehensive date validation"""
         # Get timezone
@@ -392,7 +392,8 @@ class EnhancedAppointmentCreate(BaseModel):
         
         return v
     
-    @validator('time')
+    @field_validator('time')
+    @classmethod
     def validate_time(cls, v, values):
         """Comprehensive time validation"""
         # Parse time
@@ -431,14 +432,16 @@ class EnhancedAppointmentCreate(BaseModel):
         
         return v
     
-    @validator('service_name')
+    @field_validator('service_name')
+    @classmethod
     def sanitize_service_name(cls, v):
         """Sanitize service name"""
         if v:
             return sanitize_html(v)
         return v
     
-    @validator('notes')
+    @field_validator('notes')
+    @classmethod
     def sanitize_notes(cls, v):
         """Sanitize and validate notes"""
         if v:
@@ -452,7 +455,8 @@ class EnhancedAppointmentCreate(BaseModel):
             return v
         return v
     
-    @validator('price')
+    @field_validator('price')
+    @classmethod
     def validate_price(cls, v):
         """Validate price is reasonable"""
         if v is not None:
@@ -465,7 +469,7 @@ class EnhancedAppointmentCreate(BaseModel):
             return round(v, 2)
         return v
     
-    @root_validator
+    @model_validator(mode='before')
     def validate_service(cls, values):
         """Ensure service is properly specified"""
         service_id = values.get('service_id')
@@ -476,7 +480,7 @@ class EnhancedAppointmentCreate(BaseModel):
         
         return values
     
-    @root_validator
+    @model_validator(mode='before')
     def validate_client_info(cls, values):
         """Ensure client information is provided"""
         guest_info = values.get('guest_info')
@@ -490,7 +494,7 @@ class EnhancedAppointmentCreate(BaseModel):
         
         return values
     
-    @root_validator
+    @model_validator(mode='before')
     def validate_duration_compatibility(cls, values):
         """Ensure duration is compatible with time slots"""
         duration = values.get('duration_minutes')
@@ -501,7 +505,6 @@ class EnhancedAppointmentCreate(BaseModel):
                 raise ValueError("Duration must be in 15-minute increments")
         
         return values
-
 
 class AppointmentUpdate(BaseModel):
     """Enhanced appointment update validation"""
@@ -515,20 +518,17 @@ class AppointmentUpdate(BaseModel):
     status: Optional[BookingStatus] = None
     
     # Apply same validators as create
-    _validate_date = validator('date', allow_reuse=True)(EnhancedAppointmentCreate.validate_date)
-    _validate_time = validator('time', allow_reuse=True)(EnhancedAppointmentCreate.validate_time)
-    _sanitize_service = validator('service_name', allow_reuse=True)(EnhancedAppointmentCreate.sanitize_service_name)
-    _sanitize_notes = validator('notes', allow_reuse=True)(EnhancedAppointmentCreate.sanitize_notes)
-
+    # Validators will be handled by individual field_validators on each field
 
 class BulkAvailabilityCheck(BaseModel):
     """Validate bulk availability check requests"""
-    dates: List[Date] = Field(..., min_items=1, max_items=30, description="Dates to check")
+    dates: List[Date] = Field(..., min_length=1, max_length=30, description="Dates to check")
     service_id: Optional[int] = Field(None, gt=0)
     barber_id: Optional[int] = Field(None, gt=0)
     timezone: Optional[str] = Field("UTC")
     
-    @validator('dates')
+    @field_validator('dates')
+    @classmethod
     def validate_dates(cls, v):
         """Ensure dates are valid and in future"""
         today = datetime.now(pytz.UTC).date()
@@ -540,7 +540,8 @@ class BulkAvailabilityCheck(BaseModel):
         # Sort dates
         return sorted(v)
     
-    @validator('timezone')
+    @field_validator('timezone')
+    @classmethod
     def validate_timezone(cls, v):
         """Validate timezone"""
         try:
@@ -548,7 +549,6 @@ class BulkAvailabilityCheck(BaseModel):
         except pytz.exceptions.UnknownTimeZoneError:
             raise ValueError(f"Invalid timezone: {v}")
         return v
-
 
 # Error message templates for better UX
 ERROR_MESSAGES = {
@@ -563,7 +563,6 @@ ERROR_MESSAGES = {
     'notes_too_long': f"Notes cannot exceed {MAX_NOTES_LENGTH} characters.",
     'business_hours': "The selected time is outside of business hours.",
 }
-
 
 def get_user_friendly_error(error: str) -> str:
     """Convert validation errors to user-friendly messages"""

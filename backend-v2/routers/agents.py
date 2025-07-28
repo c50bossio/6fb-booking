@@ -52,7 +52,6 @@ def get_agent_templates(
     
     return template_list
 
-
 @router.get("/templates/{agent_type}", response_model=dict)
 def get_agent_template(
     agent_type: AgentType,
@@ -70,7 +69,6 @@ def get_agent_template(
         "agent_type": agent_type.value,
         **template
     }
-
 
 # Agent Management (Admin)
 
@@ -94,7 +92,6 @@ def create_agent(
     
     return db_agent
 
-
 @router.get("/", response_model=List[AgentResponse])
 def list_agents(
     is_active: Optional[bool] = Query(None),
@@ -108,7 +105,6 @@ def list_agents(
         query = query.filter(Agent.is_active == is_active)
     
     return query.all()
-
 
 # Agent Instance Management
 
@@ -143,7 +139,6 @@ async def create_agent_instance(
         logger.error(f"Error creating agent instance: {e}")
         raise HTTPException(status_code=500, detail="Failed to create agent instance")
 
-
 @router.get("/instances", response_model=List[AgentInstanceResponse])
 def list_agent_instances(
     status: Optional[AgentStatus] = Query(None),
@@ -158,7 +153,6 @@ def list_agent_instances(
     
     instances = query.all()
     return instances
-
 
 @router.get("/instances/{instance_id}", response_model=AgentInstanceResponse)
 def get_agent_instance(
@@ -176,7 +170,6 @@ def get_agent_instance(
         raise HTTPException(status_code=404, detail="Agent instance not found")
     
     return instance
-
 
 @router.put("/instances/{instance_id}", response_model=AgentInstanceResponse)
 def update_agent_instance(
@@ -204,7 +197,6 @@ def update_agent_instance(
     
     return instance
 
-
 @router.post("/instances/{instance_id}/activate", response_model=AgentInstanceResponse)
 async def activate_agent_instance(
     instance_id: int,
@@ -228,7 +220,6 @@ async def activate_agent_instance(
         logger.error(f"Error activating agent: {e}")
         raise HTTPException(status_code=500, detail="Failed to activate agent")
 
-
 @router.post("/instances/{instance_id}/pause", response_model=AgentInstanceResponse)
 async def pause_agent_instance(
     instance_id: int,
@@ -246,7 +237,6 @@ async def pause_agent_instance(
     except Exception as e:
         logger.error(f"Error pausing agent: {e}")
         raise HTTPException(status_code=500, detail="Failed to pause agent")
-
 
 @router.delete("/instances/{instance_id}")
 def delete_agent_instance(
@@ -269,7 +259,6 @@ def delete_agent_instance(
     db.commit()
     
     return {"message": "Agent instance deleted"}
-
 
 # Conversation Management
 
@@ -304,7 +293,6 @@ def list_conversations(
     conversations = query.offset(offset).limit(limit).all()
     return conversations
 
-
 @router.get("/conversations/{conversation_id}", response_model=ConversationResponse)
 def get_conversation(
     conversation_id: str,
@@ -324,7 +312,6 @@ def get_conversation(
         raise HTTPException(status_code=404, detail="Conversation not found")
     
     return conversation
-
 
 @router.post("/conversations/{conversation_id}/message")
 async def send_conversation_message(
@@ -355,7 +342,6 @@ async def send_conversation_message(
     )
     
     return {"message": "Response queued for processing"}
-
 
 # Analytics
 
@@ -464,7 +450,6 @@ async def get_agent_analytics(
                 "last_updated": datetime.utcnow().isoformat()
             }
 
-
 @router.get("/instances/{instance_id}/analytics")
 async def get_instance_analytics(
     instance_id: int,
@@ -495,7 +480,6 @@ async def get_instance_analytics(
         "success_rate": (instance.successful_conversations / instance.total_conversations * 100) if instance.total_conversations > 0 else 0
     }
 
-
 # Dynamic route - must be after static routes like /analytics
 @router.get("/{agent_id}", response_model=AgentResponse)
 def get_agent(
@@ -509,7 +493,6 @@ def get_agent(
         raise HTTPException(status_code=404, detail="Agent not found")
     
     return agent
-
 
 # Subscription Management
 
@@ -527,7 +510,6 @@ def get_subscription(
         raise HTTPException(status_code=404, detail="No active subscription")
     
     return subscription
-
 
 @router.post("/subscription", response_model=SubscriptionResponse)
 def create_subscription(
@@ -566,7 +548,6 @@ def create_subscription(
     
     return db_subscription
 
-
 # AI Provider Management
 
 @router.get("/providers")
@@ -581,7 +562,6 @@ def get_ai_providers(
         "provider_info": ai_manager.get_provider_info(),
         "validation_status": ai_manager.validate_all_providers()
     }
-
 
 @router.post("/providers/estimate-cost")
 async def estimate_cost(

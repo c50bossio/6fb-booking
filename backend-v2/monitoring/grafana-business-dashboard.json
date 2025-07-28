@@ -1,0 +1,683 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "BookedBarber Business Impact Monitoring",
+    "tags": ["business-impact", "six-figure-barber", "revenue-correlation", "sre"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Executive Summary",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "business:revenue_impact_rate",
+            "legendFormat": "Revenue Impact Rate ($/min)"
+          },
+          {
+            "expr": "sixfb:overall_methodology_score",
+            "legendFormat": "Six Figure Barber Score (%)"
+          },
+          {
+            "expr": "alert:recovery_urgency_score",
+            "legendFormat": "Recovery Urgency Score"
+          },
+          {
+            "expr": "sum(alert:stakeholder_notification_level >= 3)",
+            "legendFormat": "Business Critical Alerts"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 200},
+                {"color": "red", "value": 500}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Revenue Impact Correlation",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "business:revenue_impact_rate",
+            "legendFormat": "Revenue Loss Rate ($/min)"
+          },
+          {
+            "expr": "correlation:performance_revenue_impact",
+            "legendFormat": "Performance Impact on Revenue"
+          },
+          {
+            "expr": "correlation:error_rate_business_cost",
+            "legendFormat": "Error Rate Business Cost"
+          },
+          {
+            "expr": "correlation:latency_conversion_impact",
+            "legendFormat": "Latency Impact on Conversions"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "barAlignment": 0,
+              "lineWidth": 2,
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "spanNulls": false,
+              "insertNulls": false,
+              "showPoints": "never",
+              "pointSize": 5,
+              "stacking": {"mode": "none", "group": "A"},
+              "axisPlacement": "auto",
+              "axisLabel": "",
+              "axisColorMode": "text",
+              "scaleDistribution": {"type": "linear"},
+              "hideFrom": {"legend": false, "tooltip": false, "vis": false},
+              "thresholdsStyle": {"mode": "off"}
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "currencyUSD"
+          }
+        },
+        "options": {
+          "tooltip": {"mode": "single", "sort": "none"},
+          "legend": {"displayMode": "visible", "placement": "bottom"}
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 3,
+        "title": "Six Figure Barber Methodology Health",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sixfb:revenue_optimization_health",
+            "legendFormat": "Revenue Optimization"
+          },
+          {
+            "expr": "sixfb:client_value_creation_health",
+            "legendFormat": "Client Value Creation"
+          },
+          {
+            "expr": "sixfb:service_excellence_health",
+            "legendFormat": "Service Excellence"
+          },
+          {
+            "expr": "sixfb:business_efficiency_health",
+            "legendFormat": "Business Efficiency"
+          },
+          {
+            "expr": "sixfb:professional_growth_health",
+            "legendFormat": "Professional Growth"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "hideFrom": {"legend": false, "tooltip": false, "vis": false}
+            },
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 85}
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "pieType": "pie",
+          "tooltip": {"mode": "single", "sort": "none"},
+          "legend": {"displayMode": "visible", "placement": "right"}
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Business Critical System Health",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "booking_system_health",
+            "legendFormat": "Booking System"
+          },
+          {
+            "expr": "payment_system_health",
+            "legendFormat": "Payment System"
+          },
+          {
+            "expr": "notification_system_health",
+            "legendFormat": "Notification System"
+          },
+          {
+            "expr": "client_portal_health",
+            "legendFormat": "Client Portal"
+          },
+          {
+            "expr": "admin_dashboard_health",
+            "legendFormat": "Admin Dashboard"
+          },
+          {
+            "expr": "analytics_dashboard_health",
+            "legendFormat": "Analytics Dashboard"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 80},
+                {"color": "green", "value": 95}
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "orientation": "horizontal",
+          "text": {},
+          "barGauge": {
+            "maxHeight": 10
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 5,
+        "title": "Customer Experience Impact",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "customer_experience:abandonment_impact",
+            "legendFormat": "Abandonment Rate Impact (%)"
+          },
+          {
+            "expr": "rate(booking_success_total[5m]) / rate(booking_attempts_total[5m]) * 100",
+            "legendFormat": "Booking Conversion Rate (%)"
+          },
+          {
+            "expr": "avg_over_time(mobile_experience_performance[5m])",
+            "legendFormat": "Mobile Experience Score"
+          },
+          {
+            "expr": "avg_over_time(client_satisfaction_score[5m])",
+            "legendFormat": "Client Satisfaction Score"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "fillOpacity": 20,
+              "gradientMode": "opacity",
+              "spanNulls": false,
+              "insertNulls": false,
+              "showPoints": "auto",
+              "pointSize": 5,
+              "stacking": {"mode": "none", "group": "A"},
+              "axisPlacement": "auto",
+              "axisLabel": "",
+              "axisColorMode": "text",
+              "scaleDistribution": {"type": "linear"}
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "percent",
+            "max": 100,
+            "min": 0
+          }
+        },
+        "options": {
+          "tooltip": {"mode": "multi", "sort": "desc"},
+          "legend": {"displayMode": "visible", "placement": "bottom"}
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "Business Context Indicators",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "peak_hours_status",
+            "legendFormat": "Peak Hours Active"
+          },
+          {
+            "expr": "high_value_period_status",
+            "legendFormat": "High Value Period"
+          },
+          {
+            "expr": "sum(circuit_breaker_state{state=\"open\"})",
+            "legendFormat": "Open Circuit Breakers"
+          },
+          {
+            "expr": "count(ALERTS{alertstate=\"firing\", business_impact!=\"\"})",
+            "legendFormat": "Business Impact Alerts"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 3}
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "text": {},
+          "textMode": "auto",
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "auto"
+        },
+        "gridPos": {"h": 4, "w": 24, "x": 0, "y": 24}
+      },
+      {
+        "id": 7,
+        "title": "Stakeholder Alert Prioritization",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "sort_desc(ALERTS{alertstate=\"firing\", business_impact!=\"\"})",
+            "legendFormat": "Active Business Impact Alerts",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto",
+              "inspect": false
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "red", "value": 80}
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "severity"},
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "color-background"
+                },
+                {
+                  "id": "mappings",
+                  "value": [
+                    {"options": {"critical": {"color": "red", "index": 0}}, "type": "value"},
+                    {"options": {"high": {"color": "orange", "index": 1}}, "type": "value"},
+                    {"options": {"warning": {"color": "yellow", "index": 2}}, "type": "value"}
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "desc": true,
+              "displayName": "business_impact"
+            }
+          ]
+        },
+        "pluginVersion": "8.0.0",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 28}
+      },
+      {
+        "id": 8,
+        "title": "Recovery Urgency & Business Priority",
+        "type": "heatmap",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(alert_recovery_urgency_score_bucket[5m])) by (le, business_severity))",
+            "legendFormat": "Recovery Urgency by Business Severity"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "hideFrom": {"legend": false, "tooltip": false, "vis": false},
+              "scaleDistribution": {"type": "linear"}
+            },
+            "color": {
+              "mode": "spectrum",
+              "scheme": "Oranges"
+            }
+          }
+        },
+        "options": {
+          "calculate": false,
+          "cellGap": 2,
+          "cellValues": {
+            "unit": "short"
+          },
+          "color": {
+            "exponent": 0.5,
+            "fill": "dark-orange",
+            "mode": "spectrum",
+            "reverse": false,
+            "scale": "exponential",
+            "scheme": "Oranges",
+            "steps": 64
+          },
+          "exemplars": {
+            "color": "rgba(255,0,255,0.7)"
+          },
+          "filterValues": {
+            "le": 1e-9
+          },
+          "legend": {
+            "show": true
+          },
+          "rowsFrame": {
+            "layout": "auto"
+          },
+          "tooltip": {
+            "show": true,
+            "yHistogram": false
+          },
+          "yAxis": {
+            "axisPlacement": "left",
+            "reverse": false,
+            "unit": "short"
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 28}
+      },
+      {
+        "id": 9,
+        "title": "Business Impact Trends (30-day)",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "increase(business_revenue_impact_total[1d])",
+            "legendFormat": "Daily Revenue Impact ($)"
+          },
+          {
+            "expr": "increase(business_incidents_total[1d])",
+            "legendFormat": "Daily Incident Count"
+          },
+          {
+            "expr": "avg_over_time(sixfb:overall_methodology_score[1d])",
+            "legendFormat": "Daily Six FB Score"
+          },
+          {
+            "expr": "avg_over_time(business_continuity_score[1d])",
+            "legendFormat": "Daily Business Continuity Score"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "spanNulls": false,
+              "insertNulls": false,
+              "showPoints": "never",
+              "pointSize": 5,
+              "stacking": {"mode": "none", "group": "A"},
+              "axisPlacement": "auto",
+              "axisLabel": "",
+              "axisColorMode": "text",
+              "scaleDistribution": {"type": "linear"}
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byRegexp", "options": ".*Revenue.*"},
+              "properties": [
+                {"id": "unit", "value": "currencyUSD"},
+                {"id": "custom.axisPlacement", "value": "right"}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "tooltip": {"mode": "multi", "sort": "desc"},
+          "legend": {"displayMode": "visible", "placement": "bottom"}
+        },
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 36}
+      },
+      {
+        "id": 10,
+        "title": "Six Figure Barber Principle Performance Matrix",
+        "type": "barchart",
+        "targets": [
+          {
+            "expr": "sixfb:revenue_optimization_health",
+            "legendFormat": "Revenue Optimization"
+          },
+          {
+            "expr": "sixfb:client_value_creation_health",
+            "legendFormat": "Client Value Creation"
+          },
+          {
+            "expr": "sixfb:service_excellence_health",
+            "legendFormat": "Service Excellence"
+          },
+          {
+            "expr": "sixfb:business_efficiency_health",
+            "legendFormat": "Business Efficiency"
+          },
+          {
+            "expr": "sixfb:professional_growth_health",
+            "legendFormat": "Professional Growth"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 80,
+              "gradientMode": "none",
+              "hideFrom": {"legend": false, "tooltip": false, "vis": false},
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {"type": "linear"},
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {"group": "A", "mode": "none"},
+              "thresholdsStyle": {"mode": "off"}
+            },
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 85}
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "barWidth": 0.6,
+          "groupWidth": 0.7,
+          "legend": {"displayMode": "hidden", "placement": "bottom"},
+          "tooltip": {"mode": "single", "sort": "none"},
+          "text": {"titleSize": 10, "valueSize": 18}
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 44}
+      },
+      {
+        "id": 11,
+        "title": "Performance vs Revenue Correlation",
+        "type": "scatterchart",
+        "targets": [
+          {
+            "expr": "performance_score",
+            "legendFormat": "Performance Score (X-axis)"
+          },
+          {
+            "expr": "business:revenue_impact_rate",
+            "legendFormat": "Revenue Impact Rate (Y-axis)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "hideFrom": {"legend": false, "tooltip": false, "vis": false},
+              "pointSize": {"fixed": 5}
+            },
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "options": {
+          "seriesMapping": "auto",
+          "tooltip": {"mode": "single", "sort": "none"},
+          "legend": {"displayMode": "visible", "placement": "bottom"}
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 44}
+      }
+    ],
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "BookedBarber Business Impact Monitoring",
+    "uid": "business-impact-dashboard",
+    "version": 1,
+    "weekStart": "",
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        },
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "ALERTS{alertstate=\"firing\", business_impact!=\"\"}",
+          "iconColor": "red",
+          "name": "Business Impact Alerts",
+          "tagKeys": "alertname,business_impact,sixfb_principle",
+          "textFormat": "{{alertname}}: {{business_impact}} impact",
+          "titleFormat": "Business Alert"
+        }
+      ]
+    },
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          "datasource": "Prometheus",
+          "definition": "label_values(business_severity)",
+          "hide": 0,
+          "includeAll": true,
+          "multi": true,
+          "name": "business_severity",
+          "options": [],
+          "query": {
+            "query": "label_values(business_severity)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          "datasource": "Prometheus",
+          "definition": "label_values(sixfb_principle)",
+          "hide": 0,
+          "includeAll": true,
+          "multi": true,
+          "name": "sixfb_principle",
+          "options": [],
+          "query": {
+            "query": "label_values(sixfb_principle)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        }
+      ]
+    }
+  }
+}

@@ -405,7 +405,6 @@ async def handle_subscription_event(event: Any, db: Session):
         # Don't raise - we still want to return 200 to Stripe
         # to prevent webhook retries
 
-
 @router.get("/health", response_model=None)
 def webhook_health() -> Dict[str, Any]:
     """Health check for webhook endpoint"""

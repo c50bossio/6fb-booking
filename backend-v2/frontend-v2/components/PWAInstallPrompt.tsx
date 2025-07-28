@@ -117,95 +117,109 @@ export function PWAInstallPrompt() {
   )
 }
 
-// Service Worker Registration Hook - DISABLED IN DEVELOPMENT
+// Service Worker Registration Hook - Production Ready
 export function useServiceWorker() {
   const [isRegistered, setIsRegistered] = useState(false)
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false)
+  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null)
 
   useEffect(() => {
-    // ALWAYS disable service worker in development mode
     const isDevelopment = process.env.NODE_ENV === 'development'
     
-    if (isDevelopment) {
-      
-      // Aggressively unregister any existing service workers
-      if ('serviceWorker' in navigator) {
-        // Clear all caches first
-        caches.keys().then((cacheNames) => {
-          return Promise.all(
-            cacheNames.map((cacheName) => {
-              return caches.delete(cacheName)
-            })
-          )
-        }).then(() => {
-        }).catch(error => {
-        })
-        
-        // Unregister all service workers
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          registrations.forEach((registration) => {
-            registration.unregister().then((success) => {
-              // Force page reload after unregistration
-              if (success) {
-                setTimeout(() => window.location.reload(), 1000)
-              }
-            }).catch((error) => {
-              console.error('❌ Failed to unregister service worker:', error)
-            })
-          })
-        })
-        
-        // Prevent any controller from functioning
-        if (navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({ type: 'TERMINATE' })
-        }
-      }
+    // Skip service worker registration in development unless explicitly enabled
+    if (isDevelopment && !window.location.search.includes('pwa=true')) {
+      console.log('🔧 Service Worker disabled in development. Add ?pwa=true to test PWA features.')
       return
     }
     
-    // Only register service worker in production
+    // Register service worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/service-worker.js')
-        .then((registration) => {
+      const registerSW = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js', {
+            scope: '/',
+            updateViaCache: 'none' // Always check for updates
+          })
+          
+          console.log('✅ Service Worker registered successfully:', registration.scope)
           setIsRegistered(true)
+          setRegistration(registration)
 
-          // Check for updates
+          // Check for updates immediately
+          await registration.update()
+
+          // Listen for updates
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing
             if (newWorker) {
+              console.log('🔄 New service worker installing...')
               newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  setIsUpdateAvailable(true)
+                if (newWorker.state === 'installed') {
+                  if (navigator.serviceWorker.controller) {
+                    console.log('📦 New content available, update available')
+                    setIsUpdateAvailable(true)
+                  } else {
+                    console.log('✅ Content cached for offline use')
+                  }
                 }
               })
             }
           })
-        })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error)
-        })
 
-      // Handle controller change
+          // Check if there's a waiting service worker
+          if (registration.waiting) {
+            setIsUpdateAvailable(true)
+          }
+
+        } catch (error) {
+          console.error('❌ Service Worker registration failed:', error)
+        }
+      }
+
+      registerSW()
+
+      // Handle controller change (when SW takes control)
       let refreshing = false
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
+          console.log('🔄 Service Worker updated, reloading page...')
           refreshing = true
           window.location.reload()
+        }
+      })
+
+      // Listen for messages from service worker
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SW_UPDATE_AVAILABLE') {
+          setIsUpdateAvailable(true)
         }
       })
     }
   }, [])
 
   const updateServiceWorker = () => {
-    if (isUpdateAvailable) {
-      navigator.serviceWorker.controller?.postMessage({ type: 'SKIP_WAITING' })
+    if (isUpdateAvailable && registration?.waiting) {
+      // Tell the waiting service worker to skip waiting and become active
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+    } else if (registration) {
+      // Force an update check
+      registration.update()
+    }
+  }
+
+  const clearCacheAndReload = async () => {
+    if ('caches' in window) {
+      const cacheNames = await caches.keys()
+      await Promise.all(cacheNames.map(name => caches.delete(name)))
+      window.location.reload()
     }
   }
 
   return {
     isRegistered,
     isUpdateAvailable,
-    updateServiceWorker
+    updateServiceWorker,
+    clearCacheAndReload,
+    registration
   }
 }

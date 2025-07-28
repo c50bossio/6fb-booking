@@ -1,12 +1,11 @@
 """
 Secure DTOs for commission data with role-based field filtering
 """
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Optional
 from decimal import Decimal
 from datetime import datetime
 from utils.validators import financial_amount_validator
-
 
 class CommissionItemBase(BaseModel):
     """Base commission item without sensitive data"""
@@ -17,22 +16,21 @@ class CommissionItemBase(BaseModel):
     commission_paid: bool = False
     commission_paid_at: Optional[datetime] = None
 
-
 class CommissionItemBarber(CommissionItemBase):
     """Commission item view for barbers - includes their own amounts"""
     commission_amount: Decimal = Field(..., description="Commission amount for this item")
     commission_rate: Decimal = Field(..., description="Commission rate applied")
     line_total: Decimal = Field(..., description="Total amount for this line item")
     
-    _validate_commission_amount = validator('commission_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_line_total = validator('line_total', allow_reuse=True)(financial_amount_validator)
-
+    @field_validator('commission_amount', 'line_total')
+    @classmethod
+    def validate_financial_amounts(cls, v):
+        return financial_amount_validator(v)
 
 class CommissionItemAdmin(CommissionItemBarber):
     """Commission item view for admins - includes all details"""
     barber_id: int
     barber_name: Optional[str] = None
-
 
 class CommissionSummaryBase(BaseModel):
     """Base commission summary without amounts"""
@@ -41,9 +39,9 @@ class CommissionSummaryBase(BaseModel):
     period_end: datetime
     items_count: int = 0
     
-    class Config:
-        orm_mode = True
-
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 class CommissionSummaryBarber(CommissionSummaryBase):
     """Commission summary for barbers - includes their totals"""
@@ -53,12 +51,10 @@ class CommissionSummaryBarber(CommissionSummaryBase):
     paid_amount: Decimal = Field(default=Decimal("0.00"), description="Amount already paid out")
     pending_amount: Decimal = Field(default=Decimal("0.00"), description="Amount pending payout")
     
-    _validate_total_commission = validator('total_commission', allow_reuse=True)(financial_amount_validator)
-    _validate_service_commission = validator('service_commission', allow_reuse=True)(financial_amount_validator)
-    _validate_retail_commission = validator('retail_commission', allow_reuse=True)(financial_amount_validator)
-    _validate_paid_amount = validator('paid_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_pending_amount = validator('pending_amount', allow_reuse=True)(financial_amount_validator)
-
+    @field_validator('total_commission', 'service_commission', 'retail_commission', 'paid_amount', 'pending_amount')
+    @classmethod
+    def validate_commission_amounts(cls, v):
+        return financial_amount_validator(v)
 
 class CommissionSummaryAdmin(CommissionSummaryBarber):
     """Commission summary for admins - includes additional details"""
@@ -67,7 +63,6 @@ class CommissionSummaryAdmin(CommissionSummaryBarber):
     location_id: Optional[int] = None
     location_name: Optional[str] = None
 
-
 class CommissionReportBase(BaseModel):
     """Base commission report structure"""
     barber_id: int
@@ -75,9 +70,9 @@ class CommissionReportBase(BaseModel):
     period_end: Optional[datetime]
     unpaid_only: bool = False
     
-    class Config:
-        orm_mode = True
-
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 class CommissionReportBarber(CommissionReportBase):
     """Commission report for barbers - filtered data"""
@@ -85,11 +80,12 @@ class CommissionReportBarber(CommissionReportBase):
     service_commission: Decimal
     total_commission: Decimal
     
-    _validate_retail_commission = validator('retail_commission', allow_reuse=True)(financial_amount_validator)
-    _validate_service_commission = validator('service_commission', allow_reuse=True)(financial_amount_validator)
-    _validate_total_commission = validator('total_commission', allow_reuse=True)(financial_amount_validator)
     items: List[CommissionItemBarber] = []
-
+    
+    @field_validator('retail_commission', 'service_commission', 'total_commission')
+    @classmethod
+    def validate_report_amounts(cls, v):
+        return financial_amount_validator(v)
 
 class CommissionReportAdmin(CommissionReportBase):
     """Commission report for admins - full data"""
@@ -97,30 +93,32 @@ class CommissionReportAdmin(CommissionReportBase):
     service_commission: Decimal
     total_commission: Decimal
     
-    _validate_retail_commission = validator('retail_commission', allow_reuse=True)(financial_amount_validator)
-    _validate_service_commission = validator('service_commission', allow_reuse=True)(financial_amount_validator)
-    _validate_total_commission = validator('total_commission', allow_reuse=True)(financial_amount_validator)
-    
     items: List[CommissionItemAdmin] = []
     barber_details: dict = {}  # Additional barber information
-
+    
+    @field_validator('retail_commission', 'service_commission', 'total_commission')
+    @classmethod
+    def validate_admin_report_amounts(cls, v):
+        return financial_amount_validator(v)
 
 class PayoutPreviewBase(BaseModel):
     """Base payout preview structure"""
     barber_id: int
     include_retail: bool = True
     
-    class Config:
-        orm_mode = True
-
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 class PayoutPreviewBarber(PayoutPreviewBase):
     """Payout preview for barbers - limited to totals"""
     total_payout: Decimal
-    
-    _validate_total_payout = validator('total_payout', allow_reuse=True)(financial_amount_validator)
     message: str = "Contact admin for payout details"
-
+    
+    @field_validator('total_payout')
+    @classmethod
+    def validate_barber_payout(cls, v):
+        return financial_amount_validator(v)
 
 class PayoutPreviewAdmin(PayoutPreviewBase):
     """Payout preview for admins - full breakdown"""
@@ -128,13 +126,14 @@ class PayoutPreviewAdmin(PayoutPreviewBase):
     retail_amount: Decimal
     total_payout: Decimal
     
-    _validate_service_amount = validator('service_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_retail_amount = validator('retail_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_total_payout = validator('total_payout', allow_reuse=True)(financial_amount_validator)
     service_payments_count: int
     retail_items_count: int
+    
+    @field_validator('service_amount', 'retail_amount', 'total_payout')
+    @classmethod
+    def validate_admin_payout_amounts(cls, v):
+        return financial_amount_validator(v)
     retail_breakdown: Optional[dict] = None
-
 
 def filter_commission_response(data: dict, user_role: str, user_id: int, barber_id: int) -> dict:
     """

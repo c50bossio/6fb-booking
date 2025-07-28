@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import ConfigDict, validator
+from pydantic import ConfigDict, field_validator
 import os
 import logging
 from utils.secret_management import get_secret
@@ -232,7 +232,8 @@ class Settings(BaseSettings):
     enable_email_notifications: bool = True
     enable_sms_notifications: bool = True
     
-    @validator('secret_key')
+    @field_validator('secret_key')
+    @classmethod
     def validate_secret_key(cls, v):
         """Ensure secret key is set and secure"""
         if not v or v in ["your-secret-key-here", "test-secret-key", ""]:
@@ -241,21 +242,24 @@ class Settings(BaseSettings):
             logger.warning("Using default secret key - NOT SECURE for production")
         return v
     
-    @validator('sendgrid_api_key')
+    @field_validator('sendgrid_api_key')
+    @classmethod
     def validate_sendgrid_key(cls, v):
         """Validate SendGrid API key format and security"""
         if v and not v.startswith('SG.'):
             raise ValueError("Invalid SendGrid API key format")
         return v
     
-    @validator('twilio_account_sid') 
+    @field_validator('twilio_account_sid')
+    @classmethod
     def validate_twilio_sid(cls, v):
         """Validate Twilio Account SID format"""
         if v and not v.startswith('AC'):
             raise ValueError("Invalid Twilio Account SID format")
         return v
     
-    @validator('stripe_secret_key')
+    @field_validator('stripe_secret_key')
+    @classmethod
     def validate_stripe_key(cls, v):
         """Validate Stripe secret key format"""
         test_prefix = 'sk_' + 'test_'
@@ -391,7 +395,6 @@ class Settings(BaseSettings):
             logger.error(f"Error loading secrets: {e}")
             if self.is_production():
                 raise ValueError("Failed to load required secrets in production environment")
-
 
 # Instantiate settings and load secrets
 settings = Settings()

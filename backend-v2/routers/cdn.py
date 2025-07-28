@@ -22,7 +22,6 @@ router = APIRouter(
     tags=["cdn"]
 )
 
-
 # Request/Response models
 class CDNStatusResponse(BaseModel):
     enabled: bool
@@ -33,7 +32,6 @@ class CDNStatusResponse(BaseModel):
     last_checked: datetime
     error: Optional[str] = None
 
-
 class CDNAnalyticsResponse(BaseModel):
     cache_hit_rate: float = Field(..., description="Cache hit rate (0.0 to 1.0)")
     total_requests: int = Field(..., description="Total requests in time period")
@@ -42,19 +40,16 @@ class CDNAnalyticsResponse(BaseModel):
     error_rate: float = Field(..., description="Error rate (0.0 to 1.0)")
     top_assets: List[Dict[str, Any]] = Field(..., description="Top requested assets")
 
-
 class PurgeRequest(BaseModel):
     paths: Optional[List[str]] = Field(None, description="Specific paths to purge")
     tags: Optional[List[str]] = Field(None, description="Cache tags to purge")
     purge_all: bool = Field(False, description="Purge entire cache")
-
 
 class PurgeResponse(BaseModel):
     success: bool
     job_id: Optional[str] = None
     message: str
     errors: Optional[List[str]] = None
-
 
 class AssetOptimizationRequest(BaseModel):
     image_url: str
@@ -63,12 +58,10 @@ class AssetOptimizationRequest(BaseModel):
     format: str = "webp"
     quality: int = Field(85, ge=1, le=100)
 
-
 class AssetOptimizationResponse(BaseModel):
     original_url: str
     optimized_url: str
     estimated_savings_percent: Optional[float] = None
-
 
 @router.get("/status", response_model=CDNStatusResponse)
 async def get_cdn_status(
@@ -106,7 +99,6 @@ async def get_cdn_status(
         logger.error(f"Failed to get CDN status: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve CDN status")
 
-
 @router.get("/analytics", response_model=CDNAnalyticsResponse)
 async def get_cdn_analytics(
     days: int = 7,
@@ -140,7 +132,6 @@ async def get_cdn_analytics(
     except Exception as e:
         logger.error(f"Failed to get CDN analytics: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve CDN analytics")
-
 
 @router.post("/purge", response_model=PurgeResponse)
 async def purge_cdn_cache(
@@ -198,7 +189,6 @@ async def purge_cdn_cache(
         logger.error(f"Failed to purge CDN cache: {e}")
         raise HTTPException(status_code=500, detail="Failed to purge CDN cache")
 
-
 @router.post("/optimize-image", response_model=AssetOptimizationResponse)
 async def optimize_image(
     request: AssetOptimizationRequest,
@@ -236,7 +226,6 @@ async def optimize_image(
         logger.error(f"Failed to optimize image: {e}")
         raise HTTPException(status_code=500, detail="Failed to optimize image")
 
-
 @router.get("/asset-url")
 async def get_cdn_asset_url(
     path: str,
@@ -265,7 +254,6 @@ async def get_cdn_asset_url(
     except Exception as e:
         logger.error(f"Failed to get CDN asset URL: {e}")
         raise HTTPException(status_code=500, detail="Failed to get CDN asset URL")
-
 
 @router.get("/preload-headers")
 async def get_preload_headers(
@@ -311,7 +299,6 @@ async def get_preload_headers(
         logger.error(f"Failed to generate preload headers: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate preload headers")
 
-
 @router.get("/configuration")
 async def get_cdn_configuration(
     current_user: User = Depends(get_current_user)
@@ -347,7 +334,6 @@ async def get_cdn_configuration(
         logger.error(f"Failed to get CDN configuration: {e}")
         raise HTTPException(status_code=500, detail="Failed to get CDN configuration")
 
-
 # Background task for periodic cache warming
 async def warm_cdn_cache():
     """
@@ -369,7 +355,6 @@ async def warm_cdn_cache():
                 
     except Exception as e:
         logger.error(f"Failed to warm CDN cache: {e}")
-
 
 @router.post("/warm-cache")
 async def warm_cache(
@@ -397,7 +382,6 @@ async def warm_cache(
         "message": message
     }
 
-
 async def warm_specific_assets(assets: List[str]):
     """Warm cache for specific assets."""
     try:
@@ -407,7 +391,6 @@ async def warm_specific_assets(assets: List[str]):
                 logger.info(f"Warmed CDN cache for: {cdn_url}")
     except Exception as e:
         logger.error(f"Failed to warm specific assets: {e}")
-
 
 # Include router in main application
 __all__ = ["router"]

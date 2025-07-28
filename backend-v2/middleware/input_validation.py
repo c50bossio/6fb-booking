@@ -4,7 +4,7 @@ import html
 import bleach
 from typing import Any, Optional
 from fastapi import HTTPException, status
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -117,7 +117,7 @@ class SecurityValidation:
 class SecureBaseModel(BaseModel):
     """Base model with security validation"""
     
-    @validator('*', pre=True)
+    @field_validator('*', pre=True)
     def validate_security(cls, v):
         return SecurityValidation.sanitize_input(v)
 
@@ -128,13 +128,13 @@ class SecureAppointmentCreate(SecureBaseModel):
     start_time: str
     duration: int
     
-    @validator('title')
+    @field_validator('title')
     def validate_title(cls, v):
         if len(v) > 200:
             raise ValueError('Title too long')
         return v
     
-    @validator('description')
+    @field_validator('description')
     def validate_description(cls, v):
         if v and len(v) > 1000:
             raise ValueError('Description too long')
@@ -146,14 +146,14 @@ class SecureUserRegistration(SecureBaseModel):
     first_name: str
     last_name: str
     
-    @validator('email')
+    @field_validator('email')
     def validate_email(cls, v):
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match(email_pattern, v):
             raise ValueError('Invalid email format')
         return v.lower()
     
-    @validator('password')
+    @field_validator('password')
     def validate_password(cls, v):
         # Password strength validation
         if len(v) < 12:

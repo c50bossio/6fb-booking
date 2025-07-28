@@ -14,7 +14,6 @@ router = APIRouter(
     tags=["barber-availability"]
 )
 
-
 @router.get("/schedule/{barber_id}", response_model=dict)
 def get_barber_schedule(
     barber_id: int,
@@ -52,7 +51,6 @@ def get_barber_schedule(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/availability/{barber_id}", response_model=List[schemas.BarberAvailabilityResponse])
 def get_barber_availability(
     barber_id: int,
@@ -81,7 +79,6 @@ def get_barber_availability(
         return availability
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/availability/{barber_id}", response_model=schemas.BarberAvailabilityResponse)
 def create_barber_availability(
@@ -117,7 +114,6 @@ def create_barber_availability(
         return availability
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.put("/availability/{availability_id}", response_model=schemas.BarberAvailabilityResponse)
 def update_barber_availability(
@@ -156,7 +152,6 @@ def update_barber_availability(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.delete("/availability/{availability_id}")
 def delete_barber_availability(
     availability_id: int,
@@ -190,7 +185,6 @@ def delete_barber_availability(
         return {"message": "Availability deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/time-off/{barber_id}", response_model=List[schemas.BarberTimeOffResponse])
 def get_barber_time_off(
@@ -226,7 +220,6 @@ def get_barber_time_off(
         return time_off_requests
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/time-off/{barber_id}", response_model=schemas.BarberTimeOffResponse)
 def create_time_off_request(
@@ -268,7 +261,6 @@ def create_time_off_request(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/special/{barber_id}", response_model=List[schemas.BarberSpecialAvailabilityResponse])
 def get_special_availability(
     barber_id: int,
@@ -301,7 +293,6 @@ def get_special_availability(
         return special_availability
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/special/{barber_id}", response_model=schemas.BarberSpecialAvailabilityResponse)
 def create_special_availability(
@@ -339,7 +330,6 @@ def create_special_availability(
         return special_availability
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/check/{barber_id}")
 def check_barber_availability(
@@ -382,7 +372,6 @@ def check_barber_availability(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/available-barbers", response_model=schemas.BarberAvailabilityResponse)
 def get_available_barbers(

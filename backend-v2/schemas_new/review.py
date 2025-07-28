@@ -3,11 +3,10 @@ Pydantic schemas for review management and Google My Business integration.
 Handles validation for reviews, responses, templates, and analytics.
 """
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
-
 
 class ReviewPlatform(str, Enum):
     """Supported review platforms"""
@@ -20,14 +19,12 @@ class ReviewPlatform(str, Enum):
     STYLESEAT = "styleseat"
     OTHER = "other"
 
-
 class ReviewSentiment(str, Enum):
     """Review sentiment analysis results"""
     POSITIVE = "positive"
     NEUTRAL = "neutral"
     NEGATIVE = "negative"
     UNKNOWN = "unknown"
-
 
 class ReviewResponseStatus(str, Enum):
     """Status of review response"""
@@ -36,7 +33,6 @@ class ReviewResponseStatus(str, Enum):
     FAILED = "failed"
     NOT_NEEDED = "not_needed"
     DRAFT = "draft"
-
 
 # Review Schemas
 class ReviewBase(BaseModel):
@@ -49,7 +45,6 @@ class ReviewBase(BaseModel):
     review_text: Optional[str] = Field(None, description="Review content")
     review_date: datetime
     review_url: Optional[str] = Field(None, description="Direct link to review")
-
 
 class ReviewCreate(ReviewBase):
     """Schema for creating a new review"""
@@ -64,7 +59,6 @@ class ReviewCreate(ReviewBase):
             raise ValueError('External review ID cannot be empty')
         return v.strip()
 
-
 class ReviewUpdate(BaseModel):
     """Schema for updating a review"""
     reviewer_name: Optional[str] = Field(None, max_length=255)
@@ -77,7 +71,6 @@ class ReviewUpdate(BaseModel):
     is_flagged: Optional[bool] = None
     flag_reason: Optional[str] = Field(None, max_length=500)
     platform_data: Optional[Dict[str, Any]] = None
-
 
 class ReviewResponse(ReviewBase):
     """Schema for review responses"""
@@ -125,9 +118,9 @@ class ReviewResponse(ReviewBase):
     needs_response: bool = Field(default=False, description="Whether review needs a response")
     can_respond: bool = Field(default=False, description="Whether we can respond to this review")
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Review Response Schemas
 class ReviewResponseBase(BaseModel):
@@ -135,7 +128,6 @@ class ReviewResponseBase(BaseModel):
     response_text: str = Field(..., min_length=1, max_length=4096)
     response_type: str = Field(default="custom", description="Type of response")
     template_id: Optional[str] = Field(None, description="Template used for response")
-
 
 class ReviewResponseCreate(ReviewResponseBase):
     """Schema for creating a review response"""
@@ -155,7 +147,6 @@ class ReviewResponseCreate(ReviewResponseBase):
             raise ValueError('Response text too long (max 4096 characters)')
         return v
 
-
 class ReviewResponseUpdate(BaseModel):
     """Schema for updating a review response"""
     response_text: Optional[str] = Field(None, min_length=1, max_length=4096)
@@ -163,7 +154,6 @@ class ReviewResponseUpdate(BaseModel):
     keywords_used: Optional[List[str]] = None
     cta_included: Optional[bool] = None
     business_name_mentioned: Optional[bool] = None
-
 
 class ReviewResponseSchema(ReviewResponseBase):
     """Schema for review response display"""
@@ -200,9 +190,9 @@ class ReviewResponseSchema(ReviewResponseBase):
     # Computed properties
     is_ready_to_send: bool = Field(default=False, description="Whether response is ready to send")
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Review Template Schemas
 class ReviewTemplateBase(BaseModel):
@@ -212,7 +202,6 @@ class ReviewTemplateBase(BaseModel):
     category: str = Field(..., description="positive, negative, neutral")
     platform: Optional[ReviewPlatform] = None
     template_text: str = Field(..., min_length=1)
-
 
 class ReviewTemplateCreate(ReviewTemplateBase):
     """Schema for creating a review template"""
@@ -245,7 +234,6 @@ class ReviewTemplateCreate(ReviewTemplateBase):
                 raise ValueError('max_rating must be greater than or equal to min_rating')
         return v
 
-
 class ReviewTemplateUpdate(BaseModel):
     """Schema for updating a review template"""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
@@ -265,7 +253,6 @@ class ReviewTemplateUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_default: Optional[bool] = None
     priority: Optional[int] = None
-
 
 class ReviewTemplateSchema(ReviewTemplateBase):
     """Schema for review template display"""
@@ -300,9 +287,9 @@ class ReviewTemplateSchema(ReviewTemplateBase):
     updated_at: datetime
     last_used_at: Optional[datetime] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Analytics Schemas
 class ReviewAnalytics(BaseModel):
@@ -339,7 +326,6 @@ class ReviewAnalytics(BaseModel):
     services_mentioned: List[Dict[str, Any]] = Field(default_factory=list)
     competitor_mentions: List[str] = Field(default_factory=list)
 
-
 class ReviewFilters(BaseModel):
     """Filters for review queries"""
     platform: Optional[ReviewPlatform] = None
@@ -355,7 +341,6 @@ class ReviewFilters(BaseModel):
     search_query: Optional[str] = Field(None, max_length=255)
     business_id: Optional[str] = None
 
-
 class ReviewSyncRequest(BaseModel):
     """Request to sync reviews from platform"""
     platform: ReviewPlatform
@@ -363,7 +348,6 @@ class ReviewSyncRequest(BaseModel):
     force_full_sync: Optional[bool] = False
     sync_responses: Optional[bool] = True
     date_range_days: Optional[int] = Field(30, ge=1, le=365, description="Number of days to sync")
-
 
 class ReviewSyncResponse(BaseModel):
     """Response after review sync operation"""
@@ -385,7 +369,6 @@ class ReviewSyncResponse(BaseModel):
     
     errors: List[str] = Field(default_factory=list)
 
-
 # GMB-specific schemas
 class GMBLocation(BaseModel):
     """Google My Business location information"""
@@ -401,14 +384,12 @@ class GMBLocation(BaseModel):
     is_verified: bool = False
     is_published: bool = False
 
-
 class GMBAuthRequest(BaseModel):
     """Request to initiate GMB OAuth flow"""
     redirect_uri: Optional[str] = None
     scopes: Optional[List[str]] = Field(default_factory=lambda: [
         "https://www.googleapis.com/auth/business.manage"
     ])
-
 
 class GMBAuthResponse(BaseModel):
     """Response after GMB OAuth completion"""
@@ -417,13 +398,11 @@ class GMBAuthResponse(BaseModel):
     auth_url: Optional[str] = None
     integration_id: Optional[int] = None
 
-
 class ReviewTemplateGenerateRequest(BaseModel):
     """Request to generate response using template"""
     template_id: int
     business_name: Optional[str] = None
     custom_placeholders: Optional[Dict[str, str]] = Field(default_factory=dict)
-
 
 class ReviewTemplateGenerateResponse(BaseModel):
     """Generated response from template"""
@@ -434,14 +413,12 @@ class ReviewTemplateGenerateResponse(BaseModel):
     character_count: int
     seo_keywords_included: List[str] = Field(default_factory=list)
 
-
 class BulkResponseRequest(BaseModel):
     """Request to generate bulk responses"""
-    review_ids: List[int] = Field(..., min_items=1, max_items=50)
+    review_ids: List[int] = Field(..., min_length=1, max_length=50)
     template_id: Optional[int] = None
     auto_send: Optional[bool] = False
     business_name: Optional[str] = None
-
 
 class BulkResponseResult(BaseModel):
     """Result of bulk response operation"""
@@ -451,7 +428,6 @@ class BulkResponseResult(BaseModel):
     error: Optional[str] = None
     response_text: Optional[str] = None
 
-
 class BulkResponseResponse(BaseModel):
     """Response after bulk response operation"""
     success: bool
@@ -460,7 +436,6 @@ class BulkResponseResponse(BaseModel):
     successful_responses: int
     failed_responses: int
     results: List[BulkResponseResult] = Field(default_factory=list)
-
 
 # Auto-response configuration
 class AutoResponseConfig(BaseModel):
@@ -476,7 +451,6 @@ class AutoResponseConfig(BaseModel):
     business_hours_only: bool = False
     weekend_responses: bool = True
     template_selection_strategy: str = Field("smart", description="smart, random, or highest_priority")
-
 
 class AutoResponseStats(BaseModel):
     """Statistics for auto-response system"""

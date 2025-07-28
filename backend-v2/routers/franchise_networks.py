@@ -43,7 +43,6 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)]
 )
 
-
 def require_franchise_admin(current_user: User = Depends(get_current_user)) -> User:
     """Ensure user has franchise admin privileges"""
     if current_user.role not in ["admin", "super_admin", "franchise_admin"]:
@@ -53,7 +52,6 @@ def require_franchise_admin(current_user: User = Depends(get_current_user)) -> U
         )
     return current_user
 
-
 def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
     """Ensure user has super admin privileges"""
     if current_user.role != "super_admin":
@@ -62,7 +60,6 @@ def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
             detail="Super admin access required"
         )
     return current_user
-
 
 # Franchise Networks Management
 @router.post("/networks", response_model=FranchiseNetworkResponse)
@@ -110,7 +107,6 @@ async def create_franchise_network(
             detail=f"Failed to create franchise network: {str(e)}"
         )
 
-
 @router.get("/networks", response_model=List[FranchiseNetworkResponse])
 async def list_franchise_networks(
     status: Optional[FranchiseStatus] = Query(None),
@@ -152,7 +148,6 @@ async def list_franchise_networks(
             status_code=500,
             detail=f"Failed to retrieve franchise networks: {str(e)}"
         )
-
 
 @router.get("/networks/{network_id}", response_model=FranchiseNetworkResponse)
 async def get_franchise_network(
@@ -196,7 +191,6 @@ async def get_franchise_network(
             status_code=500,
             detail=f"Failed to retrieve franchise network: {str(e)}"
         )
-
 
 @router.put("/networks/{network_id}", response_model=FranchiseNetworkResponse)
 async def update_franchise_network(
@@ -242,7 +236,6 @@ async def update_franchise_network(
             status_code=500,
             detail=f"Failed to update franchise network: {str(e)}"
         )
-
 
 # Franchise Regions Management
 @router.post("/networks/{network_id}/regions", response_model=FranchiseRegionResponse)
@@ -303,7 +296,6 @@ async def create_franchise_region(
             detail=f"Failed to create franchise region: {str(e)}"
         )
 
-
 @router.get("/networks/{network_id}/regions", response_model=List[FranchiseRegionResponse])
 async def list_franchise_regions(
     network_id: int,
@@ -345,7 +337,6 @@ async def list_franchise_regions(
             status_code=500,
             detail=f"Failed to retrieve franchise regions: {str(e)}"
         )
-
 
 # Franchise Groups Management
 @router.post("/regions/{region_id}/groups", response_model=FranchiseGroupResponse)
@@ -405,7 +396,6 @@ async def create_franchise_group(
             status_code=500,
             detail=f"Failed to create franchise group: {str(e)}"
         )
-
 
 # Franchise Analytics and Dashboards
 @router.get("/networks/{network_id}/dashboard", response_model=FranchiseNetworkDashboard)
@@ -500,7 +490,6 @@ async def get_franchise_network_dashboard(
             detail=f"Failed to generate network dashboard: {str(e)}"
         )
 
-
 @router.post("/analytics/query", response_model=List[FranchiseAnalyticsResponse])
 async def query_franchise_analytics(
     analytics_filter: FranchiseAnalyticsFilter,
@@ -563,7 +552,6 @@ async def query_franchise_analytics(
             detail=f"Failed to query franchise analytics: {str(e)}"
         )
 
-
 @router.post("/benchmarking", response_model=BenchmarkingResponse)
 async def franchise_benchmarking_analysis(
     benchmarking_request: BenchmarkingRequest,
@@ -598,7 +586,6 @@ async def franchise_benchmarking_analysis(
             status_code=500,
             detail=f"Failed to perform benchmarking analysis: {str(e)}"
         )
-
 
 # Cross-Network Operations
 @router.get("/cross-network/performance", response_model=Dict[str, Any])
@@ -651,7 +638,6 @@ async def get_cross_network_performance(
             status_code=500,
             detail=f"Failed to retrieve cross-network performance: {str(e)}"
         )
-
 
 # Health and Status Endpoints
 @router.get("/health", response_model=Dict[str, Any])

@@ -4,7 +4,7 @@ Provides request/response models for franchise hierarchy management,
 analytics, and compliance tracking.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional, Dict, List, Any, Union
 from datetime import datetime
 from enum import Enum
@@ -15,19 +15,16 @@ from models.franchise import (
     ComplianceJurisdiction
 )
 
-
 # Base schemas for common patterns
 class TimestampMixin(BaseModel):
     """Common timestamp fields"""
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-
 class StatusMixin(BaseModel):
     """Common status fields"""
     status: FranchiseStatus = FranchiseStatus.ACTIVE
     is_active: bool = True
-
 
 # Franchise Network Schemas
 class FranchiseNetworkBase(BaseModel):
@@ -57,11 +54,9 @@ class FranchiseNetworkBase(BaseModel):
     
     established_date: Optional[datetime] = None
 
-
 class FranchiseNetworkCreate(FranchiseNetworkBase):
     """Schema for creating a new franchise network"""
     pass
-
 
 class FranchiseNetworkUpdate(BaseModel):
     """Schema for updating a franchise network"""
@@ -88,7 +83,6 @@ class FranchiseNetworkUpdate(BaseModel):
     is_active: Optional[bool] = None
     established_date: Optional[datetime] = None
 
-
 class FranchiseNetworkResponse(FranchiseNetworkBase, StatusMixin, TimestampMixin):
     """Schema for franchise network responses"""
     id: int
@@ -99,9 +93,9 @@ class FranchiseNetworkResponse(FranchiseNetworkBase, StatusMixin, TimestampMixin
     total_groups: Optional[int] = None
     network_revenue_ytd: Optional[float] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Franchise Region Schemas
 class FranchiseRegionBase(BaseModel):
@@ -134,11 +128,9 @@ class FranchiseRegionBase(BaseModel):
     performance_metrics: Dict[str, Any] = Field(default_factory=dict)
     benchmarking_data: Dict[str, Any] = Field(default_factory=dict)
 
-
 class FranchiseRegionCreate(FranchiseRegionBase):
     """Schema for creating a new franchise region"""
     pass
-
 
 class FranchiseRegionUpdate(BaseModel):
     """Schema for updating a franchise region"""
@@ -167,7 +159,6 @@ class FranchiseRegionUpdate(BaseModel):
     status: Optional[FranchiseStatus] = None
     is_active: Optional[bool] = None
 
-
 class FranchiseRegionResponse(FranchiseRegionBase, StatusMixin, TimestampMixin):
     """Schema for franchise region responses"""
     id: int
@@ -178,9 +169,9 @@ class FranchiseRegionResponse(FranchiseRegionBase, StatusMixin, TimestampMixin):
     region_revenue_ytd: Optional[float] = None
     compliance_score: Optional[float] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Franchise Group Schemas
 class FranchiseGroupBase(BaseModel):
@@ -215,11 +206,9 @@ class FranchiseGroupBase(BaseModel):
     
     formation_date: Optional[datetime] = None
 
-
 class FranchiseGroupCreate(FranchiseGroupBase):
     """Schema for creating a new franchise group"""
     pass
-
 
 class FranchiseGroupUpdate(BaseModel):
     """Schema for updating a franchise group"""
@@ -250,7 +239,6 @@ class FranchiseGroupUpdate(BaseModel):
     is_active: Optional[bool] = None
     formation_date: Optional[datetime] = None
 
-
 class FranchiseGroupResponse(FranchiseGroupBase, StatusMixin, TimestampMixin):
     """Schema for franchise group responses"""
     id: int
@@ -260,9 +248,9 @@ class FranchiseGroupResponse(FranchiseGroupBase, StatusMixin, TimestampMixin):
     group_revenue_ytd: Optional[float] = None
     performance_score: Optional[float] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Franchise Analytics Schemas
 class FranchiseAnalyticsFilter(BaseModel):
@@ -275,7 +263,6 @@ class FranchiseAnalyticsFilter(BaseModel):
     metrics: Optional[List[str]] = None
     include_benchmarks: bool = True
     include_forecasts: bool = False
-
 
 class FranchiseAnalyticsResponse(BaseModel):
     """Response schema for franchise analytics"""
@@ -306,9 +293,9 @@ class FranchiseAnalyticsResponse(BaseModel):
     computed_at: datetime
     data_completeness_score: float
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Compliance Schemas
 class FranchiseComplianceBase(BaseModel):
@@ -331,11 +318,9 @@ class FranchiseComplianceBase(BaseModel):
     risk_level: str = Field(default="medium", pattern="^(low|medium|high|critical)$")
     non_compliance_penalties: Dict[str, Any] = Field(default_factory=dict)
 
-
 class FranchiseComplianceCreate(FranchiseComplianceBase):
     """Schema for creating compliance tracking"""
     pass
-
 
 class FranchiseComplianceUpdate(BaseModel):
     """Schema for updating compliance status"""
@@ -350,15 +335,14 @@ class FranchiseComplianceUpdate(BaseModel):
     risk_level: Optional[str] = Field(None, pattern="^(low|medium|high|critical)$")
     non_compliance_penalties: Optional[Dict[str, Any]] = None
 
-
 class FranchiseComplianceResponse(FranchiseComplianceBase, TimestampMixin):
     """Schema for compliance responses"""
     id: int
     last_compliance_check: Optional[datetime] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Network Dashboard Schemas
 class FranchiseNetworkDashboard(BaseModel):
@@ -375,7 +359,6 @@ class FranchiseNetworkDashboard(BaseModel):
     real_time_metrics: Optional[Dict[str, Any]] = None
     last_updated: datetime
 
-
 # Cross-Network Benchmarking Schemas
 class BenchmarkingRequest(BaseModel):
     """Request schema for cross-network benchmarking"""
@@ -383,10 +366,9 @@ class BenchmarkingRequest(BaseModel):
     primary_entity_id: int
     comparison_entity_ids: Optional[List[int]] = None
     benchmark_type: str = Field(..., pattern="^(peer|industry|historical|target)$")
-    metrics: List[str] = Field(..., min_items=1)
+    metrics: List[str] = Field(..., min_length=1)
     time_period: str = Field(..., pattern="^(daily|weekly|monthly|quarterly|yearly)$")
     normalize_by_size: bool = True
-
 
 class BenchmarkingResponse(BaseModel):
     """Response schema for benchmarking analysis"""
@@ -397,7 +379,6 @@ class BenchmarkingResponse(BaseModel):
     recommendations: List[Dict[str, Any]]
     generated_at: datetime
 
-
 # API Response Wrappers
 class FranchiseAPIResponse(BaseModel):
     """Generic API response wrapper"""
@@ -406,7 +387,6 @@ class FranchiseAPIResponse(BaseModel):
     message: Optional[str] = None
     errors: Optional[List[str]] = None
     metadata: Optional[Dict[str, Any]] = None
-
 
 class PaginatedResponse(BaseModel):
     """Paginated response wrapper"""

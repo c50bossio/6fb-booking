@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
 from db import get_db
@@ -96,9 +96,9 @@ class CancellationPolicyResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class BookingCancellationRequest(BaseModel):
     reason: Optional[str] = Field(None, max_length=500)
     is_emergency: bool = False
@@ -136,9 +136,9 @@ class AppointmentCancellationResponse(BaseModel):
     is_emergency_exception: bool
     is_first_time_client_grace: bool
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class WaitlistEntryCreate(BaseModel):
     service_id: Optional[int] = None
     barber_id: Optional[int] = None
@@ -172,9 +172,9 @@ class WaitlistEntryResponse(BaseModel):
     created_at: datetime
     expires_at: Optional[datetime]
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 # Admin endpoints for policy management
 @router.post("/policies", response_model=CancellationPolicyResponse)
 async def create_cancellation_policy(

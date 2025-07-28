@@ -38,7 +38,6 @@ def get_google_flow(state: Optional[str] = None) -> Flow:
         flow.state = state
     return flow
 
-
 @router.get("/auth")
 async def calendar_auth(
     current_user: User = Depends(get_current_user),
@@ -69,7 +68,6 @@ async def calendar_auth(
     authorization_url = authorization_url.replace(state, encoded_state)
     
     return {"authorization_url": authorization_url}
-
 
 @router.get("/callback")
 async def calendar_callback(
@@ -132,7 +130,6 @@ async def calendar_callback(
             status_code=status.HTTP_302_FOUND
         )
 
-
 @router.delete("/disconnect")
 async def disconnect_calendar(
     current_user: User = Depends(get_current_user),
@@ -143,7 +140,6 @@ async def disconnect_calendar(
     db.commit()
     
     return {"message": "Google Calendar disconnected successfully"}
-
 
 @router.get("/status", response_model=schemas.CalendarConnectionStatus)
 async def calendar_status(
@@ -186,7 +182,6 @@ async def calendar_status(
             }
     
     return {"connected": False}
-
 
 @router.get("/list", response_model=schemas.CalendarListResponse)
 async def list_calendars(
@@ -257,7 +252,6 @@ async def list_calendars(
             detail=f"Error accessing Google Calendar: {str(e)}"
         )
 
-
 @router.post("/select-calendar", response_model=schemas.CalendarEventResponse)
 async def select_calendar(
     request: schemas.CalendarSelectRequest,
@@ -294,7 +288,6 @@ async def select_calendar(
             detail=str(e)
         )
 
-
 @router.get("/availability", response_model=schemas.CalendarAvailabilityResponse)
 async def check_availability(
     start_time: datetime,
@@ -324,7 +317,6 @@ async def check_availability(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-
 
 @router.get("/free-busy", response_model=schemas.CalendarFreeBusyResponse)
 async def get_free_busy(
@@ -362,7 +354,6 @@ async def get_free_busy(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-
 
 @router.post("/sync-appointment/{appointment_id}", response_model=schemas.CalendarEventResponse)
 async def sync_appointment_to_google(
@@ -410,7 +401,6 @@ async def sync_appointment_to_google(
             detail=str(e)
         )
 
-
 @router.post("/sync-appointments", response_model=schemas.CalendarSyncResponse)
 async def sync_appointments_to_google(
     request: schemas.CalendarSyncRequest,
@@ -438,7 +428,6 @@ async def sync_appointments_to_google(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-
 
 @router.delete("/unsync-appointment/{appointment_id}")
 async def unsync_appointment_from_google(
@@ -473,7 +462,6 @@ async def unsync_appointment_from_google(
             detail=str(e)
         )
 
-
 @router.post("/validate", response_model=schemas.CalendarValidationResponse)
 async def validate_calendar_integration(
     current_user: User = Depends(get_current_user),
@@ -495,7 +483,6 @@ async def validate_calendar_integration(
             "selected_calendar": None,
             "errors": [f"Validation error: {str(e)}"]
         }
-
 
 @router.get("/sync-status")
 async def get_sync_status(
@@ -523,7 +510,6 @@ async def get_sync_status(
             "sync_percentage": 0,
             "error": str(e)
         }
-
 
 @router.post("/check-conflicts/{appointment_id}")
 async def check_appointment_conflicts(
@@ -562,7 +548,6 @@ async def check_appointment_conflicts(
             detail=f"Error checking conflicts: {str(e)}"
         )
 
-
 @router.post("/bulk-sync")
 async def bulk_sync_appointments(
     request: schemas.CalendarSyncRequest,
@@ -592,7 +577,6 @@ async def bulk_sync_appointments(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error during bulk sync: {str(e)}"
         )
-
 
 @router.post("/cleanup-orphaned")
 async def cleanup_orphaned_events(

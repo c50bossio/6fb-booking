@@ -299,11 +299,14 @@ class GoogleCalendarService:
             return True
     
     def sync_appointment_to_google(self, appointment: Appointment) -> Optional[str]:
-        """Sync a V2 appointment to Google Calendar."""
+        """Sync a V2 appointment to Google Calendar with webhook support."""
         if not appointment.barber or not appointment.barber.google_calendar_credentials:
             return None
         
         try:
+            # Check if webhook subscription exists for real-time sync
+            webhook_subscription = self._get_or_create_webhook_subscription(appointment.barber)
+            
             # Create calendar event from appointment
             event = CalendarEvent(
                 id=None,
@@ -312,7 +315,8 @@ class GoogleCalendarService:
                            f"Service: {appointment.service_name}\n"
                            f"Duration: {appointment.duration_minutes} minutes\n"
                            f"Price: ${appointment.price}\n"
-                           f"Notes: {appointment.notes or 'None'}",
+                           f"Notes: {appointment.notes or 'None'}\n"
+                           f"BookedBarber ID: {appointment.id}",  # Add identifier for webhook processing
                 start_time=appointment.start_time,
                 end_time=appointment.start_time + timedelta(minutes=appointment.duration_minutes),
                 timezone=get_user_timezone(appointment.barber),
@@ -325,14 +329,35 @@ class GoogleCalendarService:
             appointment.google_event_id = google_event_id
             self.db.commit()
             
+            # Log sync operation
+            self._log_sync_operation(
+                user_id=appointment.barber.id,
+                appointment_id=appointment.id,
+                operation="create",
+                direction="to_google",
+                google_event_id=google_event_id,
+                status="success"
+            )
+            
             return google_event_id
             
         except Exception as e:
             self.logger.error(f"Error syncing appointment {appointment.id} to Google: {str(e)}")
+            
+            # Log failed sync operation
+            self._log_sync_operation(
+                user_id=appointment.barber.id,
+                appointment_id=appointment.id,
+                operation="create",
+                direction="to_google",
+                status="failed",
+                error_message=str(e)
+            )
+            
             return None
     
     def update_appointment_in_google(self, appointment: Appointment) -> bool:
-        """Update a V2 appointment in Google Calendar."""
+        """Update a V2 appointment in Google Calendar with enhanced logging."""
         if not appointment.barber or not appointment.barber.google_calendar_credentials:
             return False
         
@@ -349,21 +374,47 @@ class GoogleCalendarService:
                            f"Service: {appointment.service_name}\n"
                            f"Duration: {appointment.duration_minutes} minutes\n"
                            f"Price: ${appointment.price}\n"
-                           f"Notes: {appointment.notes or 'None'}",
+                           f"Notes: {appointment.notes or 'None'}\n"
+                           f"BookedBarber ID: {appointment.id}",  # Add identifier for webhook processing
                 start_time=appointment.start_time,
                 end_time=appointment.start_time + timedelta(minutes=appointment.duration_minutes),
                 timezone=get_user_timezone(appointment.barber),
                 attendees=[appointment.client.email] if appointment.client and appointment.client.email else None
             )
             
-            return self.update_event(appointment.barber, appointment.google_event_id, event)
+            result = self.update_event(appointment.barber, appointment.google_event_id, event)
+            
+            # Log sync operation
+            self._log_sync_operation(
+                user_id=appointment.barber.id,
+                appointment_id=appointment.id,
+                operation="update",
+                direction="to_google",
+                google_event_id=appointment.google_event_id,
+                status="success" if result else "failed",
+                error_message=None if result else "Update operation failed"
+            )
+            
+            return result
             
         except Exception as e:
             self.logger.error(f"Error updating appointment {appointment.id} in Google: {str(e)}")
+            
+            # Log failed sync operation
+            self._log_sync_operation(
+                user_id=appointment.barber.id,
+                appointment_id=appointment.id,
+                operation="update",
+                direction="to_google",
+                google_event_id=appointment.google_event_id,
+                status="failed",
+                error_message=str(e)
+            )
+            
             return False
     
     def delete_appointment_from_google(self, appointment: Appointment) -> bool:
-        """Delete a V2 appointment from Google Calendar."""
+        """Delete a V2 appointment from Google Calendar with enhanced logging."""
         if not appointment.barber or not appointment.barber.google_calendar_credentials:
             return False
         
@@ -371,16 +422,40 @@ class GoogleCalendarService:
             return True  # Nothing to delete
         
         try:
+            google_event_id = appointment.google_event_id  # Store before clearing
             result = self.delete_event(appointment.barber, appointment.google_event_id)
             
             # Clear the Google event ID
             appointment.google_event_id = None
             self.db.commit()
             
+            # Log sync operation
+            self._log_sync_operation(
+                user_id=appointment.barber.id,
+                appointment_id=appointment.id,
+                operation="delete",
+                direction="to_google",
+                google_event_id=google_event_id,
+                status="success" if result else "failed",
+                error_message=None if result else "Delete operation failed"
+            )
+            
             return result
             
         except Exception as e:
             self.logger.error(f"Error deleting appointment {appointment.id} from Google: {str(e)}")
+            
+            # Log failed sync operation
+            self._log_sync_operation(
+                user_id=appointment.barber.id,
+                appointment_id=appointment.id,
+                operation="delete",
+                direction="to_google",
+                google_event_id=appointment.google_event_id,
+                status="failed",
+                error_message=str(e)
+            )
+            
             return False
     
     def sync_all_appointments_to_google(self, user: User, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
@@ -486,3 +561,145 @@ class GoogleCalendarService:
             validation_results['errors'].append(f"Validation error: {str(e)}")
         
         return validation_results
+    
+    def _get_or_create_webhook_subscription(self, user: User):
+        """Get or create webhook subscription for user's Google Calendar."""
+        try:
+            from models import GoogleCalendarWebhookSubscription
+            
+            # Check for existing active subscription
+            subscription = self.db.query(GoogleCalendarWebhookSubscription).filter(
+                GoogleCalendarWebhookSubscription.user_id == user.id,
+                GoogleCalendarWebhookSubscription.is_active == True,
+                GoogleCalendarWebhookSubscription.expiration_time > datetime.utcnow()
+            ).first()
+            
+            if subscription:
+                return subscription
+            
+            # Create new subscription if none exists or expired
+            from services.google_calendar_webhook_service import GoogleCalendarWebhookService
+            webhook_service = GoogleCalendarWebhookService(self.db)
+            
+            try:
+                subscription = webhook_service.subscribe_to_calendar_events(user)
+                self.logger.info(f"Created webhook subscription for user {user.id}")
+                return subscription
+            except Exception as e:
+                self.logger.warning(f"Could not create webhook subscription for user {user.id}: {str(e)}")
+                return None
+                
+        except Exception as e:
+            self.logger.warning(f"Error managing webhook subscription for user {user.id}: {str(e)}")
+            return None
+    
+    def _log_sync_operation(
+        self, 
+        user_id: int, 
+        operation: str, 
+        direction: str, 
+        status: str,
+        appointment_id: Optional[int] = None,
+        google_event_id: Optional[str] = None,
+        error_message: Optional[str] = None
+    ):
+        """Log synchronization operation for audit trail."""
+        try:
+            from models import GoogleCalendarSyncLog
+            
+            sync_log = GoogleCalendarSyncLog(
+                user_id=user_id,
+                appointment_id=appointment_id,
+                operation=operation,
+                direction=direction,
+                status=status,
+                google_event_id=google_event_id,
+                google_calendar_id="primary",
+                error_message=error_message
+            )
+            
+            self.db.add(sync_log)
+            # Don't commit here - let the calling method handle commits
+            
+        except Exception as e:
+            self.logger.error(f"Error logging sync operation: {str(e)}")
+    
+    def enable_real_time_sync(self, user: User) -> bool:
+        """Enable real-time synchronization for a user by creating webhook subscription."""
+        try:
+            subscription = self._get_or_create_webhook_subscription(user)
+            return subscription is not None
+        except Exception as e:
+            self.logger.error(f"Error enabling real-time sync for user {user.id}: {str(e)}")
+            return False
+    
+    def disable_real_time_sync(self, user: User) -> bool:
+        """Disable real-time synchronization for a user by removing webhook subscriptions."""
+        try:
+            from models import GoogleCalendarWebhookSubscription
+            from services.google_calendar_webhook_service import GoogleCalendarWebhookService
+            
+            # Get all active subscriptions for user
+            subscriptions = self.db.query(GoogleCalendarWebhookSubscription).filter(
+                GoogleCalendarWebhookSubscription.user_id == user.id,
+                GoogleCalendarWebhookSubscription.is_active == True
+            ).all()
+            
+            webhook_service = GoogleCalendarWebhookService(self.db)
+            success_count = 0
+            
+            for subscription in subscriptions:
+                if webhook_service.unsubscribe_from_calendar_events(subscription, user):
+                    success_count += 1
+            
+            self.logger.info(f"Disabled {success_count} webhook subscriptions for user {user.id}")
+            return success_count == len(subscriptions)
+            
+        except Exception as e:
+            self.logger.error(f"Error disabling real-time sync for user {user.id}: {str(e)}")
+            return False
+    
+    def get_sync_status(self, user: User) -> Dict[str, Any]:
+        """Get comprehensive sync status for a user."""
+        try:
+            from models import GoogleCalendarWebhookSubscription, GoogleCalendarSyncLog
+            
+            # Check webhook subscriptions
+            active_subscriptions = self.db.query(GoogleCalendarWebhookSubscription).filter(
+                GoogleCalendarWebhookSubscription.user_id == user.id,
+                GoogleCalendarWebhookSubscription.is_active == True
+            ).count()
+            
+            # Get recent sync logs
+            recent_syncs = self.db.query(GoogleCalendarSyncLog).filter(
+                GoogleCalendarSyncLog.user_id == user.id,
+                GoogleCalendarSyncLog.created_at >= datetime.utcnow() - timedelta(days=7)
+            ).count()
+            
+            recent_errors = self.db.query(GoogleCalendarSyncLog).filter(
+                GoogleCalendarSyncLog.user_id == user.id,
+                GoogleCalendarSyncLog.status == "failed",
+                GoogleCalendarSyncLog.created_at >= datetime.utcnow() - timedelta(days=7)
+            ).count()
+            
+            return {
+                "real_time_enabled": active_subscriptions > 0,
+                "active_subscriptions": active_subscriptions,
+                "recent_syncs": recent_syncs,
+                "recent_errors": recent_errors,
+                "error_rate": recent_errors / max(recent_syncs, 1),
+                "last_sync": self.db.query(GoogleCalendarSyncLog).filter(
+                    GoogleCalendarSyncLog.user_id == user.id
+                ).order_by(GoogleCalendarSyncLog.created_at.desc()).first()
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting sync status for user {user.id}: {str(e)}")
+            return {
+                "real_time_enabled": False,
+                "active_subscriptions": 0,
+                "recent_syncs": 0,
+                "recent_errors": 0,
+                "error_rate": 0,
+                "last_sync": None
+            }

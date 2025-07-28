@@ -2,7 +2,7 @@
 Booking and appointment schemas for the API.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from datetime import date as Date
 from typing import Optional
 
@@ -16,7 +16,8 @@ class QuickAppointmentCreate(BaseModel):
     service: str = Field(..., description="Service type for the appointment", example="Haircut")
     notes: Optional[str] = Field(None, description="Optional special instructions or notes", example="Please use scissors only")
     
-    @validator('service')
+    @field_validator('service')
+    @classmethod
     def validate_service(cls, v):
         valid_services = ["Haircut", "Shave", "Haircut & Shave"]
         if v not in valid_services:

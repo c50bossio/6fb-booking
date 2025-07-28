@@ -21,13 +21,11 @@ from services.privacy_anonymization_service import PrivacyAnonymizationService
 
 router = APIRouter(prefix="/ai-analytics", tags=["ai-analytics"])
 
-
 class BenchmarkRequest(BaseModel):
     """Request model for benchmark comparisons"""
     metric_type: str = Field(..., description="Type of metric: revenue, appointments, efficiency")
     date_range_start: Optional[date] = None
     date_range_end: Optional[date] = None
-
 
 class PredictionRequest(BaseModel):
     """Request model for predictions"""
@@ -35,11 +33,9 @@ class PredictionRequest(BaseModel):
     months_ahead: Optional[int] = Field(6, description="Months to predict ahead (for forecasting)")
     include_seasonal: Optional[bool] = Field(True, description="Include seasonal adjustments")
 
-
 class ConsentUpdateRequest(BaseModel):
     """Request model for updating AI analytics consent"""
     consent_types: List[str] = Field(..., description="List of consent types to grant")
-
 
 def check_ai_analytics_consent(user_id: int, db: Session) -> bool:
     """Check if user has consented to AI analytics"""
@@ -56,7 +52,6 @@ def check_ai_analytics_consent(user_id: int, db: Session) -> bool:
     ).first()
     
     return consent is not None
-
 
 @router.post("/consent")
 async def update_ai_analytics_consent(
@@ -119,7 +114,6 @@ async def update_ai_analytics_consent(
         "consents_granted": updated_consents,
         "privacy_notice": "Your data will be anonymized and aggregated for industry insights. You can withdraw consent at any time."
     }
-
 
 @router.get("/benchmarks/{metric_type}")
 async def get_industry_benchmark(
@@ -191,7 +185,6 @@ async def get_industry_benchmark(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating benchmark: {str(e)}")
 
-
 @router.get("/benchmarks/comprehensive")
 async def get_comprehensive_benchmark_report(
     current_user: User = Depends(get_current_user),
@@ -226,7 +219,6 @@ async def get_comprehensive_benchmark_report(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
-
 
 @router.post("/predictions")
 async def get_business_predictions(
@@ -320,7 +312,6 @@ async def get_business_predictions(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating predictions: {str(e)}")
 
-
 @router.get("/insights/coaching")
 async def get_ai_coaching_insights(
     current_user: User = Depends(get_current_user),
@@ -384,7 +375,6 @@ async def get_ai_coaching_insights(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating coaching insights: {str(e)}")
 
-
 @router.get("/insights/market-intelligence")
 async def get_market_intelligence(
     current_user: User = Depends(get_current_user),
@@ -425,7 +415,6 @@ async def get_market_intelligence(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating market intelligence: {str(e)}")
-
 
 @router.get("/privacy/report")
 async def get_privacy_compliance_report(
@@ -494,7 +483,6 @@ async def get_privacy_compliance_report(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating privacy report: {str(e)}")
 
-
 # Helper functions for coaching insights
 
 def _generate_growth_opportunities(benchmark_report: Dict[str, Any], revenue_predictions: List[Any]) -> List[str]:
@@ -518,7 +506,6 @@ def _generate_growth_opportunities(benchmark_report: Dict[str, Any], revenue_pre
     
     return opportunities
 
-
 def _generate_retention_actions(churn_analysis: Dict[str, Any]) -> List[str]:
     """Generate retention actions based on churn analysis"""
     
@@ -538,7 +525,6 @@ def _generate_retention_actions(churn_analysis: Dict[str, Any]) -> List[str]:
     
     return actions
 
-
 def _generate_weekly_focus_areas(benchmark_report: Dict[str, Any], churn_analysis: Dict[str, Any]) -> List[str]:
     """Generate weekly focus areas for coaching"""
     
@@ -557,7 +543,6 @@ def _generate_weekly_focus_areas(benchmark_report: Dict[str, Any], churn_analysi
     focus_areas.append("Week 4: Review progress and adjust strategy")
     
     return focus_areas
-
 
 def _get_success_patterns_for_segment(business_segment: str) -> List[str]:
     """Get success patterns for business segment"""
@@ -587,7 +572,6 @@ def _get_success_patterns_for_segment(business_segment: str) -> List[str]:
     
     return patterns.get(business_segment, ["Focus on client satisfaction and service quality"])
 
-
 # Helper functions for market intelligence
 
 def _get_industry_trends(db: Session, segment) -> Dict[str, Any]:
@@ -602,7 +586,6 @@ def _get_industry_trends(db: Session, segment) -> Dict[str, Any]:
         "technology_adoption": "85% of top performers use online booking"
     }
 
-
 def _get_competitive_positioning(db: Session, user_id: int, segment) -> Dict[str, Any]:
     """Get competitive positioning analysis"""
     
@@ -613,7 +596,6 @@ def _get_competitive_positioning(db: Session, user_id: int, segment) -> Dict[str
         "growth_rate": "Above average",
         "market_share_potential": "Moderate expansion opportunity"
     }
-
 
 def _identify_market_opportunities(db: Session, segment) -> List[str]:
     """Identify market opportunities for the segment"""
@@ -626,7 +608,6 @@ def _identify_market_opportunities(db: Session, segment) -> List[str]:
     
     return opportunities
 
-
 def _get_pricing_insights(db: Session, segment) -> Dict[str, Any]:
     """Get pricing insights for the segment"""
     
@@ -636,7 +617,6 @@ def _get_pricing_insights(db: Session, segment) -> Dict[str, Any]:
         "package_pricing": "3-service packages average $120",
         "seasonal_adjustments": "Holiday period allows 10-15% premium"
     }
-
 
 def _get_seasonal_intelligence(db: Session, segment) -> Dict[str, Any]:
     """Get seasonal intelligence for the segment"""
@@ -650,7 +630,6 @@ def _get_seasonal_intelligence(db: Session, segment) -> Dict[str, Any]:
             "Adjust staffing based on seasonal patterns"
         ]
     }
-
 
 # Import numpy for calculations
 import numpy as np

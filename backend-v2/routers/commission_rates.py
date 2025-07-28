@@ -23,13 +23,11 @@ router = APIRouter(
     tags=["commission-rates"]
 )
 
-
 # Pydantic schemas for commission rates
 class CommissionRateUpdate(BaseModel):
     """Schema for updating commission rates"""
     rate: float = Field(..., ge=0, le=1, description="Commission rate (0.0 to 1.0)")
     commission_type: Optional[str] = Field(None, description="Specific commission type")
-
 
 class CommissionRateResponse(BaseModel):
     """Response schema for commission rate info"""
@@ -41,7 +39,6 @@ class CommissionRateResponse(BaseModel):
     last_updated: datetime
     rate_status: str
 
-
 class CommissionOptimizationResponse(BaseModel):
     """Response schema for commission optimization"""
     barber_id: int
@@ -50,14 +47,12 @@ class CommissionOptimizationResponse(BaseModel):
     optimization_score: int
     generated_at: datetime
 
-
 class CommissionSimulationRequest(BaseModel):
     """Request schema for commission simulation"""
     commission_type: str = Field(..., description="Type of commission: service, retail, pos")
     new_rate: float = Field(..., ge=0, le=1, description="New rate to simulate")
     monthly_volume: float = Field(..., gt=0, description="Expected monthly transaction volume")
     average_transaction: float = Field(..., gt=0, description="Average transaction amount")
-
 
 class CommissionSimulationResponse(BaseModel):
     """Response schema for commission simulation"""
@@ -67,7 +62,6 @@ class CommissionSimulationResponse(BaseModel):
     earnings_change_percent: float
     monthly_transactions: int
     recommendations: List[str]
-
 
 @router.get("/{barber_id}", response_model=CommissionRateResponse)
 @financial_rate_limit
@@ -115,7 +109,6 @@ async def get_barber_commission_rates(
             detail="Error retrieving commission rates"
         )
 
-
 @router.get("/", response_model=List[CommissionRateResponse])
 @financial_rate_limit
 async def get_all_commission_rates(
@@ -148,7 +141,6 @@ async def get_all_commission_rates(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error retrieving commission rates"
         )
-
 
 @router.put("/{barber_id}")
 @financial_rate_limit
@@ -201,7 +193,6 @@ async def update_commission_rate(
             detail="Error updating commission rate"
         )
 
-
 @router.get("/{barber_id}/optimize", response_model=CommissionOptimizationResponse)
 @financial_rate_limit
 async def get_commission_optimization(
@@ -245,7 +236,6 @@ async def get_commission_optimization(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error generating optimization recommendations"
         )
-
 
 @router.post("/simulate", response_model=CommissionSimulationResponse)
 @financial_rate_limit

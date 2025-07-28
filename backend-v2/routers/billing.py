@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Dict, List, Optional
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from db import get_db
 from models import User, Organization, UserOrganization
@@ -76,7 +76,7 @@ class PriceCalculationRequest(BaseModel):
     chairs_count: int = Field(..., ge=1, le=100, description="Number of chairs (1-100)")
     annual_billing: bool = Field(False, description="Apply annual discount (20% off)")
     
-    @validator('chairs_count')
+    @field_validator('chairs_count')
     def validate_chairs(cls, v):
         if v < 1 or v > 100:
             raise ValueError("Chairs count must be between 1 and 100")

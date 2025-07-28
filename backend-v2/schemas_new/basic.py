@@ -3,18 +3,16 @@ Basic schemas for the booking system.
 Contains essential schemas needed by routers.
 """
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import List, Optional, Dict, Any
 from datetime import datetime, date, time
 from enum import Enum
-
 
 class UserRole(str, Enum):
     """User roles"""
     admin = "admin"
     user = "user"
     barber = "barber"
-
 
 class UserBase(BaseModel):
     """Base user schema"""
@@ -23,17 +21,14 @@ class UserBase(BaseModel):
     role: Optional[UserRole] = UserRole.user
     timezone: Optional[str] = None
 
-
 class UserCreate(UserBase):
     """User creation schema"""
     password: str
-
 
 class UserLogin(BaseModel):
     """User login schema"""
     email: EmailStr
     password: str
-
 
 class User(UserBase):
     """User response schema"""
@@ -41,13 +36,12 @@ class User(UserBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 class UserResponse(User):
     """Extended user response"""
-
 
 class TimeSlot(BaseModel):
     """Time slot information"""
@@ -56,7 +50,6 @@ class TimeSlot(BaseModel):
     booking_id: Optional[int] = None
     blocked_reason: Optional[str] = None
 
-
 class SlotsResponse(BaseModel):
     """Available slots response"""
     date: date
@@ -64,12 +57,12 @@ class SlotsResponse(BaseModel):
     slots: List[TimeSlot]
     business_hours: Dict[str, Any]
     
-    class Config:
+    model_config = ConfigDict(
         json_encoders = {
             time: lambda v: v.isoformat(),
             date: lambda v: v.isoformat()
         }
-
+)
 
 class TokenResponse(BaseModel):
     """Token response schema"""
@@ -77,13 +70,11 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     expires_in: Optional[int] = None
 
-
 class HealthCheck(BaseModel):
     """Health check response"""
     status: str
     timestamp: datetime
     version: Optional[str] = None
-
 
 class Token(BaseModel):
     """Token response schema"""
@@ -92,12 +83,10 @@ class Token(BaseModel):
     expires_in: Optional[int] = None
     refresh_token: Optional[str] = None
 
-
 class PasswordResetResponse(BaseModel):
     """Password reset response"""
     message: str
     success: bool = True
-
 
 class RegistrationResponse(BaseModel):
     """Registration response"""
@@ -105,12 +94,10 @@ class RegistrationResponse(BaseModel):
     user: User
     access_token: Optional[str] = None
 
-
 class ChangePasswordResponse(BaseModel):
     """Change password response"""
     message: str
     success: bool = True
-
 
 class BookingCreate(BaseModel):
     """Booking creation schema"""
@@ -119,7 +106,6 @@ class BookingCreate(BaseModel):
     duration: Optional[int] = 60
     service_id: Optional[int] = None
     notes: Optional[str] = None
-
 
 class BookingUpdate(BaseModel):
     """Booking update schema"""
@@ -130,7 +116,6 @@ class BookingUpdate(BaseModel):
     notes: Optional[str] = None
     status: Optional[str] = None
 
-
 class BookingResponse(BaseModel):
     """Booking response schema"""
     id: int
@@ -140,14 +125,14 @@ class BookingResponse(BaseModel):
     status: str
     created_at: datetime
     
-    class Config:
-        from_attributes = True
-        json_encoders = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_encoders={
             time: lambda v: v.isoformat(),
             date: lambda v: v.isoformat(),
             datetime: lambda v: v.isoformat()
         }
-
+    )
 
 class BookingListResponse(BaseModel):
     """Booking list response schema"""
@@ -155,7 +140,6 @@ class BookingListResponse(BaseModel):
     total: int
     page: int
     per_page: int
-
 
 # Add placeholder schemas for other commonly used types
 class ClientCreate(BaseModel):
@@ -165,7 +149,6 @@ class ClientCreate(BaseModel):
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
 
-
 class ClientResponse(BaseModel):
     """Client response schema"""
     id: int
@@ -174,9 +157,9 @@ class ClientResponse(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 class ServiceCreate(BaseModel):
     """Service creation schema"""
@@ -184,7 +167,6 @@ class ServiceCreate(BaseModel):
     duration: int
     price: float
     description: Optional[str] = None
-
 
 class ServiceResponse(BaseModel):
     """Service response schema"""
@@ -194,5 +176,6 @@ class ServiceResponse(BaseModel):
     price: float
     description: Optional[str] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True
+    )

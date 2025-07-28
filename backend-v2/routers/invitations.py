@@ -10,7 +10,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 from db import get_db
 from models import User, UserOrganization
@@ -32,7 +32,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-
 # Pydantic models
 class InvitationCreate(BaseModel):
     """Request model for creating an invitation"""
@@ -42,7 +41,6 @@ class InvitationCreate(BaseModel):
     role: InvitationRole
     message: Optional[str] = Field(None, max_length=500)
     organization_id: int
-
 
 class InvitationResponse(BaseModel):
     """Response model for invitation data"""
@@ -61,15 +59,14 @@ class InvitationResponse(BaseModel):
     message: Optional[str]
     invitation_url: Optional[str] = None
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class InvitationAccept(BaseModel):
     """Request model for accepting an invitation"""
     password: str = Field(..., min_length=8)
     name: Optional[str] = Field(None, min_length=1, max_length=255)
-
 
 class InvitationListResponse(BaseModel):
     """Response model for invitation list"""
@@ -78,11 +75,9 @@ class InvitationListResponse(BaseModel):
     pending_count: int
     accepted_count: int
 
-
 def has_invitation_permission(checker: PermissionChecker) -> bool:
     """Check if user has permission to manage invitations using new permission system"""
     return checker.has_permission(Permission.INVITE_STAFF)
-
 
 @router.post("/", response_model=InvitationResponse, status_code=status.HTTP_201_CREATED)
 async def create_invitation(
@@ -176,7 +171,6 @@ async def create_invitation(
     
     return InvitationResponse(**response)
 
-
 @router.get("/", response_model=InvitationListResponse)
 async def list_invitations(
     organization_id: int,
@@ -241,7 +235,6 @@ async def list_invitations(
         accepted_count=accepted_count
     )
 
-
 @router.get("/{token}", response_model=InvitationResponse)
 async def get_invitation_by_token(
     token: str,
@@ -272,7 +265,6 @@ async def get_invitation_by_token(
         db.commit()
     
     return InvitationResponse(**invitation.to_dict())
-
 
 @router.post("/{token}/accept", response_model=dict)
 async def accept_invitation(
@@ -390,7 +382,6 @@ async def accept_invitation(
         "redirect_url": "/dashboard"
     }
 
-
 @router.post("/{invitation_id}/resend", response_model=dict)
 async def resend_invitation(
     invitation_id: int,
@@ -458,7 +449,6 @@ async def resend_invitation(
         "expires_at": invitation.expires_at.isoformat()
     }
 
-
 @router.delete("/{invitation_id}", response_model=dict)
 async def cancel_invitation(
     invitation_id: int,
@@ -506,7 +496,6 @@ async def cancel_invitation(
     db.commit()
     
     return {"message": "Invitation cancelled successfully"}
-
 
 async def send_invitation_email(invitation: StaffInvitation, invitation_url: str):
     """Send invitation email to the invitee"""

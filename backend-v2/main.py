@@ -4,12 +4,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 # Import tracking models to register them with SQLAlchemy
-from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks, smart_insights
+from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks, smart_insights, pwa, cache_performance, realtime_calendar, calendar_export
+
+# Import V2 webhook endpoints
+from api.v2.endpoints import google_calendar_webhook
 # Consolidated analytics router (replaces: analytics, ai_analytics, marketing_analytics, email_analytics)
 from routers import unified_analytics
 
 # Import V2 API endpoints for Six Figure Barber enhancements
-from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization, six_figure_barber_analytics, six_figure_barber_crm
+from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization, six_figure_barber_analytics, six_figure_barber_crm, analytics
 # Import enhanced Six Figure Barber analytics
 from routers import six_figure_enhanced_analytics
 # Import deployment test endpoint
@@ -27,11 +30,25 @@ from middleware.sentry_middleware import SentryEnhancementMiddleware
 from middleware.enhanced_security import EnhancedSecurityMiddleware, WebhookSecurityMiddleware
 from middleware.configuration_security import ConfigurationSecurityMiddleware, configuration_reporter
 from middleware.cache_middleware import SmartCacheMiddleware
+from middleware.csrf_middleware import CSRFMiddleware
 import logging
+import sys
 
 # Initialize Sentry error tracking (must be done before importing FastAPI app)
 from config.sentry import configure_sentry
 sentry_configured = configure_sentry()
+
+# Validate environment variables at startup (SECURITY CRITICAL)
+from utils.env_validator import EnvValidator
+env_validator = EnvValidator()
+validation_result = env_validator.validate_all()
+if validation_result.get('critical_missing', 0) > 0:
+    logger = logging.getLogger(__name__)
+    logger.critical("❌ CRITICAL: Required environment variables are missing. Application cannot start safely.")
+    for var in validation_result.get('missing_required', []):
+        logger.critical(f"   Missing: {var}")
+    logger.critical("🔧 Fix: Copy .env.template to .env and configure required variables")
+    sys.exit(1)
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -65,11 +82,25 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ SRE system initialization failed: {e}")
         # Continue without SRE rather than fail startup
     
-    # Initialize Redis cache
+    # Initialize Redis cache and API caching system
     try:
         from services.startup_cache import startup_cache_init
+        from services.api_cache_service import initialize_api_cache
+        from services.cache_monitoring_service import start_monitoring_loop
+        
+        # Initialize base cache
         cache_results = await startup_cache_init()
-        logger.info(f"✅ Cache initialization completed: {cache_results}")
+        logger.info(f"✅ Base cache initialization completed: {cache_results}")
+        
+        # Initialize API cache service
+        await initialize_api_cache()
+        logger.info("✅ API cache service initialized")
+        
+        # Start cache monitoring loop
+        import asyncio
+        asyncio.create_task(start_monitoring_loop(interval_seconds=60))
+        logger.info("✅ Cache monitoring started")
+        
     except Exception as e:
         logger.error(f"❌ Cache initialization failed: {e}")
         # Continue without cache rather than fail startup
@@ -96,10 +127,25 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ Performance monitoring initialization failed: {e}")
         # Continue without performance monitoring rather than fail startup
     
+    # Initialize Google Calendar webhook worker
+    try:
+        from workers.google_calendar_webhook_worker import start_webhook_worker
+        await start_webhook_worker()
+        logger.info("✅ Google Calendar webhook worker started")
+        
+    except Exception as e:
+        logger.error(f"❌ Google Calendar webhook worker initialization failed: {e}")
+        # Continue without webhook worker rather than fail startup
+    
     yield
     
     # Shutdown
     try:
+        # Stop Google Calendar webhook worker
+        from workers.google_calendar_webhook_worker import stop_webhook_worker
+        await stop_webhook_worker()
+        logger.info("✅ Google Calendar webhook worker stopped")
+        
         # Stop SRE services
         from services.observability_service import observability_service
         await observability_service.stop()
@@ -204,6 +250,10 @@ if ENVIRONMENT == "development" and ENABLE_DEVELOPMENT_MODE:
     # Add smart cache middleware for development
     app.add_middleware(SmartCacheMiddleware, enable_cache=True)
     
+    # Add CSRF protection middleware (essential for security)
+    # TEMPORARILY DISABLED for debugging login issue
+    # app.add_middleware(CSRFMiddleware)
+    
     # Only essential middleware for development
     app.add_middleware(SecurityHeadersMiddleware)
     
@@ -259,6 +309,10 @@ else:
     # Add MFA enforcement middleware for admin operations
     app.add_middleware(MFAEnforcementMiddleware)
 
+    # Add CSRF protection middleware (before other security middleware)
+    # TEMPORARILY DISABLED for debugging login issue
+    # app.add_middleware(CSRFMiddleware)
+    
     # Add enhanced security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
     
@@ -390,6 +444,7 @@ app.include_router(clients.router, prefix="/api/v2")
 app.include_router(users.router, prefix="/api/v2")
 app.include_router(timezones.router, prefix="/api/v2")
 app.include_router(google_calendar.router, prefix="/api/v2")  # Unified Google Calendar integration
+app.include_router(google_calendar_webhook.router)  # Google Calendar webhook endpoints (includes /api/v2 prefix)
 app.include_router(services.router, prefix="/api/v2")
 # app.include_router(service_templates.router, prefix="/api/v2/service-templates")  # Temporarily disabled due to schema issues
 app.include_router(pricing_validation.router, prefix="/api/v2")
@@ -402,6 +457,7 @@ app.include_router(webhooks.router, prefix="/api/v2")
 app.include_router(dashboard.router, prefix="/api/v2")
 app.include_router(booking_rules.router, prefix="/api/v2")
 app.include_router(notifications.router, prefix="/api/v2")
+app.include_router(pwa.router)  # PWA endpoints (includes /api/v2 prefix in router definition)
 app.include_router(imports.router, prefix="/api/v2")
 app.include_router(exports.router, prefix="/api/v2")  # Data export functionality
 app.include_router(sms_conversations.router, prefix="/api/v2")
@@ -427,7 +483,7 @@ app.include_router(invitations.router)  # Staff invitation management - re-enabl
 app.include_router(organizations.router, prefix="/api/v2")  # Organization management
 app.include_router(trial_monitoring.router, prefix="/api/v2")  # Trial expiration monitoring and notifications
 app.include_router(privacy.router)  # GDPR compliance and privacy management
-# app.include_router(cache.router)  # Redis cache management and monitoring - disabled due to archived services
+app.include_router(cache_performance.router, prefix="/api/v2")  # Enhanced Redis API cache performance monitoring
 # Replaced with unified_analytics.router - see consolidated analytics below
 # CONSOLIDATED ANALYTICS ROUTER - Replaces analytics, ai_analytics, marketing_analytics, email_analytics
 app.include_router(unified_analytics.router, prefix="/api/v2")  # Unified analytics with core, AI, and marketing analytics
@@ -451,12 +507,17 @@ app.include_router(ai_upselling.router, prefix="/api/v2")  # AI Agent for autono
 app.include_router(calendar_revenue_optimization.router, prefix="/api/v2")  # Calendar revenue optimization - Six Figure Barber methodology
 app.include_router(six_figure_barber_analytics.router, prefix="/api/v2")  # Six Figure Barber methodology core analytics
 app.include_router(six_figure_barber_crm.router, prefix="/api/v2")  # Six Figure Barber CRM system
+app.include_router(analytics.router, prefix="/api/v2")  # Comprehensive Six Figure Barber Analytics Dashboard
 app.include_router(six_figure_enhanced_analytics.router)  # Enhanced Six Figure Barber Analytics with Advanced Features
 app.include_router(smart_insights.router)  # Smart Insights Hub - intelligent consolidation of all analytics
 app.include_router(search.router, prefix="/api/v2")  # Global search functionality
 # Include search health and management router
 from routers import search_health
 app.include_router(search_health.router)  # Search health endpoints (includes /api/v2 prefix in router definition)
+
+# Real-time calendar WebSocket and API endpoints
+app.include_router(realtime_calendar.router)  # Real-time calendar updates (includes WebSocket and API endpoints)
+app.include_router(calendar_export.router)  # Calendar export and sync functionality (includes /api/v2 prefix in router definition)
 
 # DEPLOYMENT TEST ENDPOINT - Remove after deployment verification
 app.include_router(test_deployment_router, prefix="/api/v2")
@@ -500,4 +561,3 @@ def security_status():
 @app.get("/security/compliance")
 def security_compliance():
     """Get security compliance report"""
-    return configuration_reporter.get_compliance_report()

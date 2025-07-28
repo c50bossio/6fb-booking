@@ -1,0 +1,740 @@
+[
+  {
+    "timestamp": "2025-07-28T10:25:01.948Z",
+    "total": 0,
+    "static": 0,
+    "app": 0,
+    "chunks": {
+      "(auth)": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/(auth)"
+      },
+      "(public)": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/(public)"
+      },
+      "[slug]": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/[slug]"
+      },
+      "_not-found": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/_not-found"
+      },
+      "admin": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/admin"
+      },
+      "agents": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/agents"
+      },
+      "ai-agent": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/ai-agent"
+      },
+      "analytics": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/analytics"
+      },
+      "auth": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/auth"
+      },
+      "automation": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/automation"
+      },
+      "barber": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/barber"
+      },
+      "barbershop": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/barbershop"
+      },
+      "billing": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/billing"
+      },
+      "book": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/book"
+      },
+      "bookings": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/bookings"
+      },
+      "calendar": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/calendar"
+      },
+      "check-email": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/check-email"
+      },
+      "clients": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/clients"
+      },
+      "customers": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/customers"
+      },
+      "dashboard": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/dashboard"
+      },
+      "demo": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/demo"
+      },
+      "embed": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/embed"
+      },
+      "enterprise": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/enterprise"
+      },
+      "export": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/export"
+      },
+      "finance": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/finance"
+      },
+      "forgot-password": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/forgot-password"
+      },
+      "import": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/import"
+      },
+      "invitations": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/invitations"
+      },
+      "layout-73b6f41d6a717cea.js": {
+        "size": 68140,
+        "type": "file",
+        "path": ".next/static/chunks/app/layout-73b6f41d6a717cea.js"
+      },
+      "login": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/login"
+      },
+      "marketing": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/marketing"
+      },
+      "my-schedule": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/my-schedule"
+      },
+      "notifications": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/notifications"
+      },
+      "offline": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/offline"
+      },
+      "page-4ddc1215d21eec49.js": {
+        "size": 75792,
+        "type": "file",
+        "path": ".next/static/chunks/app/page-4ddc1215d21eec49.js"
+      },
+      "payments": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/payments"
+      },
+      "payouts": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/payouts"
+      },
+      "products": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/products"
+      },
+      "pwa": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/pwa"
+      },
+      "recurring": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/recurring"
+      },
+      "register": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/register"
+      },
+      "reset-password": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/reset-password"
+      },
+      "reviews": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/reviews"
+      },
+      "services": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/services"
+      },
+      "settings": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/settings"
+      },
+      "sms": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/sms"
+      },
+      "test": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/test"
+      },
+      "test-modal": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/test-modal"
+      },
+      "verify-email": {
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/verify-email"
+      }
+    },
+    "largestChunks": [
+      {
+        "name": "page-4ddc1215d21eec49.js",
+        "size": 75792,
+        "type": "file",
+        "path": ".next/static/chunks/app/page-4ddc1215d21eec49.js"
+      },
+      {
+        "name": "layout-73b6f41d6a717cea.js",
+        "size": 68140,
+        "type": "file",
+        "path": ".next/static/chunks/app/layout-73b6f41d6a717cea.js"
+      },
+      {
+        "name": "(auth)",
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/(auth)"
+      },
+      {
+        "name": "(public)",
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/(public)"
+      },
+      {
+        "name": "[slug]",
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/[slug]"
+      },
+      {
+        "name": "_not-found",
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/_not-found"
+      },
+      {
+        "name": "admin",
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/admin"
+      },
+      {
+        "name": "agents",
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/agents"
+      },
+      {
+        "name": "ai-agent",
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/ai-agent"
+      },
+      {
+        "name": "analytics",
+        "size": 0,
+        "type": "directory",
+        "path": ".next/static/chunks/app/analytics"
+      }
+    ],
+    "warnings": [
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: layout-73b6f41d6a717cea.js (66.54 KB)",
+        "size": 68140,
+        "path": ".next/static/chunks/app/layout-73b6f41d6a717cea.js"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: page-4ddc1215d21eec49.js (74.02 KB)",
+        "size": 75792,
+        "path": ".next/static/chunks/app/page-4ddc1215d21eec49.js"
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-07-28T10:25:44.195Z",
+    "total": 1058512896,
+    "static": 5402624,
+    "app": 2105344,
+    "chunks": {
+      "(auth)": {
+        "size": 135168,
+        "type": "directory",
+        "path": ".next/static/chunks/app/(auth)"
+      },
+      "(public)": {
+        "size": 65536,
+        "type": "directory",
+        "path": ".next/static/chunks/app/(public)"
+      },
+      "[slug]": {
+        "size": 4096,
+        "type": "directory",
+        "path": ".next/static/chunks/app/[slug]"
+      },
+      "_not-found": {
+        "size": 4096,
+        "type": "directory",
+        "path": ".next/static/chunks/app/_not-found"
+      },
+      "admin": {
+        "size": 163840,
+        "type": "directory",
+        "path": ".next/static/chunks/app/admin"
+      },
+      "agents": {
+        "size": 40960,
+        "type": "directory",
+        "path": ".next/static/chunks/app/agents"
+      },
+      "ai-agent": {
+        "size": 32768,
+        "type": "directory",
+        "path": ".next/static/chunks/app/ai-agent"
+      },
+      "analytics": {
+        "size": 147456,
+        "type": "directory",
+        "path": ".next/static/chunks/app/analytics"
+      },
+      "auth": {
+        "size": 4096,
+        "type": "directory",
+        "path": ".next/static/chunks/app/auth"
+      },
+      "automation": {
+        "size": 12288,
+        "type": "directory",
+        "path": ".next/static/chunks/app/automation"
+      },
+      "barber": {
+        "size": 8192,
+        "type": "directory",
+        "path": ".next/static/chunks/app/barber"
+      },
+      "barbershop": {
+        "size": 12288,
+        "type": "directory",
+        "path": ".next/static/chunks/app/barbershop"
+      },
+      "billing": {
+        "size": 24576,
+        "type": "directory",
+        "path": ".next/static/chunks/app/billing"
+      },
+      "book": {
+        "size": 12288,
+        "type": "directory",
+        "path": ".next/static/chunks/app/book"
+      },
+      "bookings": {
+        "size": 16384,
+        "type": "directory",
+        "path": ".next/static/chunks/app/bookings"
+      },
+      "calendar": {
+        "size": 28672,
+        "type": "directory",
+        "path": ".next/static/chunks/app/calendar"
+      },
+      "check-email": {
+        "size": 8192,
+        "type": "directory",
+        "path": ".next/static/chunks/app/check-email"
+      },
+      "clients": {
+        "size": 36864,
+        "type": "directory",
+        "path": ".next/static/chunks/app/clients"
+      },
+      "customers": {
+        "size": 12288,
+        "type": "directory",
+        "path": ".next/static/chunks/app/customers"
+      },
+      "dashboard": {
+        "size": 180224,
+        "type": "directory",
+        "path": ".next/static/chunks/app/dashboard"
+      },
+      "demo": {
+        "size": 32768,
+        "type": "directory",
+        "path": ".next/static/chunks/app/demo"
+      },
+      "embed": {
+        "size": 28672,
+        "type": "directory",
+        "path": ".next/static/chunks/app/embed"
+      },
+      "enterprise": {
+        "size": 90112,
+        "type": "directory",
+        "path": ".next/static/chunks/app/enterprise"
+      },
+      "export": {
+        "size": 20480,
+        "type": "directory",
+        "path": ".next/static/chunks/app/export"
+      },
+      "finance": {
+        "size": 73728,
+        "type": "directory",
+        "path": ".next/static/chunks/app/finance"
+      },
+      "forgot-password": {
+        "size": 4096,
+        "type": "directory",
+        "path": ".next/static/chunks/app/forgot-password"
+      },
+      "import": {
+        "size": 32768,
+        "type": "directory",
+        "path": ".next/static/chunks/app/import"
+      },
+      "invitations": {
+        "size": 8192,
+        "type": "directory",
+        "path": ".next/static/chunks/app/invitations"
+      },
+      "layout-73b6f41d6a717cea.js": {
+        "size": 68140,
+        "type": "file",
+        "path": ".next/static/chunks/app/layout-73b6f41d6a717cea.js"
+      },
+      "login": {
+        "size": 28672,
+        "type": "directory",
+        "path": ".next/static/chunks/app/login"
+      },
+      "marketing": {
+        "size": 110592,
+        "type": "directory",
+        "path": ".next/static/chunks/app/marketing"
+      },
+      "my-schedule": {
+        "size": 8192,
+        "type": "directory",
+        "path": ".next/static/chunks/app/my-schedule"
+      },
+      "notifications": {
+        "size": 4096,
+        "type": "directory",
+        "path": ".next/static/chunks/app/notifications"
+      },
+      "offline": {
+        "size": 12288,
+        "type": "directory",
+        "path": ".next/static/chunks/app/offline"
+      },
+      "page-4ddc1215d21eec49.js": {
+        "size": 75792,
+        "type": "file",
+        "path": ".next/static/chunks/app/page-4ddc1215d21eec49.js"
+      },
+      "payments": {
+        "size": 24576,
+        "type": "directory",
+        "path": ".next/static/chunks/app/payments"
+      },
+      "payouts": {
+        "size": 12288,
+        "type": "directory",
+        "path": ".next/static/chunks/app/payouts"
+      },
+      "products": {
+        "size": 32768,
+        "type": "directory",
+        "path": ".next/static/chunks/app/products"
+      },
+      "pwa": {
+        "size": 32768,
+        "type": "directory",
+        "path": ".next/static/chunks/app/pwa"
+      },
+      "recurring": {
+        "size": 12288,
+        "type": "directory",
+        "path": ".next/static/chunks/app/recurring"
+      },
+      "register": {
+        "size": 65536,
+        "type": "directory",
+        "path": ".next/static/chunks/app/register"
+      },
+      "reset-password": {
+        "size": 8192,
+        "type": "directory",
+        "path": ".next/static/chunks/app/reset-password"
+      },
+      "reviews": {
+        "size": 53248,
+        "type": "directory",
+        "path": ".next/static/chunks/app/reviews"
+      },
+      "services": {
+        "size": 16384,
+        "type": "directory",
+        "path": ".next/static/chunks/app/services"
+      },
+      "settings": {
+        "size": 253952,
+        "type": "directory",
+        "path": ".next/static/chunks/app/settings"
+      },
+      "sms": {
+        "size": 12288,
+        "type": "directory",
+        "path": ".next/static/chunks/app/sms"
+      },
+      "test": {
+        "size": 12288,
+        "type": "directory",
+        "path": ".next/static/chunks/app/test"
+      },
+      "test-modal": {
+        "size": 8192,
+        "type": "directory",
+        "path": ".next/static/chunks/app/test-modal"
+      },
+      "verify-email": {
+        "size": 8192,
+        "type": "directory",
+        "path": ".next/static/chunks/app/verify-email"
+      }
+    },
+    "largestChunks": [
+      {
+        "name": "settings",
+        "size": 253952,
+        "type": "directory",
+        "path": ".next/static/chunks/app/settings"
+      },
+      {
+        "name": "dashboard",
+        "size": 180224,
+        "type": "directory",
+        "path": ".next/static/chunks/app/dashboard"
+      },
+      {
+        "name": "admin",
+        "size": 163840,
+        "type": "directory",
+        "path": ".next/static/chunks/app/admin"
+      },
+      {
+        "name": "analytics",
+        "size": 147456,
+        "type": "directory",
+        "path": ".next/static/chunks/app/analytics"
+      },
+      {
+        "name": "(auth)",
+        "size": 135168,
+        "type": "directory",
+        "path": ".next/static/chunks/app/(auth)"
+      },
+      {
+        "name": "marketing",
+        "size": 110592,
+        "type": "directory",
+        "path": ".next/static/chunks/app/marketing"
+      },
+      {
+        "name": "enterprise",
+        "size": 90112,
+        "type": "directory",
+        "path": ".next/static/chunks/app/enterprise"
+      },
+      {
+        "name": "page-4ddc1215d21eec49.js",
+        "size": 75792,
+        "type": "file",
+        "path": ".next/static/chunks/app/page-4ddc1215d21eec49.js"
+      },
+      {
+        "name": "finance",
+        "size": 73728,
+        "type": "directory",
+        "path": ".next/static/chunks/app/finance"
+      },
+      {
+        "name": "layout-73b6f41d6a717cea.js",
+        "size": 68140,
+        "type": "file",
+        "path": ".next/static/chunks/app/layout-73b6f41d6a717cea.js"
+      }
+    ],
+    "warnings": [
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: (auth) (132 KB)",
+        "size": 135168,
+        "path": ".next/static/chunks/app/(auth)"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: (public) (64 KB)",
+        "size": 65536,
+        "path": ".next/static/chunks/app/(public)"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: admin (160 KB)",
+        "size": 163840,
+        "path": ".next/static/chunks/app/admin"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: analytics (144 KB)",
+        "size": 147456,
+        "path": ".next/static/chunks/app/analytics"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: dashboard (176 KB)",
+        "size": 180224,
+        "path": ".next/static/chunks/app/dashboard"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: enterprise (88 KB)",
+        "size": 90112,
+        "path": ".next/static/chunks/app/enterprise"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: finance (72 KB)",
+        "size": 73728,
+        "path": ".next/static/chunks/app/finance"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: layout-73b6f41d6a717cea.js (66.54 KB)",
+        "size": 68140,
+        "path": ".next/static/chunks/app/layout-73b6f41d6a717cea.js"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: marketing (108 KB)",
+        "size": 110592,
+        "path": ".next/static/chunks/app/marketing"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: page-4ddc1215d21eec49.js (74.02 KB)",
+        "size": 75792,
+        "path": ".next/static/chunks/app/page-4ddc1215d21eec49.js"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: register (64 KB)",
+        "size": 65536,
+        "path": ".next/static/chunks/app/register"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: reviews (52 KB)",
+        "size": 53248,
+        "path": ".next/static/chunks/app/reviews"
+      },
+      {
+        "type": "large_chunk",
+        "message": "Large chunk detected: settings (248 KB)",
+        "size": 253952,
+        "path": ".next/static/chunks/app/settings"
+      },
+      {
+        "type": "size_change",
+        "message": "Total bundle size increased by Infinity%",
+        "change": null,
+        "previous": 0,
+        "current": 1058512896
+      },
+      {
+        "type": "size_change",
+        "message": "App bundle size increased by Infinity%",
+        "change": null,
+        "previous": 0,
+        "current": 2105344
+      }
+    ]
+  }
+]

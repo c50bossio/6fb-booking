@@ -33,9 +33,7 @@ from services.franchise_predictive_analytics_service import (
     ChurnPrediction
 )
 
-
 router = APIRouter(prefix="/franchise-ai", tags=["franchise-ai-coaching"])
-
 
 # Request/Response Models
 
@@ -46,7 +44,6 @@ class FranchiseCoachingRequest(BaseModel):
     coaching_focus: Optional[List[str]] = Field(None, description="Specific areas to focus on")
     performance_context: Optional[Dict[str, Any]] = Field(None, description="Additional performance context")
 
-
 class PredictiveAnalyticsRequest(BaseModel):
     """Request for predictive analytics"""
     location_id: int
@@ -55,14 +52,12 @@ class PredictiveAnalyticsRequest(BaseModel):
     include_scenarios: bool = Field(True, description="Include scenario analysis")
     custom_parameters: Optional[Dict[str, Any]] = Field(None, description="Custom parameters for prediction")
 
-
 class NetworkAnalyticsRequest(BaseModel):
     """Request for network-wide analytics"""
     network_id: Optional[str] = Field(None, description="Specific network ID, or None for user's network")
     timeframe: str = Field("month", description="Analytics timeframe: today, week, month, quarter, year")
     include_benchmarks: bool = Field(True, description="Include cross-network benchmarks")
     performance_segments: Optional[List[str]] = Field(None, description="Filter by performance segments")
-
 
 class FranchiseCoachingResponse(BaseModel):
     """Response for franchise coaching"""
@@ -76,7 +71,6 @@ class FranchiseCoachingResponse(BaseModel):
     next_review_date: str
     methodology_alignment: Dict[str, Any]
 
-
 class PredictiveAnalyticsResponse(BaseModel):
     """Response for predictive analytics"""
     success: bool
@@ -88,7 +82,6 @@ class PredictiveAnalyticsResponse(BaseModel):
     risk_factors: List[str]
     model_metadata: Dict[str, Any]
 
-
 class NetworkDashboardResponse(BaseModel):
     """Response for network dashboard"""
     success: bool
@@ -99,7 +92,6 @@ class NetworkDashboardResponse(BaseModel):
     improvement_opportunities: List[Dict[str, Any]]
     network_trends: List[Dict[str, Any]]
     cross_network_benchmarks: Dict[str, Any]
-
 
 # AI Coaching Endpoints
 
@@ -249,7 +241,6 @@ async def get_franchise_ai_coaching(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating coaching insights: {str(e)}")
-
 
 @router.post("/analytics/predictive", response_model=PredictiveAnalyticsResponse)
 async def get_predictive_analytics(
@@ -434,7 +425,6 @@ async def get_predictive_analytics(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating predictive analytics: {str(e)}")
 
-
 @router.post("/network/dashboard", response_model=NetworkDashboardResponse)
 async def get_network_dashboard(
     request: NetworkAnalyticsRequest,
@@ -534,7 +524,6 @@ async def get_network_dashboard(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating network dashboard: {str(e)}")
-
 
 @router.get("/coaching/daily-focus/{location_id}")
 async def get_daily_coaching_focus(
@@ -640,7 +629,6 @@ async def get_daily_coaching_focus(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating daily focus: {str(e)}")
 
-
 @router.get("/alerts/{location_id}")
 async def get_performance_alerts(
     location_id: int,
@@ -694,7 +682,6 @@ async def get_performance_alerts(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting performance alerts: {str(e)}")
 
-
 # Helper functions
 
 def _has_location_access(user: User, location: Location) -> bool:
@@ -713,7 +700,6 @@ def _has_location_access(user: User, location: Location) -> bool:
     
     return False
 
-
 def _has_network_access(user: User, network_id: str, db: Session) -> bool:
     """Check if user has access to franchise network"""
     # Super admin has access to all networks
@@ -727,7 +713,6 @@ def _has_network_access(user: User, network_id: str, db: Session) -> bool:
     ).first()
     
     return user_locations is not None
-
 
 def _identify_key_strengths(performance_data) -> List[str]:
     """Identify key strengths from performance data"""
@@ -747,7 +732,6 @@ def _identify_key_strengths(performance_data) -> List[str]:
     
     return strengths if strengths else ["Foundational business operations in place"]
 
-
 def _identify_improvement_areas(performance_data) -> List[str]:
     """Identify improvement areas from performance data"""
     areas = []
@@ -766,7 +750,6 @@ def _identify_improvement_areas(performance_data) -> List[str]:
     
     return areas if areas else ["Continue current successful strategies"]
 
-
 def _calculate_six_figure_progress(performance_data) -> Dict[str, Any]:
     """Calculate progress toward six-figure goal"""
     annual_revenue = performance_data.total_revenue * 12
@@ -780,7 +763,6 @@ def _calculate_six_figure_progress(performance_data) -> Dict[str, Any]:
         'gap_to_target': max(0, 100000 - annual_revenue)
     }
 
-
 def _calculate_methodology_compliance(insights) -> float:
     """Calculate compliance with Six Figure Barber methodology"""
     # Count insights that align with 6FB principles
@@ -788,7 +770,6 @@ def _calculate_methodology_compliance(insights) -> float:
     total_insights = len(insights)
     
     return (methodology_insights / total_insights * 100) if total_insights > 0 else 0
-
 
 def _count_six_fb_principles(insights) -> int:
     """Count Six Figure Barber principles addressed"""
@@ -801,7 +782,6 @@ def _count_six_fb_principles(insights) -> int:
     
     return len(principles)
 
-
 def _assess_revenue_focus(insights) -> float:
     """Assess focus on revenue optimization"""
     revenue_related = sum(1 for insight in insights 
@@ -810,7 +790,6 @@ def _assess_revenue_focus(insights) -> float:
     
     return (revenue_related / len(insights) * 100) if insights else 0
 
-
 def _assess_client_focus(insights) -> float:
     """Assess focus on client value creation"""
     client_related = sum(1 for insight in insights 
@@ -818,7 +797,6 @@ def _assess_client_focus(insights) -> float:
                         insight.category.value in ['retention', 'client_acquisition', 'service_mix'])
     
     return (client_related / len(insights) * 100) if insights else 0
-
 
 def _generate_distribution_chart_data(dashboard_data) -> List[Dict[str, Any]]:
     """Generate chart data for performance distribution"""
@@ -830,12 +808,10 @@ def _generate_distribution_chart_data(dashboard_data) -> List[Dict[str, Any]]:
         {'segment': 'Underperforming', 'count': dashboard_data.underperforming_locations, 'percentage': dashboard_data.underperforming_locations / dashboard_data.total_locations * 100}
     ]
 
-
 def _calculate_network_utilization(dashboard_data) -> float:
     """Calculate overall network utilization"""
     # Simplified calculation - would use actual appointment data
     return 75.0  # Placeholder
-
 
 def _get_key_metric_today(performance_data) -> str:
     """Get the key metric to focus on today"""
@@ -847,7 +823,6 @@ def _get_key_metric_today(performance_data) -> str:
         return "Client retention - focus on follow-up and satisfaction"
     else:
         return "Revenue growth - focus on new client acquisition"
-
 
 def _get_next_milestone(progress_percentage: float) -> str:
     """Get next milestone for six-figure progress"""
@@ -862,11 +837,9 @@ def _get_next_milestone(progress_percentage: float) -> str:
     else:
         return "Achieve Six Figure Barber status - $100,000+"
 
-
 def _get_methodology_reminder() -> str:
     """Get daily methodology reminder"""
     return "Six Figure Barber Focus: Value-based pricing, premium client relationships, operational excellence"
-
 
 def _analyze_alert_trends(alerts: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Analyze trends in performance alerts"""
@@ -875,7 +848,6 @@ def _analyze_alert_trends(alerts: List[Dict[str, Any]]) -> Dict[str, Any]:
         'trending_down': ['low_utilization'],
         'new_this_week': ['performance_ranking']
     }
-
 
 def _prioritize_alert_actions(alerts: List[Dict[str, Any]]) -> List[str]:
     """Prioritize actions based on alerts"""

@@ -23,7 +23,6 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)]
 )
 
-
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     """Ensure user has admin or super_admin role."""
     if current_user.role not in ["admin", "super_admin"]:
@@ -33,7 +32,6 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
         )
     return current_user
 
-
 def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
     """Ensure user has super_admin role."""
     if current_user.role != "super_admin":
@@ -42,7 +40,6 @@ def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
             detail="Super admin access required"
         )
     return current_user
-
 
 @router.get("/dashboard")
 async def get_enterprise_dashboard(
@@ -85,7 +82,6 @@ async def get_enterprise_dashboard(
             detail=f"Error retrieving dashboard data: {str(e)}"
         )
 
-
 @router.get("/locations")
 async def get_all_locations(
     include_inactive: bool = Query(False),
@@ -113,7 +109,6 @@ async def get_all_locations(
             status_code=500,
             detail=f"Error retrieving locations: {str(e)}"
         )
-
 
 @router.get("/performance-matrix")
 async def get_performance_matrix(
@@ -156,7 +151,6 @@ async def get_performance_matrix(
             detail=f"Error retrieving performance matrix: {str(e)}"
         )
 
-
 @router.get("/revenue")
 async def get_aggregated_revenue(
     start_date: Optional[datetime] = Query(None),
@@ -193,7 +187,6 @@ async def get_aggregated_revenue(
             status_code=500,
             detail=f"Error retrieving revenue data: {str(e)}"
         )
-
 
 @router.get("/occupancy")
 @verify_location_access(location_id_param="location_id")
@@ -233,7 +226,6 @@ async def get_chair_utilization(
             detail=f"Error retrieving occupancy data: {str(e)}"
         )
 
-
 @router.get("/compensation")
 async def get_compensation_analytics(
     model_type: Optional[str] = Query(None, pattern="^(commission|booth_rental|hybrid)$"),
@@ -270,7 +262,6 @@ async def get_compensation_analytics(
             status_code=500,
             detail=f"Error retrieving compensation analytics: {str(e)}"
         )
-
 
 @router.post("/locations", response_model=LocationResponse)
 async def create_location(
@@ -315,7 +306,6 @@ async def create_location(
             status_code=500,
             detail=f"Error creating location: {str(e)}"
         )
-
 
 @router.put("/locations/{location_id}", response_model=LocationResponse)
 async def update_location(
@@ -364,7 +354,6 @@ async def update_location(
             status_code=500,
             detail=f"Error updating location: {str(e)}"
         )
-
 
 @router.get("/locations/{location_id}/dashboard")
 async def get_location_dashboard(
@@ -418,7 +407,6 @@ async def get_location_dashboard(
             detail=f"Error retrieving location dashboard: {str(e)}"
         )
 
-
 @router.get("/locations/{location_id}/barbers")
 async def get_location_barbers(
     location_id: int,
@@ -462,7 +450,6 @@ async def get_location_barbers(
             status_code=500,
             detail=f"Error retrieving barbers: {str(e)}"
         )
-
 
 @router.get("/reports/executive-summary")
 async def get_executive_summary(

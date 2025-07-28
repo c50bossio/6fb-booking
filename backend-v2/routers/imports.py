@@ -132,7 +132,6 @@ async def upload_import_file(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to process upload: {str(e)}")
 
-
 @router.get("/{import_id}/status", response_model=schemas.ImportStatusResponse)
 async def get_import_status(
     import_id: str,
@@ -174,7 +173,6 @@ async def get_import_status(
         "completed_at": job.get("completed_at"),
         "estimated_completion": job.get("estimated_completion")
     }
-
 
 @router.post("/{import_id}/preview", response_model=schemas.ImportPreviewResponse)
 async def preview_import_data(
@@ -239,7 +237,6 @@ async def preview_import_data(
         import_jobs[import_id]["errors"].append(f"Preview generation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate preview: {str(e)}")
 
-
 @router.post("/{import_id}/execute", response_model=schemas.ImportExecutionResponse)
 async def execute_import(
     import_id: str,
@@ -289,7 +286,6 @@ async def execute_import(
         "started_at": import_jobs[import_id]["started_at"],
         "execution_options": execution_request.dict()
     }
-
 
 @router.delete("/{import_id}/rollback", response_model=schemas.ImportRollbackResponse)
 async def rollback_import(
@@ -346,7 +342,6 @@ async def rollback_import(
         "rollback_type": rollback_request.rollback_type,
         "started_at": import_jobs[import_id]["rollback_started_at"]
     }
-
 
 @router.get("/history", response_model=schemas.ImportHistoryResponse)
 async def get_import_history(
@@ -417,7 +412,6 @@ async def get_import_history(
         "total_pages": (total_jobs + page_size - 1) // page_size
     }
 
-
 # Background task functions
 
 async def validate_import_file(
@@ -461,7 +455,6 @@ async def validate_import_file(
     except Exception as e:
         import_jobs[import_id]["status"] = "validation_failed"
         import_jobs[import_id]["errors"].append(f"Validation error: {str(e)}")
-
 
 async def execute_import_job(
     import_id: str,
@@ -508,7 +501,6 @@ async def execute_import_job(
         import_jobs[import_id]["errors"].append(f"Import execution error: {str(e)}")
         import_jobs[import_id]["completed_at"] = datetime.utcnow().isoformat()
 
-
 async def execute_rollback_job(
     import_id: str,
     rollback_request: schemas.ImportRollbackRequest,
@@ -538,7 +530,6 @@ async def execute_rollback_job(
     except Exception as e:
         import_jobs[import_id]["rollback_status"] = "failed"
         import_jobs[import_id]["rollback_error"] = f"Rollback error: {str(e)}"
-
 
 def update_import_progress(import_id: str, progress_data: Dict[str, Any]):
     """Update import progress in real-time"""

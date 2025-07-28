@@ -1,5 +1,5 @@
 from __future__ import annotations
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from datetime import date as Date, time as Time
@@ -43,7 +43,8 @@ class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
     
-    @validator('new_password')
+    @field_validator('new_password')
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters')
@@ -82,7 +83,8 @@ class CompleteRegistrationData(BaseModel):
     # Consent data
     consent: Dict[str, bool]  # terms, privacy, marketing, testData
     
-    @validator('consent')
+    @field_validator('consent')
+    @classmethod
     def validate_consent(cls, v):
         required_consents = ['terms', 'privacy']
         for consent_type in required_consents:
@@ -100,7 +102,8 @@ class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
     
-    @validator('new_password')
+    @field_validator('new_password')
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters')
@@ -143,7 +146,8 @@ class TestDataCustomization(BaseModel):
     vip_client_percentage: int = Field(20, ge=0, le=100, description="Percentage of clients that should be VIP")
     new_client_percentage: int = Field(25, ge=0, le=100, description="Percentage of clients that should be new")
     
-    @validator('vip_client_percentage', 'new_client_percentage')
+    @field_validator('vip_client_percentage', 'new_client_percentage')
+    @classmethod
     def validate_percentages(cls, v, values):
         if v < 0 or v > 100:
             raise ValueError('Percentages must be between 0 and 100')
@@ -173,7 +177,8 @@ class ClientRegistrationData(BaseModel):
     phone: Optional[str] = None
     marketing_consent: bool = False
     
-    @validator('password')
+    @field_validator('password')
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters')
@@ -208,7 +213,8 @@ class UserCreate(UserBase):
     user_type: UserType = UserType.CLIENT
     create_test_data: Optional[bool] = False
     
-    @validator('password')
+    @field_validator('password')
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters')
@@ -270,16 +276,17 @@ class User(UserBase):
     onboarding_status: Optional[Dict[str, Any]] = None
     is_new_user: Optional[bool] = True
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class UserResponse(User):
     pass
 
 class RoleUpdate(BaseModel):
     role: str = Field(..., description="New role for the user")
     
-    @validator('role')
+    @field_validator('role')
+    @classmethod
     def validate_role(cls, v):
         valid_roles = ["user", "admin", "super_admin", "barber", "manager"]
         if v not in valid_roles:
@@ -302,7 +309,8 @@ class OnboardingUpdate(BaseModel):
 class TimezoneUpdateValidated(BaseModel):
     timezone: str = Field(..., description="Valid timezone identifier (e.g., 'America/New_York')")
     
-    @validator('timezone')
+    @field_validator('timezone')
+    @classmethod
     def validate_timezone(cls, v):
         if v not in pytz.all_timezones:
             raise ValueError(f"Invalid timezone: {v}. Must be a valid timezone identifier.")
@@ -311,7 +319,8 @@ class TimezoneUpdateValidated(BaseModel):
 class TimezoneUpdateRequest(BaseModel):
     timezone: str = Field(..., description="Valid timezone identifier (e.g., 'America/New_York')")
     
-    @validator('timezone')
+    @field_validator('timezone')
+    @classmethod
     def validate_timezone(cls, v):
         if v not in pytz.all_timezones:
             raise ValueError(f"Invalid timezone: {v}. Must be a valid timezone identifier.")
@@ -330,7 +339,8 @@ class TimezoneUpdateRequest(BaseModel):
     timezone: str = Field(..., description="Valid timezone identifier")
     auto_detected: bool = Field(False, description="Whether this timezone was auto-detected")
     
-    @validator('timezone')
+    @field_validator('timezone')
+    @classmethod
     def validate_timezone(cls, v):
         if v not in pytz.all_timezones:
             raise ValueError(f"Invalid timezone: {v}. Must be a valid timezone identifier.")
@@ -341,7 +351,8 @@ class TimezoneDetectionRequest(BaseModel):
     confidence: Optional[float] = Field(None, ge=0.0, le=1.0, description="Detection confidence score")
     browser_info: Optional[Dict[str, Any]] = Field(None, description="Additional browser information")
     
-    @validator('detected_timezone')
+    @field_validator('detected_timezone')
+    @classmethod
     def validate_timezone(cls, v):
         if v not in pytz.all_timezones:
             raise ValueError(f"Invalid timezone: {v}. Must be a valid timezone identifier.")
@@ -383,7 +394,8 @@ class BusinessHours(BaseModel):
     start: str = Field(..., description="Business start time in HH:MM format", example="09:00")
     end: str = Field(..., description="Business end time in HH:MM format", example="18:00")
     
-    @validator('start', 'end')
+    @field_validator('start', 'end')
+    @classmethod
     def validate_time_format(cls, v):
         try:
             # Validate HH:MM format
@@ -421,9 +433,9 @@ class BookingSettingsResponse(BaseModel):
     created_at: datetime = Field(..., description="When the settings were created")
     updated_at: datetime = Field(..., description="When the settings were last updated")
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class BookingSettingsUpdate(BaseModel):
     business_name: Optional[str] = Field(None, description="Name of the business")
     min_lead_time_minutes: Optional[int] = Field(None, description="Minimum lead time required for bookings in minutes", example=60)
@@ -437,7 +449,8 @@ class BookingSettingsUpdate(BaseModel):
     require_advance_booking: Optional[bool] = Field(None, description="Whether advance booking is required")
     business_type: Optional[str] = Field(None, description="Type of business", example="barbershop")
     
-    @validator('same_day_cutoff_time', 'business_start_time', 'business_end_time')
+    @field_validator('same_day_cutoff_time', 'business_start_time', 'business_end_time')
+    @classmethod
     def validate_time_format(cls, v):
         if v is not None:
             try:
@@ -486,9 +499,9 @@ class PaymentResponse(BaseModel):
     gift_certificate_amount_used: float
     created_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class RefundCreate(BaseModel):
     payment_id: int
     amount: float = Field(..., gt=0, description="Refund amount must be greater than 0")
@@ -505,9 +518,9 @@ class RefundResponse(BaseModel):
     created_at: datetime
     processed_at: Optional[datetime]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class GiftCertificateCreate(BaseModel):
     amount: float = Field(..., gt=0, description="Gift certificate amount")
     purchaser_name: str = Field(..., min_length=1, max_length=100)
@@ -533,9 +546,9 @@ class GiftCertificateResponse(BaseModel):
     created_at: datetime
     used_at: Optional[datetime]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class GiftCertificateValidate(BaseModel):
     code: str = Field(..., min_length=1, max_length=50)
 
@@ -584,9 +597,9 @@ class PayoutResponse(BaseModel):
     created_at: datetime
     processed_at: Optional[datetime]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Client schemas
 class ClientBase(BaseModel):
@@ -605,10 +618,8 @@ class ClientBase(BaseModel):
         "marketing": False
     }
 
-
 class ClientCreate(ClientBase):
     pass
-
 
 class ClientUpdate(BaseModel):
     first_name: Optional[str] = None
@@ -621,7 +632,6 @@ class ClientUpdate(BaseModel):
     preferred_barber_id: Optional[int] = None
     preferred_services: Optional[List[str]] = None
     communication_preferences: Optional[dict] = None
-
 
 class Client(ClientBase):
     id: int
@@ -638,16 +648,15 @@ class Client(ClientBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class ClientList(BaseModel):
     clients: List[Client]
     total: int
     page: int
     page_size: int
-
 
 class ClientHistory(BaseModel):
     appointments: List['BookingResponse']
@@ -656,7 +665,6 @@ class ClientHistory(BaseModel):
     average_ticket: float
     no_shows: int
     cancellations: int
-
 
 # Service schemas
 class ServiceCategoryEnum(str, Enum):
@@ -668,7 +676,6 @@ class ServiceCategoryEnum(str, Enum):
     COLOR = "color"
     PACKAGE = "package"
     OTHER = "other"
-
 
 class ServiceBase(BaseModel):
     name: str
@@ -690,17 +697,18 @@ class ServiceBase(BaseModel):
     display_order: int = 0
     image_url: Optional[str] = None
 
-
 class ServiceCreate(ServiceBase):
     package_item_ids: Optional[List[int]] = None
     
-    @validator('package_item_ids')
+    @field_validator('package_item_ids')
+    @classmethod
     def validate_package_items(cls, v, values):
         if v and not values.get('is_package'):
             raise ValueError('Package items can only be set for package services')
         return v
     
-    @validator('min_price', 'max_price')
+    @field_validator('min_price', 'max_price')
+    @classmethod
     def validate_price_range(cls, v, values):
         if 'base_price' in values:
             if values.get('min_price') and values['min_price'] > values['base_price']:
@@ -708,7 +716,6 @@ class ServiceCreate(ServiceBase):
             if values.get('max_price') and values['max_price'] < values['base_price']:
                 raise ValueError('Max price cannot be less than base price')
         return v
-
 
 class ServiceUpdate(BaseModel):
     name: Optional[str] = None
@@ -731,7 +738,6 @@ class ServiceUpdate(BaseModel):
     image_url: Optional[str] = None
     package_item_ids: Optional[List[int]] = None
 
-
 class ServiceResponse(ServiceBase):
     id: int
     created_at: datetime
@@ -741,9 +747,9 @@ class ServiceResponse(ServiceBase):
     pricing_rules: Optional[List['ServicePricingRuleResponse']] = []
     booking_rules: Optional[List['ServiceBookingRuleResponse']] = []
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Service Pricing Rule schemas
 class ServicePricingRuleBase(BaseModel):
@@ -758,31 +764,31 @@ class ServicePricingRuleBase(BaseModel):
     priority: int = 0
     is_active: bool = True
 
-
 class ServicePricingRuleCreate(ServicePricingRuleBase):
-    @validator('rule_type')
+    @field_validator('rule_type')
+    @classmethod
     def validate_rule_type(cls, v):
         valid_types = ['time_of_day', 'day_of_week', 'date_range', 'demand']
         if v not in valid_types:
             raise ValueError(f'Rule type must be one of {valid_types}')
         return v
     
-    @validator('price_adjustment_type')
+    @field_validator('price_adjustment_type')
+    @classmethod
     def validate_adjustment_type(cls, v):
         valid_types = ['percentage', 'fixed']
         if v not in valid_types:
             raise ValueError(f'Adjustment type must be one of {valid_types}')
         return v
 
-
 class ServicePricingRuleResponse(ServicePricingRuleBase):
     id: int
     service_id: int
     created_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Service Booking Rule schemas
 class ServiceBookingRuleBase(BaseModel):
@@ -800,9 +806,9 @@ class ServiceBookingRuleBase(BaseModel):
     is_active: bool = True
     message: Optional[str] = None
 
-
 class ServiceBookingRuleCreate(ServiceBookingRuleBase):
-    @validator('blocked_days_of_week')
+    @field_validator('blocked_days_of_week')
+    @classmethod
     def validate_days(cls, v):
         if v:
             for day in v:
@@ -810,15 +816,14 @@ class ServiceBookingRuleCreate(ServiceBookingRuleBase):
                     raise ValueError('Day of week must be between 0 (Monday) and 6 (Sunday)')
         return v
 
-
 class ServiceBookingRuleResponse(ServiceBookingRuleBase):
     id: int
     service_id: int
     created_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Service Template Schemas - 6FB Preset System
 class ServiceTemplateBase(BaseModel):
@@ -853,27 +858,29 @@ class ServiceTemplateBase(BaseModel):
     target_market: Optional[str] = Field(None, description="Target market: urban, suburban, rural, luxury")
     recommended_for: List[str] = Field(default_factory=list, description="Recommended user types")
     
-    @validator('six_fb_tier')
+    @field_validator('six_fb_tier')
+    @classmethod
     def validate_six_fb_tier(cls, v):
         valid_tiers = ['starter', 'professional', 'premium', 'luxury']
         if v not in valid_tiers:
             raise ValueError(f'6FB tier must be one of: {", ".join(valid_tiers)}')
         return v
     
-    @validator('revenue_impact', 'client_relationship_impact')
+    @field_validator('revenue_impact', 'client_relationship_impact')
+    @classmethod
     def validate_impact_level(cls, v):
         valid_levels = ['high', 'medium', 'low']
         if v not in valid_levels:
             raise ValueError(f'Impact level must be one of: {", ".join(valid_levels)}')
         return v
     
-    @validator('client_value_tier')
+    @field_validator('client_value_tier')
+    @classmethod
     def validate_client_value_tier(cls, v):
         valid_tiers = ['standard', 'premium', 'luxury']
         if v not in valid_tiers:
             raise ValueError(f'Client value tier must be one of: {", ".join(valid_tiers)}')
         return v
-
 
 class ServiceTemplateCreate(ServiceTemplateBase):
     """Create a new service template"""
@@ -882,7 +889,6 @@ class ServiceTemplateCreate(ServiceTemplateBase):
     business_rules: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Booking rules and restrictions")
     template_image_url: Optional[str] = Field(None, description="Template image URL")
     demo_images: List[str] = Field(default_factory=list, description="Demo image URLs")
-
 
 class ServiceTemplateUpdate(BaseModel):
     """Update existing service template"""
@@ -900,7 +906,6 @@ class ServiceTemplateUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
 
-
 class ServiceTemplateResponse(ServiceTemplateBase):
     """Service template response with metadata"""
     id: int
@@ -917,9 +922,9 @@ class ServiceTemplateResponse(ServiceTemplateBase):
     pricing_range_display: str = Field(..., description="Display-friendly pricing range")
     is_six_figure_aligned: bool = Field(..., description="Meets 6FB methodology standards")
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class ServiceTemplateListResponse(BaseModel):
     """List of service templates with pagination"""
@@ -930,7 +935,6 @@ class ServiceTemplateListResponse(BaseModel):
     has_next: bool = False
     has_previous: bool = False
 
-
 class ServiceTemplateApplyRequest(BaseModel):
     """Request to apply a service template to user's services"""
     template_id: int = Field(..., description="Service template ID to apply")
@@ -940,7 +944,6 @@ class ServiceTemplateApplyRequest(BaseModel):
     apply_business_rules: bool = Field(True, description="Apply template's business rules")
     apply_pricing_rules: bool = Field(True, description="Apply template's pricing rules")
 
-
 class ServiceTemplateApplyResponse(BaseModel):
     """Response after applying a service template"""
     service_id: int = Field(..., description="ID of created service")
@@ -949,7 +952,6 @@ class ServiceTemplateApplyResponse(BaseModel):
     customizations_applied: Dict[str, Any] = Field(default_factory=dict, description="Applied customizations")
     business_rules_created: List[int] = Field(default_factory=list, description="Created business rule IDs")
     message: str = Field(..., description="Success message")
-
 
 class ServiceTemplateCategoryBase(BaseModel):
     """Base schema for service template categories"""
@@ -962,7 +964,6 @@ class ServiceTemplateCategoryBase(BaseModel):
     color_theme: Optional[str] = Field(None, description="Color theme for UI")
     display_order: int = Field(0, description="Display order")
 
-
 class ServiceTemplateCategoryResponse(ServiceTemplateCategoryBase):
     """Service template category response"""
     id: int
@@ -970,9 +971,9 @@ class ServiceTemplateCategoryResponse(ServiceTemplateCategoryBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class ServiceTemplateFilterRequest(BaseModel):
     """Request filters for service template search"""
@@ -988,7 +989,6 @@ class ServiceTemplateFilterRequest(BaseModel):
     is_featured: Optional[bool] = None
     search_query: Optional[str] = Field(None, max_length=100, description="Search in name and description")
 
-
 # Barber Availability Schemas
 class BarberAvailabilityBase(BaseModel):
     day_of_week: int = Field(..., ge=0, le=6, description="Day of week (0=Monday, 6=Sunday)")
@@ -996,16 +996,15 @@ class BarberAvailabilityBase(BaseModel):
     end_time: Time = Field(..., description="End time for availability")
     is_active: bool = True
 
-    @validator('end_time')
+    @field_validator('end_time')
+    @classmethod
     def validate_time_range(cls, v, values):
         if 'start_time' in values and v <= values['start_time']:
             raise ValueError('End time must be after start time')
         return v
 
-
 class BarberAvailabilityCreate(BarberAvailabilityBase):
     pass
-
 
 class BarberAvailabilityUpdate(BaseModel):
     day_of_week: Optional[int] = Field(None, ge=0, le=6)
@@ -1013,16 +1012,15 @@ class BarberAvailabilityUpdate(BaseModel):
     end_time: Optional[Time] = None
     is_active: Optional[bool] = None
 
-
 class BarberAvailabilityResponse(BarberAvailabilityBase):
     id: int
     barber_id: int
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class BarberTimeOffBase(BaseModel):
     start_date: Date = Field(..., description="Start date for time off")
@@ -1032,16 +1030,15 @@ class BarberTimeOffBase(BaseModel):
     reason: Optional[str] = None
     notes: Optional[str] = None
 
-    @validator('end_date')
+    @field_validator('end_date')
+    @classmethod
     def validate_date_range(cls, v, values):
         if 'start_date' in values and v < values['start_date']:
             raise ValueError('End date must be after start date')
         return v
 
-
 class BarberTimeOffCreate(BarberTimeOffBase):
     pass
-
 
 class BarberTimeOffUpdate(BaseModel):
     start_date: Optional[Date] = None
@@ -1052,7 +1049,6 @@ class BarberTimeOffUpdate(BaseModel):
     notes: Optional[str] = None
     status: Optional[str] = None
 
-
 class BarberTimeOffResponse(BarberTimeOffBase):
     id: int
     barber_id: int
@@ -1061,9 +1057,9 @@ class BarberTimeOffResponse(BarberTimeOffBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class BarberSpecialAvailabilityBase(BaseModel):
     date: Date = Field(..., description="Date for special availability")
@@ -1072,16 +1068,15 @@ class BarberSpecialAvailabilityBase(BaseModel):
     availability_type: str = Field("available", description="Type: available or unavailable")
     notes: Optional[str] = None
 
-    @validator('availability_type')
+    @field_validator('availability_type')
+    @classmethod
     def validate_availability_type(cls, v):
         if v not in ['available', 'unavailable']:
             raise ValueError('Availability type must be "available" or "unavailable"')
         return v
 
-
 class BarberSpecialAvailabilityCreate(BarberSpecialAvailabilityBase):
     pass
-
 
 class BarberSpecialAvailabilityResponse(BarberSpecialAvailabilityBase):
     id: int
@@ -1089,9 +1084,9 @@ class BarberSpecialAvailabilityResponse(BarberSpecialAvailabilityBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Recurring Appointment Schemas
 class RecurringPatternBase(BaseModel):
@@ -1107,24 +1102,24 @@ class RecurringPatternBase(BaseModel):
     barber_id: Optional[int] = None
     service_id: Optional[int] = None
 
-    @validator('pattern_type')
+    @field_validator('pattern_type')
+    @classmethod
     def validate_pattern_type(cls, v):
         valid_types = ['daily', 'weekly', 'biweekly', 'monthly']
         if v not in valid_types:
             raise ValueError(f'Pattern type must be one of {valid_types}')
         return v
 
-    @validator('days_of_week')
+    @field_validator('days_of_week')
+    @classmethod
     def validate_days_of_week(cls, v, values):
         if v and values.get('pattern_type') in ['weekly', 'biweekly']:
             if not all(0 <= day <= 6 for day in v):
                 raise ValueError('Days of week must be between 0 (Monday) and 6 (Sunday)')
         return v
 
-
 class RecurringPatternCreate(RecurringPatternBase):
     pass
-
 
 class RecurringPatternUpdate(BaseModel):
     pattern_type: Optional[str] = None
@@ -1140,7 +1135,6 @@ class RecurringPatternUpdate(BaseModel):
     service_id: Optional[int] = None
     is_active: Optional[bool] = None
 
-
 class RecurringPatternResponse(RecurringPatternBase):
     id: int
     user_id: int
@@ -1149,9 +1143,9 @@ class RecurringPatternResponse(RecurringPatternBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Blackout Date Schemas
 class BlackoutDateBase(BaseModel):
@@ -1171,17 +1165,16 @@ class BlackoutDateBase(BaseModel):
     location_id: Optional[int] = None
     barber_id: Optional[int] = None
 
-    @validator('blackout_type')
+    @field_validator('blackout_type')
+    @classmethod
     def validate_blackout_type(cls, v):
         valid_types = ['full_day', 'partial_day', 'recurring']
         if v not in valid_types:
             raise ValueError(f'Blackout type must be one of {valid_types}')
         return v
 
-
 class BlackoutDateCreate(BlackoutDateBase):
     pass
-
 
 class BlackoutDateUpdate(BaseModel):
     blackout_date: Optional[Date] = None
@@ -1199,16 +1192,15 @@ class BlackoutDateUpdate(BaseModel):
     description: Optional[str] = None
     is_active: Optional[bool] = None
 
-
 class BlackoutDateResponse(BlackoutDateBase):
     id: int
     created_by_id: int
     is_active: bool
     created_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Recurring Series Schemas
 class RecurringSeriesBase(BaseModel):
@@ -1217,17 +1209,16 @@ class RecurringSeriesBase(BaseModel):
     payment_type: str = Field("per_appointment", description="Payment type for series")
     total_series_price: Optional[float] = None
 
-    @validator('payment_type')
+    @field_validator('payment_type')
+    @classmethod
     def validate_payment_type(cls, v):
         valid_types = ['per_appointment', 'series_upfront', 'subscription']
         if v not in valid_types:
             raise ValueError(f'Payment type must be one of {valid_types}')
         return v
 
-
 class RecurringSeriesCreate(RecurringSeriesBase):
     pattern_id: int
-
 
 class RecurringSeriesUpdate(BaseModel):
     series_name: Optional[str] = None
@@ -1235,7 +1226,6 @@ class RecurringSeriesUpdate(BaseModel):
     payment_type: Optional[str] = None
     total_series_price: Optional[float] = None
     series_status: Optional[str] = None
-
 
 class RecurringSeriesResponse(RecurringSeriesBase):
     id: int
@@ -1253,9 +1243,9 @@ class RecurringSeriesResponse(RecurringSeriesBase):
     updated_at: datetime
     completed_at: Optional[datetime]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Enhanced Appointment Schema for recurring appointments
 class RecurringAppointmentInstance(BaseModel):
@@ -1271,8 +1261,7 @@ class RecurringAppointmentInstance(BaseModel):
     is_recurring_instance: bool = True
     recurrence_sequence: Optional[int] = None
     original_scheduled_date: Optional[Date] = None
-    
-    
+
 class AppointmentSeriesManagement(BaseModel):
     action: str = Field(..., description="Action to perform")
     appointment_id: Optional[int] = None
@@ -1282,13 +1271,13 @@ class AppointmentSeriesManagement(BaseModel):
     new_barber_id: Optional[int] = None
     reason: Optional[str] = None
     
-    @validator('action')
+    @field_validator('action')
+    @classmethod
     def validate_action(cls, v):
         valid_actions = ['reschedule', 'cancel', 'modify', 'complete']
         if v not in valid_actions:
             raise ValueError(f'Action must be one of {valid_actions}')
         return v
-
 
 # Enhanced Booking Schemas
 class BookingRuleBase(BaseModel):
@@ -1302,10 +1291,8 @@ class BookingRuleBase(BaseModel):
     priority: int = Field(0, description="Rule priority (higher values override lower)")
     is_active: bool = True
 
-
 class BookingRuleCreate(BookingRuleBase):
     pass
-
 
 class BookingRuleUpdate(BaseModel):
     rule_name: Optional[str] = None
@@ -1318,7 +1305,6 @@ class BookingRuleUpdate(BaseModel):
     priority: Optional[int] = None
     is_active: Optional[bool] = None
 
-
 class BookingRuleResponse(BookingRuleBase):
     id: int
     business_id: int
@@ -1326,13 +1312,12 @@ class BookingRuleResponse(BookingRuleBase):
     updated_at: datetime
     created_by_id: Optional[int]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Enhanced Booking Create schema with new fields
 # EnhancedBookingCreate - Moved to end of file as alias to EnhancedAppointmentCreate
-
 
 # Barber availability checking schema
 class BarberAvailabilityCheck(BaseModel):
@@ -1341,17 +1326,14 @@ class BarberAvailabilityCheck(BaseModel):
     start_time: Optional[Time] = None
     end_time: Optional[Time] = None
 
-
 class AvailableBarber(BaseModel):
     barber_id: int
     barber_name: str
     available_slots: List[TimeSlotEnhanced]
 
-
 class BarberAvailabilityByDateResponse(BaseModel):
     date: str
     available_barbers: List[AvailableBarber]
-
 
 # Google Calendar Integration Schemas
 class CalendarConnectionStatus(BaseModel):
@@ -1361,7 +1343,6 @@ class CalendarConnectionStatus(BaseModel):
     selected_calendar_id: Optional[str] = None
     error: Optional[str] = None
 
-
 class GoogleCalendar(BaseModel):
     id: str
     summary: str
@@ -1369,35 +1350,28 @@ class GoogleCalendar(BaseModel):
     accessRole: str
     timeZone: Optional[str] = None
 
-
 class CalendarListResponse(BaseModel):
     calendars: List[GoogleCalendar]
-
 
 class CalendarSelectRequest(BaseModel):
     calendar_id: str = Field(..., description="Google Calendar ID to use for syncing")
 
-
 class CalendarAvailabilityRequest(BaseModel):
     start_time: datetime = Field(..., description="Start time to check availability")
     end_time: datetime = Field(..., description="End time to check availability")
-
 
 class CalendarAvailabilityResponse(BaseModel):
     available: bool
     start_time: str
     end_time: str
 
-
 class CalendarFreeBusyRequest(BaseModel):
     start_date: datetime = Field(..., description="Start date for free/busy query")
     end_date: datetime = Field(..., description="End date for free/busy query")
 
-
 class BusyPeriod(BaseModel):
     start: str
     end: str
-
 
 class CalendarFreeBusyResponse(BaseModel):
     start_time: str
@@ -1405,16 +1379,13 @@ class CalendarFreeBusyResponse(BaseModel):
     calendar_id: str
     busy_periods: List[BusyPeriod]
 
-
 class CalendarSyncRequest(BaseModel):
     start_date: datetime = Field(..., description="Start date for syncing appointments")
     end_date: datetime = Field(..., description="End date for syncing appointments")
 
-
 class CalendarSyncResponse(BaseModel):
     message: str
     results: Dict[str, Any] = Field(..., description="Sync results with counts and errors")
-
 
 class CalendarValidationResponse(BaseModel):
     connected: bool
@@ -1424,10 +1395,93 @@ class CalendarValidationResponse(BaseModel):
     selected_calendar: Optional[GoogleCalendar] = None
     errors: List[str] = []
 
-
 class CalendarEventResponse(BaseModel):
     message: str
     google_event_id: Optional[str] = None
+
+
+# Calendar Export and Sync Schemas
+class CalendarExportRequest(BaseModel):
+    format: str = Field(..., description="Export format: ical, csv, json, google_calendar, outlook")
+    privacy_level: str = Field(default="business", description="Privacy level: full, business, minimal, anonymous")
+    start_date: datetime = Field(..., description="Start date for export")
+    end_date: datetime = Field(..., description="End date for export")
+    barber_ids: Optional[List[int]] = Field(None, description="Specific barber IDs to include")
+    service_ids: Optional[List[int]] = Field(None, description="Specific service IDs to include")
+    include_cancelled: bool = Field(default=False, description="Include cancelled appointments")
+    include_completed: bool = Field(default=True, description="Include completed appointments")
+    timezone: str = Field(default="UTC", description="Timezone for export")
+    custom_title: Optional[str] = Field(None, description="Custom calendar title")
+    include_client_contact: bool = Field(default=False, description="Include client contact info")
+    include_pricing: bool = Field(default=False, description="Include pricing information")
+
+
+class CalendarExportResponse(BaseModel):
+    success: bool
+    format: str
+    filename: str
+    size_bytes: int
+    export_count: int
+    export_id: str
+    subscription_url: Optional[str] = None
+    download_url: Optional[str] = None
+    errors: List[str] = []
+    warnings: List[str] = []
+
+
+class BulkExportRequest(BaseModel):
+    barber_ids: List[int] = Field(..., description="List of barber IDs to export")
+    export_options: CalendarExportRequest = Field(..., description="Export options to apply")
+
+
+class BulkExportResponse(BaseModel):
+    success: bool
+    total_exports: int
+    successful_exports: int
+    failed_exports: int
+    results: List[CalendarExportResponse]
+
+
+class SyncSetupRequest(BaseModel):
+    provider: str = Field(..., description="Sync provider: google_calendar, outlook, apple_calendar, caldav")
+    external_calendar_id: str = Field(..., description="External calendar ID")
+    sync_direction: str = Field(default="bidirectional", description="Sync direction")
+    conflict_resolution: str = Field(default="prompt", description="Conflict resolution strategy")
+    sync_frequency: int = Field(default=15, description="Sync frequency in minutes")
+    privacy_level: str = Field(default="business", description="Privacy level for sync")
+    auto_create_calendar: bool = Field(default=True, description="Auto-create calendar if not exists")
+    webhook_enabled: bool = Field(default=True, description="Enable webhook notifications")
+
+
+class SyncStatusResponse(BaseModel):
+    total_configurations: int
+    active_configurations: int
+    last_sync_times: Dict[str, Optional[str]]
+    next_sync_times: Dict[str, Optional[str]]
+    sync_errors: Dict[str, List[str]]
+    sync_health: Dict[str, Dict[str, Any]]
+    recent_activity: List[Dict[str, Any]]
+
+
+class ConflictResolutionRequest(BaseModel):
+    conflict_ids: List[str] = Field(..., description="List of conflict IDs to resolve")
+    resolution_strategy: str = Field(..., description="Resolution strategy")
+    user_choices: Optional[Dict[str, Any]] = Field(None, description="User choices for manual resolution")
+
+
+class SubscriptionCreateRequest(BaseModel):
+    name: str = Field(..., description="Subscription name")
+    description: str = Field(..., description="Subscription description")
+    privacy_level: str = Field(default="business", description="Privacy level")
+    filters: Dict[str, Any] = Field(default_factory=dict, description="Calendar filters")
+    expires_in_days: Optional[int] = Field(None, description="Expiration in days")
+
+
+class ConflictResponse(BaseModel):
+    total_conflicts: int
+    pending_conflicts: int
+    resolved_conflicts: int
+    conflicts: List[Dict[str, Any]]
 
 
 # Analytics schemas
@@ -1435,12 +1489,12 @@ class DateRange(BaseModel):
     start_date: datetime = Field(..., description="Start date for the range")
     end_date: datetime = Field(..., description="End date for the range")
     
-    @validator('end_date')
+    @field_validator('end_date')
+    @classmethod
     def validate_date_range(cls, v, values):
         if 'start_date' in values and v < values['start_date']:
             raise ValueError('End date must be after start date')
         return v
-
 
 class AnalyticsDateRangeFilter(BaseModel):
     start_date: Optional[Date] = Field(None, description="Start date for analytics filter")
@@ -1448,30 +1502,25 @@ class AnalyticsDateRangeFilter(BaseModel):
     user_id: Optional[int] = Field(None, description="User ID to filter analytics (admin only)")
     group_by: Optional[str] = Field("month", description="Group by period: day, week, month, year")
 
-
 class AnalyticsResponse(BaseModel):
     """Base analytics response with common metadata"""
     generated_at: datetime = Field(..., description="When the analytics were generated")
     date_range: Optional[Dict[str, str]] = Field(None, description="Date range used for analytics")
     user_id: Optional[int] = Field(None, description="User ID for filtered analytics")
 
-
 class RevenueAnalyticsResponse(AnalyticsResponse):
     summary: Dict[str, Any] = Field(..., description="Revenue summary statistics")
     data: List[Dict[str, Any]] = Field(..., description="Revenue data points")
-
 
 class AppointmentAnalyticsResponse(AnalyticsResponse):
     summary: Dict[str, Any] = Field(..., description="Appointment summary statistics")
     by_service: Dict[str, Any] = Field(..., description="Service breakdown")
     by_time_slot: Dict[str, Any] = Field(..., description="Time slot analysis")
 
-
 class ClientRetentionAnalyticsResponse(AnalyticsResponse):
     summary: Dict[str, Any] = Field(..., description="Client retention summary")
     segments: Dict[str, Any] = Field(..., description="Client segmentation")
     trends: Dict[str, Any] = Field(..., description="Retention trends")
-
 
 class BarberPerformanceResponse(AnalyticsResponse):
     summary: Dict[str, Any] = Field(..., description="Performance summary")
@@ -1481,13 +1530,11 @@ class BarberPerformanceResponse(AnalyticsResponse):
     service_performance: Dict[str, Any] = Field(..., description="Service-specific performance")
     peak_performance: Dict[str, Any] = Field(..., description="Peak hour and day analysis")
 
-
 class SixFigureBarberResponse(AnalyticsResponse):
     current_performance: Dict[str, Any] = Field(..., description="Current performance metrics")
     targets: Dict[str, Any] = Field(..., description="Target metrics and goals")
     recommendations: Dict[str, Any] = Field(..., description="Strategic recommendations")
     action_items: List[Dict[str, str]] = Field(..., description="Prioritized action items")
-
 
 class BusinessInsight(BaseModel):
     type: str = Field(..., description="Type of insight (revenue, retention, etc.)")
@@ -1496,13 +1543,11 @@ class BusinessInsight(BaseModel):
     description: str = Field(..., description="Detailed description")
     action: str = Field(..., description="Recommended action")
 
-
 class QuickAction(BaseModel):
     title: str = Field(..., description="Action title")
     category: str = Field(..., description="Action category")
     urgency: str = Field(..., description="Urgency level")
     description: str = Field(..., description="Action description")
-
 
 class DashboardAnalyticsResponse(AnalyticsResponse):
     key_metrics: Dict[str, Any] = Field(..., description="Key performance indicators")
@@ -1516,14 +1561,12 @@ class DashboardAnalyticsResponse(AnalyticsResponse):
     quick_actions: List[QuickAction] = Field(..., description="Quick action recommendations")
     barber_performance: Optional[Dict[str, Any]] = Field(None, description="Barber-specific performance data")
 
-
 class PerformanceScore(BaseModel):
     overall_score: int = Field(..., description="Overall performance score")
     max_score: int = Field(..., description="Maximum possible score")
     percentage: float = Field(..., description="Performance percentage")
     grade: str = Field(..., description="Letter grade (A-F)")
     factors: List[Dict[str, Any]] = Field(..., description="Score breakdown by factors")
-
 
 class BusinessRecommendation(BaseModel):
     category: str = Field(..., description="Recommendation category")
@@ -1534,7 +1577,6 @@ class BusinessRecommendation(BaseModel):
     implementation_time: str = Field(..., description="Estimated implementation time")
     resources_needed: List[str] = Field(..., description="Required resources")
 
-
 class BusinessInsightsResponse(AnalyticsResponse):
     insights: List[BusinessInsight] = Field(..., description="Business insights")
     quick_actions: List[QuickAction] = Field(..., description="Quick action items")
@@ -1542,14 +1584,12 @@ class BusinessInsightsResponse(AnalyticsResponse):
     recommendations: List[BusinessRecommendation] = Field(..., description="Detailed recommendations")
     benchmarks: Dict[str, Any] = Field(..., description="Industry benchmarks")
 
-
 class AnalyticsExportRequest(BaseModel):
     export_type: str = Field(..., description="Type of data to export")
     format: str = Field("json", description="Export format")
     start_date: Optional[Date] = Field(None, description="Start date for export")
     end_date: Optional[Date] = Field(None, description="End date for export")
     user_id: Optional[int] = Field(None, description="User ID filter")
-
 
 class AnalyticsExportResponse(BaseModel):
     export_type: str = Field(..., description="Type of exported data")
@@ -1559,7 +1599,6 @@ class AnalyticsExportResponse(BaseModel):
     user_id: Optional[int] = Field(None, description="User ID filter")
     data: Dict[str, Any] = Field(..., description="Exported analytics data")
     note: Optional[str] = Field(None, description="Additional notes about the export")
-
 
 # Notification schemas
 class NotificationPreferenceCreate(BaseModel):
@@ -1592,9 +1631,9 @@ class NotificationPreferenceResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class NotificationTemplateResponse(BaseModel):
     id: int
     name: str
@@ -1605,9 +1644,9 @@ class NotificationTemplateResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class NotificationHistoryResponse(BaseModel):
     id: int
     notification_type: str
@@ -1621,9 +1660,9 @@ class NotificationHistoryResponse(BaseModel):
     error_message: Optional[str]
     created_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class NotificationStatsResponse(BaseModel):
     period_days: int
     since_date: str
@@ -1650,9 +1689,9 @@ class NotificationQueueItem(BaseModel):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class BulkNotificationRequest(BaseModel):
     template_name: str
     user_ids: List[int]
@@ -1780,7 +1819,6 @@ class ImportHistoryResponse(BaseModel):
 # Forward reference updates
 ServiceResponse.model_rebuild()
 
-
 # Booking Rules Schemas
 class BookingRuleBase(BaseModel):
     rule_name: str = Field(..., description="Unique name for the rule")
@@ -1814,9 +1852,9 @@ class BookingRuleResponse(BookingRuleBase):
     updated_at: datetime
     created_by_id: Optional[int] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class ServiceBookingRuleBase(BaseModel):
     rule_type: str = Field(..., description="Type of service rule")
     min_age: Optional[int] = Field(None, description="Minimum age requirement")
@@ -1855,9 +1893,9 @@ class ServiceBookingRuleResponse(ServiceBookingRuleBase):
     service_id: int
     created_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 # BookingValidationRequest/Response - Moved to end of file as aliases to Appointment schemas
 
 # Stripe Connect Schemas
@@ -1874,7 +1912,6 @@ class StripeConnectStatusResponse(BaseModel):
     details_submitted: bool = False
     charges_enabled: bool = False
     onboarding_url: Optional[str] = None
-
 
 # SMS Conversation Schemas - For Direct Customer Text Messaging
 class SMSMessageBase(BaseModel):
@@ -1901,9 +1938,9 @@ class SMSMessageResponse(SMSMessageBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class SMSConversationBase(BaseModel):
     customer_phone: str = Field(..., description="Customer's actual phone number (E.164 format)")
     customer_name: Optional[str] = Field(None, description="Customer's name if known")
@@ -1937,9 +1974,9 @@ class SMSConversationResponse(SMSConversationBase):
     client: Optional['Client'] = Field(None, description="Linked client profile")
     barber: Optional['User'] = Field(None, description="Assigned barber info")
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Webhook schemas
 class WebhookEndpointBase(BaseModel):
@@ -1955,10 +1992,8 @@ class WebhookEndpointBase(BaseModel):
     retry_delay_seconds: int = Field(60, ge=10, le=3600, description="Delay between retries in seconds")
     timeout_seconds: int = Field(30, ge=5, le=120, description="Request timeout in seconds")
 
-
 class WebhookEndpointCreate(WebhookEndpointBase):
     pass
-
 
 class WebhookEndpointUpdate(BaseModel):
     url: Optional[str] = None
@@ -1973,7 +2008,6 @@ class WebhookEndpointUpdate(BaseModel):
     retry_delay_seconds: Optional[int] = Field(None, ge=10, le=3600)
     timeout_seconds: Optional[int] = Field(None, ge=5, le=120)
 
-
 class WebhookEndpointResponse(WebhookEndpointBase):
     id: str
     created_at: datetime
@@ -1986,9 +2020,9 @@ class WebhookEndpointResponse(WebhookEndpointBase):
     last_success_at: Optional[datetime] = Field(None, description="Last successful delivery")
     last_failure_at: Optional[datetime] = Field(None, description="Last failed delivery")
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class WebhookLogResponse(BaseModel):
     id: str
@@ -2011,20 +2045,18 @@ class WebhookLogResponse(BaseModel):
     delivered_at: Optional[datetime] = Field(None, description="When the webhook was delivered")
     completed_at: Optional[datetime] = Field(None, description="When processing completed")
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class WebhookTestRequest(BaseModel):
     event_type: str = Field(..., description="Event type to test")
-
 
 class WebhookListParams(BaseModel):
     is_active: Optional[bool] = None
     event_type: Optional[str] = None
     skip: int = Field(0, ge=0)
     limit: int = Field(100, ge=1, le=100)
-
 
 # Appointment schemas - Consistent naming to match database model
 # These provide standardized "Appointment" terminology instead of mixed "Booking" terminology
@@ -2037,7 +2069,8 @@ class AppointmentCreate(BaseModel):
     notes: Optional[str] = None
     barber_id: Optional[int] = None
     
-    @validator('service')
+    @field_validator('service')
+    @classmethod
     def validate_service(cls, v):
         valid_services = ["Haircut", "Shave", "Haircut & Shave"]
         if v not in valid_services:
@@ -2049,7 +2082,8 @@ class QuickAppointmentCreate(BaseModel):
     service: str = Field(..., description="Service type for the appointment", example="Haircut")
     notes: Optional[str] = Field(None, description="Optional special instructions or notes", example="Please use scissors only")
     
-    @validator('service')
+    @field_validator('service')
+    @classmethod
     def validate_service(cls, v):
         valid_services = ["Haircut", "Shave", "Haircut & Shave"]
         if v not in valid_services:
@@ -2073,9 +2107,9 @@ class AppointmentResponse(BaseModel):
     google_event_id: Optional[str] = None
     created_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class AppointmentListResponse(BaseModel):
     """List of appointments response"""
     appointments: List[AppointmentResponse]
@@ -2089,7 +2123,8 @@ class AppointmentUpdate(BaseModel):
     notes: Optional[str] = None
     status: Optional[str] = None
     
-    @validator('service')
+    @field_validator('service')
+    @classmethod
     def validate_service(cls, v):
         if v is not None:
             valid_services = ["Haircut", "Shave", "Haircut & Shave"]
@@ -2097,7 +2132,8 @@ class AppointmentUpdate(BaseModel):
                 raise ValueError(f"Service must be one of: {', '.join(valid_services)}")
         return v
     
-    @validator('status')
+    @field_validator('status')
+    @classmethod
     def validate_status(cls, v):
         if v is not None:
             valid_statuses = ["pending", "confirmed", "cancelled", "completed", "no_show"]
@@ -2193,9 +2229,9 @@ class GuestBookingResponse(BaseModel):
     created_at: datetime
     booking_reference: Optional[str] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 # Marketing Suite Schemas
 class MarketingCampaignCreate(BaseModel):
     """Create a new marketing campaign"""
@@ -2210,13 +2246,15 @@ class MarketingCampaignCreate(BaseModel):
     scheduled_for: Optional[datetime] = Field(None, description="Schedule for future sending")
     tags: Optional[List[str]] = Field(default_factory=list)
     
-    @validator('campaign_type')
+    @field_validator('campaign_type')
+    @classmethod
     def validate_campaign_type(cls, v):
         if v not in ['email', 'sms']:
             raise ValueError('Campaign type must be email or sms')
         return v
     
-    @validator('subject')
+    @field_validator('subject')
+    @classmethod
     def validate_subject(cls, v, values):
         if values.get('campaign_type') == 'email' and not v:
             raise ValueError('Subject is required for email campaigns')
@@ -2262,9 +2300,9 @@ class MarketingCampaignResponse(BaseModel):
     bounced_count: int = 0
     unsubscribed_count: int = 0
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class MarketingCampaignListResponse(BaseModel):
     """List response for marketing campaigns"""
     campaigns: List[MarketingCampaignResponse]
@@ -2283,7 +2321,8 @@ class MarketingTemplateCreate(BaseModel):
     variables: Optional[List[str]] = Field(default_factory=list, description="Available template variables")
     preview_data: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Sample data for preview")
     
-    @validator('template_type')
+    @field_validator('template_type')
+    @classmethod
     def validate_template_type(cls, v):
         if v not in ['email', 'sms']:
             raise ValueError('Template type must be email or sms')
@@ -2317,9 +2356,9 @@ class MarketingTemplateResponse(BaseModel):
     created_by_id: int
     usage_count: int = 0
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class ContactListCreate(BaseModel):
     """Create a new contact list"""
     name: str = Field(..., min_length=1, max_length=100)
@@ -2334,16 +2373,17 @@ class ContactListResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class ContactSegmentCreate(BaseModel):
     """Create a new contact segment with dynamic criteria"""
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
     criteria: Dict[str, Any] = Field(..., description="Segment criteria as JSON")
     
-    @validator('criteria')
+    @field_validator('criteria')
+    @classmethod
     def validate_criteria(cls, v):
         # Validate that criteria has required structure
         if not isinstance(v, dict):
@@ -2360,9 +2400,9 @@ class ContactSegmentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class CampaignSendRequest(BaseModel):
     """Request to send a campaign"""
     test_mode: bool = Field(False, description="Send as test to limited recipients")
@@ -2384,11 +2424,12 @@ class ContactExportRequest(BaseModel):
 
 class ContactBulkActionRequest(BaseModel):
     """Bulk action on contacts"""
-    contact_ids: List[int] = Field(..., min_items=1)
+    contact_ids: List[int] = Field(..., min_length=1)
     action: str = Field(..., description="subscribe, unsubscribe, add_to_list, remove_from_list, delete")
     action_data: Optional[Dict[str, Any]] = Field(None, description="Additional data for action")
     
-    @validator('action')
+    @field_validator('action')
+    @classmethod
     def validate_action(cls, v):
         valid_actions = ['subscribe', 'unsubscribe', 'add_to_list', 'remove_from_list', 'delete']
         if v not in valid_actions:
@@ -2438,9 +2479,9 @@ class CampaignAnalyticsResponse(BaseModel):
     # Link performance (for email)
     link_clicks: Optional[List[Dict[str, Any]]] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class MarketingUsageResponse(BaseModel):
     """Marketing usage statistics"""
     period: str
@@ -2470,9 +2511,9 @@ class MarketingUsageResponse(BaseModel):
     estimated_cost: Optional[float] = None
     cost_breakdown: Optional[Dict[str, float]] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 # Notification Preferences Schemas
 class EmailPreferences(BaseModel):
     """Email notification preferences"""
@@ -2488,7 +2529,6 @@ class EmailPreferences(BaseModel):
     system_alerts: Optional[bool] = True
     frequency: Optional[str] = "immediate"  # immediate, daily, weekly, never
 
-
 class SMSPreferences(BaseModel):
     """SMS notification preferences"""
     appointment_confirmation: Optional[bool] = True
@@ -2502,7 +2542,6 @@ class SMSPreferences(BaseModel):
     system_alerts: Optional[bool] = False
     frequency: Optional[str] = "immediate"  # immediate, daily, never
 
-
 class AdvancedSettings(BaseModel):
     """Advanced notification settings"""
     reminder_hours: Optional[List[int]] = [24, 2]
@@ -2511,14 +2550,12 @@ class AdvancedSettings(BaseModel):
     quiet_hours_end: Optional[str] = "08:00"
     weekend_notifications: Optional[bool] = True
 
-
 class ComplianceInfo(BaseModel):
     """GDPR compliance information"""
     consent_given_at: Optional[datetime] = None
     data_processing_consent: Optional[bool] = True
     marketing_consent: Optional[bool] = False
     last_updated_at: Optional[datetime] = None
-
 
 class NotificationPreferencesResponse(BaseModel):
     """Complete notification preferences response"""
@@ -2531,9 +2568,9 @@ class NotificationPreferencesResponse(BaseModel):
     advanced_settings: AdvancedSettings
     compliance: ComplianceInfo
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class NotificationPreferencesUpdate(BaseModel):
     """Update notification preferences request"""
@@ -2546,7 +2583,8 @@ class NotificationPreferencesUpdate(BaseModel):
     marketing_consent: Optional[bool] = None
     data_processing_consent: Optional[bool] = None
 
-    @validator('timezone')
+    @field_validator('timezone')
+    @classmethod
     def validate_timezone(cls, v):
         if v is not None:
             try:
@@ -2555,7 +2593,8 @@ class NotificationPreferencesUpdate(BaseModel):
                 raise ValueError(f'Invalid timezone: {v}')
         return v
 
-    @validator('email_preferences')
+    @field_validator('email_preferences')
+    @classmethod
     def validate_email_frequency(cls, v):
         if v and hasattr(v, 'frequency') and v.frequency:
             valid_frequencies = ['immediate', 'daily', 'weekly', 'never']
@@ -2563,7 +2602,8 @@ class NotificationPreferencesUpdate(BaseModel):
                 raise ValueError(f'Invalid email frequency. Must be one of: {valid_frequencies}')
         return v
 
-    @validator('sms_preferences')
+    @field_validator('sms_preferences')
+    @classmethod
     def validate_sms_frequency(cls, v):
         if v and hasattr(v, 'frequency') and v.frequency:
             valid_frequencies = ['immediate', 'daily', 'never']
@@ -2571,26 +2611,24 @@ class NotificationPreferencesUpdate(BaseModel):
                 raise ValueError(f'Invalid SMS frequency. Must be one of: {valid_frequencies}')
         return v
 
-
 class UnsubscribeRequest(BaseModel):
     """Unsubscribe request"""
     token: str
     unsubscribe_type: str = "marketing_only"  # marketing_only, email_all, sms_all, all
 
-    @validator('unsubscribe_type')
+    @field_validator('unsubscribe_type')
+    @classmethod
     def validate_unsubscribe_type(cls, v):
         valid_types = ['marketing_only', 'email_all', 'sms_all', 'all']
         if v not in valid_types:
             raise ValueError(f'Invalid unsubscribe type. Must be one of: {valid_types}')
         return v
 
-
 class UnsubscribeResponse(BaseModel):
     """Unsubscribe response"""
     status: str
     message: str
     unsubscribe_type: str
-
 
 class NotificationChannelResponse(BaseModel):
     """Notification channel information"""
@@ -2601,7 +2639,6 @@ class NotificationChannelResponse(BaseModel):
     supports_transactional: bool
     requires_consent: bool
 
-
 class PreferenceAuditLog(BaseModel):
     """Preference change audit log entry"""
     field_changed: str
@@ -2611,9 +2648,9 @@ class PreferenceAuditLog(BaseModel):
     changed_at: datetime
     changed_by_ip: Optional[str] = None
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # ================================================================================
 # EMAIL ANALYTICS SCHEMAS
@@ -2627,9 +2664,9 @@ class EmailMetricsResponse(BaseModel):
     total_sent: int
     total_delivered: int
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class EmailCampaignResponse(BaseModel):
     """Email campaign performance response"""
@@ -2653,9 +2690,9 @@ class EmailCampaignResponse(BaseModel):
     created_at: str
     updated_at: Optional[str] = None
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class EmailEngagementResponse(BaseModel):
     """User email engagement response"""
@@ -2666,9 +2703,9 @@ class EmailEngagementResponse(BaseModel):
     emails_clicked: int
     last_activity: Optional[str] = None
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class TopClickedUrl(BaseModel):
     """Top clicked URL information"""
@@ -2676,14 +2713,13 @@ class TopClickedUrl(BaseModel):
     clicks: int
     unique_clicks: int
 
-
 class TopClickedUrlsResponse(BaseModel):
     """Top clicked URLs response"""
     urls: List[TopClickedUrl]
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 # Organization Schemas
 
@@ -2775,9 +2811,9 @@ class OrganizationResponse(OrganizationBase):
     tax_id: Optional[str] = None
     stripe_account_id: Optional[str] = None
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class UserOrganizationBase(BaseModel):
     """Base user-organization relationship schema"""
     role: UserRole = UserRole.BARBER
@@ -2813,9 +2849,9 @@ class UserOrganizationResponse(UserOrganizationBase):
     # Related data
     organization: Optional[OrganizationResponse] = None
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class OrganizationWithUsers(OrganizationResponse):
     """Organization with associated users"""
     user_organizations: List[UserOrganizationResponse] = []
@@ -2829,9 +2865,9 @@ class UserWithOrganizations(BaseModel):
     organizations: List[UserOrganizationResponse] = []
     primary_organization: Optional[OrganizationResponse] = None
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class OrganizationStatsResponse(BaseModel):
     """Organization statistics response"""
     organization_id: int
@@ -2880,7 +2916,8 @@ class PriceCalculationRequest(BaseModel):
     chairs_count: int = Field(..., ge=1, description="Number of chairs to calculate pricing for")
     billing_cycle: str = Field("monthly", pattern="^(monthly|yearly)$", description="Billing cycle: monthly or yearly")
     
-    @validator('chairs_count')
+    @field_validator('chairs_count')
+    @classmethod
     def validate_chairs(cls, v):
         if v < 1:
             raise ValueError('Chairs count must be at least 1')
@@ -2920,7 +2957,8 @@ class SubscriptionCreateRequest(BaseModel):
     billing_contact: BillingContact
     promo_code: Optional[str] = None
     
-    @validator('chairs_count')
+    @field_validator('chairs_count')
+    @classmethod
     def validate_chairs(cls, v):
         if v < 1:
             raise ValueError('Chairs count must be at least 1')
@@ -2933,7 +2971,8 @@ class SubscriptionUpdateRequest(BaseModel):
     payment_method_id: Optional[str] = None  # Update payment method
     billing_contact: Optional[BillingContact] = None
     
-    @validator('chairs_count')
+    @field_validator('chairs_count')
+    @classmethod
     def validate_chairs(cls, v):
         if v is not None and v < 1:
             raise ValueError('Chairs count must be at least 1')
@@ -2965,16 +3004,17 @@ class SubscriptionResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     
-    @validator('trial_days_remaining')
+    @field_validator('trial_days_remaining')
+    @classmethod
     def calculate_trial_days(cls, v, values):
         if 'trial_end' in values and values['trial_end']:
             days_remaining = (values['trial_end'] - datetime.utcnow()).days
             return max(0, days_remaining)
         return v
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class SubscriptionCancelRequest(BaseModel):
     """Cancel subscription request"""
     organization_id: int
@@ -3017,7 +3057,8 @@ class TrialStatusResponse(BaseModel):
     features_available: BillingPlanFeatures
     requires_payment_method: bool
     
-    @validator('trial_days_remaining')
+    @field_validator('trial_days_remaining')
+    @classmethod
     def calculate_remaining_days(cls, v, values):
         if 'trial_end_date' in values:
             days_remaining = (values['trial_end_date'] - datetime.utcnow()).days
@@ -3048,12 +3089,16 @@ class LocationResponse(BaseModel):
     # Computed fields
     full_address: Optional[str] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
         
-    @validator('full_address', always=True)
-    def compute_full_address(cls, v, values):
+    @field_validator('full_address', mode='before')
+    @classmethod
+    def compute_full_address(cls, v, info):
         """Compute full address from components"""
+        if hasattr(info, 'data') and info.data:
+            values = info.data
+        else:
+            return v
         parts = []
         if values.get('street_address'):
             parts.append(values['street_address'])

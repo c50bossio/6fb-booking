@@ -27,7 +27,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-
 def require_organization_role(user: User, required_roles: list[UserRole], db: Session) -> Any:
     """
     Check if user has required role in their primary organization.
@@ -57,7 +56,6 @@ def require_organization_role(user: User, required_roles: list[UserRole], db: Se
     
     return org_user
 
-
 @router.get("/", response_model=TrackingPixelResponse)
 async def get_tracking_pixels(
     current_user: User = Depends(get_current_active_user),
@@ -77,7 +75,6 @@ async def get_tracking_pixels(
         )
     
     return TrackingPixelResponse.model_validate(primary_org)
-
 
 @router.put("/", response_model=TrackingPixelResponse)
 async def update_tracking_pixels(
@@ -108,7 +105,6 @@ async def update_tracking_pixels(
     db.refresh(organization)
     
     return TrackingPixelResponse.model_validate(organization)
-
 
 @router.delete("/{pixel_type}")
 async def remove_tracking_pixel(
@@ -155,7 +151,6 @@ async def remove_tracking_pixel(
     db.commit()
     
     return {"message": f"{pixel_type} pixel removed successfully"}
-
 
 @router.post("/test", response_model=List[TrackingTestResult])
 async def test_tracking_pixels(
@@ -226,7 +221,6 @@ async def test_tracking_pixels(
     
     return results
 
-
 @router.get("/public/{organization_slug}", response_model=PublicTrackingPixels)
 async def get_public_tracking_pixels(
     organization_slug: str,
@@ -261,7 +255,6 @@ async def get_public_tracking_pixels(
         custom_tracking_code=organization.custom_tracking_code,
         tracking_enabled=True
     )
-
 
 @router.post("/instructions")
 async def get_pixel_instructions(

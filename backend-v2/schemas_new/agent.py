@@ -7,7 +7,6 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
 
-
 class AgentType(str, Enum):
     """Types of available agents"""
     REBOOKING = "rebooking"
@@ -20,7 +19,6 @@ class AgentType(str, Enum):
     APPOINTMENT_REMINDER = "appointment_reminder"
     CUSTOM = "custom"
 
-
 class AgentStatus(str, Enum):
     """Agent instance status"""
     DRAFT = "draft"
@@ -28,7 +26,6 @@ class AgentStatus(str, Enum):
     PAUSED = "paused"
     INACTIVE = "inactive"
     ERROR = "error"
-
 
 class ConversationStatus(str, Enum):
     """Status of agent conversations"""
@@ -39,7 +36,6 @@ class ConversationStatus(str, Enum):
     FAILED = "failed"
     OPTED_OUT = "opted_out"
 
-
 class SubscriptionTier(str, Enum):
     """Agent subscription tiers"""
     TRIAL = "trial"
@@ -48,12 +44,10 @@ class SubscriptionTier(str, Enum):
     ENTERPRISE = "enterprise"
     CUSTOM = "custom"
 
-
 class ConversationChannel(str, Enum):
     """Communication channels"""
     SMS = "sms"
     EMAIL = "email"
-
 
 # Base schemas
 class AgentBase(BaseModel):
@@ -62,7 +56,6 @@ class AgentBase(BaseModel):
     agent_type: AgentType
     description: Optional[str] = None
     is_active: bool = True
-
 
 class AgentCreate(AgentBase):
     """Schema for creating an agent template"""
@@ -76,7 +69,6 @@ class AgentCreate(AgentBase):
     token_rate: float = Field(0.0001, ge=0)
     success_fee_percent: float = Field(2.0, ge=0, le=100)
     is_premium: bool = False
-
 
 class AgentResponse(AgentBase):
     """Schema for agent responses"""
@@ -96,7 +88,6 @@ class AgentResponse(AgentBase):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 # Agent Instance schemas
 class AgentInstanceBase(BaseModel):
     """Base agent instance schema"""
@@ -109,12 +100,10 @@ class AgentInstanceBase(BaseModel):
         "active_days": ["mon", "tue", "wed", "thu", "fri", "sat"]
     })
 
-
 class AgentInstanceCreate(AgentInstanceBase):
     """Schema for creating an agent instance"""
     agent_id: int
     location_id: Optional[int] = None
-
 
 class AgentInstanceUpdate(BaseModel):
     """Schema for updating an agent instance"""
@@ -122,7 +111,6 @@ class AgentInstanceUpdate(BaseModel):
     config: Optional[Dict[str, Any]] = None
     schedule_config: Optional[Dict[str, Any]] = None
     status: Optional[AgentStatus] = None
-
 
 class AgentInstanceResponse(AgentInstanceBase):
     """Schema for agent instance responses"""
@@ -146,7 +134,6 @@ class AgentInstanceResponse(AgentInstanceBase):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 # Conversation schemas
 class ConversationMessage(BaseModel):
     """Schema for a single message in a conversation"""
@@ -154,7 +141,6 @@ class ConversationMessage(BaseModel):
     content: str
     timestamp: datetime
     tokens_used: Optional[int] = None
-
 
 class ConversationCreate(BaseModel):
     """Schema for creating a conversation"""
@@ -164,14 +150,12 @@ class ConversationCreate(BaseModel):
     context_data: Dict[str, Any] = Field(default_factory=dict)
     scheduled_at: Optional[datetime] = None
 
-
 class ConversationUpdate(BaseModel):
     """Schema for updating a conversation"""
     status: Optional[ConversationStatus] = None
     goal_achieved: Optional[bool] = None
     revenue_generated: Optional[float] = None
     appointment_id: Optional[int] = None
-
 
 class ConversationResponse(BaseModel):
     """Schema for conversation responses"""
@@ -199,7 +183,6 @@ class ConversationResponse(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 # Metrics schemas
 class AgentMetricsResponse(BaseModel):
     """Schema for agent metrics"""
@@ -225,19 +208,16 @@ class AgentMetricsResponse(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 # Subscription schemas
 class SubscriptionCreate(BaseModel):
     """Schema for creating a subscription"""
     tier: SubscriptionTier
     stripe_customer_id: Optional[str] = None
 
-
 class SubscriptionUpdate(BaseModel):
     """Schema for updating a subscription"""
     tier: Optional[SubscriptionTier] = None
     status: Optional[str] = None
-
 
 class SubscriptionResponse(BaseModel):
     """Schema for subscription responses"""
@@ -264,7 +244,6 @@ class SubscriptionResponse(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 # Template schemas
 class TemplateCreate(BaseModel):
     """Schema for creating a template"""
@@ -280,7 +259,6 @@ class TemplateCreate(BaseModel):
         "enthusiasm": "moderate",
         "emoji_usage": "minimal"
     })
-
 
 class TemplateResponse(BaseModel):
     """Schema for template responses"""
@@ -303,7 +281,6 @@ class TemplateResponse(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 # Analytics schemas
 class AgentAnalytics(BaseModel):
     """Schema for agent analytics dashboard"""
@@ -315,7 +292,6 @@ class AgentAnalytics(BaseModel):
     top_performing_agents: List[Dict[str, Any]]
     conversation_trends: List[Dict[str, Any]]
     revenue_by_agent_type: Dict[str, float]
-
 
 class ConversationAnalytics(BaseModel):
     """Schema for conversation analytics"""

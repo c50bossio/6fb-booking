@@ -22,7 +22,6 @@ router = APIRouter(
     dependencies=[Depends(get_current_admin_user)]
 )
 
-
 @router.get("", response_model=List[WebhookEndpointResponse])
 async def list_webhooks(
     is_active: Optional[bool] = None,
@@ -45,7 +44,6 @@ async def list_webhooks(
     webhooks = query.offset(skip).limit(limit).all()
     
     return [webhook.to_dict() for webhook in webhooks]
-
 
 @router.post("", response_model=WebhookEndpointResponse)
 async def create_webhook(
@@ -95,7 +93,6 @@ async def create_webhook(
             detail="Failed to create webhook"
         )
 
-
 @router.get("/events", response_model=List[dict])
 async def get_available_events(
     current_user: User = Depends(get_current_admin_user)
@@ -112,7 +109,6 @@ async def get_available_events(
         })
     
     return events
-
 
 @router.get("/{webhook_id}", response_model=WebhookEndpointResponse)
 async def get_webhook(
@@ -132,7 +128,6 @@ async def get_webhook(
         )
     
     return webhook.to_dict()
-
 
 @router.put("/{webhook_id}", response_model=WebhookEndpointResponse)
 async def update_webhook(
@@ -177,7 +172,6 @@ async def update_webhook(
             detail="Failed to update webhook"
         )
 
-
 @router.delete("/{webhook_id}")
 async def delete_webhook(
     webhook_id: str,
@@ -199,7 +193,6 @@ async def delete_webhook(
     db.commit()
     
     return {"message": "Webhook deleted successfully"}
-
 
 @router.get("/{webhook_id}/logs", response_model=List[WebhookLogResponse])
 async def get_webhook_logs(
@@ -237,7 +230,6 @@ async def get_webhook_logs(
     logs = query.offset(skip).limit(limit).all()
     
     return [log.to_dict() for log in logs]
-
 
 @router.post("/{webhook_id}/test", response_model=WebhookLogResponse)
 async def test_webhook(
@@ -280,7 +272,6 @@ async def test_webhook(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to test webhook"
         )
-
 
 @router.post("/{webhook_id}/logs/{log_id}/retry", response_model=WebhookLogResponse)
 async def retry_webhook_delivery(
@@ -325,7 +316,6 @@ async def retry_webhook_delivery(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retry webhook"
         )
-
 
 @router.get("/stats/summary")
 async def get_webhook_statistics(
@@ -387,7 +377,6 @@ async def get_webhook_statistics(
             for log in recent_failures
         ]
     }
-
 
 def get_event_description(event: WebhookEventType) -> str:
     """Get human-readable description for webhook events"""

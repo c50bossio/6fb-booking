@@ -7,8 +7,9 @@ from typing import Dict, Any, Optional
 import os
 try:
     from pydantic_settings import BaseSettings
+    from pydantic import ConfigDict
 except ImportError:
-    from pydantic import BaseSettings
+    from pydantic import BaseSettings, ConfigDict
 
 
 class RedisConfig(BaseSettings):
@@ -67,11 +68,10 @@ class RedisConfig(BaseSettings):
     prefix_tracking: str = "tracking:"
     prefix_queue: str = "queue:"
     
-    class Config:
-        env_prefix = ""
-        case_sensitive = False
-        
-    
+    model_config = ConfigDict(
+        env_prefix="",
+        case_sensitive=False
+    )
     def get_connection_pool_params(self) -> Dict[str, Any]:
         """Get Redis connection pool parameters."""
         return {
@@ -191,7 +191,6 @@ class RedisConfig(BaseSettings):
     def get_session_key(self, session_id: str) -> str:
         """Generate session key with proper prefix."""
         return f"{self.prefix_session}{session_id}"
-
 
 # Production Redis configuration presets
 REDIS_CONFIGS = {

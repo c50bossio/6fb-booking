@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sms", tags=["sms_conversations"])
 
-
 @router.get("/conversations", response_model=List[SMSConversationResponse])
 async def get_sms_conversations(
     limit: int = Query(50, le=200, description="Maximum number of conversations to return"),
@@ -73,7 +72,6 @@ async def get_sms_conversations(
     
     return conversations
 
-
 @router.get("/conversations/{conversation_id}", response_model=SMSConversationResponse)
 async def get_sms_conversation(
     conversation_id: int,
@@ -101,7 +99,6 @@ async def get_sms_conversation(
         )
     
     return conversation
-
 
 @router.get("/conversations/{conversation_id}/messages", response_model=List[SMSMessageResponse])
 async def get_conversation_messages(
@@ -156,7 +153,6 @@ async def get_conversation_messages(
         logger.info(f"Marked {len(unread_messages)} SMS messages as read in conversation {conversation_id}")
     
     return messages
-
 
 @router.post("/conversations/{conversation_id}/messages", response_model=SMSMessageResponse)
 async def send_sms_message(
@@ -239,7 +235,6 @@ async def send_sms_message(
             detail=f"Failed to send SMS message: {str(e)}"
         )
 
-
 @router.post("/conversations", response_model=SMSConversationResponse)
 async def create_sms_conversation(
     conversation_data: SMSConversationCreate,
@@ -287,7 +282,6 @@ async def create_sms_conversation(
     
     return conversation
 
-
 @router.put("/conversations/{conversation_id}", response_model=SMSConversationResponse)
 async def update_sms_conversation(
     conversation_id: int,
@@ -328,7 +322,6 @@ async def update_sms_conversation(
     
     return conversation
 
-
 @router.delete("/conversations/{conversation_id}")
 async def archive_sms_conversation(
     conversation_id: int,
@@ -363,7 +356,6 @@ async def archive_sms_conversation(
     logger.info(f"Archived SMS conversation {conversation_id} by user {current_user.id}")
     
     return {"message": "SMS conversation archived successfully"}
-
 
 @router.get("/stats")
 async def get_sms_stats(

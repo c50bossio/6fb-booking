@@ -35,7 +35,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/products", tags=["products"])
 
-
 # Product management endpoints
 @router.get("/", response_model=ProductCatalogResponse)
 async def list_products(
@@ -95,7 +94,6 @@ async def list_products(
             detail="Failed to retrieve products"
         )
 
-
 @router.post("/", response_model=ProductResponse)
 async def create_product(
     product_data: ProductCreate,
@@ -145,7 +143,6 @@ async def create_product(
             detail="Failed to create product"
         )
 
-
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product(
     product_id: int,
@@ -162,7 +159,6 @@ async def get_product(
         )
     
     return product
-
 
 @router.put("/{product_id}", response_model=ProductResponse)
 async def update_product(
@@ -217,7 +213,6 @@ async def update_product(
             detail="Failed to update product"
         )
 
-
 @router.delete("/{product_id}")
 async def delete_product(
     product_id: int,
@@ -247,7 +242,6 @@ async def delete_product(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete product"
         )
-
 
 # Product variants endpoints
 @router.post("/{product_id}/variants", response_model=ProductVariantResponse)
@@ -301,7 +295,6 @@ async def create_product_variant(
             detail="Failed to create variant"
         )
 
-
 @router.get("/{product_id}/variants", response_model=List[ProductVariantResponse])
 async def list_product_variants(
     product_id: int,
@@ -319,7 +312,6 @@ async def list_product_variants(
     
     variants = db.query(ProductVariant).filter(ProductVariant.product_id == product_id).all()
     return variants
-
 
 # Inventory management endpoints
 @router.get("/inventory/report", response_model=InventoryReport)
@@ -367,7 +359,6 @@ async def get_inventory_report(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate inventory report"
         )
-
 
 @router.post("/inventory", response_model=InventoryItemResponse)
 async def create_inventory_item(
@@ -418,7 +409,6 @@ async def create_inventory_item(
             detail="Failed to create inventory item"
         )
 
-
 # Shopify integration endpoints
 @router.post("/shopify/oauth/initiate")
 async def initiate_shopify_oauth(
@@ -452,7 +442,6 @@ async def initiate_shopify_oauth(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to initiate OAuth"
         )
-
 
 @router.post("/shopify/oauth/callback")
 async def handle_shopify_oauth_callback(
@@ -491,7 +480,6 @@ async def handle_shopify_oauth_callback(
             detail="Failed to complete OAuth"
         )
 
-
 @router.post("/shopify/sync", response_model=ShopifyProductSyncResponse)
 async def sync_shopify_products(
     sync_request: ShopifyProductSyncRequest,
@@ -527,7 +515,6 @@ async def sync_shopify_products(
             detail="Failed to sync products"
         )
 
-
 # Order management endpoints
 @router.get("/orders", response_model=List[OrderResponse])
 @verify_location_access(location_id_param="location_id")
@@ -557,7 +544,6 @@ async def list_orders(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve orders"
         )
-
 
 @router.post("/orders", response_model=OrderResponse)
 @idempotent_operation(
@@ -644,7 +630,6 @@ def create_order(
             detail="Failed to create order"
         )
 
-
 # POS transaction endpoints
 @router.post("/pos/transactions", response_model=POSTransactionResponse)
 @idempotent_operation(
@@ -703,7 +688,6 @@ def create_pos_transaction(
             detail="Failed to create transaction"
         )
 
-
 @router.get("/pos/transactions", response_model=List[POSTransactionResponse])
 @verify_location_access(location_id_param="location_id")
 async def list_pos_transactions(
@@ -732,7 +716,6 @@ async def list_pos_transactions(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve transactions"
         )
-
 
 # Commission reporting endpoints
 @router.get("/commissions/barber/{barber_id}", response_model=dict)
@@ -794,7 +777,6 @@ async def get_barber_commission_report(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate commission report"
         )
-
 
 @router.get("/commissions/payout-preview/{barber_id}", response_model=PayoutPreviewAdmin)
 async def get_payout_preview(

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from db import get_db
 from utils.auth import get_current_user
@@ -58,9 +58,9 @@ class UpsellAttemptResponse(BaseModel):
     expires_at: Optional[datetime]
     automation_triggered: bool
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class UpsellConversionRequest(BaseModel):
     attempt_id: int
     converted: bool
@@ -84,9 +84,9 @@ class UpsellConversionResponse(BaseModel):
     time_to_conversion: Optional[int]
     converted_at: Optional[datetime]
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 class UpsellAnalyticsResponse(BaseModel):
     period_start: datetime
     period_end: datetime

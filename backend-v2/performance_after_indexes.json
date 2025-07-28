@@ -1,0 +1,73 @@
+{
+  "timestamp": "2025-07-28T05:04:06.657528",
+  "database_type": "sqlite",
+  "checks": {
+    "index_usage": {
+      "indexes": [],
+      "note": "SQLite provides limited index usage statistics"
+    },
+    "query_performance": {
+      "barber_appointments": {
+        "error": "cannot convert dictionary update sequence element #0 to a sequence"
+      },
+      "user_login": {
+        "error": "cannot convert dictionary update sequence element #0 to a sequence"
+      },
+      "payment_history": {
+        "error": "cannot convert dictionary update sequence element #0 to a sequence"
+      },
+      "barber_availability": {
+        "error": "cannot convert dictionary update sequence element #0 to a sequence"
+      }
+    },
+    "table_stats": {
+      "users": {
+        "row_count": 19
+      },
+      "appointments": {
+        "row_count": 29
+      },
+      "payments": {
+        "row_count": 0
+      },
+      "barber_availability": {
+        "row_count": 0
+      },
+      "clients": {
+        "row_count": 0
+      },
+      "services": {
+        "row_count": 8
+      }
+    },
+    "query_benchmarks": {
+      "dashboard_load": {
+        "avg_time_ms": 0.04,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.06,
+        "runs": 5
+      },
+      "booking_conflicts": {
+        "avg_time_ms": 0.04,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.08,
+        "runs": 5
+      },
+      "payment_processing": {
+        "avg_time_ms": 0.04,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.08,
+        "runs": 5
+      },
+      "availability_check": {
+        "avg_time_ms": 0.03,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.05,
+        "runs": 5
+      }
+    },
+    "index_sizes": {
+      "database_size_bytes": 3866624
+    }
+  }
+}

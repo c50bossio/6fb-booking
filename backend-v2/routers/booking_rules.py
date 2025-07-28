@@ -13,7 +13,6 @@ router = APIRouter(
     tags=["booking-rules"]
 )
 
-
 @router.get("/", response_model=List[schemas.BookingRuleResponse])
 def get_booking_rules(
     rule_type: Optional[str] = Query(None, description="Filter by rule type"),
@@ -35,7 +34,6 @@ def get_booking_rules(
         return rules
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/", response_model=schemas.BookingRuleResponse)
 def create_booking_rule(
@@ -62,7 +60,6 @@ def create_booking_rule(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/{rule_id}", response_model=schemas.BookingRuleResponse)
 def get_booking_rule(
     rule_id: int,
@@ -79,7 +76,6 @@ def get_booking_rule(
         raise HTTPException(status_code=404, detail="Booking rule not found")
     
     return rule
-
 
 @router.put("/{rule_id}", response_model=schemas.BookingRuleResponse)
 def update_booking_rule(
@@ -105,7 +101,6 @@ def update_booking_rule(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.delete("/{rule_id}")
 def delete_booking_rule(
     rule_id: int,
@@ -123,7 +118,6 @@ def delete_booking_rule(
         return {"message": "Booking rule deactivated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/validate", response_model=schemas.BookingValidationResponse)
 def validate_booking(
@@ -155,7 +149,6 @@ def validate_booking(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/services/{service_id}/rules", response_model=List[schemas.ServiceBookingRuleResponse])
 def get_service_booking_rules(
     service_id: int,
@@ -169,7 +162,6 @@ def get_service_booking_rules(
         return rules
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/services/{service_id}/rules", response_model=schemas.ServiceBookingRuleResponse)
 def create_service_booking_rule(
@@ -195,7 +187,6 @@ def create_service_booking_rule(
         return rule
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/rule-types", response_model=Dict[str, Any])
 def get_rule_types(

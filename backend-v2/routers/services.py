@@ -22,7 +22,6 @@ public_router = APIRouter(
     tags=["public-services"]
 )
 
-
 @public_router.get("/", response_model=List[ServiceResponse])
 async def get_public_services(
     category: Optional[ServiceCategoryEnum] = Query(None),
@@ -45,7 +44,6 @@ async def get_public_services(
     services = query.offset(skip).limit(limit).all()
     return services
 
-
 @public_router.get("/categories", response_model=List[dict])
 async def get_public_service_categories():
     """Get all available service categories (public endpoint)"""
@@ -54,7 +52,6 @@ async def get_public_service_categories():
         for category in ServiceCategoryEnum
     ]
 
-
 @router.get("/categories", response_model=List[dict])
 async def get_service_categories():
     """Get all available service categories"""
@@ -62,7 +59,6 @@ async def get_service_categories():
         {"value": category.value, "name": category.name, "label": category.value.replace("_", " ").title()}
         for category in ServiceCategoryEnum
     ]
-
 
 @router.get("/", response_model=List[ServiceResponse])
 async def get_services(
@@ -116,7 +112,6 @@ async def get_services(
     
     return services
 
-
 @router.get("/{service_id}", response_model=ServiceResponse)
 async def get_service(
     service_id: int = Path(..., gt=0),
@@ -138,7 +133,6 @@ async def get_service(
         service.duration_minutes = service.get_duration_for_barber(barber_id, db)
     
     return service
-
 
 @router.post("/", response_model=ServiceResponse)
 async def create_service(
@@ -180,7 +174,6 @@ async def create_service(
     )
     
     return db_service
-
 
 @router.put("/{service_id}", response_model=ServiceResponse)
 async def update_service(
@@ -235,7 +228,6 @@ async def update_service(
     
     return db_service
 
-
 @router.delete("/{service_id}")
 async def delete_service(
     service_id: int = Path(..., gt=0),
@@ -280,7 +272,6 @@ async def delete_service(
     
     return {"message": "Service deleted successfully"}
 
-
 # Pricing Rules endpoints
 
 @router.post("/{service_id}/pricing-rules", response_model=dict)
@@ -307,7 +298,6 @@ async def create_pricing_rule(
     
     return {"id": db_rule.id, "message": "Pricing rule created successfully"}
 
-
 @router.get("/{service_id}/pricing-rules")
 async def get_pricing_rules(
     service_id: int = Path(..., gt=0),
@@ -324,7 +314,6 @@ async def get_pricing_rules(
     ).order_by(ServicePricingRule.priority.desc()).all()
     
     return rules
-
 
 @router.delete("/{service_id}/pricing-rules/{rule_id}")
 async def delete_pricing_rule(
@@ -346,7 +335,6 @@ async def delete_pricing_rule(
     db.commit()
     
     return {"message": "Pricing rule deleted successfully"}
-
 
 # Booking Rules endpoints
 
@@ -374,7 +362,6 @@ async def create_booking_rule(
     
     return {"id": db_rule.id, "message": "Booking rule created successfully"}
 
-
 @router.get("/{service_id}/booking-rules")
 async def get_booking_rules(
     service_id: int = Path(..., gt=0),
@@ -391,7 +378,6 @@ async def get_booking_rules(
     ).all()
     
     return rules
-
 
 @router.delete("/{service_id}/booking-rules/{rule_id}")
 async def delete_booking_rule(
@@ -413,7 +399,6 @@ async def delete_booking_rule(
     db.commit()
     
     return {"message": "Booking rule deleted successfully"}
-
 
 # Barber-specific service management
 
@@ -481,7 +466,6 @@ async def assign_service_to_barber(
     
     return {"message": "Service assigned to barber successfully"}
 
-
 @router.delete("/{service_id}/barbers/{barber_id}")
 async def remove_service_from_barber(
     service_id: int = Path(..., gt=0),
@@ -507,7 +491,6 @@ async def remove_service_from_barber(
     db.commit()
     
     return {"message": "Service removed from barber successfully"}
-
 
 @router.get("/barbers/{barber_id}")
 async def get_barber_services(
@@ -562,7 +545,6 @@ async def get_barber_services(
         result.append(service_dict)
     
     return result
-
 
 # Calculate dynamic pricing
 

@@ -297,7 +297,6 @@ async def check_dependencies():
         "total_services": len(dependencies)
     }
 
-
 # Individual service health check functions
 async def _check_stripe_health() -> Dict[str, Any]:
     """Check Stripe API connectivity"""
@@ -332,7 +331,6 @@ async def _check_stripe_health() -> Dict[str, Any]:
             "error": str(e),
             "service": "stripe"
         }
-
 
 async def _check_sendgrid_health() -> Dict[str, Any]:
     """Check SendGrid API connectivity"""
@@ -375,7 +373,6 @@ async def _check_sendgrid_health() -> Dict[str, Any]:
             "service": "sendgrid"
         }
 
-
 async def _check_twilio_health() -> Dict[str, Any]:
     """Check Twilio API connectivity"""
     try:
@@ -410,7 +407,6 @@ async def _check_twilio_health() -> Dict[str, Any]:
             "service": "twilio"
         }
 
-
 async def _check_google_calendar_health() -> Dict[str, Any]:
     """Check Google Calendar API connectivity"""
     try:
@@ -439,7 +435,6 @@ async def _check_google_calendar_health() -> Dict[str, Any]:
             "error": str(e),
             "service": "google_calendar"
         }
-
 
 # Docker-specific health endpoints
 @router.get("/docker", response_model=Dict[str, Any])
@@ -472,7 +467,6 @@ async def docker_health_check(request: Request, db: Session = Depends(get_db)):
                 "container_mode": os.environ.get('CONTAINER_MODE', 'false') == 'true'
             }
         }
-
 
 @router.get("/ready", response_model=Dict[str, Any])
 async def readiness_check(db: Session = Depends(get_db)):
@@ -529,7 +523,6 @@ async def readiness_check(db: Session = Depends(get_db)):
             "error": str(e),
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
-
 
 @router.get("/live", response_model=Dict[str, Any])
 async def liveness_check(request: Request):

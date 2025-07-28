@@ -60,7 +60,7 @@ def test_database_connection():
     logger.info("Testing database connection...")
     
     try:
-        from database import get_db
+        from db import get_db
         
         # Get a database session
         db = next(get_db())
@@ -83,7 +83,7 @@ def test_booking_settings():
     logger.info("Testing booking settings...")
     
     try:
-        from database import get_db
+        from db import get_db
         from services import booking_service
         
         db = next(get_db())
@@ -102,7 +102,7 @@ def test_user_creation():
     logger.info("Testing user creation...")
     
     try:
-        from database import get_db
+        from db import get_db
         import models
         
         db = next(get_db())
@@ -138,7 +138,7 @@ def test_appointment_creation_step_by_step(user_id):
     logger.info("Testing appointment creation step by step...")
     
     try:
-        from database import get_db
+        from db import get_db
         from services import booking_service
         from datetime import date, time, datetime, timedelta
         import pytz
@@ -313,7 +313,7 @@ def cleanup_test_data():
     logger.info("Cleaning up test data...")
     
     try:
-        from database import get_db
+        from db import get_db
         import models
         
         db = next(get_db())

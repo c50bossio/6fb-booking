@@ -13,7 +13,8 @@ from pydantic import BaseModel
 from db import get_db
 from dependencies import get_current_user
 from services.google_calendar_service import GoogleCalendarService
-from models import User, Appointment, GoogleCalendarSettings, GoogleCalendarSyncLog
+from services.google_calendar_webhook_service import GoogleCalendarWebhookService
+from models import User, Appointment, GoogleCalendarSettings, GoogleCalendarSyncLog, GoogleCalendarWebhookSubscription
 import logging
 import os
 import json
@@ -21,7 +22,6 @@ from google_auth_oauthlib.flow import Flow
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/calendar", tags=["Google Calendar"])
-
 
 def get_google_flow(state: Optional[str] = None) -> Flow:
     """Create and return Google OAuth2 flow."""
@@ -42,7 +42,6 @@ def get_google_flow(state: Optional[str] = None) -> Flow:
         flow.state = state
     return flow
 
-
 # Pydantic models for API requests/responses
 class GoogleCalendarConnectionStatus(BaseModel):
     connected: bool
@@ -51,7 +50,6 @@ class GoogleCalendarConnectionStatus(BaseModel):
     google_email: Optional[str] = None
     last_sync_date: Optional[datetime] = None
     calendar_id: Optional[str] = None
-
 
 class GoogleCalendarSettingsSchema(BaseModel):
     auto_sync_enabled: bool = True
@@ -73,14 +71,12 @@ class GoogleCalendarSettingsSchema(BaseModel):
     show_service_details: bool = True
     timezone: str = "America/New_York"
 
-
 class SyncResponse(BaseModel):
     success: bool
     message: str
     synced_count: int = 0
     failed_count: int = 0
     errors: List[str] = []
-
 
 class CalendarEvent(BaseModel):
     id: str
@@ -89,7 +85,6 @@ class CalendarEvent(BaseModel):
     start: datetime
     end: datetime
     attendees: List[str] = []
-
 
 @router.get("/connect")
 async def connect_google_calendar(
@@ -127,7 +122,6 @@ async def connect_google_calendar(
     except Exception as e:
         logger.error(f"Error initiating Google Calendar connection: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/oauth/callback")
 async def google_calendar_oauth_callback(
@@ -220,7 +214,6 @@ async def google_calendar_oauth_callback(
             url=f"{frontend_url}/dashboard/settings?google_calendar_error=callback_error"
         )
 
-
 @router.get("/status", response_model=GoogleCalendarConnectionStatus)
 async def get_connection_status(
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
@@ -288,7 +281,6 @@ async def get_connection_status(
         logger.error(f"Error getting connection status: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.delete("/disconnect")
 async def disconnect_google_calendar(
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
@@ -323,7 +315,6 @@ async def disconnect_google_calendar(
     except Exception as e:
         logger.error(f"Error disconnecting Google Calendar: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/settings", response_model=GoogleCalendarSettingsSchema)
 async def get_calendar_settings(
@@ -369,7 +360,6 @@ async def get_calendar_settings(
         logger.error(f"Error getting calendar settings: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.put("/settings")
 async def update_calendar_settings(
     settings_update: GoogleCalendarSettingsSchema,
@@ -403,7 +393,6 @@ async def update_calendar_settings(
     except Exception as e:
         logger.error(f"Error updating calendar settings: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/sync", response_model=SyncResponse)
 async def manual_sync(
@@ -509,7 +498,6 @@ async def manual_sync(
         logger.error(f"Error during manual sync: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/events", response_model=List[CalendarEvent])
 async def get_calendar_events(
     start_date: datetime = Query(...),
@@ -590,7 +578,6 @@ async def get_calendar_events(
         logger.error(f"Error getting calendar events: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/sync-logs")
 async def get_sync_logs(
     limit: int = Query(50, le=200),
@@ -632,3 +619,239 @@ async def get_sync_logs(
     except Exception as e:
         logger.error(f"Error getting sync logs: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/real-time-sync/enable")
+async def enable_real_time_sync(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """
+    Enable real-time synchronization with Google Calendar using webhooks.
+    Creates webhook subscriptions for immediate event notifications.
+    """
+    try:
+        # Check if connected
+        if not current_user.google_calendar_credentials:
+            raise HTTPException(status_code=400, detail="Google Calendar not connected")
+
+        # Initialize webhook service
+        webhook_service = GoogleCalendarWebhookService(db)
+        
+        # Enable real-time sync through calendar service
+        calendar_service = GoogleCalendarService(db)
+        success = calendar_service.enable_real_time_sync(current_user)
+        
+        if success:
+            return {
+                "success": True,
+                "message": "Real-time synchronization enabled successfully",
+                "webhook_enabled": True
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to enable real-time sync")
+
+    except Exception as e:
+        logger.error(f"Error enabling real-time sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/real-time-sync/disable")
+async def disable_real_time_sync(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """
+    Disable real-time synchronization with Google Calendar.
+    Removes webhook subscriptions to stop immediate notifications.
+    """
+    try:
+        # Initialize calendar service
+        calendar_service = GoogleCalendarService(db)
+        success = calendar_service.disable_real_time_sync(current_user)
+        
+        return {
+            "success": success,
+            "message": "Real-time synchronization disabled" if success else "Failed to disable real-time sync",
+            "webhook_enabled": False
+        }
+
+    except Exception as e:
+        logger.error(f"Error disabling real-time sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/real-time-sync/status")
+async def get_real_time_sync_status(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """
+    Get real-time synchronization status and webhook information.
+    """
+    try:
+        # Get sync status from calendar service
+        calendar_service = GoogleCalendarService(db)
+        sync_status = calendar_service.get_sync_status(current_user)
+        
+        # Get webhook subscriptions
+        webhook_subscriptions = db.query(GoogleCalendarWebhookSubscription).filter(
+            GoogleCalendarWebhookSubscription.user_id == current_user.id,
+            GoogleCalendarWebhookSubscription.is_active == True
+        ).all()
+        
+        webhook_details = []
+        for sub in webhook_subscriptions:
+            webhook_details.append({
+                "id": sub.id,
+                "calendar_id": sub.google_calendar_id,
+                "expiration_time": sub.expiration_time,
+                "expires_soon": sub.expires_soon,
+                "notification_count": sub.notification_count,
+                "last_notification": sub.last_notification_received,
+                "error_count": sub.error_count,
+                "last_error": sub.last_error
+            })
+        
+        return {
+            "real_time_enabled": sync_status["real_time_enabled"],
+            "active_subscriptions": sync_status["active_subscriptions"],
+            "recent_syncs": sync_status["recent_syncs"],
+            "recent_errors": sync_status["recent_errors"],
+            "error_rate": sync_status["error_rate"],
+            "webhook_subscriptions": webhook_details
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting real-time sync status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/webhooks/renew")
+async def renew_webhook_subscriptions(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """
+    Manually renew expiring webhook subscriptions.
+    Useful for maintenance or when automatic renewal fails.
+    """
+    try:
+        webhook_service = GoogleCalendarWebhookService(db)
+        
+        # Get expiring subscriptions for this user
+        expiring_subscriptions = db.query(GoogleCalendarWebhookSubscription).filter(
+            GoogleCalendarWebhookSubscription.user_id == current_user.id,
+            GoogleCalendarWebhookSubscription.is_active == True,
+            GoogleCalendarWebhookSubscription.expires_soon == True
+        ).all()
+        
+        renewed_count = 0
+        failed_count = 0
+        
+        for subscription in expiring_subscriptions:
+            try:
+                if webhook_service.renew_subscription(subscription):
+                    renewed_count += 1
+                else:
+                    failed_count += 1
+            except Exception as e:
+                logger.error(f"Error renewing subscription {subscription.id}: {str(e)}")
+                failed_count += 1
+        
+        return {
+            "success": failed_count == 0,
+            "message": f"Renewed {renewed_count} subscriptions" + 
+                      (f", {failed_count} failed" if failed_count > 0 else ""),
+            "renewed_count": renewed_count,
+            "failed_count": failed_count
+        }
+
+    except Exception as e:
+        logger.error(f"Error renewing webhook subscriptions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/sync/health")
+async def get_sync_health(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """
+    Get comprehensive health status of Google Calendar integration.
+    Includes connection status, sync performance, and webhook health.
+    """
+    try:
+        calendar_service = GoogleCalendarService(db)
+        
+        # Get connection status
+        connection_status = await get_connection_status(current_user, db)
+        
+        # Get sync status
+        sync_status = calendar_service.get_sync_status(current_user)
+        
+        # Get recent sync performance
+        recent_sync_logs = (
+            db.query(GoogleCalendarSyncLog)
+            .filter(GoogleCalendarSyncLog.user_id == current_user.id)
+            .filter(GoogleCalendarSyncLog.created_at >= datetime.utcnow() - timedelta(hours=24))
+            .order_by(GoogleCalendarSyncLog.created_at.desc())
+            .limit(10)
+            .all()
+        )
+        
+        # Calculate health score
+        health_score = 100
+        issues = []
+        
+        if not connection_status.connected:
+            health_score -= 50
+            issues.append("Google Calendar not connected")
+        
+        if sync_status["error_rate"] > 0.1:  # More than 10% error rate
+            health_score -= 30
+            issues.append(f"High error rate: {sync_status['error_rate']:.1%}")
+        
+        if not sync_status["real_time_enabled"]:
+            health_score -= 20
+            issues.append("Real-time sync disabled")
+        
+        # Check for expiring subscriptions
+        expiring_subs = db.query(GoogleCalendarWebhookSubscription).filter(
+            GoogleCalendarWebhookSubscription.user_id == current_user.id,
+            GoogleCalendarWebhookSubscription.is_active == True,
+            GoogleCalendarWebhookSubscription.expires_soon == True
+        ).count()
+        
+        if expiring_subs > 0:
+            health_score -= 10
+            issues.append(f"{expiring_subs} webhook subscriptions expiring soon")
+        
+        health_status = "excellent" if health_score >= 90 else \
+                       "good" if health_score >= 70 else \
+                       "fair" if health_score >= 50 else "poor"
+        
+        return {
+            "health_score": max(0, health_score),
+            "health_status": health_status,
+            "connection_status": connection_status.dict(),
+            "sync_status": sync_status,
+            "recent_syncs": len(recent_sync_logs),
+            "issues": issues,
+            "recommendations": _get_health_recommendations(health_score, issues)
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting sync health: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def _get_health_recommendations(health_score: int, issues: List[str]) -> List[str]:
+    """Generate recommendations based on health issues."""
+    recommendations = []
+    
+    if health_score < 50:
+        recommendations.append("Consider reconnecting Google Calendar for better sync reliability")
+    
+    if "High error rate" in str(issues):
+        recommendations.append("Check your Google Calendar permissions and network connectivity")
+    
+    if "Real-time sync disabled" in str(issues):
+        recommendations.append("Enable real-time sync for immediate calendar updates")
+    
+    if "webhook subscriptions expiring" in str(issues):
+        recommendations.append("Renew webhook subscriptions to maintain real-time sync")
+    
+    if not recommendations:
+        recommendations.append("Your Google Calendar integration is working optimally!")
+    
+    return recommendations

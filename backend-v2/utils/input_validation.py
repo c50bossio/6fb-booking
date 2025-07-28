@@ -8,7 +8,7 @@ import magic
 from typing import Optional, List, Any
 from datetime import datetime, date
 from decimal import Decimal, InvalidOperation
-from pydantic import BaseModel, validator, constr, conint, condecimal
+from pydantic import BaseModel, field_validator, constr, conint, condecimal
 from fastapi import HTTPException, UploadFile, status
 import bleach
 from email_validator import validate_email, EmailNotValidError
@@ -470,10 +470,11 @@ class DateRangeParams(BaseModel):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     
-    @validator('end_date')
-    def validate_date_range(cls, v, values):
-        if v and 'start_date' in values and values['start_date']:
-            if v < values['start_date']:
+    @field_validator('end_date')
+    @classmethod
+    def validate_date_range(cls, v, info):
+        if v and info.data.get('start_date'):
+            if v < info.data['start_date']:
                 raise ValueError('end_date must be after start_date')
         return v
 
@@ -486,7 +487,8 @@ class PhoneNumber(BaseModel):
     """Validated phone number"""
     number: constr(pattern=r'^\+?1?\d{10,15}$')
     
-    @validator('number')
+    @field_validator('number')
+    @classmethod
     def clean_phone(cls, v):
         return re.sub(r'[\s\-\(\)]+', '', v)
 

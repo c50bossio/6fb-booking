@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { login, getProfile, resendVerification } from '@/lib/api'
+import { getProfile, resendVerification } from '@/lib/api'
+import { useSecureAuth } from '@/hooks/useSecureAuth'
 import { getDefaultDashboard } from '@/lib/routeGuards'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
@@ -33,6 +34,9 @@ function LoginContent() {
   const [loginState, loginActions] = useAsyncOperation()
   const [resendState, resendActions] = useAsyncOperation()
   const rateLimit = useRateLimit('login-rate-limit')
+  
+  // Use secure authentication hook
+  const { login: secureLogin, isLoading: secureAuthLoading } = useSecureAuth()
 
   // Initialize form validation
   const {
@@ -86,61 +90,31 @@ function LoginContent() {
 
     try {
       setIsSubmitting(true)
-      const response = await loginActions.execute(() => login(values.email, values.password))
       
-      if (response.access_token) {
-        // Token is already stored in the login function
-        
-        // Handle device trust if remember me is checked
-        if (rememberMe && response.user_id) {
-          try {
-            const deviceId = await generateDeviceFingerprint()
-            await trustDevice(deviceId, response.user_id, 30) // Trust for 30 days
-          } catch (error) {
-            console.error('Failed to trust device:', error)
-            // Continue with login even if device trust fails
-          }
-        }
-        
-        // Fetch user profile to determine role
-        
-        // Set up a timeout fallback to ensure redirect happens
-        const redirectTimeout = setTimeout(() => {
-          window.location.href = '/dashboard'
-        }, 3000)
-        
+      // Use secure authentication
+      await secureLogin(values.email, values.password)
+      
+      // Handle device trust if remember me is checked
+      if (rememberMe) {
         try {
-          const userProfile = await getProfile()
-          
-          // Clear timeout since we got profile successfully
-          clearTimeout(redirectTimeout)
-          
-          // Always redirect to dashboard for now
-          const dashboardUrl = '/dashboard'
-          
-          // Use both methods to ensure redirect works
-          router.push(dashboardUrl)
-          
-          // Also set a backup using window.location after short delay
-          setTimeout(() => {
-            if (window.location.pathname === '/login') {
-              window.location.href = dashboardUrl
-            }
-          }, 1000)
-          
-        } catch (profileError) {
-          console.error('❌ Failed to fetch user profile:', profileError)
-          
-          // Clear timeout and redirect anyway
-          clearTimeout(redirectTimeout)
-          
-          window.location.href = '/dashboard'
+          const deviceId = await generateDeviceFingerprint()
+          // Note: We'll need the user ID from the secure auth response
+          // For now, we'll skip device trust or implement it differently
+          console.log('Device trust will be implemented with secure auth')
+        } catch (error) {
+          console.error('Failed to trust device:', error)
+          // Continue with login even if device trust fails
         }
-        
-        // Reset rate limit on successful login
-        rateLimit.resetAttempts()
-      } else {
       }
+      
+      // Successful login - redirect to dashboard
+      const dashboardUrl = '/dashboard'
+      
+      // Use router for navigation
+      router.push(dashboardUrl)
+      
+      // Reset rate limit on successful login
+      rateLimit.resetAttempts()
     } catch (err: any) {
       // Increment rate limit attempts on failed login
       rateLimit.incrementAttempts()
@@ -376,7 +350,7 @@ function LoginContent() {
                     loadingText="Signing in..."
                     fullWidth
                     size="lg"
-                    disabled={!isFormValid || loginState.loading || rateLimit.isLocked}
+                    disabled={!isFormValid || loginState.loading || secureAuthLoading || rateLimit.isLocked}
                     className="relative rounded-2xl bg-gradient-to-r from-teal-600 to-teal-700 dark:from-teal-500 dark:to-teal-600 hover:from-teal-700 hover:to-teal-800 dark:hover:from-teal-600 dark:hover:to-teal-700 text-white font-semibold py-4 px-6 shadow-md shadow-teal-500/20 dark:shadow-teal-400/15 transition-all duration-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     
@@ -388,7 +362,7 @@ function LoginContent() {
                           </svg>
                           Account Locked
                         </>
-                      ) : loginState.loading ? (
+                      ) : (loginState.loading || secureAuthLoading) ? (
                         <>
                           <svg className="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

@@ -19,7 +19,6 @@ from models import User, Appointment, Client, Payment
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
-
 @router.get("/client-metrics")
 async def get_client_metrics(
     period: Optional[str] = Query("30d", description="Period for metrics: 7d, 30d, 90d, 1y"),
@@ -142,7 +141,6 @@ async def get_client_metrics(
             }
         }
     }
-
 
 @router.get("/overview")
 async def get_dashboard_overview(

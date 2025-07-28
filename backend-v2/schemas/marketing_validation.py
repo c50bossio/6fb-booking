@@ -8,7 +8,7 @@ to prevent abuse and ensure data integrity.
 
 from datetime import datetime, timedelta
 from typing import Optional
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, field_validator, Field
 
 
 class DateRangeValidator(BaseModel):
@@ -30,7 +30,7 @@ class DateRangeValidator(BaseModel):
         description="End date for analytics query"
     )
     
-    @validator('start_date')
+    @field_validator('start_date')
     def validate_start_date(cls, v):
         """Validate start date is within reasonable bounds"""
         now = datetime.utcnow()
@@ -46,7 +46,7 @@ class DateRangeValidator(BaseModel):
             
         return v
     
-    @validator('end_date')
+    @field_validator('end_date')
     def validate_end_date(cls, v, values):
         """Validate end date and ensure reasonable range"""
         now = datetime.utcnow()
@@ -73,7 +73,7 @@ class DateRangeValidator(BaseModel):
         
         return v
     
-    @validator('end_date')
+    @field_validator('end_date')
     def validate_minimum_range(cls, v, values):
         """Ensure minimum meaningful range"""
         if 'start_date' in values and values['start_date']:
@@ -118,7 +118,7 @@ class CampaignFilterValidator(BaseModel):
         description="UTM campaign parameter"
     )
     
-    @validator('*', pre=True)
+    @field_validator('*', pre=True)
     def sanitize_input(cls, v):
         """Sanitize string inputs to prevent injection"""
         if isinstance(v, str):
@@ -149,7 +149,7 @@ class ExportRequestValidator(BaseModel):
         description="Compress export file"
     )
     
-    @validator('format')
+    @field_validator('format')
     def validate_format(cls, v):
         """Ensure valid export format"""
         allowed_formats = ['csv', 'json', 'pdf']
@@ -194,7 +194,7 @@ class MetricFilterValidator(BaseModel):
     
     metrics: Optional[list[str]] = Field(
         None,
-        max_items=20,
+        max_length=20,
         description="Specific metrics to include"
     )
     
@@ -209,7 +209,7 @@ class MetricFilterValidator(BaseModel):
         description="Minimum threshold for metric values"
     )
     
-    @validator('metrics')
+    @field_validator('metrics')
     def validate_metrics(cls, v):
         """Validate requested metrics"""
         if v:

@@ -8,7 +8,7 @@ generating recommendations, and managing pricing optimization strategies.
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from enum import Enum
 
@@ -64,7 +64,7 @@ class PricingValidationRequest(BaseModel):
     include_recommendations: bool = Field(True, description="Include pricing recommendations")
     include_market_analysis: bool = Field(False, description="Include market analysis")
 
-    @validator('max_price')
+    @field_validator('max_price')
     def validate_max_price(cls, v, values):
         if v is not None and 'min_price' in values and values['min_price'] is not None:
             if v < values['min_price']:

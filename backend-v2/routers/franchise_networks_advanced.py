@@ -204,7 +204,6 @@ async def trigger_ai_network_optimization(
             detail=f"AI optimization failed: {str(e)}"
         )
 
-
 @router.get("/networks/{network_id}/ai-insights")
 @cache_result(ttl=1800)  # Cache for 30 minutes
 async def get_network_ai_insights(
@@ -289,7 +288,6 @@ async def get_network_ai_insights(
             detail=f"Failed to get AI insights: {str(e)}"
         )
 
-
 @router.post("/networks/{network_id}/intelligent-automation")
 async def configure_intelligent_automation(
     network_id: int,
@@ -333,7 +331,6 @@ async def configure_intelligent_automation(
             status_code=500,
             detail=f"Automation configuration failed: {str(e)}"
         )
-
 
 @router.get("/regions/{region_id}/market-intelligence")
 @cache_result(ttl=3600)  # Cache for 1 hour
@@ -409,7 +406,6 @@ async def get_regional_market_intelligence(
             status_code=500,
             detail=f"Market intelligence analysis failed: {str(e)}"
         )
-
 
 @router.get("/groups/{group_id}/optimization-insights")
 @cache_result(ttl=900)  # Cache for 15 minutes
@@ -489,7 +485,6 @@ async def get_group_optimization_insights(
             detail=f"Group optimization analysis failed: {str(e)}"
         )
 
-
 # Real-time WebSocket endpoints for franchise monitoring
 
 @router.websocket("/networks/{network_id}/stream/performance")
@@ -540,7 +535,6 @@ async def stream_network_performance(
         logger.error(f"WebSocket error for network {network_id}: {str(e)}")
         websocket_manager.disconnect(session_id, current_user.id)
 
-
 @router.websocket("/stream/compliance-alerts")
 async def stream_compliance_alerts(
     websocket: WebSocket,
@@ -589,7 +583,6 @@ async def stream_compliance_alerts(
         logger.error(f"Compliance WebSocket error: {str(e)}")
         websocket_manager.disconnect(session_id, current_user.id)
 
-
 # Enterprise Integration APIs
 
 @router.post("/networks/{network_id}/integrations/enterprise")
@@ -636,7 +629,6 @@ async def configure_enterprise_integration(
             detail=f"Enterprise integration failed: {str(e)}"
         )
 
-
 @router.get("/networks/{network_id}/integrations/status")
 async def get_integration_status(
     network_id: int,
@@ -669,7 +661,6 @@ async def get_integration_status(
             status_code=500,
             detail=f"Failed to get integration status: {str(e)}"
         )
-
 
 # Mobile-Optimized APIs
 
@@ -723,7 +714,6 @@ async def get_mobile_network_dashboard(
             status_code=500,
             detail=f"Mobile dashboard failed: {str(e)}"
         )
-
 
 # Helper functions for advanced franchise APIs
 

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import '../styles/six-figure-barber-theme.css'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { 
@@ -73,20 +74,20 @@ export function GamifiedBarberProfile({
   }
 
   return (
-    <Card className={`transition-all duration-300 hover:shadow-lg ${
-      barber.isNewTierUnlocked ? 'ring-2 ring-gold-400 shadow-gold-200/50' : ''
+    <Card className={`sfb-card-premium sfb-tier-${barber.currentTier.name.toLowerCase()} ${
+      barber.isNewTierUnlocked ? 'sfb-pulse-teal sfb-achievement-glow' : ''
     }`}>
       {barber.isNewTierUnlocked && (
-        <div className="bg-gradient-to-r from-yellow-400 to-gold-500 text-center py-2 text-sm font-bold text-white rounded-t-lg">
+        <div className="text-center py-2 text-sm font-bold text-white rounded-t-lg" style={{ background: 'var(--sfb-gradient-teal)' }}>
           🎉 TIER UP! New rate unlocked! 🎉
         </div>
       )}
       
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           <div className="flex items-center space-x-3">
             {/* Avatar */}
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'var(--sfb-gradient-teal)' }}>
               <span className="text-white font-bold text-lg">
                 {barber.name.split(' ').map(n => n[0]).join('')}
               </span>
@@ -94,9 +95,9 @@ export function GamifiedBarberProfile({
             
             {/* Name and Tier */}
             <div>
-              <h3 className="font-bold text-lg">{barber.name}</h3>
+              <h3 className="sfb-heading-secondary font-bold text-lg">{barber.name}</h3>
               <div className="flex items-center gap-2">
-                <Badge className={`${getTierColor(barber.currentTier.name)} font-medium`}>
+                <Badge className="sfb-badge-teal font-medium">
                   {barber.currentTier.emoji} {barber.currentTier.name} Tier
                 </Badge>
                 {barber.streakWeeks > 0 && (
@@ -110,11 +111,11 @@ export function GamifiedBarberProfile({
           </div>
           
           {/* Rate Display */}
-          <div className="text-right">
-            <div className="text-2xl font-bold text-green-600">
+          <div className="text-right sm:text-right">
+            <div className="text-2xl font-bold" style={{ color: 'var(--sfb-teal)' }}>
               ${barber.currentTier.rate}
             </div>
-            <div className="text-sm text-gray-500">per service</div>
+            <div className="text-sm sfb-text-premium">per service</div>
           </div>
         </div>
       </CardHeader>
@@ -148,7 +149,7 @@ export function GamifiedBarberProfile({
         )}
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="bg-blue-50 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-1">
               <Calendar className="w-4 h-4 text-blue-600" />
@@ -214,7 +215,7 @@ export function GamifiedBarberProfile({
               <Target className="w-4 h-4" />
               Performance Breakdown
             </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-600">Utilization Score:</span>
                 <span className="font-medium">{(barber.metrics.utilizationRate * 100).toFixed(0)}/100</span>
@@ -238,14 +239,14 @@ export function GamifiedBarberProfile({
         {/* Booking Button */}
         <button
           onClick={onBooking}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+          className="sfb-button-premium w-full py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
         >
           Book Appointment - ${barber.currentTier.rate}
           {barber.currentTier.name === 'Elite' && <Crown className="w-4 h-4" />}
         </button>
 
         {/* Tier Justification */}
-        <div className="text-xs text-gray-500 text-center">
+        <div className="text-xs text-center sfb-text-premium">
           {barber.currentTier.name} rate earned through {(barber.metrics.utilizationRate * 100).toFixed(0)}% utilization 
           and {barber.metrics.avgLeadTimeDays.toFixed(1)}-day average lead time
         </div>

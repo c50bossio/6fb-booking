@@ -1,0 +1,318 @@
+# Business-Enhanced Prometheus Configuration for BookedBarber
+# Integrates Six Figure Barber methodology metrics with technical monitoring
+# Provides revenue correlation and business impact correlation
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'bookedbarber-enterprise'
+    environment: 'production'
+    business_methodology: 'six-figure-barber'
+    sla_target: '99.99%'
+
+rule_files:
+  - "/etc/prometheus/rules/technical-alerts.yml"
+  - "/etc/prometheus/rules/business-impact-alerts.yml"
+  - "/etc/prometheus/rules/sixfb-methodology-alerts.yml"
+
+scrape_configs:
+  # Standard Technical Metrics
+  - job_name: 'bookedbarber-backend'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'backend'
+      - target_label: 'tier'
+        replacement: 'application'
+
+  # Business Impact Metrics
+  - job_name: 'business-impact-metrics'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/sre/metrics/business-impact'
+    scrape_interval: 30s
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'business-monitor'
+      - target_label: 'type'
+        replacement: 'business-impact'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'business_.*|revenue_.*|sixfb_.*|client_.*|booking_.*'
+        action: keep
+
+  # Six Figure Barber Methodology Metrics
+  - job_name: 'sixfb-methodology'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/sre/metrics/sixfb'
+    scrape_interval: 60s
+    relabel_configs:
+      - target_label: 'methodology'
+        replacement: 'six-figure-barber'
+      - target_label: 'business_focus'
+        replacement: 'revenue-optimization'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'sixfb_principle_.*|sixfb_score_.*|sixfb_milestone_.*'
+        action: keep
+
+  # Revenue Correlation Metrics
+  - job_name: 'revenue-correlation'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/sre/metrics/revenue-correlation'
+    scrape_interval: 30s
+    relabel_configs:
+      - target_label: 'correlation_type'
+        replacement: 'revenue-technical'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'revenue_impact_.*|booking_loss_.*|payment_failure_cost_.*|client_satisfaction_.*'
+        action: keep
+
+  # Customer Experience Metrics
+  - job_name: 'customer-experience'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/sre/metrics/customer-experience'
+    scrape_interval: 20s
+    relabel_configs:
+      - target_label: 'experience_type'
+        replacement: 'customer-journey'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'cx_.*|abandonment_.*|conversion_.*|satisfaction_.*|mobile_.*'
+        action: keep
+
+  # Business-Critical System Health
+  - job_name: 'business-critical-health'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/sre/health/business-enhanced'
+    scrape_interval: 10s
+    relabel_configs:
+      - target_label: 'health_type'
+        replacement: 'business-critical'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'booking_system_.*|payment_system_.*|notification_system_.*|business_health_.*'
+        action: keep
+
+  # Peak Hours Monitoring
+  - job_name: 'peak-hours-monitoring'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/sre/metrics/peak-hours'
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: 'monitoring_context'
+        replacement: 'peak-hours'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'peak_hours_.*|high_value_period_.*|business_hours_.*'
+        action: keep
+
+  # External Dependencies with Business Impact
+  - job_name: 'dependencies-business-impact'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/sre/metrics/dependencies'
+    scrape_interval: 30s
+    relabel_configs:
+      - target_label: 'dependency_monitoring'
+        replacement: 'business-aware'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'dependency_.*|circuit_breaker_.*|external_service_.*'
+        action: keep
+
+  # Performance with Business Correlation
+  - job_name: 'performance-business-correlated'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/sre/metrics/performance-correlation'
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: 'performance_context'
+        replacement: 'business-correlated'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'performance_.*|latency_business_impact_.*|throughput_revenue_.*'
+        action: keep
+
+  # Incident Business Impact Tracking
+  - job_name: 'incident-business-tracking'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/sre/metrics/incident-impact'
+    scrape_interval: 10s
+    relabel_configs:
+      - target_label: 'incident_tracking'
+        replacement: 'business-impact'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'incident_.*|mttr_business_.*|recovery_urgency_.*|stakeholder_.*'
+        action: keep
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - "alertmanager:9093"
+
+# Recording Rules for Business Metrics Aggregation
+recording_rules:
+  - name: business_impact_aggregations
+    interval: 60s
+    rules:
+      # Revenue Impact Rate (dollars per minute)
+      - record: business:revenue_impact_rate
+        expr: rate(revenue_impact_total[5m]) * 60
+
+      # Booking Success Rate with Business Context
+      - record: business:booking_success_rate
+        expr: (
+          rate(booking_success_total[5m]) / 
+          (rate(booking_success_total[5m]) + rate(booking_failure_total[5m]))
+        ) * 100
+
+      # Six Figure Barber Score Aggregation
+      - record: sixfb:overall_methodology_score
+        expr: (
+          sixfb_principle_revenue_optimization_score * 0.25 +
+          sixfb_principle_client_value_creation_score * 0.25 +
+          sixfb_principle_service_excellence_score * 0.20 +
+          sixfb_principle_business_efficiency_score * 0.15 +
+          sixfb_principle_professional_growth_score * 0.15
+        )
+
+      # Customer Experience Impact
+      - record: customer_experience:abandonment_impact
+        expr: rate(abandonment_rate_increase[5m]) * 100
+
+      # Business Hours Performance
+      - record: business_hours:performance_degradation
+        expr: (
+          avg_over_time(performance_score[1h]) * 
+          on() (peak_hours_status + high_value_period_status)
+        )
+
+      # Revenue per Performance Point
+      - record: correlation:revenue_per_performance_point
+        expr: business:revenue_impact_rate / (100 - performance_score)
+
+  - name: alerting_business_context
+    interval: 30s
+    rules:
+      # Business Severity Score
+      - record: alert:business_severity_score
+        expr: (
+          (revenue_impact_rate > 100) * 4 +
+          (peak_hours_status == 1) * 2 +
+          (high_value_period_status == 1) * 2 +
+          (sixfb_principle_impact_count > 2) * 3
+        )
+
+      # Recovery Urgency
+      - record: alert:recovery_urgency_score
+        expr: (
+          alert:business_severity_score * 20 +
+          (100 - performance_score) +
+          (customer_experience:abandonment_impact * 10)
+        )
+
+      # Stakeholder Notification Level
+      - record: alert:stakeholder_notification_level
+        expr: (
+          (revenue_impact_rate > 1000) * 4 +  # Executive level
+          (revenue_impact_rate > 200) * 3 +   # Business ops level
+          (revenue_impact_rate > 50) * 2 +    # Customer success level
+          1                                   # Technical team (always)
+        )
+
+  - name: six_figure_barber_kpis
+    interval: 300s  # 5 minutes
+    rules:
+      # Revenue Optimization Health
+      - record: sixfb:revenue_optimization_health
+        expr: (
+          avg_over_time(booking_system_health[1h]) * 0.4 +
+          avg_over_time(payment_system_health[1h]) * 0.4 +
+          avg_over_time(pricing_system_health[1h]) * 0.2
+        )
+
+      # Client Value Creation Health
+      - record: sixfb:client_value_creation_health
+        expr: (
+          avg_over_time(notification_system_health[1h]) * 0.3 +
+          avg_over_time(client_portal_health[1h]) * 0.3 +
+          avg_over_time(communication_system_health[1h]) * 0.4
+        )
+
+      # Service Excellence Health
+      - record: sixfb:service_excellence_health
+        expr: (
+          avg_over_time(appointment_system_health[1h]) * 0.4 +
+          avg_over_time(service_tracking_health[1h]) * 0.3 +
+          avg_over_time(quality_metrics_health[1h]) * 0.3
+        )
+
+      # Business Efficiency Health
+      - record: sixfb:business_efficiency_health
+        expr: (
+          avg_over_time(admin_dashboard_health[1h]) * 0.4 +
+          avg_over_time(reporting_system_health[1h]) * 0.3 +
+          avg_over_time(schedule_optimization_health[1h]) * 0.3
+        )
+
+      # Professional Growth Health
+      - record: sixfb:professional_growth_health
+        expr: (
+          avg_over_time(analytics_dashboard_health[1h]) * 0.5 +
+          avg_over_time(coaching_insights_health[1h]) * 0.3 +
+          avg_over_time(performance_tracking_health[1h]) * 0.2
+        )
+
+  - name: business_correlation_metrics
+    interval: 60s
+    rules:
+      # Performance Impact on Revenue
+      - record: correlation:performance_revenue_impact
+        expr: |
+          (100 - performance_score) * 
+          avg_over_time(hourly_revenue_rate[1h]) * 
+          0.01
+
+      # Error Rate Business Cost
+      - record: correlation:error_rate_business_cost
+        expr: |
+          rate(http_requests_total{status=~"5.."}[5m]) * 
+          avg_over_time(average_transaction_value[1h]) *
+          60
+
+      # Latency Impact on Conversions
+      - record: correlation:latency_conversion_impact
+        expr: |
+          (
+            histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) - 1
+          ) * 
+          rate(booking_conversion_total[5m]) * 
+          -0.25  # 25% conversion drop per second of latency
+
+      # Circuit Breaker Business Impact
+      - record: correlation:circuit_breaker_business_impact
+        expr: |
+          sum(circuit_breaker_state{state="open"}) *
+          avg_over_time(system_dependency_revenue_impact[1h])
+
+# Global Configuration for Business Context
+global_labels:
+  business_methodology: "six_figure_barber"
+  revenue_tracking: "enabled"
+  stakeholder_alerts: "enabled"
+  peak_hours_monitoring: "enabled"

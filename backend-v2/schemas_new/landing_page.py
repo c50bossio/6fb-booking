@@ -1,9 +1,8 @@
 """Pydantic schemas for landing page functionality."""
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-
 
 class LandingPageConfig(BaseModel):
     """Configuration schema for organization landing page."""
@@ -17,7 +16,8 @@ class LandingPageConfig(BaseModel):
     testimonial_source: str = Field("gmb_auto", pattern="^(gmb_auto|generic|custom)$")
     custom_testimonials: Optional[List[Dict[str, Any]]] = None
     
-    @validator('background_preset')
+    @field_validator('background_preset')
+    @classmethod
     def validate_background_preset(cls, v):
         """Validate background preset options."""
         valid_presets = [
@@ -31,14 +31,14 @@ class LandingPageConfig(BaseModel):
             raise ValueError(f'Background preset must be one of: {", ".join(valid_presets)}')
         return v
     
-    @validator('testimonial_source')
+    @field_validator('testimonial_source')
+    @classmethod
     def validate_testimonial_source(cls, v):
         """Validate testimonial source options."""
         valid_sources = ['gmb_auto', 'generic', 'custom']
         if v not in valid_sources:
             raise ValueError(f'Testimonial source must be one of: {", ".join(valid_sources)}')
         return v
-
 
 class TestimonialData(BaseModel):
     """Schema for testimonial data."""
@@ -50,13 +50,13 @@ class TestimonialData(BaseModel):
     source: str = Field(..., pattern="^(gmb|generic|custom)$")
     reviewer_photo_url: Optional[str] = None
     
-    @validator('review_text')
+    @field_validator('review_text')
+    @classmethod
     def validate_review_text(cls, v):
         """Validate review text length."""
         if len(v) > 300:
             return v[:297] + "..."
         return v
-
 
 class ServicePreview(BaseModel):
     """Schema for service preview on landing page."""
@@ -67,9 +67,9 @@ class ServicePreview(BaseModel):
     price: float
     is_featured: bool = False
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class LandingPageResponse(BaseModel):
     """Schema for complete landing page data."""
@@ -100,7 +100,6 @@ class LandingPageResponse(BaseModel):
     # Metadata
     last_updated: datetime
 
-
 class LandingPageTrackingEvent(BaseModel):
     """Schema for landing page tracking events."""
     event_type: str = Field(..., pattern="^(page_view|cta_click|booking_started|booking_completed)$")
@@ -111,14 +110,14 @@ class LandingPageTrackingEvent(BaseModel):
     referrer: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
     
-    @validator('event_type')
+    @field_validator('event_type')
+    @classmethod
     def validate_event_type(cls, v):
         """Validate event type options."""
         valid_types = ['page_view', 'cta_click', 'booking_started', 'booking_completed']
         if v not in valid_types:
             raise ValueError(f'Event type must be one of: {", ".join(valid_types)}')
         return v
-
 
 class LandingPageConfigUpdate(BaseModel):
     """Schema for updating landing page configuration."""
@@ -132,7 +131,8 @@ class LandingPageConfigUpdate(BaseModel):
     testimonial_source: Optional[str] = None
     custom_testimonials: Optional[List[Dict[str, Any]]] = None
     
-    @validator('background_preset')
+    @field_validator('background_preset')
+    @classmethod
     def validate_background_preset(cls, v):
         """Validate background preset options."""
         if v is None:
@@ -147,7 +147,6 @@ class LandingPageConfigUpdate(BaseModel):
         if v not in valid_presets:
             raise ValueError(f'Background preset must be one of: {", ".join(valid_presets)}')
         return v
-
 
 class LandingPageAnalytics(BaseModel):
     """Schema for landing page analytics data."""
@@ -178,7 +177,6 @@ class LandingPageAnalytics(BaseModel):
             return 0.0
         return (self.booking_completions / self.cta_clicks) * 100
 
-
 class BackgroundPreset(BaseModel):
     """Schema for background preset options."""
     key: str
@@ -188,9 +186,9 @@ class BackgroundPreset(BaseModel):
     css_classes: str
     is_premium: bool = False
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class LandingPagePresets(BaseModel):
     """Schema for available landing page presets."""

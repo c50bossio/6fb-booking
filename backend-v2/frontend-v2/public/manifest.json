@@ -1,17 +1,41 @@
 {
   "name": "BookedBarber - Professional Booking Platform",
   "short_name": "BookedBarber",
-  "description": "Professional Barbershop Management Platform - Own The Chair. Own The Brand.",
+  "description": "Professional Barbershop Management Platform built on the Six Figure Barber methodology. Own The Chair. Own The Brand.",
   "theme_color": "#000000",
   "background_color": "#ffffff",
   "display": "standalone",
   "start_url": "/",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en-US",
   "dir": "ltr",
-  "categories": ["business", "productivity", "lifestyle"],
+  "categories": ["business", "productivity", "lifestyle", "finance"],
   "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 480
+  },
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+bookedbarber",
+      "url": "/book?id=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/import",
+      "accept": {
+        "text/csv": [".csv"],
+        "application/vnd.ms-excel": [".xls"],
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"]
+      }
+    }
+  ],
   "icons": [
     {
       "src": "/api/icon?size=48",
@@ -53,24 +77,38 @@
   ],
   "shortcuts": [
     {
-      "name": "Book Appointment",
+      "name": "Today's Schedule",
+      "short_name": "Today",
+      "description": "View today's appointments and check-ins",
+      "url": "/my-schedule?date=today",
+      "icons": [{ "src": "/api/icon?size=96", "sizes": "96x96" }]
+    },
+    {
+      "name": "Quick Book",
       "short_name": "Book",
-      "description": "Book a new appointment",
-      "url": "/book",
+      "description": "Instant booking for walk-ins and calls",
+      "url": "/book?quick=true&source=pwa",
       "icons": [{ "src": "/api/icon?size=96", "sizes": "96x96" }]
     },
     {
-      "name": "View Calendar",
-      "short_name": "Calendar",
-      "description": "View your appointment calendar",
-      "url": "/calendar",
+      "name": "Revenue Dashboard",
+      "short_name": "Revenue",
+      "description": "Six Figure Barber revenue tracking",
+      "url": "/analytics?tab=revenue&period=today",
       "icons": [{ "src": "/api/icon?size=96", "sizes": "96x96" }]
     },
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "View business analytics",
-      "url": "/dashboard",
+      "name": "Client Lookup",
+      "short_name": "Clients",
+      "description": "Find client contact and history",
+      "url": "/clients?search=true",
+      "icons": [{ "src": "/api/icon?size=96", "sizes": "96x96" }]
+    },
+    {
+      "name": "PWA Settings",
+      "short_name": "PWA",
+      "description": "Manage offline mode and notifications",
+      "url": "/pwa",
       "icons": [{ "src": "/api/icon?size=96", "sizes": "96x96" }]
     }
   ]

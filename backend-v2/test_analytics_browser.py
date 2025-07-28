@@ -14,7 +14,7 @@ def test_analytics_with_auth():
     print("1. Creating/verifying test user...")
     
     # Try to create an admin user that's verified
-    from database import get_db
+    from db import get_db
     from models import User
     from utils.auth import get_password_hash
     

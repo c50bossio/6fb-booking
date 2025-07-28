@@ -1,755 +1,341 @@
-/* Calendar Animations & Enhanced Visual Styles */
-/* Supports both light and dark modes with smooth transitions */
+/* Calendar Visual Design and UX Animations */
 
-/* ============================================
-   CSS Variables for Theming
-   ============================================ */
-:root {
-  /* Animation Timing */
-  --animation-fast: 150ms;
-  --animation-normal: 300ms;
-  --animation-slow: 500ms;
-  --animation-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  --animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* Colors for Light Mode */
-  --calendar-bg: #ffffff;
-  --calendar-border: #e5e7eb;
-  --slot-available: #10b981;
-  --slot-booked: #ef4444;
-  --slot-hover: #3b82f6;
-  --today-accent: #8b5cf6;
-  --success-pulse: #22c55e;
-  
-  /* Service Type Colors */
-  --service-basic: #3b82f6;
-  --service-premium: #8b5cf6;
-  --service-deluxe: #f59e0b;
-  --service-special: #ec4899;
-  
-  /* Mobile Tap Target Size */
-  --tap-target-min: 44px;
+/* ===== CALENDAR GRID ANIMATIONS ===== */
+
+/* Month view animations */
+.calendar-month-grid {
+  animation: fadeInUp 0.6s ease-out;
 }
 
-/* Dark Mode Variables */
-[data-theme="dark"], 
-.dark {
-  --calendar-bg: #1f2937;
-  --calendar-border: #374151;
-  --slot-available: #059669;
-  --slot-booked: #dc2626;
-  --slot-hover: #2563eb;
-  --today-accent: #7c3aed;
-  --success-pulse: #16a34a;
-}
-
-/* ============================================
-   1. Smooth Date Transition Animations
-   ============================================ */
-.calendar-date-transition {
-  animation: slideInFromRight var(--animation-normal) var(--animation-smooth);
-}
-
-.calendar-date-transition.prev {
-  animation: slideInFromLeft var(--animation-normal) var(--animation-smooth);
-}
-
-@keyframes slideInFromRight {
-  0% {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInFromLeft {
-  0% {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Date picker transitions */
-.date-picker-day {
-  transition: all var(--animation-fast) var(--animation-smooth);
+.calendar-month-grid .calendar-day {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
-.date-picker-day::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: var(--slot-hover);
-  opacity: 0.2;
-  transform: translate(-50%, -50%);
-  transition: all var(--animation-normal) var(--animation-smooth);
-}
-
-.date-picker-day:hover::before {
-  width: 100%;
-  height: 100%;
-}
-
-/* ============================================
-   2. Enhanced Time Slot Visual Clarity
-   ============================================ */
-.time-slot {
-  position: relative;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 2px solid var(--calendar-border);
-  background: var(--calendar-bg);
-  transition: all var(--animation-fast) var(--animation-smooth);
-  cursor: pointer;
-  min-height: var(--tap-target-min);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Available Slot */
-.time-slot.available {
-  border-color: var(--slot-available);
-  background: linear-gradient(135deg, 
-    transparent 0%, 
-    rgba(16, 185, 129, 0.05) 100%
-  );
-}
-
-.time-slot.available::after {
-  content: '✓';
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  color: var(--slot-available);
-  font-size: 12px;
-  opacity: 0;
-  transform: scale(0);
-  transition: all var(--animation-fast) var(--animation-bounce);
-}
-
-.time-slot.available:hover::after {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* Booked Slot */
-.time-slot.booked {
-  border-color: var(--slot-booked);
-  background: linear-gradient(135deg, 
-    transparent 0%, 
-    rgba(239, 68, 68, 0.05) 100%
-  );
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.time-slot.booked::before {
-  content: '';
-  position: absolute;
-  width: calc(100% - 16px);
-  height: 2px;
-  background: var(--slot-booked);
-  top: 50%;
-  left: 8px;
-  transform: translateY(-50%) rotate(-45deg);
-  opacity: 0.3;
-}
-
-/* Time slot hover effect */
-.time-slot:not(.booked):hover {
-  border-color: var(--slot-hover);
+.calendar-month-grid .calendar-day:hover {
   transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.calendar-month-grid .calendar-day.has-appointments {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.calendar-month-grid .calendar-day.has-appointments::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  opacity: 0;
+  animation: slideInTop 0.5s ease-out 0.2s forwards;
+}
+
+/* Week view animations */
+.calendar-week-view {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.calendar-time-slot {
+  transition: all 0.25s ease;
+  border-radius: 6px;
+  position: relative;
+}
+
+.calendar-time-slot:hover {
+  background-color: #f1f5f9;
+  transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.time-slot:not(.booked):active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.calendar-time-slot.occupied {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-left: 4px solid #3b82f6;
 }
 
-/* ============================================
-   3. Appointment Hover Effects
-   ============================================ */
+.calendar-time-slot.occupied::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+/* Day view animations */
+.calendar-day-view {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.calendar-hour-block {
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border-radius: 8px;
+}
+
+.calendar-hour-block:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+  transform: translateX(4px);
+}
+
+/* ===== APPOINTMENT ANIMATIONS ===== */
+
+/* Appointment cards */
 .appointment-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  padding: 16px;
-  border-radius: 12px;
-  background: var(--calendar-bg);
-  border: 1px solid var(--calendar-border);
-  transition: all var(--animation-normal) var(--animation-smooth);
   overflow: hidden;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
 }
 
 .appointment-card::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.2) 50%, 
-    transparent 100%
-  );
-  transition: left var(--animation-slow) var(--animation-smooth);
-}
-
-.appointment-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-color: var(--slot-hover);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .appointment-card:hover::before {
-  left: 100%;
+  opacity: 1;
 }
 
 /* Appointment status indicators */
 .appointment-status {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  animation: statusPulse 2s infinite;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
 }
 
 .appointment-status.confirmed {
-  background: var(--slot-available);
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  animation: shimmer 3s ease-in-out infinite;
 }
 
 .appointment-status.pending {
-  background: var(--service-deluxe);
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  animation: glow 2s ease-in-out infinite alternate;
 }
 
-@keyframes statusPulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.7;
-  }
+.appointment-status.cancelled {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
 }
 
-/* ============================================
-   4. Success Pulse Animation for Bookings
-   ============================================ */
-.booking-success {
-  animation: successPulse var(--animation-slow) var(--animation-smooth);
+/* ===== DRAG AND DROP ANIMATIONS ===== */
+
+/* Draggable appointments */
+.appointment-draggable {
+  cursor: grab;
+  transition: all 0.3s ease;
+}
+
+.appointment-draggable:active {
+  cursor: grabbing;
+  transform: rotate(5deg) scale(1.05);
+  z-index: 1000;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.appointment-dragging {
+  animation: floatDrag 0.6s ease-in-out infinite alternate;
+  opacity: 0.9;
+}
+
+/* Drop zones */
+.calendar-drop-zone {
   position: relative;
+  transition: all 0.3s ease;
 }
 
-.booking-success::after {
-  content: '';
-  position: absolute;
-  inset: -8px;
-  border: 2px solid var(--success-pulse);
-  border-radius: inherit;
-  opacity: 0;
-  animation: successRipple 1s var(--animation-smooth);
+.calendar-drop-zone.drag-over {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+  border: 2px dashed #10b981;
+  transform: scale(1.02);
 }
 
-@keyframes successPulse {
-  0% {
-    transform: scale(0.95);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes successRipple {
-  0% {
-    opacity: 0.8;
-    transform: scale(0.8);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.2);
-  }
-}
-
-/* Success checkmark animation */
-.success-checkmark {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--success-pulse);
-  position: relative;
-  animation: scaleIn var(--animation-normal) var(--animation-bounce);
-}
-
-.success-checkmark::after {
-  content: '';
+.calendar-drop-zone.drag-over::after {
+  content: 'Drop appointment here';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 20px;
-  height: 10px;
-  border: 3px solid white;
-  border-top: 0;
-  border-right: 0;
-  transform: translate(-50%, -60%) rotate(-45deg);
-  animation: checkmarkDraw var(--animation-normal) var(--animation-smooth) 
-    var(--animation-normal) forwards;
-  opacity: 0;
-}
-
-@keyframes scaleIn {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes checkmarkDraw {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 0;
-  }
-  50% {
-    width: 20px;
-    height: 0;
-    opacity: 1;
-  }
-  100% {
-    width: 20px;
-    height: 10px;
-    opacity: 1;
-  }
-}
-
-/* ============================================
-   5. Improved Loading Skeleton Animations
-   ============================================ */
-.skeleton {
-  position: relative;
-  background: var(--calendar-border);
-  overflow: hidden;
-}
-
-.skeleton::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.1) 50%, 
-    transparent 100%
-  );
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
-
-/* Multiple skeleton variations */
-.skeleton-text {
-  height: 20px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-}
-
-.skeleton-button {
-  height: 40px;
-  border-radius: 8px;
-  min-width: 100px;
-}
-
-.skeleton-card {
-  height: 120px;
-  border-radius: 12px;
-  margin-bottom: 16px;
-}
-
-/* Skeleton pulse variation */
-.skeleton-pulse {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-/* ============================================
-   6. Enhanced Today Indicator with Pulse
-   ============================================ */
-.today-indicator {
-  position: relative;
-  background: var(--today-accent);
+  transform: translate(-50%, -50%);
+  background: #10b981;
   color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
   font-weight: 600;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  animation: bounceIn 0.3s ease-out;
+  z-index: 10;
+}
+
+/* ===== VIEW TRANSITION ANIMATIONS ===== */
+
+/* View switcher buttons */
+.calendar-view-switcher {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 4px;
+  transition: all 0.3s ease;
 }
 
-.today-indicator::before,
-.today-indicator::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid var(--today-accent);
-  opacity: 0.4;
-  animation: todayPulse 2s infinite;
-}
-
-.today-indicator::after {
-  animation-delay: 1s;
-}
-
-@keyframes todayPulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.4;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1.2);
-    opacity: 0;
-  }
-}
-
-/* Today's timeline indicator */
-.current-time-indicator {
-  position: relative;
-  height: 2px;
-  background: var(--today-accent);
-  margin: 16px 0;
-}
-
-.current-time-indicator::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  background: var(--today-accent);
-  border-radius: 50%;
-  transform: translateY(-50%);
-  animation: timeIndicatorPulse 1s infinite alternate;
-}
-
-@keyframes timeIndicatorPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
-  }
-  100% {
-    box-shadow: 0 0 0 8px rgba(139, 92, 246, 0);
-  }
-}
-
-/* ============================================
-   7. Service Type Badges with Colors
-   ============================================ */
-.service-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 12px;
+.calendar-view-button {
+  padding: 8px 16px;
+  border-radius: 8px;
   font-weight: 500;
-  transition: all var(--animation-fast) var(--animation-smooth);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
-.service-badge::before {
+.calendar-view-button::before {
   content: '';
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  transition: left var(--animation-normal) var(--animation-smooth);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
 }
 
-.service-badge:hover::before {
+.calendar-view-button:hover::before {
   left: 100%;
 }
 
-/* Service type variants */
-.service-badge.basic {
-  background: var(--service-basic);
+.calendar-view-button.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
   color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
 }
 
-.service-badge.premium {
-  background: var(--service-premium);
-  color: white;
+/* View transition effects */
+.calendar-view-enter {
+  opacity: 0;
+  transform: translateX(30px);
 }
 
-.service-badge.deluxe {
-  background: var(--service-deluxe);
-  color: white;
+.calendar-view-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.service-badge.special {
-  background: var(--service-special);
-  color: white;
+.calendar-view-exit {
+  opacity: 1;
+  transform: translateX(0);
 }
 
-/* Service badge animation on selection */
-.service-badge.selected {
-  animation: badgeSelect var(--animation-normal) var(--animation-bounce);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.calendar-view-exit-active {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes badgeSelect {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1.05);
-  }
+/* ===== LOADING AND SKELETON ANIMATIONS ===== */
+
+/* Calendar loading skeleton */
+.calendar-skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* ============================================
-   8. Mobile Optimizations
-   ============================================ */
+.calendar-skeleton-day {
+  height: 100px;
+  background: linear-gradient(90deg, #f0f9ff 25%, #e0f2fe 50%, #f0f9ff 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 8px;
+  margin: 2px;
+}
+
+.calendar-skeleton-appointment {
+  height: 60px;
+  background: linear-gradient(90deg, #f8fafc 25%, #e2e8f0 50%, #f8fafc 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 6px;
+  margin: 4px 0;
+}
+
+/* Loading spinner for calendar updates */
+.calendar-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+/* ===== RESPONSIVE ANIMATIONS ===== */
+
+/* Mobile touch feedback */
 @media (max-width: 768px) {
-  /* Larger tap targets for mobile */
-  .time-slot {
-    min-height: 48px;
-    font-size: 16px;
-    padding: 14px 18px;
-  }
-  
-  .appointment-card {
-    padding: 20px;
-    margin-bottom: 12px;
-  }
-  
-  /* Touch feedback */
-  .time-slot:active:not(.booked) {
-    background: rgba(59, 130, 246, 0.1);
+  .calendar-day:active,
+  .appointment-card:active {
     transform: scale(0.98);
+    transition: transform 0.1s ease;
   }
   
-  /* Swipe indicators */
-  .calendar-swipe-hint {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-    opacity: 0.6;
-    animation: swipeHint 2s infinite;
+  .calendar-view-button:active {
+    transform: translateY(0) scale(0.95);
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .appointment-card:hover {
+    transform: translateY(-2px);
   }
   
-  @keyframes swipeHint {
-    0%, 100% {
-      transform: translateX(-50%) translateX(0);
-    }
-    50% {
-      transform: translateX(-50%) translateX(-10px);
-    }
+  .calendar-day:hover {
+    transform: translateY(-1px);
   }
-  
-  /* Mobile-specific animations */
-  .mobile-menu-toggle {
-    transition: all var(--animation-fast) var(--animation-smooth);
-  }
-  
-  .mobile-menu-toggle.active {
-    transform: rotate(90deg);
-  }
-  
-  /* Optimized shadows for performance */
-  .appointment-card {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Desktop enhancements */
+@media (min-width: 1025px) {
+  .calendar-month-grid .calendar-day:hover {
+    transform: translateY(-3px);
   }
   
   .appointment-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-6px);
   }
 }
 
-/* ============================================
-   9. Haptic Feedback Simulation
-   ============================================ */
-.haptic-tap {
-  transition: all 50ms ease-out;
-}
+/* ===== ACCESSIBILITY ANIMATIONS ===== */
 
-.haptic-tap:active {
-  transform: scale(0.97);
-}
-
-/* Haptic feedback for buttons */
-.button-haptic {
-  position: relative;
-  transition: all var(--animation-fast) var(--animation-smooth);
-}
-
-.button-haptic:active {
-  transform: translateY(1px);
-}
-
-.button-haptic::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: inset 0 0 0 0 rgba(0, 0, 0, 0.1);
-  transition: box-shadow var(--animation-fast) var(--animation-smooth);
-}
-
-.button-haptic:active::after {
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
-}
-
-/* Selection feedback */
-.selectable-item {
-  transition: all var(--animation-fast) var(--animation-smooth);
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.selectable-item:active {
-  background: rgba(0, 0, 0, 0.05);
-  transform: scale(0.98);
-}
-
-/* ============================================
-   10. Landscape Orientation Optimizations
-   ============================================ */
-@media (orientation: landscape) and (max-height: 600px) {
-  /* Compact header in landscape */
-  .calendar-header {
-    padding: 8px 16px;
-    position: sticky;
-    top: 0;
-    background: var(--calendar-bg);
-    z-index: 10;
-    backdrop-filter: blur(10px);
-  }
-  
-  /* Side-by-side layout for landscape */
-  .calendar-landscape-grid {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 16px;
-    height: calc(100vh - 60px);
-  }
-  
-  /* Scrollable time slots */
-  .time-slots-container {
-    height: 100%;
-    overflow-y: auto;
-    padding-right: 8px;
-  }
-  
-  /* Optimized time slot layout */
-  .time-slot-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 8px;
-  }
-  
-  /* Compact appointment cards */
-  .appointment-card-landscape {
-    padding: 12px;
-    font-size: 14px;
-  }
-  
-  /* Hide less important elements */
-  .calendar-footer {
-    display: none;
-  }
-}
-
-/* Landscape-specific animations */
-@media (orientation: landscape) {
-  .landscape-slide-in {
-    animation: landscapeSlideIn var(--animation-normal) var(--animation-smooth);
-  }
-  
-  @keyframes landscapeSlideIn {
-    0% {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-}
-
-/* ============================================
-   Additional Enhancements
-   ============================================ */
-
-/* Smooth scroll behavior */
-.calendar-container {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Focus states for accessibility */
-.time-slot:focus-visible,
-.appointment-card:focus-visible,
-.service-badge:focus-visible {
-  outline: 2px solid var(--slot-hover);
-  outline-offset: 2px;
-}
-
-/* Reduced motion preferences */
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -758,480 +344,459 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* Performance optimizations */
-.will-animate {
-  will-change: transform, opacity;
-}
-
-.hardware-accelerated {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* Custom scrollbar styling */
-.calendar-scrollable::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.calendar-scrollable::-webkit-scrollbar-track {
-  background: var(--calendar-border);
-  border-radius: 4px;
-}
-
-.calendar-scrollable::-webkit-scrollbar-thumb {
-  background: var(--slot-hover);
-  border-radius: 4px;
-  transition: background var(--animation-fast) var(--animation-smooth);
-}
-
-.calendar-scrollable::-webkit-scrollbar-thumb:hover {
-  background: var(--today-accent);
-}
-
-/* Print styles */
-@media print {
-  .time-slot,
-  .appointment-card {
-    border: 1px solid #000 !important;
-    box-shadow: none !important;
-    animation: none !important;
+  
+  .appointment-dragging {
+    animation: none;
+    transform: scale(1.05);
   }
   
-  .skeleton,
-  .loading-indicator {
-    display: none !important;
+  .calendar-loading-spinner {
+    animation: none;
+    border-top-color: transparent;
   }
 }
 
-/* ============================================
-   Legacy Animation Preservation
-   ============================================ */
+/* Focus indicators */
+.calendar-day:focus,
+.appointment-card:focus,
+.calendar-view-button:focus {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
 
-/* Preserved ripple effect */
-@keyframes ripple {
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .appointment-card {
+    border: 2px solid #000;
+  }
+  
+  .calendar-day.has-appointments::before {
+    background: #000;
+  }
+  
+  .appointment-status {
+    border: 1px solid currentColor;
+  }
+}
+
+/* ===== KEYFRAME ANIMATIONS ===== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInTop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes shimmer {
   0% {
-    width: 0;
-    height: 0;
-    opacity: 0.5;
+    background-position: -200% 0;
   }
   100% {
-    width: 200px;
-    height: 200px;
-    opacity: 0;
+    background-position: 200% 0;
   }
 }
 
-.animate-ripple {
-  animation: ripple 0.6s ease-out;
-}
-
-/* Preserved calendar view transitions */
-.calendar-view-transition {
-  animation-duration: 0.3s;
-  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  animation-fill-mode: both;
-}
-
-.calendar-view-enter-right {
-  animation-name: slideInFromRight;
-}
-
-.calendar-view-enter-left {
-  animation-name: slideInFromLeft;
-}
-
-.calendar-view-exit-left {
-  animation-name: slideOutToLeft;
-}
-
-.calendar-view-exit-right {
-  animation-name: slideOutToRight;
-}
-
-@keyframes slideOutToLeft {
+@keyframes glow {
   from {
-    transform: translateX(0);
-    opacity: 1;
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
   }
   to {
-    transform: translateX(-100%);
-    opacity: 0;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
   }
 }
 
-@keyframes slideOutToRight {
+@keyframes floatDrag {
   from {
-    transform: translateX(0);
-    opacity: 1;
+    transform: rotate(5deg) scale(1.05) translateY(0);
   }
   to {
-    transform: translateX(100%);
-    opacity: 0;
+    transform: rotate(5deg) scale(1.05) translateY(-4px);
   }
 }
 
-/* Preserved appointment animations */
-.calendar-appointment {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
-.calendar-appointment:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.calendar-appointment.dragging {
-  transform: scale(1.05) rotate(2deg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  opacity: 0.8;
-  cursor: grabbing !important;
-}
+/* ===== CALENDAR ENHANCEMENT SPECIFIC STYLES ===== */
 
-/* Time preview while dragging */
-.drag-time-preview {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 12px;
-  font-weight: 600;
-  pointer-events: none;
-  z-index: 100;
-  opacity: 0;
-  transition: opacity 150ms ease-out;
-}
-
-.calendar-time-slot.drop-target .drag-time-preview {
-  opacity: 1;
-}
-
-/* Undo toast notification */
-.undo-toast {
+/* Performance monitoring indicators */
+.calendar-performance-indicator {
   position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  transition: transform 300ms var(--animation-bounce);
+  animation: slideInFromRight 0.5s ease-out;
 }
 
-.undo-toast.visible {
-  transform: translateX(-50%) translateY(0);
+.calendar-performance-indicator.good {
+  border-left: 4px solid #10b981;
 }
 
-.undo-toast button {
-  background: none;
-  border: none;
-  color: rgb(99, 102, 241);
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background 150ms ease-out;
+.calendar-performance-indicator.warning {
+  border-left: 4px solid #f59e0b;
+  animation: pulse 2s infinite;
 }
 
-.undo-toast button:hover {
-  background: rgba(99, 102, 241, 0.1);
+.calendar-performance-indicator.error {
+  border-left: 4px solid #ef4444;
+  animation: shake 0.5s ease-in-out;
 }
 
-/* Preserved time slot animations */
-.calendar-time-slot {
-  transition: all 0.15s ease-out;
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Voice command visual feedback */
+.calendar-voice-active {
+  position: relative;
+}
+
+.calendar-voice-active::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid #3b82f6;
+  border-radius: inherit;
+  animation: voicePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes voicePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+}
+
+/* Intelligent scheduling suggestions */
+.calendar-suggestion {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
   position: relative;
   overflow: hidden;
+  animation: slideInUp 0.5s ease-out;
 }
 
-.calendar-time-slot:hover {
-  background-color: rgba(99, 102, 241, 0.05);
+.calendar-suggestion::before {
+  content: '💡';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 1.2rem;
+  animation: bounce 2s infinite;
 }
 
-.calendar-time-slot.drop-target {
-  background-color: rgba(99, 102, 241, 0.1);
-  border: 2px dashed rgb(99, 102, 241);
+.calendar-suggestion-text {
+  margin-left: 32px;
+  font-weight: 500;
+  color: #92400e;
 }
 
-/* Preserved drop success */
-@keyframes dropSuccess {
-  0% {
-    transform: scale(1);
-    background-color: rgba(34, 197, 94, 0.2);
-  }
-  50% {
-    transform: scale(1.05);
-    background-color: rgba(34, 197, 94, 0.3);
-  }
-  100% {
-    transform: scale(1);
-    background-color: transparent;
-  }
-}
-
-.drop-success {
-  animation: dropSuccess 0.6s ease-out;
-}
-
-/* Preserved day cell animations */
-.calendar-day-cell {
-  transition: all 0.2s ease-out;
-}
-
-.calendar-day-cell:hover {
-  transform: scale(1.05);
-  z-index: 10;
-}
-
-/* Preserved appointment creation */
-@keyframes appointmentCreate {
-  0% {
-    transform: scale(0) rotate(-180deg);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.1) rotate(10deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-}
-
-.appointment-create {
-  animation: appointmentCreate 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-/* Preserved month fade */
-@keyframes monthFadeIn {
+@keyframes slideInUp {
   from {
     opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Mobile swipe hint animations */
-@keyframes bounce-left {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-8px);
-  }
-}
-
-@keyframes bounce-right {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(8px);
-  }
-}
-
-.animate-bounce-left {
-  animation: bounce-left 2s ease-in-out infinite;
-}
-
-.animate-bounce-right {
-  animation: bounce-right 2s ease-in-out infinite;
-}
-
-.month-fade-in {
-  animation: monthFadeIn 0.3s ease-out;
-}
-
-/* Preserved staggered animations */
-.appointment-stagger {
-  animation: slideInFromBottom 0.4s ease-out backwards;
-}
-
-@keyframes slideInFromBottom {
-  from {
     transform: translateY(20px);
-    opacity: 0;
   }
   to {
+    opacity: 1;
     transform: translateY(0);
-    opacity: 1;
   }
 }
 
-.appointment-stagger:nth-child(1) { animation-delay: 0.05s; }
-.appointment-stagger:nth-child(2) { animation-delay: 0.1s; }
-.appointment-stagger:nth-child(3) { animation-delay: 0.15s; }
-.appointment-stagger:nth-child(4) { animation-delay: 0.2s; }
-.appointment-stagger:nth-child(5) { animation-delay: 0.25s; }
-
-/* Enhanced appointment animations on date change */
-.calendar-appointment {
-  animation: appointmentFadeIn 0.3s ease-out backwards;
-  animation-fill-mode: both;
-}
-
-@keyframes appointmentFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Staggered appointment animation based on index */
-.calendar-appointment[style*="animation-delay"] {
-  animation: appointmentSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
-}
-
-@keyframes appointmentSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-/* Preserved focus animations */
-.calendar-focusable:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
-  animation: focusPulse 0.4s ease-out;
-}
-
-@keyframes focusPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5);
-  }
-  100% {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
-  }
-}
-
-/* Preserved success bounce */
-@keyframes successBounce {
-  0%, 100% {
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
     transform: translateY(0);
   }
   40% {
-    transform: translateY(-10px);
+    transform: translateY(-4px);
   }
   60% {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
   }
 }
 
-.success-bounce {
-  animation: successBounce 0.6s ease-out;
-}
-
-/* Preserved error shake */
-@keyframes errorShake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  10%, 30%, 50%, 70%, 90% {
-    transform: translateX(-2px);
-  }
-  20%, 40%, 60%, 80% {
-    transform: translateX(2px);
-  }
-}
-
-.error-shake {
-  animation: errorShake 0.5s ease-out;
-}
-
-/* Success animation bounce-in */
-@keyframes bounce-in {
-  0% {
-    transform: scale(0) translateY(-20px);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.1) translateY(0);
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-
-.animate-bounce-in {
-  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-/* Slide up animation for undo toast */
-@keyframes slide-up {
-  0% {
-    transform: translateX(-50%) translateY(100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Premium appointment styling */
-.premium-appointment {
+/* Conflict resolution indicators */
+.calendar-conflict {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 2px solid #ef4444;
+  border-radius: 8px;
   position: relative;
-  border: 2px solid var(--service-premium, #8b5cf6);
-  background: linear-gradient(135deg, 
-    rgba(139, 92, 246, 0.05) 0%, 
-    rgba(139, 92, 246, 0.1) 100%
-  );
+  animation: conflictAlert 2s ease-in-out infinite;
 }
 
-.premium-appointment::before {
-  content: '⭐';
+.calendar-conflict::before {
+  content: '⚠️';
   position: absolute;
   top: 4px;
   right: 4px;
-  font-size: 12px;
-  opacity: 0.8;
+  font-size: 1rem;
+  animation: flash 1s ease-in-out infinite;
 }
 
-/* Ensure draggable appointments can be interacted with */
-.unified-calendar-appointment[draggable="true"] {
-  cursor: move !important;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  touch-action: none;
+@keyframes conflictAlert {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
 }
 
-.unified-calendar-appointment[draggable="true"]:active {
-  cursor: grabbing !important;
+@keyframes flash {
+  0%, 50%, 100% {
+    opacity: 1;
+  }
+  25%, 75% {
+    opacity: 0.5;
+  }
 }
 
-/* Fix for drag ghost image */
-.unified-calendar-appointment.dragging {
-  opacity: 0.5 !important;
-  cursor: grabbing !important;
+/* Real-time update animations */
+.calendar-update-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  animation: slideInUp 0.5s ease-out, fadeOut 0.5s ease-out 4.5s forwards;
+  z-index: 1000;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* Export/sync status indicators */
+.calendar-sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.calendar-sync-status.syncing {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.calendar-sync-status.syncing::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border: 2px solid #3b82f6;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.calendar-sync-status.synced {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.calendar-sync-status.synced::before {
+  content: '✓';
+  font-weight: bold;
+}
+
+.calendar-sync-status.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.calendar-sync-status.error::before {
+  content: '✗';
+  font-weight: bold;
+}
+
+/* Calendar grid responsiveness improvements */
+@media (max-width: 640px) {
+  .calendar-month-grid .calendar-day {
+    min-height: 80px;
+    font-size: 0.875rem;
+  }
+  
+  .appointment-card {
+    padding: 8px;
+    margin: 2px 0;
+  }
+  
+  .calendar-view-switcher {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .calendar-view-button {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+  }
+}
+
+/* Print styles for calendar */
+@media print {
+  .calendar-performance-indicator,
+  .calendar-voice-active::after,
+  .calendar-update-notification,
+  .calendar-view-switcher {
+    display: none !important;
+  }
+  
+  .calendar-month-grid,
+  .calendar-week-view,
+  .calendar-day-view {
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+  }
+  
+  .appointment-card {
+    background: #f8f9fa !important;
+    box-shadow: none !important;
+    border: 1px solid #dee2e6 !important;
+  }
+}
+
+/* Dark mode support (if implemented) */
+@media (prefers-color-scheme: dark) {
+  .calendar-month-grid .calendar-day {
+    background: #1f2937;
+    color: #f9fafb;
+    border-color: #374151;
+  }
+  
+  .calendar-month-grid .calendar-day:hover {
+    background: #374151;
+  }
+  
+  .appointment-card {
+    background: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+  
+  .calendar-view-switcher {
+    background: #1f2937;
+  }
+  
+  .calendar-view-button.active {
+    background: linear-gradient(135deg, #1e40af 0%, #0891b2 100%);
+  }
+  
+  .calendar-performance-indicator {
+    background: rgba(31, 41, 55, 0.95);
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
 }

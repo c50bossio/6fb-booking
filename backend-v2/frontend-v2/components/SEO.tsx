@@ -306,3 +306,10 @@ export function StructuredData({ data }: { data: any }) {
     />
   )
 }
+
+// Default SEO component for backwards compatibility
+export function SEO(props: SEOProps) {
+  return <SocialMetaTags {...props} />
+}
+
+export default SEO

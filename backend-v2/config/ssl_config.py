@@ -8,9 +8,9 @@ from typing import Dict, Any, Optional, List
 from pathlib import Path
 try:
     from pydantic_settings import BaseSettings
-    from pydantic import field_validator as validator
+    from pydantic import field_validator as validator, ConfigDict
 except ImportError:
-    from pydantic import BaseSettings, validator
+    from pydantic import BaseSettings, field_validator, ConfigDict
 import ssl
 
 
@@ -53,20 +53,24 @@ class SSLConfig(BaseSettings):
     cert_base_path: str = "/etc/ssl/certs"
     key_base_path: str = "/etc/ssl/private"
     
-    class Config:
-        env_prefix = "SSL_"
-        case_sensitive = False
+    model_config = ConfigDict(
+        env_prefix="SSL_",
+        case_sensitive=False
+    )
     
-    @validator('ssl_enabled')
+    @field_validator('ssl_enabled')
+    @classmethod
     def validate_ssl_enabled(cls, v):
         """Enable SSL in production environment."""
         if os.getenv('ENVIRONMENT') == 'production':
             return True
         return v
     
-    @validator('ssl_certfile')
-    def validate_ssl_certfile(cls, v, values):
+    @field_validator('ssl_certfile')
+    @classmethod
+    def validate_ssl_certfile(cls, v, info):
         """Validate SSL certificate file path."""
+        values = info.data if hasattr(info, 'data') and info.data else {}
         if not v and values.get('ssl_enabled'):
             # Try common certificate locations
             common_paths = [
@@ -86,9 +90,11 @@ class SSLConfig(BaseSettings):
         
         return v
     
-    @validator('ssl_keyfile')
-    def validate_ssl_keyfile(cls, v, values):
+    @field_validator('ssl_keyfile')
+    @classmethod
+    def validate_ssl_keyfile(cls, v, info):
         """Validate SSL key file path."""
+        values = info.data if hasattr(info, 'data') and info.data else {}
         if not v and values.get('ssl_enabled'):
             # Try common key locations
             common_paths = [
@@ -191,7 +197,7 @@ class SSLConfig(BaseSettings):
 # SSL Configuration
 ssl_certificate {self.ssl_certfile or '/etc/nginx/ssl/cert.pem'};
 ssl_certificate_key {self.ssl_keyfile or '/etc/nginx/ssl/key.pem'};
-
+)
 # SSL Protocol and Ciphers
 ssl_protocols TLSv1.2 TLSv1.3;
 ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;

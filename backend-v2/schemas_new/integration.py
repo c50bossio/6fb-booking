@@ -3,11 +3,10 @@ Pydantic schemas for integration management.
 Handles validation for OAuth flows, health checks, and integration CRUD operations.
 """
 
-from pydantic import BaseModel, Field, field_validator, HttpUrl
+from pydantic import BaseModel, Field, field_validator, HttpUrl, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
-
 
 class IntegrationType(str, Enum):
     """Supported integration types"""
@@ -23,7 +22,6 @@ class IntegrationType(str, Enum):
     SMS_MARKETING = "sms_marketing"
     CUSTOM = "custom"
 
-
 class IntegrationStatus(str, Enum):
     """Integration health status"""
     ACTIVE = "active"
@@ -33,14 +31,12 @@ class IntegrationStatus(str, Enum):
     EXPIRED = "expired"
     SUSPENDED = "suspended"
 
-
 class IntegrationBase(BaseModel):
     """Base integration schema"""
     name: str = Field(..., min_length=1, max_length=255, description="User-friendly name for the integration")
     integration_type: IntegrationType
     config: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Integration-specific configuration")
     is_active: bool = True
-
 
 class IntegrationCreate(IntegrationBase):
     """Schema for creating a new integration"""
@@ -54,7 +50,6 @@ class IntegrationCreate(IntegrationBase):
         if not v.strip():
             raise ValueError('Integration name cannot be empty')
         return v.strip()
-
 
 class IntegrationUpdate(BaseModel):
     """Schema for updating an integration"""
@@ -70,7 +65,6 @@ class IntegrationUpdate(BaseModel):
             raise ValueError('Integration name cannot be empty')
         return v.strip() if v else v
 
-
 class IntegrationResponse(IntegrationBase):
     """Schema for integration responses"""
     id: int
@@ -85,8 +79,7 @@ class IntegrationResponse(IntegrationBase):
     updated_at: datetime
     is_connected: bool = Field(default=False, description="Whether the integration has valid credentials")
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
         
     @field_validator('is_connected')
     @classmethod
@@ -97,14 +90,12 @@ class IntegrationResponse(IntegrationBase):
             return status in [IntegrationStatus.ACTIVE, IntegrationStatus.PENDING]
         return v
 
-
 class OAuthInitiateRequest(BaseModel):
     """Request to initiate OAuth flow"""
     integration_type: IntegrationType
     redirect_uri: Optional[HttpUrl] = Field(None, description="Custom redirect URI after OAuth completion")
     scopes: Optional[List[str]] = Field(default_factory=list, description="Additional OAuth scopes to request")
     state: Optional[str] = Field(None, description="State parameter for OAuth security")
-
 
 class OAuthCallbackRequest(BaseModel):
     """OAuth callback parameters"""
@@ -113,14 +104,12 @@ class OAuthCallbackRequest(BaseModel):
     error: Optional[str] = Field(None, description="Error from OAuth provider")
     error_description: Optional[str] = Field(None, description="Error description from OAuth provider")
 
-
 class OAuthCallbackResponse(BaseModel):
     """Response after OAuth callback processing"""
     success: bool
     integration_id: Optional[int] = None
     message: str
     redirect_url: Optional[str] = Field(None, description="URL to redirect user after OAuth completion")
-
 
 class IntegrationHealthCheck(BaseModel):
     """Health check response for an integration"""
@@ -133,9 +122,9 @@ class IntegrationHealthCheck(BaseModel):
     details: Dict[str, Any] = Field(default_factory=dict)
     error: Optional[str] = None
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class IntegrationHealthSummary(BaseModel):
     """Summary of all integration health checks"""
@@ -146,19 +135,16 @@ class IntegrationHealthSummary(BaseModel):
     integrations: List[IntegrationHealthCheck]
     checked_at: datetime = Field(default_factory=datetime.utcnow)
 
-
 class IntegrationDisconnectResponse(BaseModel):
     """Response after disconnecting an integration"""
     success: bool
     message: str
     integration_id: int
 
-
 class IntegrationTokenRefreshRequest(BaseModel):
     """Request to refresh OAuth tokens"""
     integration_id: int
     force: bool = Field(False, description="Force token refresh even if not expired")
-
 
 class IntegrationTokenRefreshResponse(BaseModel):
     """Response after token refresh"""
@@ -166,13 +152,11 @@ class IntegrationTokenRefreshResponse(BaseModel):
     message: str
     expires_at: Optional[datetime] = None
 
-
 class IntegrationSyncRequest(BaseModel):
     """Request to sync data from an integration"""
     integration_id: int
     sync_type: Optional[str] = Field(None, description="Type of sync to perform (integration-specific)")
     options: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Sync options")
-
 
 class IntegrationSyncResponse(BaseModel):
     """Response after sync operation"""

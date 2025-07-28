@@ -13,9 +13,7 @@ from models import User
 from services.six_fb_compliance_service import SixFBComplianceService
 from schemas import BaseResponse
 
-
 router = APIRouter(prefix="/six-fb-compliance", tags=["six-fb-compliance"])
-
 
 @router.get("/score", response_model=BaseResponse)
 async def get_compliance_score(
@@ -48,7 +46,6 @@ async def get_compliance_score(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/dashboard", response_model=BaseResponse)
 async def get_compliance_dashboard(
     current_user: User = Depends(get_current_user),
@@ -66,7 +63,6 @@ async def get_compliance_dashboard(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/recalculate", response_model=BaseResponse)
 async def recalculate_compliance_score(
@@ -90,7 +86,6 @@ async def recalculate_compliance_score(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/improvement-tasks", response_model=BaseResponse)
 async def get_improvement_tasks(
@@ -154,7 +149,6 @@ async def get_improvement_tasks(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.put("/improvement-tasks/{task_id}/complete", response_model=BaseResponse)
 async def complete_improvement_task(
     task_id: int,
@@ -192,7 +186,6 @@ async def complete_improvement_task(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/compliance-checks/{category}", response_model=BaseResponse)
 async def get_compliance_checks_by_category(
@@ -259,7 +252,6 @@ async def get_compliance_checks_by_category(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/history", response_model=BaseResponse)
 async def get_compliance_history(
     limit: int = Query(12, ge=1, le=100),
@@ -297,7 +289,6 @@ async def get_compliance_history(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/benchmarks/{tier}", response_model=BaseResponse)
 async def get_tier_benchmarks(
     tier: str = Path(..., regex="^(starter|professional|premium|luxury)$"),
@@ -318,7 +309,6 @@ async def get_tier_benchmarks(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/populate-benchmarks", response_model=BaseResponse)
 async def populate_benchmarks(

@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import logging
 
-from database import get_db
+from db import get_db
 from utils.auth import get_current_user, require_role
 from models import User
 from services.security_excellence_orchestrator import (

@@ -412,7 +412,7 @@ class PreDeploymentValidator:
             # Test database query time
             start_time = time.time()
             db_result = subprocess.run(
-                [sys.executable, '-c', 'from database import get_db; next(get_db()); print("DB connection successful")'],
+                [sys.executable, '-c', 'from db import get_db; next(get_db()); print("DB connection successful")'],
                 cwd=self.base_path,
                 capture_output=True,
                 text=True,

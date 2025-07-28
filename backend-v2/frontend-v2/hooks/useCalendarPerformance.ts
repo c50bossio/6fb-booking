@@ -1,4 +1,11 @@
 import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react'
+import { 
+  getCalendarMonitor, 
+  CalendarPerformanceMetrics, 
+  CalendarEvent, 
+  PerformanceAlert, 
+  CalendarAnalytics 
+} from '@/lib/calendar-performance-monitoring'
 
 interface PerformanceMetrics {
   renderTime: number
@@ -31,9 +38,35 @@ interface CalendarPerformanceHook {
   memoizedStatusColor: (status: string) => string
   throttle: <T extends (...args: any[]) => any>(func: T, limit: number) => T
   clearCache: () => void
+  // Enhanced monitoring capabilities
+  enhancedMetrics: CalendarPerformanceMetrics
+  events: CalendarEvent[]
+  alerts: PerformanceAlert[]
+  analytics: CalendarAnalytics
+  measureLoad: () => () => void
+  measureApiCall: (endpoint: string) => () => void
+  recordConflictResolution: (duration: number) => void
+  recordUserInteraction: (interaction: string, latency: number) => void
+  recordError: (error: Error, context?: Record<string, any>) => void
+  updateDataFreshness: (freshness: number) => void
+  resolveAlert: (alertId: string) => void
+  clearAlerts: () => void
+  exportMetrics: () => string
+  isMonitoring: boolean
+  startMonitoring: () => void
+  stopMonitoring: () => void
 }
 
 export function useCalendarPerformance(): CalendarPerformanceHook {
+  // Enhanced monitoring system
+  const monitor = getCalendarMonitor()
+  const [enhancedMetrics, setEnhancedMetrics] = useState<CalendarPerformanceMetrics>(monitor.getMetrics())
+  const [events, setEvents] = useState<CalendarEvent[]>(monitor.getEvents(20))
+  const [alerts, setAlerts] = useState<PerformanceAlert[]>(monitor.getAlerts())
+  const [analytics, setAnalytics] = useState<CalendarAnalytics>(monitor.getAnalytics())
+  const [isMonitoring, setIsMonitoring] = useState(false)
+  
+  // Original refs for backward compatibility
   const metricsRef = useRef<PerformanceMetrics | null>(null)
   const renderTimersRef = useRef<Map<string, number>>(new Map())
   const cacheRef = useRef<Map<string, any>>(new Map())
@@ -413,6 +446,97 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
     }
   }, [clearCache])
 
+  // Enhanced monitoring methods
+  const measureLoad = useCallback(() => {
+    return monitor.measureCalendarLoad()
+  }, [monitor])
+
+  const measureApiCall = useCallback((endpoint: string) => {
+    return monitor.measureApiCall(endpoint)
+  }, [monitor])
+
+  const recordConflictResolution = useCallback((duration: number) => {
+    monitor.recordConflictResolution(duration)
+  }, [monitor])
+
+  const recordUserInteraction = useCallback((interaction: string, latency: number) => {
+    monitor.recordUserInteraction(interaction, latency)
+  }, [monitor])
+
+  const recordError = useCallback((error: Error, context?: Record<string, any>) => {
+    monitor.recordError(error, context)
+  }, [monitor])
+
+  const updateDataFreshness = useCallback((freshness: number) => {
+    monitor.updateDataFreshness(freshness)
+  }, [monitor])
+
+  const resolveAlert = useCallback((alertId: string) => {
+    monitor.resolveAlert(alertId)
+  }, [monitor])
+
+  const clearAlerts = useCallback(() => {
+    monitor.clearAlerts()
+    setAlerts([])
+  }, [monitor])
+
+  const exportMetrics = useCallback(() => {
+    return monitor.exportMetrics()
+  }, [monitor])
+
+  const startMonitoring = useCallback(() => {
+    monitor.startMonitoring()
+    setIsMonitoring(true)
+  }, [monitor])
+
+  const stopMonitoring = useCallback(() => {
+    monitor.stopMonitoring()
+    setIsMonitoring(false)
+  }, [monitor])
+
+  // Enhanced monitoring event listeners
+  useEffect(() => {
+    const handleAlert = (alert: PerformanceAlert) => {
+      setAlerts(prev => [...prev, alert])
+    }
+
+    const handleEvent = (event: CalendarEvent) => {
+      setEvents(prev => [event, ...prev.slice(0, 19)])
+    }
+
+    const handleAlertResolved = (alert: PerformanceAlert) => {
+      setAlerts(prev => prev.map(a => a.id === alert.id ? alert : a))
+    }
+
+    monitor.on('alert', handleAlert)
+    monitor.on('event', handleEvent)
+    monitor.on('alertResolved', handleAlertResolved)
+
+    // Update enhanced metrics periodically
+    const interval = setInterval(() => {
+      setEnhancedMetrics(monitor.getMetrics())
+      setAnalytics(monitor.getAnalytics())
+    }, 5000)
+
+    intervalRefs.current.add(interval)
+
+    return () => {
+      monitor.off('alert', handleAlert)
+      monitor.off('event', handleEvent)
+      monitor.off('alertResolved', handleAlertResolved)
+      clearInterval(interval)
+      intervalRefs.current.delete(interval)
+    }
+  }, [monitor])
+
+  // Integrate cache metrics with enhanced monitoring
+  useEffect(() => {
+    const totalRequests = cacheHitsRef.current + cacheMissesRef.current
+    if (totalRequests > 0) {
+      monitor.updateCacheMetrics(cacheHitsRef.current, cacheMissesRef.current)
+    }
+  }, [monitor])
+
   return {
     measureRender,
     optimizedAppointmentFilter,
@@ -422,7 +546,24 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
     optimizedAppointmentsByDay,
     memoizedStatusColor,
     throttle,
-    clearCache
+    clearCache,
+    // Enhanced monitoring capabilities
+    enhancedMetrics,
+    events,
+    alerts,
+    analytics,
+    measureLoad,
+    measureApiCall,
+    recordConflictResolution,
+    recordUserInteraction,
+    recordError,
+    updateDataFreshness,
+    resolveAlert,
+    clearAlerts,
+    exportMetrics,
+    isMonitoring,
+    startMonitoring,
+    stopMonitoring
   }
 }
 

@@ -26,12 +26,10 @@ from utils.marketing_rate_limit import check_marketing_rate_limit
 
 router = APIRouter(prefix="/marketing/analytics", tags=["marketing-analytics"])
 
-
 class DateRangeRequest(BaseModel):
     """Request model for date range queries"""
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
-
 
 class MarketingOverviewResponse(BaseModel):
     """Response model for marketing overview"""
@@ -42,14 +40,12 @@ class MarketingOverviewResponse(BaseModel):
     integrations: Dict[str, Any]
     trends: Dict[str, Any]
 
-
 class CampaignPerformanceResponse(BaseModel):
     """Response model for campaign performance"""
     campaign_id: Optional[str]
     date_range: Dict[str, str]
     summary: Dict[str, Any]
     utm_breakdown: Dict[str, Any]
-
 
 def get_user_organization_id(user: User, db: Session) -> int:
     """Get the organization ID for the current user"""
@@ -64,7 +60,6 @@ def get_user_organization_id(user: User, db: Session) -> int:
         )
     
     return user_org.organization_id
-
 
 @router.get("/overview", response_model=MarketingOverviewResponse)
 @safe_endpoint
@@ -114,7 +109,6 @@ async def get_marketing_overview(
     
     return MarketingOverviewResponse(**overview_data)
 
-
 @router.get("/campaigns/{campaign_id}", response_model=CampaignPerformanceResponse)
 @safe_endpoint
 async def get_campaign_performance(
@@ -154,7 +148,6 @@ async def get_campaign_performance(
     
     return CampaignPerformanceResponse(**campaign_data)
 
-
 @router.get("/campaigns", response_model=List[Dict[str, Any]])
 @safe_endpoint
 async def get_all_campaigns_performance(
@@ -188,7 +181,6 @@ async def get_all_campaigns_performance(
     )
     
     return [all_campaigns_data]
-
 
 @router.get("/channels", response_model=List[Dict[str, Any]])
 @safe_endpoint
@@ -227,7 +219,6 @@ async def get_channel_performance(
     
     return overview_data.get("channels", [])
 
-
 @router.get("/funnel", response_model=Dict[str, Any])
 @safe_endpoint
 async def get_conversion_funnel(
@@ -265,7 +256,6 @@ async def get_conversion_funnel(
     
     return overview_data.get("funnel", {})
 
-
 @router.get("/integrations/health", response_model=Dict[str, Any])
 @safe_endpoint
 async def get_integration_health(
@@ -296,7 +286,6 @@ async def get_integration_health(
     )
     
     return overview_data.get("integrations", {})
-
 
 @router.get("/trends", response_model=Dict[str, Any])
 @safe_endpoint
@@ -334,7 +323,6 @@ async def get_performance_trends(
     )
     
     return overview_data.get("trends", {})
-
 
 @router.get("/export", response_model=Dict[str, Any])
 @safe_endpoint
@@ -381,7 +369,6 @@ async def export_marketing_data(
         "export_url": f"/api/v1/marketing/analytics/export/download?format={format}",
         "message": f"Marketing analytics data prepared for {format.upper()} export"
     }
-
 
 @router.get("/realtime", response_model=Dict[str, Any])
 @safe_endpoint

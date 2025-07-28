@@ -10,6 +10,7 @@ from utils.financial_rate_limit import (
     gift_certificate_create_limit, gift_certificate_validate_limit,
     stripe_connect_limit, payment_history_limit, payment_report_limit
 )
+from utils.unified_permissions import UnifiedPermissions
 
 logger = logging.getLogger(__name__)
 from utils.idempotency import idempotent_operation, get_current_user_id
@@ -195,7 +196,7 @@ def create_refund(
     db: Session = Depends(get_db)
 ):
     """Process a refund for a payment (admin/barber only)"""
-    if current_user.role not in ["admin", "barber"]:
+    if not UnifiedPermissions.can_process_payments(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to process refunds"
@@ -226,7 +227,7 @@ def create_refund(
                 "refund_amount": result["amount"],
                 "refund_reason": refund_data.reason,
                 "stripe_refund_id": result.get("stripe_refund_id", ""),
-                "initiated_by_role": current_user.role
+                "initiated_by_role": current_user.unified_role
             }
         )
         
@@ -323,12 +324,12 @@ def get_payment_history(
 ):
     """Get payment history with filtering and pagination"""
     # Non-admin users can only view their own payments or their barber's payments
-    if current_user.role == "user":
+    if current_user.unified_role == "client":
         user_id = current_user.id
         barber_id = None
-    elif current_user.role == "barber" and not user_id:
+    elif current_user.unified_role in ["barber", "individual_barber"] and not user_id:
         barber_id = current_user.id
-    elif current_user.role not in ["admin", "super_admin"]:
+    elif not UnifiedPermissions.can_manage_billing(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to view payment history"
@@ -361,14 +362,14 @@ def generate_payment_report(
     db: Session = Depends(get_db)
 ):
     """Generate comprehensive payment reports (admin/barber only)"""
-    if current_user.role not in ["admin", "barber", "super_admin"]:
+    if not UnifiedPermissions.can_process_payments(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to generate reports"
         )
     
     # Barbers can only generate reports for themselves
-    if current_user.role == "barber":
+    if current_user.unified_role in ["barber", "individual_barber"]:
         report_request.barber_id = current_user.id
     
     try:
@@ -400,7 +401,7 @@ def process_payout(
     db: Session = Depends(get_db)
 ):
     """Process payout for a barber with optional retail commissions (admin only)"""
-    if current_user.role not in ["admin", "super_admin"]:
+    if not UnifiedPermissions.can_manage_billing(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to process payouts"
@@ -432,7 +433,7 @@ def process_payout(
                 "include_retail": include_retail,
                 "service_amount": result.get("service_amount", 0),
                 "retail_amount": result.get("retail_amount", 0),
-                "initiated_by_role": current_user.role
+                "initiated_by_role": current_user.unified_role
             }
         )
         
@@ -459,7 +460,7 @@ def process_enhanced_payout(
     db: Session = Depends(get_db)
 ):
     """Process enhanced payout for a barber including retail commissions (admin only)"""
-    if current_user.role not in ["admin", "super_admin"]:
+    if not UnifiedPermissions.can_manage_billing(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to process payouts"
@@ -491,7 +492,7 @@ def list_gift_certificates(
     db: Session = Depends(get_db)
 ):
     """List gift certificates (admin only)"""
-    if current_user.role not in ["admin", "super_admin"]:
+    if not UnifiedPermissions.can_manage_billing(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to list gift certificates"
@@ -514,7 +515,7 @@ def create_stripe_connect_account(
     db: Session = Depends(get_db)
 ):
     """Create Stripe Connect account for barber onboarding"""
-    if current_user.role != "barber":
+    if current_user.unified_role not in ["barber", "individual_barber"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only barbers can create Stripe Connect accounts"
@@ -554,13 +555,13 @@ def get_payout_summary(
 ):
     """Get payout summary showing pending amounts from all sources"""
     # Check authorization - barbers can see their own, admins can see any
-    if current_user.role not in ["barber", "admin", "super_admin"]:
+    if not UnifiedPermissions.can_process_payments(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to view payout summary"
         )
     
-    barber_id = current_user.id if current_user.role == "barber" else None
+    barber_id = current_user.id if current_user.unified_role in ["barber", "individual_barber"] else None
     
     try:
         # Get service payment summary
@@ -665,9 +666,9 @@ def get_payout_history(
 ):
     """Get payout history with optional date filtering"""
     # Check authorization
-    if current_user.role == "barber":
+    if current_user.unified_role in ["barber", "individual_barber"]:
         barber_id = current_user.id
-    elif current_user.role in ["admin", "super_admin"]:
+    elif UnifiedPermissions.can_manage_billing(current_user):
         barber_id = None  # Admins can see all
     else:
         raise HTTPException(

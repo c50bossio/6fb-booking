@@ -26,7 +26,6 @@ from routers.auth import get_current_user
 
 router = APIRouter(prefix="/organizations", tags=["organizations"])
 
-
 # Organization CRUD Operations
 
 @router.post("/", response_model=OrganizationResponse, status_code=status.HTTP_201_CREATED)
@@ -94,7 +93,6 @@ def create_organization(
     
     return db_organization
 
-
 @router.get("/", response_model=List[OrganizationResponse])
 def list_organizations(
     skip: int = Query(0, ge=0),
@@ -130,7 +128,6 @@ def list_organizations(
     
     organizations = query.offset(skip).limit(limit).all()
     return organizations
-
 
 @router.get("/{organization_id}", response_model=OrganizationWithUsers)
 def get_organization(
@@ -171,7 +168,6 @@ def get_organization(
     organization.enabled_features = organization.enabled_features
     
     return organization
-
 
 @router.put("/{organization_id}", response_model=OrganizationResponse)
 def update_organization(
@@ -217,7 +213,6 @@ def update_organization(
     
     return organization
 
-
 @router.delete("/{organization_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_organization(
     organization_id: int,
@@ -253,7 +248,6 @@ def delete_organization(
     organization.is_active = False
     organization.updated_at = datetime.utcnow()
     db.commit()
-
 
 # User-Organization Relationship Management
 
@@ -320,7 +314,6 @@ def add_user_to_organization(
     
     return new_user_org
 
-
 @router.get("/{organization_id}/users", response_model=List[UserOrganizationResponse])
 def list_organization_users(
     organization_id: int,
@@ -349,7 +342,6 @@ def list_organization_users(
     ).filter(UserOrganization.organization_id == organization_id).all()
     
     return user_orgs
-
 
 @router.put("/{organization_id}/users/{user_id}", response_model=UserOrganizationResponse)
 def update_user_organization(
@@ -403,7 +395,6 @@ def update_user_organization(
     
     return user_org
 
-
 @router.delete("/{organization_id}/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_user_from_organization(
     organization_id: int,
@@ -443,7 +434,6 @@ def remove_user_from_organization(
     
     db.delete(user_org)
     db.commit()
-
 
 # Landing Page Settings Endpoints
 
@@ -499,7 +489,6 @@ def get_current_organization_landing_settings(
     
     return LandingPageConfig(**config_data)
 
-
 @router.put("/current/landing-page-settings", response_model=LandingPageConfig)
 def update_current_organization_landing_settings(
     settings: LandingPageConfig,
@@ -546,7 +535,6 @@ def update_current_organization_landing_settings(
     db.refresh(organization)
     
     return settings
-
 
 # Organization Statistics and Analytics
 
@@ -630,7 +618,6 @@ def get_organization_stats(
     
     return stats
 
-
 @router.get("/billing-plans/features", response_model=dict)
 def get_billing_plan_features():
     """
@@ -677,7 +664,6 @@ def get_billing_plan_features():
         ).dict()
     }
 
-
 # User's Organizations
 
 @router.get("/my/organizations", response_model=UserWithOrganizations)
@@ -706,7 +692,6 @@ def get_my_organizations(
         "organizations": user_orgs,
         "primary_organization": current_user.primary_organization
     }
-
 
 @router.get("/{organization_id}/trial-status")
 def get_organization_trial_status(

@@ -2,7 +2,7 @@
 Pydantic schemas for product and e-commerce functionality.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from decimal import Decimal
@@ -12,7 +12,6 @@ from utils.validators import (
     currency_validator,
     financial_amount_validator
 )
-
 
 class ProductBase(BaseModel):
     """Base product schema"""
@@ -25,26 +24,22 @@ class ProductBase(BaseModel):
     compare_at_price: Optional[Decimal] = Field(None, ge=0)
     cost_per_item: Optional[Decimal] = Field(None, ge=0)
     
-    _validate_price = validator('price', allow_reuse=True)(financial_amount_validator)
-    _validate_compare_at_price = validator('compare_at_price', allow_reuse=True)(financial_amount_validator)
-    _validate_cost_per_item = validator('cost_per_item', allow_reuse=True)(financial_amount_validator)
     sku: Optional[str] = None
     published: bool = True
     requires_shipping: bool = True
     taxable: bool = True
     commission_rate: Decimal = Field(default=Decimal("0.0000"), ge=0, le=1)
     
-    @validator('compare_at_price')
+    @field_validator('compare_at_price')
+    @classmethod
     def validate_compare_at_price(cls, v, values):
         if v is not None and 'price' in values and v <= values['price']:
             raise ValueError('Compare at price must be greater than price')
         return v
 
-
 class ProductCreate(ProductBase):
     """Schema for creating a product"""
     location_id: Optional[int] = None
-
 
 class ProductUpdate(BaseModel):
     """Schema for updating a product"""
@@ -57,9 +52,6 @@ class ProductUpdate(BaseModel):
     compare_at_price: Optional[Decimal] = Field(None, ge=0)
     cost_per_item: Optional[Decimal] = Field(None, ge=0)
     
-    _validate_price = validator('price', allow_reuse=True)(financial_amount_validator)
-    _validate_compare_at_price = validator('compare_at_price', allow_reuse=True)(financial_amount_validator)
-    _validate_cost_per_item = validator('cost_per_item', allow_reuse=True)(financial_amount_validator)
     sku: Optional[str] = None
     status: Optional[ProductStatus] = None
     published: Optional[bool] = None
@@ -67,7 +59,6 @@ class ProductUpdate(BaseModel):
     taxable: Optional[bool] = None
     commission_rate: Optional[Decimal] = Field(None, ge=0, le=1)
     location_id: Optional[int] = None
-
 
 class ProductVariantBase(BaseModel):
     """Base product variant schema"""
@@ -78,11 +69,7 @@ class ProductVariantBase(BaseModel):
     price: Decimal = Field(..., ge=0)
     compare_at_price: Optional[Decimal] = Field(None, ge=0)
     cost_per_item: Optional[Decimal] = Field(None, ge=0)
-    
-    _validate_price = validator('price', allow_reuse=True)(financial_amount_validator)
-    _validate_compare_at_price = validator('compare_at_price', allow_reuse=True)(financial_amount_validator)
-    _validate_cost_per_item = validator('cost_per_item', allow_reuse=True)(financial_amount_validator)
-    
+
     sku: Optional[str] = None
     weight: Optional[Decimal] = Field(None, ge=0)
     weight_unit: str = "g"
@@ -92,11 +79,9 @@ class ProductVariantBase(BaseModel):
     available: bool = True
     barcode: Optional[str] = None
 
-
 class ProductVariantCreate(ProductVariantBase):
     """Schema for creating a product variant"""
     product_id: int
-
 
 class ProductVariantUpdate(BaseModel):
     """Schema for updating a product variant"""
@@ -107,11 +92,7 @@ class ProductVariantUpdate(BaseModel):
     price: Optional[Decimal] = Field(None, ge=0)
     compare_at_price: Optional[Decimal] = Field(None, ge=0)
     cost_per_item: Optional[Decimal] = Field(None, ge=0)
-    
-    _validate_price = validator('price', allow_reuse=True)(financial_amount_validator)
-    _validate_compare_at_price = validator('compare_at_price', allow_reuse=True)(financial_amount_validator)
-    _validate_cost_per_item = validator('cost_per_item', allow_reuse=True)(financial_amount_validator)
-    
+
     sku: Optional[str] = None
     weight: Optional[Decimal] = Field(None, ge=0)
     weight_unit: Optional[str] = None
@@ -120,7 +101,6 @@ class ProductVariantUpdate(BaseModel):
     inventory_quantity: Optional[int] = Field(None, ge=0)
     available: Optional[bool] = None
     barcode: Optional[str] = None
-
 
 class ProductVariantResponse(ProductVariantBase):
     """Schema for product variant response"""
@@ -131,9 +111,9 @@ class ProductVariantResponse(ProductVariantBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class ProductResponse(ProductBase):
     """Schema for product response"""
@@ -150,9 +130,9 @@ class ProductResponse(ProductBase):
     updated_at: datetime
     variants: List[ProductVariantResponse] = Field(default_factory=list)
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class InventoryItemBase(BaseModel):
     """Base inventory item schema"""
@@ -164,17 +144,13 @@ class InventoryItemBase(BaseModel):
     cost_per_item: Optional[Decimal] = Field(None, ge=0)
     currency: str = "USD"
     
-    _validate_cost_per_item = validator('cost_per_item', allow_reuse=True)(financial_amount_validator)
-    _validate_currency = validator('currency', allow_reuse=True)(currency_validator)
     track_inventory: bool = True
     allow_oversell: bool = False
-
 
 class InventoryItemCreate(InventoryItemBase):
     """Schema for creating inventory item"""
     product_id: int
     location_id: int
-
 
 class InventoryItemUpdate(BaseModel):
     """Schema for updating inventory item"""
@@ -186,11 +162,8 @@ class InventoryItemUpdate(BaseModel):
     cost_per_item: Optional[Decimal] = Field(None, ge=0)
     currency: Optional[str] = None
     
-    _validate_cost_per_item = validator('cost_per_item', allow_reuse=True)(financial_amount_validator)
-    _validate_currency = validator('currency', allow_reuse=True)(currency_validator)
     track_inventory: Optional[bool] = None
     allow_oversell: Optional[bool] = None
-
 
 class InventoryItemResponse(InventoryItemBase):
     """Schema for inventory item response"""
@@ -206,9 +179,9 @@ class InventoryItemResponse(InventoryItemBase):
     quantity_on_hand: int
     needs_reorder: bool
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class OrderItemBase(BaseModel):
     """Base order item schema"""
@@ -219,19 +192,15 @@ class OrderItemBase(BaseModel):
     quantity: int = Field(..., gt=0)
     total_discount: Decimal = Field(default=Decimal("0.00"), ge=0)
     
-    _validate_price = validator('price', allow_reuse=True)(financial_amount_validator)
-    _validate_total_discount = validator('total_discount', allow_reuse=True)(financial_amount_validator)
     commission_rate: Decimal = Field(default=Decimal("0.0000"), ge=0, le=1)
     weight: Optional[Decimal] = Field(None, ge=0)
     requires_shipping: bool = True
     taxable: bool = True
 
-
 class OrderItemCreate(OrderItemBase):
     """Schema for creating order item"""
     product_id: int
     variant_id: Optional[int] = None
-
 
 class OrderItemResponse(OrderItemBase):
     """Schema for order item response"""
@@ -248,9 +217,9 @@ class OrderItemResponse(OrderItemBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class OrderBase(BaseModel):
     """Base order schema"""
@@ -264,26 +233,18 @@ class OrderBase(BaseModel):
     total_amount: Decimal = Field(..., ge=0)
     currency: str = "USD"
     
-    _validate_subtotal = validator('subtotal', allow_reuse=True)(financial_amount_validator)
-    _validate_tax_amount = validator('tax_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_shipping_amount = validator('shipping_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_discount_amount = validator('discount_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_total_amount = validator('total_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_currency = validator('currency', allow_reuse=True)(currency_validator)
     shipping_address: Optional[Dict[str, Any]] = None
     billing_address: Optional[Dict[str, Any]] = None
     shipping_method: Optional[str] = None
     notes: Optional[str] = None
     tags: List[str] = Field(default_factory=list)
 
-
 class OrderCreate(OrderBase):
     """Schema for creating order"""
     customer_id: Optional[int] = None
     location_id: Optional[int] = None
     commission_barber_id: Optional[int] = None
-    order_items: List[OrderItemCreate] = Field(..., min_items=1)
-
+    order_items: List[OrderItemCreate] = Field(..., min_length=1)
 
 class OrderUpdate(BaseModel):
     """Schema for updating order"""
@@ -295,7 +256,6 @@ class OrderUpdate(BaseModel):
     commission_barber_id: Optional[int] = None
     notes: Optional[str] = None
     tags: Optional[List[str]] = None
-
 
 class OrderResponse(OrderBase):
     """Schema for order response"""
@@ -320,9 +280,9 @@ class OrderResponse(OrderBase):
     updated_at: datetime
     order_items: List[OrderItemResponse] = Field(default_factory=list)
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class POSTransactionBase(BaseModel):
     """Base POS transaction schema"""
@@ -335,16 +295,10 @@ class POSTransactionBase(BaseModel):
     tip_amount: Decimal = Field(default=Decimal("0.00"), ge=0)
     total_amount: Decimal = Field(..., ge=0)
     
-    _validate_subtotal = validator('subtotal', allow_reuse=True)(financial_amount_validator)
-    _validate_tax_amount = validator('tax_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_discount_amount = validator('discount_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_tip_amount = validator('tip_amount', allow_reuse=True)(financial_amount_validator)
-    _validate_total_amount = validator('total_amount', allow_reuse=True)(financial_amount_validator)
     payment_method: str = Field(..., min_length=1)
     payment_reference: Optional[str] = None
     commission_rate: Decimal = Field(..., ge=0, le=1)
     notes: Optional[str] = None
-
 
 class POSTransactionCreate(POSTransactionBase):
     """Schema for creating POS transaction"""
@@ -352,7 +306,6 @@ class POSTransactionCreate(POSTransactionBase):
     barber_id: int
     cashier_id: Optional[int] = None
     customer_id: Optional[int] = None
-
 
 class POSTransactionResponse(POSTransactionBase):
     """Schema for POS transaction response"""
@@ -370,15 +323,14 @@ class POSTransactionResponse(POSTransactionBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+)
 
 class ShopifyOAuthRequest(BaseModel):
     """Schema for Shopify OAuth initiation"""
     shop_domain: str = Field(..., min_length=1, pattern=r'^[a-zA-Z0-9\-]+\.myshopify\.com$')
     redirect_uri: Optional[str] = None
-
 
 class ShopifyCallbackRequest(BaseModel):
     """Schema for Shopify OAuth callback"""
@@ -386,12 +338,10 @@ class ShopifyCallbackRequest(BaseModel):
     shop: str = Field(..., min_length=1)
     state: str = Field(..., min_length=1)
 
-
 class ShopifyProductSyncRequest(BaseModel):
     """Schema for Shopify product sync request"""
     limit: int = Field(default=50, ge=1, le=250)
     since_id: Optional[int] = None
-
 
 class ShopifyProductSyncResponse(BaseModel):
     """Schema for Shopify product sync response"""
@@ -401,12 +351,10 @@ class ShopifyProductSyncResponse(BaseModel):
     errors: List[str] = Field(default_factory=list)
     status: str
 
-
 class ShopifyWebhookRequest(BaseModel):
     """Schema for Shopify webhook requests"""
     topic: str = Field(..., min_length=1)
-    data: Dict[str, Any] = Field(..., min_items=1)
-
+    data: Dict[str, Any] = Field(..., min_length=1)
 
 class ProductCatalogFilter(BaseModel):
     """Schema for filtering product catalog"""
@@ -420,11 +368,8 @@ class ProductCatalogFilter(BaseModel):
     min_price: Optional[Decimal] = Field(None, ge=0)
     max_price: Optional[Decimal] = Field(None, ge=0)
     
-    _validate_min_price = validator('min_price', allow_reuse=True)(financial_amount_validator)
-    _validate_max_price = validator('max_price', allow_reuse=True)(financial_amount_validator)
     limit: int = Field(default=50, ge=1, le=100)
     offset: int = Field(default=0, ge=0)
-
 
 class ProductCatalogResponse(BaseModel):
     """Schema for product catalog response"""
@@ -433,7 +378,6 @@ class ProductCatalogResponse(BaseModel):
     limit: int
     offset: int
     has_more: bool
-
 
 class InventoryReport(BaseModel):
     """Schema for inventory reporting"""
@@ -445,7 +389,6 @@ class InventoryReport(BaseModel):
     total_variants: int
     total_value: Decimal
     last_updated: datetime
-
 
 class SalesReport(BaseModel):
     """Schema for sales reporting"""

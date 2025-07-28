@@ -49,6 +49,8 @@
     "lighthouse:ci": "npx lhci autorun",
     "lighthouse:calendar": "npx lighthouse http://localhost:3000/calendar --output-path=./lighthouse-calendar.html",
     "bundle:stats": "npx webpack-bundle-analyzer .next/analyze/client.json",
+    "bundle:monitor": "node scripts/bundle-monitor.js",
+    "bundle:check": "npm run build && npm run bundle:monitor",
     "performance:test": "node scripts/performance-test.js",
     "performance:quick": "npm run build && npm run lighthouse:calendar",
     "accessibility:test": "node scripts/accessibility-test.js",
@@ -68,8 +70,6 @@
     "npm": ">=9.0.0"
   },
   "dependencies": {
-    "@builder.io/react": "^8.2.5",
-    "@builder.io/sdk": "^6.1.1",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -97,7 +97,6 @@
     "chart.js": "^4.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "critters": "^0.0.23",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "framer-motion": "^12.23.9",

@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, ConfigDict, field_validator
 
 from db import get_db
 from models.integration import Integration, IntegrationType
@@ -53,9 +53,9 @@ class UserDataModel(BaseModel):
     fbc: Optional[str] = Field(None, alias="fbc")  # Facebook click ID
     fbp: Optional[str] = Field(None, alias="fbp")  # Facebook browser ID
 
-    class Config:
+    model_config = ConfigDict(
         allow_population_by_field_name = True
-
+)
 class CustomDataModel(BaseModel):
     """Custom data for Meta conversion events"""
     currency: Optional[str] = "USD"
@@ -90,7 +90,7 @@ class ConversionEventModel(BaseModel):
     action_source: str = Field(default="website", description="Source of the action")
     test_event_code: Optional[str] = Field(None, description="Test event code for debugging")
 
-    @validator('event_time', pre=True)
+    @field_validator('event_time', mode='before')
     def parse_event_time(cls, v):
         if isinstance(v, str):
             try:
@@ -103,7 +103,7 @@ class ConversionEventModel(BaseModel):
 
 class BatchConversionEventsModel(BaseModel):
     """Batch of conversion events"""
-    events: List[ConversionEventModel] = Field(..., max_items=1000)
+    events: List[ConversionEventModel] = Field(..., max_length=1000)
     test_event_code: Optional[str] = Field(None, description="Test event code for all events")
 
 class ConversionEventResponse(BaseModel):

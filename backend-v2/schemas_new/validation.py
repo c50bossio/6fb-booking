@@ -3,7 +3,7 @@ Pydantic schemas for secure input validation across endpoints.
 These schemas enforce strict validation rules to prevent injection attacks.
 """
 
-from pydantic import BaseModel, validator, EmailStr, constr, conint, condecimal
+from pydantic import BaseModel, Field, field_validator, EmailStr, constr, conint, condecimal
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date, time
 from decimal import Decimal
@@ -21,7 +21,8 @@ class FileUploadRequest(BaseModel):
     filename: constr(min_length=1, max_length=255)
     content_type: constr(pattern=r'^[a-zA-Z0-9\-/]+$')
     
-    @validator('filename')
+    @field_validator('filename')
+    @classmethod
     def validate_filename(cls, v):
         # Remove path components
         import os
@@ -38,7 +39,8 @@ class AppointmentCreateRequest(BaseModel):
     recurring: bool = False
     recurring_weeks: Optional[conint(ge=1, le=52)] = None
     
-    @validator('start_time')
+    @field_validator('start_time')
+    @classmethod
     def validate_start_time(cls, v):
         # Must be in the future
         if v <= datetime.now():
@@ -48,7 +50,8 @@ class AppointmentCreateRequest(BaseModel):
             raise ValueError('Appointment cannot be more than 1 year in advance')
         return v
     
-    @validator('end_time')
+    @field_validator('end_time')
+    @classmethod
     def validate_end_time(cls, v, values):
         if v and 'start_time' in values:
             if v <= values['start_time']:
@@ -64,7 +67,8 @@ class AppointmentRescheduleRequest(BaseModel):
     new_end_time: Optional[datetime] = None
     reason: Optional[SafeTextStr] = None
     
-    @validator('new_start_time')
+    @field_validator('new_start_time')
+    @classmethod
     def validate_new_start_time(cls, v):
         if v <= datetime.now():
             raise ValueError('New appointment time must be in the future')
@@ -81,7 +85,8 @@ class GuestBookingRequest(BaseModel):
     notes: Optional[SafeTextStr] = None
     captcha_token: Optional[str] = None
     
-    @validator('phone')
+    @field_validator('phone')
+    @classmethod
     def clean_phone(cls, v):
         import re
         return re.sub(r'[\s\-\(\)]+', '', v)
@@ -102,7 +107,8 @@ class RefundRequest(BaseModel):
     amount: Optional[condecimal(gt=0, max_digits=8, decimal_places=2)]
     reason: constr(min_length=1, max_length=500)
     
-    @validator('amount')
+    @field_validator('amount')
+    @classmethod
     def validate_amount(cls, v):
         if v and v > Decimal('10000'):
             raise ValueError('Refund amount cannot exceed $10,000')
@@ -129,7 +135,8 @@ class ServiceCreateRequest(BaseModel):
     is_active: bool = True
     max_advance_booking_days: Optional[conint(ge=1, le=365)] = 90
     
-    @validator('name')
+    @field_validator('name')
+    @classmethod
     def validate_name(cls, v):
         # Basic alphanumeric with some special chars
         import re
@@ -153,7 +160,8 @@ class BusinessRegistrationRequest(BaseModel):
     timezone: constr(max_length=50)
     business_hours: Optional[Dict[str, Any]] = None
     
-    @validator('business_hours')
+    @field_validator('business_hours')
+    @classmethod
     def validate_business_hours(cls, v):
         if v:
             valid_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
@@ -173,13 +181,15 @@ class ExportRequest(BaseModel):
     filters: Optional[Dict[str, Any]] = None
     fields: Optional[List[constr(max_length=50)]] = None
     
-    @validator('fields')
+    @field_validator('fields')
+    @classmethod
     def validate_fields(cls, v):
         if v and len(v) > 50:
             raise ValueError('Cannot export more than 50 fields')
         return v
     
-    @validator('filters')
+    @field_validator('filters')
+    @classmethod
     def validate_filters(cls, v):
         if v and len(v) > 10:
             raise ValueError('Too many filters specified')
@@ -194,7 +204,8 @@ class DateTimeFilter(BaseModel):
     end_time: Optional[time] = None
     timezone: Optional[constr(max_length=50)] = 'UTC'
     
-    @validator('end_date')
+    @field_validator('end_date')
+    @classmethod
     def validate_date_range(cls, v, values):
         if v and 'start_date' in values and values['start_date']:
             if v < values['start_date']:
@@ -213,7 +224,8 @@ class ListFilterRequest(BaseModel):
     sort_order: Optional[constr(pattern=r'^(asc|desc)$')] = 'asc'
     search: Optional[constr(max_length=100)] = None
     
-    @validator('search')
+    @field_validator('search')
+    @classmethod
     def sanitize_search(cls, v):
         if v:
             # Remove potential SQL injection characters
@@ -241,7 +253,8 @@ class IntegrationConfigRequest(BaseModel):
     provider: constr(pattern=r'^[a-z_]+$', max_length=50)
     config: Dict[str, Any]
     
-    @validator('config')
+    @field_validator('config')
+    @classmethod
     def validate_config_size(cls, v):
         import json
         if len(json.dumps(v)) > 10000:
@@ -256,14 +269,16 @@ class WebhookPayloadValidator(BaseModel):
     event_type: constr(max_length=100)
     data: Dict[str, Any]
     
-    @validator('data')
+    @field_validator('data')
+    @classmethod
     def validate_data_size(cls, v):
         import json
         if len(json.dumps(v)) > 100000:  # 100KB max
             raise ValueError('Webhook payload too large')
         return v
     
-    @validator('timestamp')
+    @field_validator('timestamp')
+    @classmethod
     def validate_timestamp(cls, v):
         # Webhook must be recent (within 5 minutes)
         if abs((datetime.now() - v).total_seconds()) > 300:

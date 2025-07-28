@@ -25,7 +25,6 @@ from utils.logging_config import setup_logger
 router = APIRouter(prefix="/api/v1/appointments", tags=["appointments-enhanced"])
 logger = setup_logger(__name__)
 
-
 @router.post("/", response_model=dict)
 async def create_appointment_with_validation(
     appointment_data: EnhancedAppointmentCreate,
@@ -151,7 +150,6 @@ async def create_appointment_with_validation(
             detail="An error occurred while creating the appointment"
         )
 
-
 @router.put("/{appointment_id}", response_model=dict)
 async def update_appointment_with_validation(
     appointment_id: int,
@@ -274,7 +272,6 @@ async def update_appointment_with_validation(
             detail="An error occurred while updating the appointment"
         )
 
-
 @router.post("/validate", response_model=dict)
 async def validate_appointment_data(
     appointment_data: EnhancedAppointmentCreate,
@@ -334,7 +331,6 @@ async def validate_appointment_data(
             "errors": ["Unable to validate appointment data"]
         }
 
-
 @router.post("/check-availability", response_model=dict)
 async def check_bulk_availability(
     availability_request: BulkAvailabilityCheck,
@@ -377,7 +373,6 @@ async def check_bulk_availability(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to check availability"
         )
-
 
 # Include this router in your main.py:
 # app.include_router(appointments_enhanced.router)

@@ -19,7 +19,7 @@ from database.read_replica_config import (
     DatabaseManager
 )
 from utils.auth import get_current_user
-from models.user import User
+from models import User
 
 logger = logging.getLogger(__name__)
 

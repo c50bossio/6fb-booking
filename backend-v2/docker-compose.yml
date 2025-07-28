@@ -98,8 +98,8 @@ services:
       # External Services
       STRIPE_PUBLISHABLE_KEY: pk_test_your_stripe_key_here
       STRIPE_SECRET_KEY: sk_test_your_stripe_secret_here
-      GOOGLE_CLIENT_ID: your_google_client_id.apps.googleusercontent.com
-      GOOGLE_CLIENT_SECRET: your_google_client_secret
+      GOOGLE_CLIENT_ID: "228809237848-sq1k9emir4899il4lpq3lv8og43euh9s.apps.googleusercontent.com"
+      GOOGLE_CLIENT_SECRET: "AIzaSyB-qsR9M-VaIP5kBP8fVAG4GyZTB9yc0jc"
       
       # Email & SMS (Optional for development)
       SENDGRID_API_KEY: ""
@@ -177,7 +177,7 @@ services:
       
       # External Services (Frontend Safe Keys Only)
       NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_your_stripe_key_here
-      NEXT_PUBLIC_GOOGLE_CLIENT_ID: your_google_client_id.apps.googleusercontent.com
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: "228809237848-sq1k9emir4899il4lpq3lv8og43euh9s.apps.googleusercontent.com"
       NEXT_PUBLIC_GA_TRACKING_ID: G-YOUR_GA4_MEASUREMENT_ID
       NEXT_PUBLIC_GTM_ID: GTM-YOUR_CONTAINER_ID
       NEXT_PUBLIC_META_PIXEL_ID: your_meta_pixel_id

@@ -13,7 +13,6 @@ from services.cache_invalidation import cache_invalidator
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
-
 @router.post("/", response_model=ClientSchema)
 async def create_client(
     client_data: ClientCreate,
@@ -48,7 +47,6 @@ async def create_client(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
-
 
 @router.get("/", response_model=ClientList)
 async def list_clients(
@@ -106,7 +104,6 @@ async def list_clients(
             detail="Failed to retrieve clients"
         )
 
-
 @router.get("/{client_id}", response_model=ClientSchema)
 async def get_client(
     client_id: int,
@@ -121,7 +118,6 @@ async def get_client(
             detail="Client not found"
         )
     return client
-
 
 @router.put("/{client_id}", response_model=ClientSchema)
 async def update_client(
@@ -157,7 +153,6 @@ async def update_client(
     
     return client
 
-
 @router.delete("/{client_id}")
 async def delete_client(
     client_id: int,
@@ -188,7 +183,6 @@ async def delete_client(
     db.commit()
     
     return {"message": "Client deleted successfully"}
-
 
 @router.get("/{client_id}/history", response_model=ClientHistory)
 async def get_client_history(
@@ -230,7 +224,6 @@ async def get_client_history(
             detail=str(e)
         )
 
-
 @router.put("/{client_id}/customer-type")
 async def update_customer_type(
     client_id: int,
@@ -258,7 +251,6 @@ async def update_customer_type(
     db.commit()
     
     return {"message": f"Customer type updated to {customer_type}"}
-
 
 @router.post("/search")
 async def search_clients(
@@ -292,7 +284,6 @@ async def search_clients(
             detail=str(e)
         )
 
-
 @router.get("/{client_id}/analytics")
 async def get_client_analytics(
     client_id: int,
@@ -313,7 +304,6 @@ async def get_client_analytics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
-
 
 @router.get("/{client_id}/recommendations")
 async def get_client_recommendations(
@@ -336,7 +326,6 @@ async def get_client_recommendations(
             detail=str(e)
         )
 
-
 @router.get("/{client_id}/communication-preferences")
 async def get_client_communication_preferences(
     client_id: int,
@@ -357,7 +346,6 @@ async def get_client_communication_preferences(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
-
 
 @router.put("/{client_id}/communication-preferences")
 async def update_client_communication_preferences(
@@ -382,7 +370,6 @@ async def update_client_communication_preferences(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
-
 
 @router.post("/{client_id}/notes")
 async def add_client_note(
@@ -412,7 +399,6 @@ async def add_client_note(
             detail=str(e)
         )
 
-
 @router.put("/{client_id}/tags")
 async def update_client_tags(
     client_id: int,
@@ -437,7 +423,6 @@ async def update_client_tags(
             detail=str(e)
         )
 
-
 @router.get("/dashboard/metrics")
 async def get_client_dashboard_metrics(
     db: Session = Depends(get_db),
@@ -452,7 +437,6 @@ async def get_client_dashboard_metrics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
-
 
 @router.get("/advanced-search")
 async def advanced_client_search(

@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-
 @router.get("/", response_model=None)
 async def get_service_templates(
     category: Optional[str] = Query(None, description="Filter by service category"),
@@ -102,7 +101,6 @@ async def get_service_templates(
             detail="Failed to fetch service templates"
         )
 
-
 @router.get("/featured", response_model=List[ServiceTemplateResponse])
 async def get_featured_templates(
     limit: int = Query(6, ge=1, le=20, description="Number of featured templates to return"),
@@ -134,7 +132,6 @@ async def get_featured_templates(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch featured templates"
         )
-
 
 @router.get("/{template_id}", response_model=ServiceTemplateResponse)
 async def get_service_template(
@@ -171,7 +168,6 @@ async def get_service_template(
             detail="Failed to fetch service template"
         )
 
-
 @router.post("/apply", response_model=ServiceTemplateApplyResponse)
 async def apply_service_template(
     apply_request: ServiceTemplateApplyRequest,
@@ -205,7 +201,6 @@ async def apply_service_template(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to apply service template"
         )
-
 
 @router.get("/user/applied", response_model=List[dict])
 async def get_user_applied_templates(
@@ -256,7 +251,6 @@ async def get_user_applied_templates(
             detail="Failed to fetch applied templates"
         )
 
-
 @router.post("/populate-presets", response_model=dict)
 async def populate_six_fb_presets(
     current_user: User = Depends(get_current_user),
@@ -300,7 +294,6 @@ async def populate_six_fb_presets(
             detail="Failed to populate 6FB preset templates"
         )
 
-
 @router.post("/", response_model=ServiceTemplateResponse)
 async def create_service_template(
     template_data: ServiceTemplateCreate,
@@ -333,7 +326,6 @@ async def create_service_template(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create service template"
         )
-
 
 @router.get("/tiers/summary", response_model=dict)
 async def get_six_fb_tier_summary(

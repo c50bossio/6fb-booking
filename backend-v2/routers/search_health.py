@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v2/search", tags=["Search Health & Management"])
 security = HTTPBearer()
 
-
 @router.get("/health")
 async def search_system_health_check():
     """
@@ -109,7 +108,6 @@ async def search_system_health_check():
             "error": str(e)
         }
 
-
 @router.get("/capabilities")
 async def search_capabilities():
     """
@@ -179,7 +177,6 @@ async def search_capabilities():
             detail="Failed to retrieve search capabilities"
         )
 
-
 @router.get("/cache/statistics")
 async def get_cache_statistics(
     db: Session = Depends(get_db),
@@ -212,7 +209,6 @@ async def get_cache_statistics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve cache statistics"
         )
-
 
 @router.post("/cache/cleanup")
 async def trigger_cache_cleanup(
@@ -254,7 +250,6 @@ async def trigger_cache_cleanup(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Cache cleanup failed: {str(e)}"
         )
-
 
 @router.post("/cache/invalidate/{entity_type}/{entity_id}")
 async def invalidate_entity_cache(
@@ -307,7 +302,6 @@ async def invalidate_entity_cache(
             detail=f"Cache invalidation failed: {str(e)}"
         )
 
-
 @router.get("/scheduler/status")
 async def get_scheduler_status(
     current_user: User = Depends(get_current_user),
@@ -344,7 +338,6 @@ async def get_scheduler_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve scheduler status"
         )
-
 
 @router.get("/performance/metrics")
 async def get_performance_metrics(
@@ -424,7 +417,6 @@ async def get_performance_metrics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve performance metrics"
         )
-
 
 @router.get("/diagnostics")
 async def run_search_diagnostics(

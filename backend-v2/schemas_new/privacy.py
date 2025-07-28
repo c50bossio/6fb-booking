@@ -8,7 +8,6 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
 
-
 class ConsentType(str, Enum):
     """Types of consents that can be tracked"""
     TERMS_OF_SERVICE = "terms_of_service"
@@ -23,14 +22,12 @@ class ConsentType(str, Enum):
     PREDICTIVE_INSIGHTS = "predictive_insights"
     AI_COACHING = "ai_coaching"
 
-
 class ConsentStatus(str, Enum):
     """Status of user consent"""
     GRANTED = "granted"
     DENIED = "denied"
     PENDING = "pending"
     WITHDRAWN = "withdrawn"
-
 
 class ExportStatus(str, Enum):
     """Status of data export requests"""
@@ -40,13 +37,11 @@ class ExportStatus(str, Enum):
     FAILED = "failed"
     EXPIRED = "expired"
 
-
 class ExportFormat(str, Enum):
     """Available export formats"""
     JSON = "json"
     CSV = "csv"
     XML = "xml"
-
 
 class CookiePreferences(BaseModel):
     """Cookie consent preferences by category"""
@@ -63,12 +58,10 @@ class CookiePreferences(BaseModel):
             raise ValueError('Functional cookies cannot be disabled')
         return True
 
-
 class CookieConsentRequest(BaseModel):
     """Request to update cookie preferences"""
     preferences: CookiePreferences
     session_id: Optional[str] = Field(None, description="Session ID for anonymous tracking")
-
 
 class CookieConsentResponse(BaseModel):
     """Response with current cookie preferences"""
@@ -80,7 +73,6 @@ class CookieConsentResponse(BaseModel):
     expiry_date: datetime
     
     model_config = ConfigDict(from_attributes=True)
-
 
 class ConsentUpdate(BaseModel):
     """Request to update consent status"""
@@ -97,7 +89,6 @@ class ConsentUpdate(BaseModel):
             raise ValueError("Cannot explicitly set consent to pending status")
         return v
 
-
 class ConsentResponse(BaseModel):
     """Response with consent details"""
     id: int
@@ -112,12 +103,10 @@ class ConsentResponse(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 class BulkConsentUpdate(BaseModel):
     """Request to update multiple consents at once"""
     consents: List[ConsentUpdate]
     accept_all: Optional[bool] = Field(None, description="Accept all consents (overrides individual settings)")
-
 
 class DataExportRequest(BaseModel):
     """Request for user data export"""
@@ -127,7 +116,6 @@ class DataExportRequest(BaseModel):
         description="Specific data categories to include (None = all data)"
     )
     include_deleted: bool = Field(False, description="Include soft-deleted records")
-
 
 class DataExportResponse(BaseModel):
     """Response for data export request"""
@@ -143,7 +131,6 @@ class DataExportResponse(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 class DataExportStatusResponse(BaseModel):
     """Status check for data export request"""
     request_id: str
@@ -151,7 +138,6 @@ class DataExportStatusResponse(BaseModel):
     progress_percentage: Optional[int] = Field(None, ge=0, le=100)
     estimated_completion: Optional[datetime] = None
     error_message: Optional[str] = None
-
 
 class AccountDeletionRequest(BaseModel):
     """Request for account deletion"""
@@ -167,14 +153,12 @@ class AccountDeletionRequest(BaseModel):
             raise ValueError("Please type 'DELETE' to confirm account deletion")
         return v
 
-
 class AccountDeletionResponse(BaseModel):
     """Response for account deletion request"""
     success: bool
     message: str
     deletion_date: datetime
     data_retention_days: int = Field(30, description="Days before permanent deletion")
-
 
 class PrivacySettings(BaseModel):
     """User's current privacy settings and status"""
@@ -192,7 +176,6 @@ class PrivacySettings(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 class ConsentAuditEntry(BaseModel):
     """Audit log entry for consent changes"""
     id: int
@@ -208,14 +191,12 @@ class ConsentAuditEntry(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-
 class ConsentAuditLog(BaseModel):
     """List of consent audit entries"""
     entries: List[ConsentAuditEntry]
     total: int
     page: int = 1
     per_page: int = 50
-
 
 class DataProcessingActivity(BaseModel):
     """Record of data processing activity"""
@@ -229,7 +210,6 @@ class DataProcessingActivity(BaseModel):
     processing_date: datetime
     
     model_config = ConfigDict(from_attributes=True)
-
 
 class PrivacyComplianceReport(BaseModel):
     """Comprehensive privacy compliance report"""

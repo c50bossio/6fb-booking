@@ -195,10 +195,10 @@ class Settings(BaseSettings):
     health_check_path: str = "/health"
     health_check_timeout: int = 30
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
-        
+    model_config = ConfigDict(
+        env_file=".env",
+        case_sensitive=False
+    )
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
@@ -318,7 +318,7 @@ class Settings(BaseSettings):
             issues.append("Localhost should not be in allowed origins for production")
             
         return issues
-
+)
 # Create settings instance
 settings = Settings()
 

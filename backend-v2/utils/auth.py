@@ -10,17 +10,23 @@ from db import get_db
 from config import settings
 from models import User
 
-# Security settings
-SECRET_KEY = settings.secret_key
-ALGORITHM = "HS256"
+# SECURITY ENHANCEMENT: Import secure JWT management
+from utils.jwt_security import create_access_token, verify_token, get_key_manager
+
+# SECURITY FIX: Import cookie-based authentication
+from utils.cookie_auth import cookie_security
+
+# Security settings - legacy for backward compatibility
+SECRET_KEY = settings.secret_key  # Kept for non-JWT operations
+ALGORITHM = "RS256"  # SECURITY FIX: Use asymmetric algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Bearer token
-security = HTTPBearer()
+# SECURITY FIX: Use cookie-aware bearer token security  
+security = cookie_security
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash."""
@@ -30,30 +36,28 @@ def get_password_hash(password: str) -> str:
     """Hash a password."""
     return pwd_context.hash(password)
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """Create a JWT access token."""
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    
-    to_encode.update({"exp": expire, "type": "access"})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+def create_access_token_legacy(data: dict, expires_delta: Optional[timedelta] = None):
+    """DEPRECATED: Create a JWT access token using symmetric keys."""
+    # This function is kept for backward compatibility only
+    return create_access_token(data, expires_delta)
+
+# SECURITY FIX: Use secure asymmetric token creation
+# The create_access_token function is now imported from jwt_security module
 
 def create_refresh_token(data: dict):
-    """Create a JWT refresh token."""
+    """Create a JWT refresh token using secure asymmetric signing."""
+    expires_delta = timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    to_encode.update({"exp": expire, "type": "refresh"})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    to_encode.update({"type": "refresh"})
+    
+    # SECURITY FIX: Use secure asymmetric token creation
+    return create_access_token(to_encode, expires_delta)
 
 def decode_token(token: str):
-    """Decode and validate a JWT token."""
+    """Decode and validate a JWT token using secure asymmetric verification."""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # SECURITY FIX: Use secure asymmetric token verification
+        payload = verify_token(token)
         return payload
     except JWTError:
         raise HTTPException(

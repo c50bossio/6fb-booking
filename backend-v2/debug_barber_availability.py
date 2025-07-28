@@ -19,7 +19,7 @@ def check_barbers():
     logger.info("Checking barbers in system...")
     
     try:
-        from database import get_db
+        from db import get_db
         import models
         
         db = next(get_db())
@@ -46,7 +46,7 @@ def check_barber_availability():
     logger.info("Checking barber availability records...")
     
     try:
-        from database import get_db
+        from db import get_db
         import models
         
         db = next(get_db())
@@ -74,7 +74,7 @@ def create_default_barber_availability():
     logger.info("Creating default barber availability...")
     
     try:
-        from database import get_db
+        from db import get_db
         import models
         
         db = next(get_db())
@@ -146,7 +146,7 @@ def test_barber_availability_service():
     logger.info("Testing barber availability service...")
     
     try:
-        from database import get_db
+        from db import get_db
         from services import barber_availability_service
         from datetime import date, time
         

@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/locations", tags=["locations"])
 
-
 def organization_to_location(org: Organization) -> LocationResponse:
     """Convert Organization model to LocationResponse"""
     return LocationResponse(
@@ -44,7 +43,6 @@ def organization_to_location(org: Organization) -> LocationResponse:
         parent_organization_id=org.parent_organization_id,
         is_active=org.is_active
     )
-
 
 @router.get("/", response_model=LocationListResponse)
 async def get_locations(
@@ -119,7 +117,6 @@ async def get_locations(
             detail="Failed to retrieve locations"
         )
 
-
 @router.get("/{location_id}", response_model=LocationResponse)
 async def get_location(
     location_id: int,
@@ -170,7 +167,6 @@ async def get_location(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve location"
         )
-
 
 @router.post("/", response_model=LocationResponse)
 async def create_location(
@@ -273,7 +269,6 @@ async def create_location(
             detail="Failed to create location"
         )
 
-
 @router.put("/{location_id}", response_model=LocationResponse)
 async def update_location(
     location_id: int,
@@ -332,7 +327,6 @@ async def update_location(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update location"
         )
-
 
 @router.delete("/{location_id}")
 async def delete_location(
@@ -405,7 +399,6 @@ async def delete_location(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete location"
         )
-
 
 @router.get("/{location_id}/stats")
 async def get_location_stats(

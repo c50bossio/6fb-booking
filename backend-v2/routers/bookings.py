@@ -344,7 +344,6 @@ def get_next_available_slot(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/slots/barber/{barber_id}", response_model=schemas.SlotsResponse)
 def get_available_slots_for_barber(
     barber_id: int,
@@ -384,7 +383,6 @@ def get_available_slots_for_barber(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/slots/all-barbers", response_model=schemas.BarberAvailabilityByDateResponse)
 def get_available_slots_all_barbers(
     booking_date: date = Query(..., description="Date to check availability (YYYY-MM-DD)"),
@@ -420,7 +418,6 @@ def get_available_slots_all_barbers(
         return slots_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/enhanced", response_model=schemas.BookingResponse)
 def create_enhanced_booking(
@@ -577,7 +574,6 @@ def update_booking_settings(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 # Guest Booking Endpoints (No Authentication Required)
 @router.post("/guest", response_model=schemas.GuestBookingResponse)

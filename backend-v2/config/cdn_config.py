@@ -7,9 +7,9 @@ import os
 from typing import Dict, Any, Optional, List
 try:
     from pydantic_settings import BaseSettings
-    from pydantic import field_validator as validator
+    from pydantic import field_validator as validator, ConfigDict
 except ImportError:
-    from pydantic import BaseSettings, validator
+    from pydantic import BaseSettings, field_validator, ConfigDict
 from urllib.parse import urljoin
 
 
@@ -64,11 +64,11 @@ class CDNConfig(BaseSettings):
     pixel_versioning: bool = True
     pixel_minification: bool = True
     
-    class Config:
+    model_config = ConfigDict(
         env_prefix = "CDN_"
         case_sensitive = False
     
-    @validator('cdn_url')
+    @field_validator('cdn_url')
     def validate_cdn_url(cls, v, values):
         """Generate CDN URL based on provider."""
         if v:
@@ -218,7 +218,7 @@ location /static {{
     # Serve pre-compressed files if available
     gzip_static on;
 }}
-
+)
 location /tracking {{
     expires 1h;
     add_header Cache-Control "{self.cache_control_tracking}";

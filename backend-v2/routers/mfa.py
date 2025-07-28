@@ -39,7 +39,6 @@ import secrets
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/mfa", tags=["Multi-Factor Authentication"])
 
-
 @router.post("/setup", response_model=MFASetupResponse)
 async def setup_mfa(
     request: MFASetupRequest,
@@ -102,7 +101,6 @@ async def setup_mfa(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to setup MFA"
         )
-
 
 @router.post("/enable", response_model=MFAEnableResponse)
 async def enable_mfa(
@@ -173,7 +171,6 @@ async def enable_mfa(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to enable MFA"
         )
-
 
 @router.post("/verify", response_model=MFAVerificationResponse)
 async def verify_mfa(
@@ -289,7 +286,6 @@ async def verify_mfa(
             detail="Failed to verify MFA"
         )
 
-
 @router.post("/disable", response_model=MFADisableResponse)
 async def disable_mfa(
     request: MFADisableRequest,
@@ -351,7 +347,6 @@ async def disable_mfa(
             detail="Failed to disable MFA"
         )
 
-
 @router.get("/status", response_model=MFAStatusResponse)
 async def get_mfa_status(
     current_user: User = Depends(get_current_user),
@@ -406,7 +401,6 @@ async def get_mfa_status(
             detail="Failed to get MFA status"
         )
 
-
 @router.post("/backup-codes", response_model=BackupCodesResponse)
 async def regenerate_backup_codes(
     request: BackupCodesRequest,
@@ -459,7 +453,6 @@ async def regenerate_backup_codes(
             detail="Failed to regenerate backup codes"
         )
 
-
 @router.get("/trusted-devices", response_model=TrustedDevicesResponse)
 async def list_trusted_devices(
     current_user: User = Depends(get_current_user),
@@ -501,7 +494,6 @@ async def list_trusted_devices(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list trusted devices"
         )
-
 
 @router.delete("/trusted-devices/{device_id}")
 async def revoke_trusted_device(
@@ -558,7 +550,6 @@ async def revoke_trusted_device(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to revoke device trust"
         )
-
 
 @router.get("/events", response_model=MFAEventLogsResponse)
 async def get_mfa_events(
