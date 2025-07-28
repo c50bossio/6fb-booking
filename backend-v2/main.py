@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 # Import tracking models to register them with SQLAlchemy
-from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks, smart_insights, pwa, cache_performance, realtime_calendar, calendar_export
+from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks, smart_insights, pwa, cache_performance, realtime_calendar  # calendar_export temporarily disabled due to icalendar import issue
 
 # Import V2 webhook endpoints
 from api.v2.endpoints import google_calendar_webhook
@@ -517,7 +517,7 @@ app.include_router(search_health.router)  # Search health endpoints (includes /a
 
 # Real-time calendar WebSocket and API endpoints
 app.include_router(realtime_calendar.router)  # Real-time calendar updates (includes WebSocket and API endpoints)
-app.include_router(calendar_export.router)  # Calendar export and sync functionality (includes /api/v2 prefix in router definition)
+# app.include_router(calendar_export.router)  # Calendar export and sync functionality (temporarily disabled due to icalendar import issue)
 
 # DEPLOYMENT TEST ENDPOINT - Remove after deployment verification
 app.include_router(test_deployment_router, prefix="/api/v2")
