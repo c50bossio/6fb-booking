@@ -87,7 +87,7 @@ def set_auth_cookies(
         secure=secure,
         samesite="lax",
         max_age=7 * 24 * 60 * 60,  # 7 days to match token expiry
-        path="/auth"  # Restrict to auth endpoints only
+        path="/"  # Available to all paths including /api/v2/auth/
     )
     
     # Set CSRF token cookie if provided (readable by JS for header inclusion)
@@ -121,7 +121,7 @@ def clear_auth_cookies(response: Response) -> None:
     # Clear refresh token cookie
     response.delete_cookie(
         key=REFRESH_TOKEN_COOKIE,
-        path="/auth",
+        path="/",
         samesite="lax"
     )
     

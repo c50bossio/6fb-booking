@@ -238,17 +238,14 @@ class PWAServiceWorker {
     const { request } = event;
     const url = new URL(request.url);
     
-    // TEMPORARILY DISABLE SERVICE WORKER FOR DEBUGGING
-    // Just pass through all requests to fix calendar grid loading issues
-    return fetch(request);
-    
     // Skip cache for non-GET requests (except for offline fallback)
     if (request.method !== 'GET') {
-      if (navigator.onLine) {
-        return fetch(request);
-      } else {
-        return this.handleOfflineAction(request);
-      }
+      event.respondWith(
+        navigator.onLine 
+          ? fetch(request)
+          : this.handleOfflineAction(request)
+      );
+      return;
     }
     
     event.respondWith(this.getCachedResponse(request));

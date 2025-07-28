@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from utils.cookie_auth import cookie_security
 from sqlalchemy.orm import Session
 from datetime import timedelta
 import logging
@@ -222,15 +223,36 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
 @refresh_rate_limit
 async def refresh_token(
     request: Request,
-    refresh_request: schemas.RefreshTokenRequest,
+    refresh_request: schemas.RefreshTokenRequest = None,
     db: Session = Depends(get_db)
 ):
     """Refresh access token using refresh token with enhanced security logging."""
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("user-agent", "Unknown")
     
+    # Get refresh token from request body or cookie
+    from utils.cookie_auth import get_refresh_token_from_cookie
+    refresh_token = None
+    
+    if refresh_request and refresh_request.refresh_token:
+        refresh_token = refresh_request.refresh_token
+    else:
+        # Try to get from cookie
+        refresh_token = get_refresh_token_from_cookie(request)
+    
+    if not refresh_token:
+        audit_logger.log_auth_event(
+            "token_refresh_failed",
+            ip_address=client_ip,
+            details={"reason": "no_refresh_token_provided"}
+        )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No refresh token provided"
+        )
+    
     try:
-        user = verify_refresh_token(refresh_request.refresh_token, db)
+        user = verify_refresh_token(refresh_token, db)
         
         if not user:
             # Log failed refresh attempt
@@ -266,11 +288,25 @@ async def refresh_token(
             details={"token_rotated": True}
         )
         
-        return {
+        # Generate new CSRF token
+        from utils.cookie_auth import generate_csrf_token
+        csrf_token = generate_csrf_token()
+        
+        # Create response with tokens
+        response_data = {
             "access_token": access_token,
             "refresh_token": new_refresh_token,
-            "token_type": "bearer"
+            "token_type": "bearer",
+            "csrf_token": csrf_token
         }
+        
+        # Create JSON response and set cookies
+        from fastapi.responses import JSONResponse
+        from utils.cookie_auth import set_auth_cookies
+        response = JSONResponse(content=response_data)
+        set_auth_cookies(response, access_token, new_refresh_token, csrf_token)
+        
+        return response
         
     except HTTPException:
         raise
@@ -1070,7 +1106,7 @@ async def validate_password_endpoint(
 @router.post("/logout")
 async def logout(
     request: Request,
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+    credentials: HTTPAuthorizationCredentials = Depends(cookie_security),
     current_user: models.User = Depends(get_current_user)
 ):
     """Logout user by blacklisting their current token and clearing cookies."""
