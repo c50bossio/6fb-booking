@@ -450,6 +450,7 @@ const nextConfig = {
     buildActivityPosition: 'bottom-right',
   },
 
+
   // Enhanced error boundaries
   generateBuildId: async () => {
     // Always use timestamp to prevent caching issues
