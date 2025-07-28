@@ -69,6 +69,16 @@ EmailPreview = models_file.EmailPreview
 BlackoutDate = models_file.BlackoutDate
 RecurringAppointmentSeries = models_file.RecurringAppointmentSeries
 
+# Semantic Search Models
+EmbeddingCache = models_file.EmbeddingCache
+SearchAnalytics = models_file.SearchAnalytics
+SearchQuerySuggestions = models_file.SearchQuerySuggestions
+SemanticSearchConfiguration = models_file.SemanticSearchConfiguration
+
+# Timezone Models
+TimezoneCache = models_file.TimezoneCache
+TimezoneConversionLog = models_file.TimezoneConversionLog
+
 # Tables
 barber_services = models_file.barber_services
 service_package_items = models_file.service_package_items
@@ -103,6 +113,10 @@ from .mfa import (
 from .google_calendar_settings import (
     GoogleCalendarSettings, GoogleCalendarSyncLog
 )
+from .google_calendar_webhook import (
+    GoogleCalendarWebhookSubscription, GoogleCalendarWebhookNotification,
+    GoogleCalendarSyncEvent, GoogleCalendarConflictResolution
+)
 from .agent import (
     Agent, AgentInstance, AgentConversation, AgentMetrics, AgentSubscription, AgentTemplate,
     AgentType, AgentStatus, ConversationStatus, SubscriptionTier
@@ -123,6 +137,40 @@ from .six_fb_compliance import (
 # Guest Booking Models
 from .guest_booking import (
     GuestBooking, GuestBookingNotification
+)
+# Upselling Models
+from .upselling import (
+    UpsellAttempt, UpsellConversion, UpsellAnalytics, UpsellStatus, UpsellChannel
+)
+# Six Figure Barber Core Models
+from .six_figure_barber_core import (
+    SixFBRevenueMetrics, SixFBRevenueGoals, SixFBClientValueProfile, SixFBClientJourney,
+    SixFBServiceExcellenceMetrics, SixFBServiceStandards, SixFBEfficiencyMetrics,
+    SixFBOperationalExcellence, SixFBGrowthMetrics, SixFBProfessionalDevelopmentPlan,
+    SixFBMethodologyDashboard, SixFBPrinciple, RevenueMetricType
+)
+
+# Message Queue Models
+from .message_queue import (
+    MessageQueue, DeadLetterQueue, MessageStatus, MessageQueueType, 
+    MessagePriority, QueueMetrics, MessageTemplate
+)
+
+# Weekly Insights Models
+from .weekly_insights import (
+    WeeklyInsight, WeeklyRecommendation, InsightEmailDelivery, InsightTemplate,
+    RecommendationCategory, InsightMetric, WeeklyInsightArchive,
+    InsightCategory, RecommendationPriority, RecommendationStatus,
+    InsightStatus, EmailDeliveryStatus
+)
+
+# Gamification Models
+from .gamification import (
+    AchievementDefinition, UserAchievement, UserXPProfile, XPTransaction,
+    GamificationChallenge, ChallengeParticipation, Leaderboard, LeaderboardEntry,
+    GamificationNotification, GamificationAnalytics,
+    AchievementCategory, AchievementRarity, AchievementType, XPSource,
+    NotificationType, ChallengeType, LeaderboardType
 )
 
 # Location Models (import from separate file)
@@ -167,6 +215,10 @@ __all__ = [
     'NotificationPreferenceAudit', 'UnsubscribeRequest', 'NotificationChannel',
     'EmailAnalyticsEvent', 'EmailCampaign', 'EmailAnalyticsSummary', 'EmailABTest',
     'EmailDeliverabilityTest', 'EmailPreview', 'BlackoutDate', 'RecurringAppointmentSeries',
+    # Semantic Search Models
+    'EmbeddingCache', 'SearchAnalytics', 'SearchQuerySuggestions', 'SemanticSearchConfiguration',
+    # Timezone Models
+    'TimezoneCache', 'TimezoneConversionLog',
     # Tables
     'barber_services', 'service_package_items',
     # Aliases
@@ -188,6 +240,8 @@ __all__ = [
     'UserMFASecret', 'MFABackupCode', 'MFADeviceTrust', 'MFAEvent',
     # Google Calendar Models
     'GoogleCalendarSettings', 'GoogleCalendarSyncLog',
+    'GoogleCalendarWebhookSubscription', 'GoogleCalendarWebhookNotification',
+    'GoogleCalendarSyncEvent', 'GoogleCalendarConflictResolution',
     # AI Agent Models
     'Agent', 'AgentInstance', 'AgentConversation', 'AgentMetrics', 'AgentSubscription', 'AgentTemplate',
     'AgentType', 'AgentStatus', 'ConversationStatus', 'SubscriptionTier',
@@ -200,7 +254,25 @@ __all__ = [
     'SixFBBenchmark', 'SixFBComplianceHistory',
     # Guest Booking Models
     'GuestBooking', 'GuestBookingNotification',
+    # Upselling Models
+    'UpsellAttempt', 'UpsellConversion', 'UpsellAnalytics', 'UpsellStatus', 'UpsellChannel',
+    # Six Figure Barber Core Models
+    'SixFBRevenueMetrics', 'SixFBRevenueGoals', 'SixFBClientValueProfile', 'SixFBClientJourney',
+    'SixFBServiceExcellenceMetrics', 'SixFBServiceStandards', 'SixFBEfficiencyMetrics',
+    'SixFBOperationalExcellence', 'SixFBGrowthMetrics', 'SixFBProfessionalDevelopmentPlan',
+    'SixFBMethodologyDashboard', 'SixFBPrinciple', 'RevenueMetricType',
+    # Gamification Models
+    'AchievementDefinition', 'UserAchievement', 'UserXPProfile', 'XPTransaction',
+    'GamificationChallenge', 'ChallengeParticipation', 'Leaderboard', 'LeaderboardEntry',
+    'GamificationNotification', 'GamificationAnalytics',
+    'AchievementCategory', 'AchievementRarity', 'AchievementType', 'XPSource',
+    'NotificationType', 'ChallengeType', 'LeaderboardType',
     # Location Models
     'Location', 'BarbershopLocation', 'BarberLocation', 'ChairInventory', 'ChairAssignmentHistory',
-    'CompensationPlan', 'CompensationModel', 'LocationStatus', 'ChairStatus', 'ChairType'
+    'CompensationPlan', 'CompensationModel', 'LocationStatus', 'ChairStatus', 'ChairType',
+    # Weekly Insights Models
+    'WeeklyInsight', 'WeeklyRecommendation', 'InsightEmailDelivery', 'InsightTemplate',
+    'RecommendationCategory', 'InsightMetric', 'WeeklyInsightArchive',
+    'InsightCategory', 'RecommendationPriority', 'RecommendationStatus',
+    'InsightStatus', 'EmailDeliveryStatus'
 ]

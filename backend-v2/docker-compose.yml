@@ -114,8 +114,14 @@ services:
       HEALTH_CHECK_ENABLED: "true"
       
     volumes:
+      # Live code sync for development
+      - .:/app
+      # Preserve container node_modules
+      - /app/node_modules
+      # Data directories
       - ./logs:/app/logs
       - ./uploads:/app/uploads
+      # Shared data
       - .:/app/shared
     ports:
       - "8000:8000"
@@ -192,8 +198,14 @@ services:
       NEXT_PUBLIC_HSTS_ENABLED: "true"
       
     volumes:
-      - ./frontend-v2/public:/app/public
+      # Live code sync for development
+      - ./frontend-v2:/app
+      # Preserve container node_modules
+      - /app/node_modules
+      # Next.js cache
       - frontend_cache:/app/.next
+      # Static assets
+      - ./frontend-v2/public:/app/public
     ports:
       - "3000:3000"
     networks:

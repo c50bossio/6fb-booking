@@ -110,14 +110,18 @@ class User(Base):
     ai_insights = relationship("AIInsightCache", back_populates="user", cascade="all, delete-orphan")
     bi_reports = relationship("BusinessIntelligenceReport", back_populates="user", cascade="all, delete-orphan")
     
+    # Weekly Insights relationships
+    weekly_insights = relationship("WeeklyInsight", back_populates="user", cascade="all, delete-orphan")
+    
     # Conversion tracking relationships (using string references for models in other files)
     # conversion_events = relationship("ConversionEvent", back_populates="user")  # Temporarily disabled - model removed in migration
     # tracking_config = relationship("TrackingConfiguration", back_populates="user", uselist=False)
     # conversion_goals = relationship("ConversionGoal", back_populates="user")
     # campaign_tracking = relationship("CampaignTracking", back_populates="user")
     
-    # Google Calendar integration relationship
+    # Google Calendar integration relationships
     google_calendar_settings = relationship("GoogleCalendarSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    calendar_webhook_subscriptions = relationship("GoogleCalendarWebhookSubscription", back_populates="user", cascade="all, delete-orphan")
     
     # Upselling relationships
     upsell_attempts_as_barber = relationship("UpsellAttempt", foreign_keys="UpsellAttempt.barber_id", back_populates="barber")
@@ -143,6 +147,15 @@ class User(Base):
     six_fb_crm_workflows = relationship("SixFBAutomatedWorkflow", back_populates="user", cascade="all, delete-orphan")
     six_fb_crm_workflow_executions = relationship("SixFBWorkflowExecution", back_populates="user", cascade="all, delete-orphan")
     six_fb_crm_analytics = relationship("SixFBClientAnalyticsSummary", back_populates="user", cascade="all, delete-orphan")
+    
+    # Gamification relationships
+    achievements = relationship("UserAchievement", back_populates="user", cascade="all, delete-orphan")
+    xp_profile = relationship("UserXPProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    xp_transactions = relationship("XPTransaction", back_populates="user", cascade="all, delete-orphan")
+    challenge_participations = relationship("ChallengeParticipation", back_populates="user", cascade="all, delete-orphan")
+    leaderboard_entries = relationship("LeaderboardEntry", back_populates="user", cascade="all, delete-orphan")
+    gamification_notifications = relationship("GamificationNotification", back_populates="user", cascade="all, delete-orphan")
+    gamification_analytics = relationship("GamificationAnalytics", back_populates="user", cascade="all, delete-orphan")
     
     @property
     def is_trial_active(self) -> bool:
@@ -2589,3 +2602,194 @@ class TimezoneConversionLog(Base):
     # Relationships
     user = relationship("User", backref="timezone_conversions")
     appointment = relationship("Appointment", backref="timezone_conversions")
+
+
+# ================================================================================
+# SEMANTIC SEARCH & VECTOR STORAGE MODELS
+# ================================================================================
+
+class EmbeddingCache(Base):
+    """Cache embeddings for semantic search performance optimization"""
+    __tablename__ = "embedding_cache"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    content_hash = Column(String(64), unique=True, index=True, nullable=False)  # SHA-256 hash of content
+    content_type = Column(String(20), nullable=False, index=True)  # "barber", "service", "client_preference"
+    entity_id = Column(Integer, nullable=False, index=True)  # ID of the entity (user_id, service_id, etc.)
+    content_text = Column(Text, nullable=False)  # Original text that was embedded
+    embedding = Column(JSON, nullable=False)  # Embedding vector as JSON array
+    embedding_model = Column(String(50), nullable=False, default="voyage-3-large")  # Model used for embedding
+    chunk_index = Column(Integer, nullable=True, default=0)  # For multi-chunk embeddings
+    
+    # Performance optimization
+    embedding_dimension = Column(Integer, nullable=False, default=1024)  # Vector dimension
+    content_length = Column(Integer, nullable=False)  # Original content length
+    
+    # Quality metrics
+    confidence_score = Column(Float, nullable=True)  # Embedding quality score
+    is_active = Column(Boolean, default=True, index=True)  # Whether embedding is valid
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    last_used_at = Column(DateTime, default=utcnow, nullable=False)  # For LRU cache cleanup
+    
+    # Composite indexes for performance
+    __table_args__ = (
+        Index('idx_embedding_cache_type_entity', 'content_type', 'entity_id'),
+        Index('idx_embedding_cache_active_used', 'is_active', 'last_used_at'),
+        Index('idx_embedding_cache_model_dimension', 'embedding_model', 'embedding_dimension'),
+    )
+    
+    def update_last_used(self):
+        """Update last used timestamp for LRU cache management"""
+        self.last_used_at = utcnow()
+
+
+class SearchAnalytics(Base):
+    """Track search queries and user behavior for search optimization"""
+    __tablename__ = "search_analytics"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Query information
+    query = Column(String(500), nullable=False, index=True)  # Search query
+    query_hash = Column(String(64), nullable=False, index=True)  # Hash for quick lookups
+    normalized_query = Column(String(500), nullable=True)  # Cleaned/normalized version
+    query_intent = Column(String(50), nullable=True)  # "find_barber", "book_service", etc.
+    
+    # User context
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    user_role = Column(String(50), nullable=True)  # User role at time of search
+    session_id = Column(String(100), nullable=True, index=True)  # Session identifier
+    
+    # Search configuration
+    search_type = Column(String(20), nullable=False, index=True)  # "semantic", "keyword", "hybrid"
+    search_category = Column(String(20), nullable=True)  # "barbers", "services", "all"
+    min_similarity = Column(Float, nullable=True)  # Similarity threshold used
+    limit_requested = Column(Integer, nullable=False, default=10)
+    
+    # Results information
+    results_count = Column(Integer, nullable=False, default=0)
+    has_semantic_results = Column(Boolean, nullable=False, default=False)
+    has_keyword_results = Column(Boolean, nullable=False, default=False)
+    top_similarity_score = Column(Float, nullable=True)  # Highest similarity in results
+    avg_similarity_score = Column(Float, nullable=True)  # Average similarity score
+    
+    # User interaction
+    clicked_result_id = Column(Integer, nullable=True)  # ID of clicked result
+    clicked_result_type = Column(String(20), nullable=True)  # Type of clicked result
+    clicked_result_position = Column(Integer, nullable=True)  # Position in results (1-based)
+    clicked_result_score = Column(Float, nullable=True)  # Similarity score of clicked result
+    time_to_click_ms = Column(Integer, nullable=True)  # Time from search to click
+    
+    # Performance metrics
+    search_time_ms = Column(Integer, nullable=False)  # Total search time
+    embedding_time_ms = Column(Integer, nullable=True)  # Time to generate embeddings
+    similarity_time_ms = Column(Integer, nullable=True)  # Time to calculate similarities
+    fallback_used = Column(Boolean, nullable=False, default=False)  # Whether fallback was used
+    
+    # Context and metadata
+    search_context = Column(JSON, nullable=True)  # Additional context (filters, etc.)
+    result_metadata = Column(JSON, nullable=True)  # Metadata about results
+    error_message = Column(String(500), nullable=True)  # Error if search failed
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
+    
+    # Relationships
+    user = relationship("User", backref="search_analytics")
+    
+    # Indexes for analytics queries
+    __table_args__ = (
+        Index('idx_search_analytics_user_time', 'user_id', 'created_at'),
+        Index('idx_search_analytics_query_time', 'query_hash', 'created_at'),
+        Index('idx_search_analytics_type_time', 'search_type', 'created_at'),
+        Index('idx_search_analytics_performance', 'search_time_ms', 'results_count'),
+    )
+
+
+class SearchQuerySuggestions(Base):
+    """Store popular search queries for autocomplete suggestions"""
+    __tablename__ = "search_query_suggestions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    query = Column(String(200), nullable=False, unique=True, index=True)
+    normalized_query = Column(String(200), nullable=False, index=True)
+    search_count = Column(Integer, nullable=False, default=1)
+    success_rate = Column(Float, nullable=False, default=0.0)  # Percentage of searches with clicks
+    avg_results_count = Column(Float, nullable=False, default=0.0)
+    last_searched_at = Column(DateTime, nullable=False, default=utcnow)
+    
+    # Quality metrics
+    click_through_rate = Column(Float, nullable=False, default=0.0)
+    avg_click_position = Column(Float, nullable=True)  # Average position of clicked results
+    is_trending = Column(Boolean, nullable=False, default=False)
+    
+    # Categories for suggestions
+    category = Column(String(50), nullable=True)  # "barber_skills", "service_types", etc.
+    intent = Column(String(50), nullable=True)  # "booking", "discovery", "comparison"
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    
+    def increment_search(self):
+        """Increment search count and update timestamp"""
+        self.search_count += 1
+        self.last_searched_at = utcnow()
+        self.updated_at = utcnow()
+
+
+class SemanticSearchConfiguration(Base):
+    """Configuration settings for semantic search optimization"""
+    __tablename__ = "semantic_search_config"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Model configuration
+    primary_model = Column(String(50), nullable=False, default="voyage-3-large")
+    query_model = Column(String(50), nullable=False, default="voyage-3-large")
+    content_model = Column(String(50), nullable=False, default="voyage-3-large")
+    
+    # Search thresholds
+    min_similarity_barber = Column(Float, nullable=False, default=0.6)
+    min_similarity_service = Column(Float, nullable=False, default=0.5)
+    min_similarity_recommendation = Column(Float, nullable=False, default=0.4)
+    
+    # Performance settings
+    max_embedding_cache_size = Column(Integer, nullable=False, default=10000)
+    embedding_cache_ttl_days = Column(Integer, nullable=False, default=30)
+    batch_size = Column(Integer, nullable=False, default=10)
+    
+    # Feature flags
+    enable_hybrid_search = Column(Boolean, nullable=False, default=True)
+    enable_query_expansion = Column(Boolean, nullable=False, default=False)
+    enable_result_reranking = Column(Boolean, nullable=False, default=True)
+    enable_analytics = Column(Boolean, nullable=False, default=True)
+    
+    # Business context
+    business_id = Column(Integer, nullable=False, default=1)  # For multi-tenant support
+    is_active = Column(Boolean, nullable=False, default=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    
+    @classmethod
+    def get_default_config(cls):
+        """Get default search configuration"""
+        return cls(
+            primary_model="voyage-3-large",
+            query_model="voyage-3-large", 
+            content_model="voyage-3-large",
+            min_similarity_barber=0.6,
+            min_similarity_service=0.5,
+            min_similarity_recommendation=0.4,
+            max_embedding_cache_size=10000,
+            embedding_cache_ttl_days=30,
+            batch_size=10,
+            enable_hybrid_search=True,
+            enable_analytics=True,
+            business_id=1
+        )

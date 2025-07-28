@@ -1,8 +1,12 @@
 import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOperation, defaultRetryConfigs } from './apiUtils'
 import { toast } from '@/hooks/use-toast'
 import { getEnhancedErrorMessage, formatErrorForToast, ErrorContext } from './error-messages'
+import { getCsrfHeaders } from './csrf-utils'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+// Use different URLs for browser vs server-side requests
+const API_URL = typeof window !== 'undefined' 
+  ? (process.env.NEXT_PUBLIC_API_URL || '') // Browser uses external URL
+  : (process.env.NEXT_INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || '') // Server uses internal URL
 
 // Service categories for pricing validation
 export enum ServiceCategoryEnum {
@@ -109,13 +113,21 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // If JSON parsing fails, continue (might be form data or other format)
     }
   }
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  // SECURITY FIX: Use cookies exclusively for authentication - no localStorage
+  // Tokens are now stored in HttpOnly cookies set by the backend
+  const token = null // Tokens come from HttpOnly cookies, not localStorage
+  
+  // SECURITY FIX: Import CSRF utilities for request protection
+  const { getCsrfHeaders } = await import('./csrf-utils')
   
   const config: RequestInit = {
     ...options,
+    credentials: 'include', // SECURITY FIX: Always include cookies for auth
     headers: {
       ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
-      ...(token && { Authorization: `Bearer ${token}` }),
+      // SECURITY FIX: Add CSRF protection for state-changing requests
+      ...(options.method && !['GET', 'HEAD', 'OPTIONS'].includes(options.method.toUpperCase()) ? getCsrfHeaders() : {}),
+      // SECURITY FIX: Remove Authorization header - auth comes from HttpOnly cookies
       ...options.headers,
     },
   }
@@ -140,19 +152,20 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
   if (response.status === 401 && retry && endpoint !== '/api/v2/auth/refresh') {
     try {
       // Try to refresh token
-      const refresh_token = localStorage.getItem('refresh_token')
-      if (refresh_token) {
-        const refreshResponse = await fetch(`${API_URL}/api/v2/auth/refresh`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh_token }),
-        })
+      // SECURITY FIX: Refresh token is sent via HttpOnly cookie automatically
+  const refresh_token = null // Backend handles refresh token from cookies
+      // SECURITY FIX: Try to refresh using HttpOnly cookies
+      const refreshResponse = await fetch(`${API_URL}/api/v2/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include', // Send HttpOnly cookies
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // No refresh_token needed - comes from cookie
+      })
         
         if (refreshResponse.ok) {
           const data = await refreshResponse.json()
-          localStorage.setItem('token', data.access_token)
-          // Also update the cookie
-          document.cookie = `token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+          // SECURITY FIX: Backend sets HttpOnly cookies automatically
+          // No client-side token storage needed - cookies set by server
           
           // Extract and update user role from refreshed token
           try {
@@ -172,12 +185,11 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
           }
           
           if (data.refresh_token) {
-            localStorage.setItem('refresh_token', data.refresh_token)
+            // SECURITY FIX: Refresh token is HttpOnly cookie set by backend
           }
           // Retry original request with new token
           return fetchAPI(endpoint, options, false)
         }
-      }
     } catch (error) {
       // If refresh fails, redirect to login
       localStorage.removeItem('token')
@@ -189,6 +201,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }
+      throw error;
     }
   }
   
@@ -288,10 +301,8 @@ export async function login(email: string, password: string) {
   
   // Store tokens
   if (response.access_token) {
-    localStorage.setItem('token', response.access_token)
-    // Also set as httpOnly:false cookie so middleware can detect auth
-    // Note: httpOnly:false is needed because we're setting from client-side
-    document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+    // SECURITY FIX: Backend sets HttpOnly cookies automatically
+    // No client-side token storage or cookie manipulation needed
     
     // CRITICAL FIX: Extract user role from JWT token and set user_role cookie
     // This fixes the infinite redirect loop in middleware
@@ -331,9 +342,8 @@ export async function login(email: string, password: string) {
       localStorage.setItem('user_role', defaultRole)
     }
   }
-  if (response.refresh_token) {
-    localStorage.setItem('refresh_token', response.refresh_token)
-  }
+  // SECURITY FIX: Refresh token is HttpOnly cookie set by backend
+  // No client-side storage needed
   
   return response
 }
@@ -487,7 +497,8 @@ export async function getVerificationStatus() {
 }
 
 export async function refreshToken() {
-  const refresh_token = localStorage.getItem('refresh_token')
+  // SECURITY FIX: Refresh token is sent via HttpOnly cookie automatically
+  const refresh_token = null // Backend handles refresh token from cookies
   if (!refresh_token) {
     throw new Error('No refresh token available')
   }
@@ -497,15 +508,10 @@ export async function refreshToken() {
     body: JSON.stringify({ refresh_token }),
   })
   
-  // Update tokens
-  if (response.access_token) {
-    localStorage.setItem('token', response.access_token)
-    // Also update the cookie
-    document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
-  }
-  if (response.refresh_token) {
-    localStorage.setItem('refresh_token', response.refresh_token)
-  }
+  // SECURITY FIX: Backend sets secure HttpOnly cookies automatically
+  // No client-side token storage needed
+  // SECURITY FIX: Refresh token is HttpOnly cookie set by backend
+  // No client-side storage needed
   
   return response
 }
@@ -5549,7 +5555,9 @@ export const importsAPI = {
     if (onProgress) {
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        // SECURITY FIX: Use cookies exclusively for authentication - no localStorage
+  // Tokens are now stored in HttpOnly cookies set by the backend
+  const token = null // Tokens come from HttpOnly cookies, not localStorage
         
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
@@ -6781,6 +6789,70 @@ export async function updateAttemptStatus(attemptId: number, status: string, not
   })
 }
 
+// Analytics API functions for Six Figure Barber Dashboard
+export async function getAnalyticsDashboard(dateRangeDays: number = 30, includePredictions: boolean = true) {
+  return fetchAPI(`/api/v2/analytics/dashboard?date_range_days=${dateRangeDays}&include_predictions=${includePredictions}`)
+}
+
+export async function getAnalyticsOverview(dateRangeDays: number = 30) {
+  return fetchAPI(`/api/v2/analytics/overview?date_range_days=${dateRangeDays}`)
+}
+
+
+
+export async function getBarberPerformance(dateRangeDays: number = 30) {
+  return fetchAPI(`/api/v2/analytics/performance?date_range_days=${dateRangeDays}`)
+}
+
+export async function getBusinessIntelligence(dateRangeDays: number = 30) {
+  return fetchAPI(`/api/v2/analytics/business-intelligence?date_range_days=${dateRangeDays}`)
+}
+
+export async function getSixFigureBarberAlignment(dateRangeDays: number = 30) {
+  return fetchAPI(`/api/v2/analytics/six-figure-barber?date_range_days=${dateRangeDays}`)
+}
+
+export async function getTrendAnalysis(dateRangeDays: number = 90) {
+  return fetchAPI(`/api/v2/analytics/trends?date_range_days=${dateRangeDays}`)
+}
+
+export async function getRecommendations(dateRangeDays: number = 30, priority?: string) {
+  const params = new URLSearchParams({ date_range_days: dateRangeDays.toString() })
+  if (priority) params.append('priority', priority)
+  return fetchAPI(`/api/v2/analytics/recommendations?${params.toString()}`)
+}
+
+export async function getPredictiveAnalytics(dateRangeDays: number = 90) {
+  return fetchAPI(`/api/v2/analytics/predictions?date_range_days=${dateRangeDays}`)
+}
+
+export async function exportAnalyticsReport(format: 'pdf' | 'excel' | 'csv', dateRangeDays: number = 30, includeCharts: boolean = true) {
+  return fetchAPI('/api/v2/analytics/export', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ 
+      format, 
+      date_range_days: dateRangeDays,
+      include_charts: includeCharts 
+    }),
+  })
+}
+
+export async function refreshDashboardData() {
+  return fetchAPI('/api/v2/analytics/dashboard/refresh', {
+    method: 'POST',
+  })
+}
+
+export async function getBenchmarkComparison(metric: string, businessSegment?: string, region?: string) {
+  const params = new URLSearchParams({ metric })
+  if (businessSegment) params.append('business_segment', businessSegment)
+  if (region) params.append('region', region)
+  return fetchAPI(`/api/v2/analytics/benchmark/${metric}?${params.toString()}`)
+}
+
 export const apiClient = {
   // Core API functions
   fetchAPI,
@@ -6806,7 +6878,21 @@ export const apiClient = {
   recordUpsellConversion,
   getUpsellAttempts,
   getUpsellAnalytics,
-  updateAttemptStatus
+  updateAttemptStatus,
+  // Analytics functions
+  getAnalyticsDashboard,
+  getAnalyticsOverview,
+  getRevenueAnalytics,
+  getClientAnalytics,
+  getBarberPerformance,
+  getBusinessIntelligence,
+  getSixFigureBarberAlignment,
+  getTrendAnalysis,
+  getRecommendations,
+  getPredictiveAnalytics,
+  exportAnalyticsReport,
+  refreshDashboardData,
+  getBenchmarkComparison
 }
 
 
