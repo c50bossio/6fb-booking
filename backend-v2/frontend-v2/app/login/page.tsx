@@ -145,11 +145,17 @@ function LoginContent() {
       // Increment rate limit attempts on failed login
       rateLimit.incrementAttempts()
       
-      // Generate enhanced error message
-      const enhancedError = getBusinessContextError('login', err, {
-        userType: 'client', // Most common case
-        feature: 'authentication'
-      })
+      // Generate enhanced error message with safe error handling
+      let enhancedError
+      try {
+        enhancedError = getBusinessContextError('login', err, {
+          userType: 'client', // Most common case
+          feature: 'authentication'
+        })
+      } catch (errorProcessingError) {
+        console.error('Error processing error message:', errorProcessingError)
+        enhancedError = { message: 'Login failed. Please try again.' }
+      }
       
       // Handle specific error cases with enhanced messaging
       if (err.status === 403 || err.message?.includes('Email address not verified') || err.message?.includes('not verified')) {
@@ -187,14 +193,29 @@ function LoginContent() {
       setVerificationError(false)
       setShowResendButton(false)
     } catch (error: any) {
-      // Generate enhanced error message for resend verification
-      const enhancedError = getBusinessContextError('resend_verification', error, {
-        userType: 'client',
-        feature: 'email_verification'
-      })
+      // Generate enhanced error message for resend verification with safe error handling
+      let enhancedError
+      try {
+        enhancedError = getBusinessContextError('resend_verification', error, {
+          userType: 'client',
+          feature: 'email_verification'
+        })
+      } catch (errorProcessingError) {
+        console.error('Error processing resend verification error:', errorProcessingError)
+        enhancedError = { message: 'Failed to send verification email. Please try again.' }
+      }
       
-      // Show enhanced error message
-      toast(formatErrorForToast(enhancedError))
+      // Show enhanced error message with safe formatting
+      try {
+        toast(formatErrorForToast(enhancedError))
+      } catch (toastError) {
+        console.error('Error showing toast:', toastError)
+        toast({
+          title: 'Error',
+          description: enhancedError.message || 'An error occurred. Please try again.',
+          variant: 'destructive'
+        })
+      }
       
       console.error('Resend verification failed:', error)
       console.error('Enhanced resend error:', enhancedError)

@@ -39,8 +39,27 @@ export const validators = {
   email: (message = 'Please enter a valid email address'): ValidationRule => ({
     validate: (value) => {
       if (!value) return true; // Let required validator handle empty values
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(value);
+      
+      // Comprehensive email validation
+      try {
+        // Basic format check
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) return false;
+        
+        // Additional checks for common issues
+        const trimmedValue = value.trim();
+        if (trimmedValue !== value) return false; // No leading/trailing spaces
+        if (trimmedValue.includes('..')) return false; // No consecutive dots
+        if (trimmedValue.startsWith('.') || trimmedValue.endsWith('.')) return false; // No leading/trailing dots
+        if (trimmedValue.includes('@.') || trimmedValue.includes('.@')) return false; // No dots adjacent to @
+        
+        return true;
+      } catch (error) {
+        console.error('Email validation error:', error);
+        // Fallback to basic regex if there's any error
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value);
+      }
     },
     message,
   }),

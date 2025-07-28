@@ -305,13 +305,18 @@ export async function login(email: string, password: string) {
                       tokenPayload.sub_role ||
                       'barber').toLowerCase() // Default to barber and normalize to lowercase
       
-      console.log('JWT role extraction debug:', {
-        sub: tokenPayload.sub,
-        role: tokenPayload.role,
-        user_role: tokenPayload.user_role,
-        unified_role: tokenPayload.unified_role,
-        extractedRole: userRole
-      })
+      // Safe console logging to prevent undefined property access errors
+      try {
+        console.log('JWT role extraction debug:', {
+          sub: tokenPayload?.sub || 'undefined',
+          role: tokenPayload?.role || 'undefined',
+          user_role: tokenPayload?.user_role || 'undefined',
+          unified_role: tokenPayload?.unified_role || 'undefined',
+          extractedRole: userRole || 'undefined'
+        })
+      } catch (logError) {
+        console.error('Error logging JWT extraction debug info:', logError)
+      }
       
       document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
       
