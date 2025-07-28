@@ -13,12 +13,14 @@ from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 
 from db import get_db
-from dependencies import get_current_user, get_permission_checker
+from dependencies import get_current_user
+from utils.role_permissions import get_permission_checker
 from models import User
 from services.enhanced_semantic_search_service import enhanced_semantic_search
 from services.advanced_search_service import advanced_search
 from services.embedding_cache_manager import cache_manager
-from services.cache_cleanup_scheduler import cleanup_scheduler
+# Temporarily disabled due to missing apscheduler dependency
+# from services.cache_cleanup_scheduler import cleanup_scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -71,13 +73,14 @@ async def search_system_health_check():
             }
             health_status["errors"].append(f"Advanced search: {e}")
         
-        # Check cache cleanup scheduler
+        # Check cache cleanup scheduler (disabled due to missing apscheduler)
         try:
-            scheduler_status = await cleanup_scheduler.get_scheduler_status()
+            # scheduler_status = await cleanup_scheduler.get_scheduler_status()
             health_status["components"]["cache_scheduler"] = {
-                "status": "healthy" if scheduler_status["is_running"] else "stopped",
-                "active_jobs": len(scheduler_status.get("active_jobs", [])),
-                "last_cleanup": scheduler_status.get("last_cleanup")
+                "status": "disabled",
+                "active_jobs": 0,
+                "last_cleanup": None,
+                "note": "scheduler disabled due to missing apscheduler dependency"
             }
         except Exception as e:
             health_status["components"]["cache_scheduler"] = {
@@ -232,11 +235,16 @@ async def trigger_cache_cleanup(
     try:
         logger.info(f"Manual cache cleanup triggered by user {current_user.id}, type: {cleanup_type}")
         
-        cleanup_stats = await cleanup_scheduler.trigger_manual_cleanup(cleanup_type)
+        # cleanup_stats = await cleanup_scheduler.trigger_manual_cleanup(cleanup_type)
         
-        # Add metadata
-        cleanup_stats["triggered_by"] = current_user.id
-        cleanup_stats["triggered_at"] = datetime.utcnow().isoformat()
+        # Temporary fallback while scheduler is disabled
+        cleanup_stats = {
+            "cleanup_type": cleanup_type,
+            "status": "disabled",
+            "message": "Cleanup scheduler disabled due to missing apscheduler dependency",
+            "triggered_by": current_user.id,
+            "triggered_at": datetime.utcnow().isoformat()
+        }
         
         return cleanup_stats
         
@@ -317,8 +325,15 @@ async def get_scheduler_status(
         )
     
     try:
-        status_info = await cleanup_scheduler.get_scheduler_status()
-        status_info["retrieved_at"] = datetime.utcnow().isoformat()
+        # status_info = await cleanup_scheduler.get_scheduler_status()
+        status_info = {
+            "status": "disabled",
+            "message": "Scheduler disabled due to missing apscheduler dependency",
+            "is_running": False,
+            "active_jobs": [],
+            "last_cleanup": None,
+            "retrieved_at": datetime.utcnow().isoformat()
+        }
         status_info["retrieved_by"] = current_user.id
         
         return status_info
