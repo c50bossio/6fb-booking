@@ -113,9 +113,9 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // If JSON parsing fails, continue (might be form data or other format)
     }
   }
-  // SECURITY FIX: Use cookies exclusively for authentication - no localStorage
-  // Tokens are now stored in HttpOnly cookies set by the backend
-  const token = null // Tokens come from HttpOnly cookies, not localStorage
+  // HYBRID AUTH: Support both cookies and localStorage for backward compatibility
+  // Try localStorage first, then fall back to cookies
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   
   // SECURITY FIX: Import CSRF utilities for request protection
   const { getCsrfHeaders } = await import('./csrf-utils')
@@ -127,7 +127,8 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
       // SECURITY FIX: Add CSRF protection for state-changing requests
       ...(options.method && !['GET', 'HEAD', 'OPTIONS'].includes(options.method.toUpperCase()) ? getCsrfHeaders() : {}),
-      // SECURITY FIX: Remove Authorization header - auth comes from HttpOnly cookies
+      // HYBRID AUTH: Include Authorization header if token is available
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
   }
@@ -301,8 +302,11 @@ export async function login(email: string, password: string) {
   
   // Store tokens
   if (response.access_token) {
-    // SECURITY FIX: Backend sets HttpOnly cookies automatically
-    // No client-side token storage or cookie manipulation needed
+    // HYBRID AUTH: Store tokens in localStorage for immediate access
+    localStorage.setItem('token', response.access_token)
+    if (response.refresh_token) {
+      localStorage.setItem('refresh_token', response.refresh_token)
+    }
     
     // CRITICAL FIX: Extract user role from JWT token and set user_role cookie
     // This fixes the infinite redirect loop in middleware

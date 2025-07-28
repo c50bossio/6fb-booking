@@ -139,7 +139,7 @@ export default function UpsellingAnalyticsPage() {
 
   useEffect(() => {
     fetchUpsellingData()
-  }, [dateRange, groupBy])
+  }, [dateRange, groupBy]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

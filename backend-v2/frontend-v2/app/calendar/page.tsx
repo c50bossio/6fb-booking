@@ -367,7 +367,7 @@ export default function CalendarPage() {
         <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
           <h3 className="font-bold text-yellow-800">🔍 DEBUG INFO:</h3>
           <ul className="text-sm text-yellow-700 mt-2">
-            <li>Current calendarView state: <strong>"{calendarView}"</strong></li>
+            <li>Current calendarView state: <strong>&quot;{calendarView}&quot;</strong></li>
             <li>Should show grid: <strong>{calendarView === 'grid' ? 'YES' : 'NO'}</strong></li>
             <li>CalendarGridView imported: <strong>{typeof CalendarGridView}</strong></li>
             <li>Appointments count: <strong>{appointments.length}</strong></li>
@@ -410,7 +410,7 @@ export default function CalendarPage() {
               <div className="sfb-card-premium">
                 <div className="px-4 lg:px-6 py-4 border-b border-gray-200">
                   <h2 className="sfb-heading-secondary text-lg font-medium">
-                    Today's Appointments ({appointments.length})
+                    Today&apos;s Appointments ({appointments.length})
                   </h2>
                 </div>
                 <div className="p-4 lg:p-6">
@@ -489,7 +489,7 @@ export default function CalendarPage() {
 
               {/* Schedule Summary */}
               <div className="sfb-card-premium p-4">
-                <h2 className="sfb-heading-secondary text-lg font-semibold mb-4">Today's Summary</h2>
+                <h2 className="sfb-heading-secondary text-lg font-semibold mb-4">Today&apos;s Summary</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm sfb-text-premium">Total Appointments</span>

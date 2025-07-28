@@ -21,7 +21,7 @@ export default function SocialAuthCallbackPage({
 
   useEffect(() => {
     handleCallback()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCallback = async () => {
     const code = searchParams.get('code')

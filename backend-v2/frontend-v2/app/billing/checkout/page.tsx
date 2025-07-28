@@ -258,7 +258,7 @@ export default function CheckoutPage() {
               <Check className="h-12 w-12 text-green-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-green-800 mb-2">Payment Method Added!</h2>
               <p className="text-green-700">
-                Your payment method has been successfully added. You'll be redirected to your dashboard.
+                Your payment method has been successfully added. You&apos;ll be redirected to your dashboard.
               </p>
             </CardContent>
           </Card>

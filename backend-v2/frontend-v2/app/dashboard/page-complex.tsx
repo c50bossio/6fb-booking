@@ -321,7 +321,7 @@ function DashboardContent() {
                 Barber Dashboard
               </h1>
               <p className="text-ios-body text-ios-gray-600 dark:text-zinc-300">
-                Welcome back, {user?.first_name || 'there'}. Here's your performance overview.
+                Welcome back, {user?.first_name || 'there'}. Here&apos;s your performance overview.
               </p>
             </div>
           </div>
@@ -411,7 +411,7 @@ function DashboardContent() {
               Command Center
             </h1>
             <p className="text-ios-body text-ios-gray-600 dark:text-zinc-300">
-              Welcome back, {user?.first_name || 'there'}. Here's what's happening today.
+              Welcome back, {user?.first_name || 'there'}. Here&apos;s what&apos;s happening today.
             </p>
           </div>
           

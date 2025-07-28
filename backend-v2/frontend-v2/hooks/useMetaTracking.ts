@@ -104,6 +104,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
         setIsInitialized(true)
         
         if (config.debugMode) {
+          console.log('[Meta Tracking] Initialized with config:', {
             enableClientSide: config.enableClientSide,
             enableServerSide: config.enableServerSide,
             hasConsent
@@ -337,6 +338,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
         }
 
         if (config.debugMode) {
+          console.log('[Meta Tracking] Tracked client-side event:', {
             eventName,
             eventId,
             source: 'pixel'
@@ -377,6 +379,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
       addToBatch(serverEventData)
 
       if (config.debugMode) {
+        console.log('[Meta Tracking] Tracked server-side event:', {
           eventName,
           eventId,
           source: 'conversions_api',
@@ -390,6 +393,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
     }
 
     if (config.debugMode) {
+      console.log('[Meta Tracking] Event tracking summary:', {
         eventType,
         eventName,
         eventId,
@@ -767,7 +771,7 @@ export function useMetaTracking(options: ServerSideTrackingOptions = {}) {
     hasConsent,
     canTrack,
     config,
-
+    
     // Debug information
     getDebugInfo
   }

@@ -90,7 +90,7 @@ function CheckEmailContent() {
                   Check Your Email
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300">
-                  We've sent a verification link to:
+                  We&apos;ve sent a verification link to:
                 </p>
                 {email && (
                   <p className="font-medium text-gray-900 dark:text-white mt-1">
@@ -101,7 +101,7 @@ function CheckEmailContent() {
 
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
-                  What's next?
+                  What&apos;s next?
                 </h3>
                 <ol className="text-sm text-blue-700 dark:text-blue-300 space-y-1 text-left">
                   <li className="flex items-center space-x-2">
@@ -164,7 +164,7 @@ function CheckEmailContent() {
 
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Didn't receive the email? Check your spam folder or{' '}
+                  Didn&apos;t receive the email? Check your spam folder or{' '}
                   <Link href="/register" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
                     try a different email address
                   </Link>

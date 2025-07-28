@@ -238,12 +238,20 @@ class PWAServiceWorker {
     const { request } = event;
     const url = new URL(request.url);
     
+    // Skip service worker for critical endpoints to avoid CORS/security issues
+    const criticalEndpoints = ['/auth/', '/api/v2/auth/', '/payments/', '/billing/', '/webhooks/'];
+    if (criticalEndpoints.some(endpoint => url.pathname.includes(endpoint))) {
+      // Don't intercept critical requests - let them go directly to server
+      return;
+    }
+    
     // Skip cache for non-GET requests (except for offline fallback)
     if (request.method !== 'GET') {
       event.respondWith(
-        navigator.onLine 
-          ? fetch(request)
-          : this.handleOfflineAction(request)
+        fetch(request).catch(error => {
+          console.warn('🔄 Network request failed, attempting offline fallback:', error);
+          return this.handleOfflineAction(request);
+        })
       );
       return;
     }

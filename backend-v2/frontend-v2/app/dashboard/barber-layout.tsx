@@ -82,7 +82,7 @@ export default function BarberDashboardLayout({
           Barber Dashboard
         </h1>
         <p className="text-ios-body text-ios-gray-600">
-          Welcome back, {user.name}. Here's your performance overview.
+          Welcome back, {user.name}. Here&apos;s your performance overview.
         </p>
       </div>
 
@@ -97,7 +97,7 @@ export default function BarberDashboardLayout({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Today's Appointments
+                  Today&apos;s Appointments
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {todayStats.appointments}
@@ -119,7 +119,7 @@ export default function BarberDashboardLayout({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Today's Revenue
+                  Today&apos;s Revenue
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(todayStats.revenue)}

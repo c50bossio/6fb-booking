@@ -179,7 +179,7 @@ export default function ComplexDashboardPage() {
                 Complex Dashboard Layout
               </h1>
               <p className="text-ios-body text-ios-gray-600 dark:text-zinc-300">
-                Welcome back, {user?.first_name || user?.name || 'there'}. Here's your performance overview.
+                Welcome back, {user?.first_name || user?.name || 'there'}. Here&apos;s your performance overview.
               </p>
             </div>
           </div>
