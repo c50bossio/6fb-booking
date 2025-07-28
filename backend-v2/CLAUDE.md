@@ -48,9 +48,119 @@ pytest --html=test-report.html --self-contained-html
 
 ### Test Coverage Requirements
 - **Minimum Coverage**: 80% for all new code
-- **Critical Paths**: 95% coverage for auth, payments, bookings
+- **Critical Paths**: 95% coverage for auth, payments, bookings, search
 - **Integration Tests**: Required for all API endpoints
 - **E2E Tests**: Required for complete user flows
+
+## 🔍 Advanced Search System (NEW FEATURE)
+
+### Overview
+BookedBarber V2 now includes a state-of-the-art advanced search system combining multiple techniques:
+- **BM25 Lexical Search**: Precise keyword matching
+- **Cross-Encoder Reranking**: Ultimate precision optimization  
+- **Contextual Retrieval**: User preferences and location boosting
+- **Query Expansion**: Barbershop-specific terminology
+- **Multi-Index RAG Pipeline**: Semantic + keyword fusion
+
+### Development Guidelines
+
+#### Working with Search Features
+```bash
+# Test search components
+python simple_search_test.py           # Test core components
+python test_search_system_final.py     # Full system test
+
+# Search service files
+services/enhanced_semantic_search_service.py    # Voyage.ai + caching
+services/advanced_search_service.py             # BM25 + reranking + fusion
+routers/search.py                               # Complete API endpoints
+
+# Search models
+models.py                              # EmbeddingCache, SearchAnalytics
+models/upselling.py                   # Extended search models
+```
+
+#### Key Dependencies
+```bash
+# Required for advanced search
+pip install rank-bm25==0.2.2
+pip install sentence-transformers==2.2.2
+# voyageai>=0.2.0 (already present)
+```
+
+#### Search Testing Requirements
+- **Unit Tests**: Test each search component independently
+- **Integration Tests**: Test API endpoints and database interactions
+- **Performance Tests**: Validate response times < 500ms
+- **Accuracy Tests**: Verify relevance ranking quality
+
+#### Search Configuration
+```python
+# Advanced search configuration
+from services.advanced_search_service import AdvancedSearchConfig
+
+config = AdvancedSearchConfig(
+    enable_reranking=True,           # Cross-encoder reranking
+    enable_contextual=True,          # User preference boosting
+    semantic_weight=0.4,             # Voyage.ai semantic weight
+    bm25_weight=0.3,                # BM25 keyword weight  
+    contextual_weight=0.3            # Contextual boost weight
+)
+```
+
+#### Search API Endpoints
+```bash
+# Enhanced search (semantic + caching)
+GET /api/v2/search/enhanced/barbers
+GET /api/v2/search/analytics/query-performance
+POST /api/v2/search/analytics/click-tracking
+
+# Advanced search (full pipeline)
+GET /api/v2/search/advanced/barbers
+GET /api/v2/search/suggestions/intelligent
+GET /api/v2/search/capabilities
+```
+
+#### When to Use Which Search Method
+- **Semantic Search**: Natural language queries, concept matching
+- **BM25 Search**: Exact term matching, specific skills
+- **Hybrid Search**: Balanced results (recommended default)
+- **Advanced Search**: Highest accuracy (production recommended)
+
+#### Search Performance Guidelines
+- **Response Time**: Target < 500ms for most queries
+- **Cache Hit Rate**: Monitor and optimize for frequently searched terms
+- **Index Updates**: Automatic rebuild every hour
+- **Error Handling**: Graceful degradation when components unavailable
+
+#### Search Analytics
+- **Track Performance**: Monitor search response times and success rates
+- **User Behavior**: Track click-through rates and query patterns
+- **Popular Terms**: Identify common searches for optimization
+- **Accuracy Metrics**: Monitor relevance and user satisfaction
+
+#### Troubleshooting Search Issues
+```bash
+# Check search system status
+curl http://localhost:8000/api/v2/search/capabilities
+
+# Test individual components
+python -c "from services.advanced_search_service import advanced_search; print('BM25 Ready:', bool(advanced_search.bm25_barber_index))"
+
+# Verify Voyage.ai integration
+python -c "from services.enhanced_semantic_search_service import enhanced_semantic_search; print('Voyage Ready:', enhanced_semantic_search.is_available())"
+
+# Check cross-encoder status
+python -c "from services.advanced_search_service import CrossEncoderReranker; print('Reranker Ready:', CrossEncoderReranker().is_available())"
+```
+
+#### Search Feature Development Rules
+1. **Always test search accuracy** before deploying changes
+2. **Monitor performance impact** of configuration changes
+3. **Use barbershop terminology** in test cases and examples
+4. **Implement fallbacks** for when individual components fail
+5. **Track analytics** for continuous improvement
+6. **Document configuration changes** with performance rationale
 
 ## 🚀 GITHUB CODESPACES DEVELOPMENT (RECOMMENDED)
 
@@ -181,6 +291,187 @@ With GitHub Codespaces, you get:
 - ✅ **Professional reliability** - 99.9% uptime SLA
 
 **For detailed setup instructions, see: `.devcontainer/CODESPACES_SETUP_GUIDE.md`**
+
+## 🤖 Advanced Testing & Debugging Tools
+
+### Computer Use (AI Visual Analysis)
+**AI-powered screenshot analysis for visual debugging and UX validation:**
+
+```python
+# Available in project root
+from computer_use_basic import analyze_screen_with_claude
+
+# Analyze current screen state
+result = analyze_screen_with_claude("What errors do you see on this booking form?")
+print(result['response'])  # "I see a red validation error under the email field"
+
+# Debug visual issues
+analysis = analyze_screen_with_claude("Is the calendar loading correctly?")
+# → "The calendar shows loading spinner but no appointment data"
+
+# UX validation
+ux_check = analyze_screen_with_claude("How is the user experience of this page?")
+# → "The submit button is cut off below the fold, users may not see it"
+```
+
+**Use Cases:**
+- Visual bug detection and layout issues
+- UX/accessibility analysis  
+- Cross-browser visual regression testing
+- Error state identification
+- Loading state validation
+
+### Puppeteer MCP Integration
+**Programmatic browser automation via MCP tools:**
+
+```python
+# Available MCP functions for browser automation
+mcp__puppeteer__puppeteer_navigate(url="http://localhost:3000/booking")
+mcp__puppeteer__puppeteer_click(selector="#submit-booking")
+mcp__puppeteer__puppeteer_fill(selector="#email", value="test@example.com")
+mcp__puppeteer__puppeteer_screenshot(name="booking-state")
+mcp__puppeteer__puppeteer_evaluate(script="document.querySelectorAll('.error').length")
+
+# Advanced interactions
+mcp__puppeteer__puppeteer_select(selector="#service-type", value="haircut")
+mcp__puppeteer__puppeteer_hover(selector=".tooltip-trigger")
+```
+
+**Use Cases:**
+- Automated E2E testing flows
+- Form submission testing
+- User interaction simulation  
+- Data extraction from pages
+- Performance testing automation
+
+### Combined AI + Automation Workflows
+
+#### **Pattern 1: AI-Guided Test Automation**
+```python
+# 1. Puppeteer performs action
+mcp__puppeteer__puppeteer_navigate(url="http://localhost:3000/dashboard")
+mcp__puppeteer__puppeteer_click(selector="#load-appointments")
+
+# 2. Computer Use validates result  
+analysis = analyze_screen_with_claude("Did the appointments load successfully?")
+
+# 3. Respond based on AI analysis
+if "loading" in analysis['response'].lower():
+    # Wait longer and retry
+    time.sleep(2)
+    mcp__puppeteer__puppeteer_click(selector="#load-appointments")
+elif "error" in analysis['response'].lower():
+    # Handle error state
+    mcp__puppeteer__puppeteer_screenshot(name="error-state")
+```
+
+#### **Pattern 2: Visual Regression Testing**
+```python
+# Before changes
+mcp__puppeteer__puppeteer_navigate(url="http://localhost:3000/calendar")
+mcp__puppeteer__puppeteer_screenshot(name="calendar-before")
+before_analysis = analyze_screen_with_claude("Describe the calendar layout and functionality")
+
+# After changes  
+mcp__puppeteer__puppeteer_screenshot(name="calendar-after")
+after_analysis = analyze_screen_with_claude("Describe the calendar layout and functionality")
+
+# Compare results
+comparison = analyze_screen_with_claude(
+    f"Compare these two descriptions: Before: {before_analysis['response']} "
+    f"After: {after_analysis['response']}. What changed?"
+)
+```
+
+#### **Pattern 3: Comprehensive E2E Testing**
+```python
+async def test_booking_flow_with_ai_validation():
+    # Step 1: Navigate and validate page load
+    mcp__puppeteer__puppeteer_navigate(url="http://localhost:3000/booking")
+    load_check = analyze_screen_with_claude("Is the booking page fully loaded?")
+    assert "fully loaded" in load_check['response'].lower()
+    
+    # Step 2: Fill form with validation
+    mcp__puppeteer__puppeteer_fill(selector="#email", value="test@example.com")
+    mcp__puppeteer__puppeteer_fill(selector="#phone", value="555-1234")
+    
+    # Step 3: AI validates form state
+    form_check = analyze_screen_with_claude("Are there any form validation errors?")
+    
+    # Step 4: Submit and validate success
+    mcp__puppeteer__puppeteer_click(selector="#submit")
+    success_check = analyze_screen_with_claude("Was the booking successful?")
+    assert "success" in success_check['response'].lower()
+```
+
+### Setup & Requirements
+
+#### **Computer Use Setup:**
+```bash
+# API key (already configured in .env)
+export ANTHROPIC_API_KEY="your-anthropic-api-key-from-env-file"
+
+# Test computer use
+python3 computer_use_basic.py
+
+# macOS permissions required:
+# System Preferences → Security & Privacy → Privacy
+# - Add Terminal to 'Screen Recording'  
+# - Add Python to 'Accessibility'
+```
+
+#### **Puppeteer MCP Setup:**
+```bash
+# MCP tools are automatically available
+# No additional setup required
+
+# Test Puppeteer availability
+mcp__puppeteer__puppeteer_navigate(url="http://localhost:3000")
+```
+
+### Integration with Existing Workflow
+
+#### **Add to Test Suite:**
+```bash
+# Enhanced E2E testing with AI validation
+pytest tests/e2e/ --with-visual-validation
+
+# Visual regression testing
+python3 scripts/visual_regression_test.py
+
+# Combined automation + AI testing
+python3 scripts/comprehensive_test_suite.py
+```
+
+#### **Debugging Workflow Integration:**
+1. **Standard debugging**: Use existing browser debugging tools
+2. **Visual issues**: Add Computer Use analysis for layout/UX problems  
+3. **Automation**: Use Puppeteer for reproducible issue recreation
+4. **Validation**: Combine both for comprehensive testing
+
+#### **CI/CD Integration:**
+```yaml
+test:
+  - name: Standard E2E Tests
+    run: pytest tests/e2e/
+  - name: Visual AI Validation  
+    run: python3 visual_validation_suite.py
+  - name: Generate Test Report
+    run: python3 generate_combined_report.py
+```
+
+### Tool Availability Reference
+
+| Tool | Function | Use Case | Integration Level |
+|------|----------|----------|------------------|
+| **Computer Use** | `analyze_screen_with_claude()` | Visual analysis, UX validation | ✅ Ready to use |
+| **Puppeteer Navigate** | `mcp__puppeteer__puppeteer_navigate()` | Page navigation | ✅ MCP integrated |
+| **Puppeteer Click** | `mcp__puppeteer__puppeteer_click()` | Element interaction | ✅ MCP integrated |  
+| **Puppeteer Fill** | `mcp__puppeteer__puppeteer_fill()` | Form input | ✅ MCP integrated |
+| **Puppeteer Screenshot** | `mcp__puppeteer__puppeteer_screenshot()` | Visual capture | ✅ MCP integrated |
+| **Puppeteer Evaluate** | `mcp__puppeteer__puppeteer_evaluate()` | JavaScript execution | ✅ MCP integrated |
+
+**Result**: BookedBarber V2 now has comprehensive AI-powered visual testing capabilities combined with precise browser automation, enabling both human-like perception and programmatic control for superior testing and debugging workflows.
 
 ## 🛡️ V2 Safety Protocols
 
