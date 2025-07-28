@@ -149,6 +149,13 @@ class OfflineDataManager {
     }
   }
 
+  /**
+   * Store appointment offline (alias for addOfflineAppointment for PWA compatibility)
+   */
+  async storeAppointmentOffline(appointmentData: any): Promise<any> {
+    return this.addOfflineAppointment(appointmentData);
+  }
+
   // Action Queue Management
   async queueAction(action: Omit<OfflineAction, 'id' | 'timestamp' | 'status'>): Promise<number> {
     await this.ensureInitialized();
@@ -451,7 +458,7 @@ class OfflineDataManager {
         await this.updateOfflineAppointment(appointment.tempId, { syncStatus: 'syncing' });
         
         // Create appointment on server
-        const response = await fetch('/api/v1/appointments', {
+        const response = await fetch('/api/v2/appointments', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -495,7 +502,7 @@ class OfflineDataManager {
         result.errors.push({
           action: {
             id: 0,
-            url: '/api/v1/appointments',
+            url: '/api/v2/appointments',
             method: 'POST',
             headers: {},
             timestamp: appointment.lastModified,

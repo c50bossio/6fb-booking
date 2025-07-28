@@ -206,6 +206,26 @@ def convert_to_timezone(dt: datetime, target_tz: str) -> datetime:
     return dt.astimezone(target_timezone)
 
 
+def format_datetime_for_timezone(dt: datetime, timezone_str: str = "UTC") -> str:
+    """
+    Format a datetime for a specific timezone.
+    
+    Args:
+        dt: The datetime to format
+        timezone_str: The timezone string (default: UTC)
+        
+    Returns:
+        Formatted datetime string
+    """
+    try:
+        tz = pytz.timezone(timezone_str)
+        if dt.tzinfo is None:
+            dt = pytz.UTC.localize(dt)
+        localized_dt = dt.astimezone(tz)
+        return localized_dt.strftime('%Y-%m-%d %H:%M:%S %Z')
+    except Exception:
+        return dt.strftime('%Y-%m-%d %H:%M:%S UTC')
+
 def format_datetime_for_google(dt: datetime, timezone_str: str) -> str:
     """Format datetime for Google Calendar API (RFC3339)."""
     if dt.tzinfo is None:
