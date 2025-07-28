@@ -1,0 +1,80 @@
+{
+  "description": "Configuration for Query Duplication Detection Hook",
+  "query_directories": [
+    "queries",
+    "sql", 
+    "database",
+    "db",
+    "models",
+    "backend-v2/services",
+    "backend-v2/models",
+    "backend-v2/routers"
+  ],
+  "query_file_patterns": [
+    "*query*.ts",
+    "*query*.js", 
+    "*query*.py",
+    "*sql*.ts",
+    "*sql*.js",
+    "*sql*.py", 
+    "*db*.ts",
+    "*db*.js",
+    "*db*.py",
+    "*.sql",
+    "*.mysql",
+    "*.pgsql", 
+    "*.sqlite",
+    "*service*.py",
+    "*model*.py",
+    "*repository*.py"
+  ],
+  "similarity_threshold": 0.8,
+  "block_on_duplicates": false,
+  "excluded_directories": [
+    "node_modules",
+    ".git",
+    "dist", 
+    "build",
+    "__pycache__",
+    ".next",
+    "coverage",
+    "logs"
+  ],
+  "claude_command": "claude-code",
+  "frameworks_supported": [
+    "raw_sql",
+    "prisma", 
+    "knex",
+    "sqlalchemy",
+    "sequelize",
+    "fastapi",
+    "django_orm"
+  ],
+  "database_types": [
+    "postgresql",
+    "mysql", 
+    "sqlite",
+    "mongodb"
+  ],
+  "analysis_settings": {
+    "semantic_similarity": true,
+    "table_access_patterns": true,
+    "where_condition_analysis": true,
+    "join_logic_comparison": true,
+    "return_structure_matching": true,
+    "parameter_detection": true
+  },
+  "reporting": {
+    "include_file_paths": true,
+    "include_line_numbers": true,
+    "include_query_snippets": true,
+    "group_by_similarity": true,
+    "max_similar_queries_shown": 5
+  },
+  "performance": {
+    "max_files_to_analyze": 1000,
+    "analysis_timeout_seconds": 300,
+    "enable_caching": true,
+    "cache_duration_hours": 24
+  }
+}

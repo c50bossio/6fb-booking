@@ -5,6 +5,7 @@ from sqlalchemy import and_, or_
 import models
 import pytz
 import logging
+import time as time_module
 from services import barber_availability_service
 from config import settings
 
@@ -545,6 +546,7 @@ def create_booking(
     """
     
     # Start timing the entire function
+    function_start_time = time_module.time()
     
     # Get booking settings
     settings = get_booking_settings(db)
@@ -846,6 +848,26 @@ def create_booking(
         appointment.barber = db.query(models.User).filter(
             models.User.id == appointment.barber_id
         ).first()
+    
+    # INSTANT AUTO-SYNC: Sync appointment to Google Calendar immediately after creation
+    try:
+        from services.google_calendar_service import GoogleCalendarService
+        
+        # Only sync if barber has Google Calendar connected
+        if appointment.barber and appointment.barber.google_calendar_credentials:
+            calendar_service = GoogleCalendarService(db)
+            google_event_id = calendar_service.sync_appointment_to_google(appointment)
+            
+            if google_event_id:
+                logger.info(f"AUTO-SYNC: Successfully synced appointment {appointment.id} to Google Calendar (Event ID: {google_event_id})")
+            else:
+                logger.warning(f"AUTO-SYNC: Failed to sync appointment {appointment.id} to Google Calendar")
+        else:
+            logger.debug(f"AUTO-SYNC: Skipping Google Calendar sync for appointment {appointment.id} - no Google Calendar connected")
+            
+    except Exception as e:
+        # Don't fail appointment creation if calendar sync fails
+        logger.error(f"AUTO-SYNC: Error syncing appointment {appointment.id} to Google Calendar: {str(e)}")
     
     total_time = time_module.time() - function_start_time
     
@@ -1166,6 +1188,33 @@ def cancel_booking(
         
         # Return the updated booking
         db.refresh(booking)
+        
+        # INSTANT AUTO-SYNC: Delete appointment from Google Calendar immediately after cancellation
+        try:
+            from services.google_calendar_service import GoogleCalendarService
+            
+            # Load barber relationship if not already loaded
+            if not hasattr(booking, 'barber') or booking.barber is None:
+                booking.barber = db.query(models.User).filter(
+                    models.User.id == booking.barber_id
+                ).first()
+            
+            # Only sync if barber has Google Calendar connected
+            if booking.barber and booking.barber.google_calendar_credentials:
+                calendar_service = GoogleCalendarService(db)
+                success = calendar_service.delete_appointment_from_google(booking)
+                
+                if success:
+                    logger.info(f"AUTO-SYNC: Successfully deleted appointment {booking.id} from Google Calendar")
+                else:
+                    logger.warning(f"AUTO-SYNC: Failed to delete appointment {booking.id} from Google Calendar")
+            else:
+                logger.debug(f"AUTO-SYNC: Skipping Google Calendar sync for appointment {booking.id} - no Google Calendar connected")
+                
+        except Exception as e:
+            # Don't fail appointment cancellation if calendar sync fails
+            logger.error(f"AUTO-SYNC: Error deleting appointment {booking.id} from Google Calendar: {str(e)}")
+        
         return booking
         
     except ImportError:
@@ -1220,6 +1269,32 @@ def cancel_booking(
         except Exception as e:
             logger.error(f"Failed to handle cancellation notifications: {e}")
             # Don't fail the cancellation if notification fails
+        
+        # INSTANT AUTO-SYNC: Delete appointment from Google Calendar immediately after cancellation (legacy path)
+        try:
+            from services.google_calendar_service import GoogleCalendarService
+            
+            # Load barber relationship if not already loaded
+            if not hasattr(booking, 'barber') or booking.barber is None:
+                booking.barber = db.query(models.User).filter(
+                    models.User.id == booking.barber_id
+                ).first()
+            
+            # Only sync if barber has Google Calendar connected
+            if booking.barber and booking.barber.google_calendar_credentials:
+                calendar_service = GoogleCalendarService(db)
+                success = calendar_service.delete_appointment_from_google(booking)
+                
+                if success:
+                    logger.info(f"AUTO-SYNC: Successfully deleted appointment {booking.id} from Google Calendar (legacy)")
+                else:
+                    logger.warning(f"AUTO-SYNC: Failed to delete appointment {booking.id} from Google Calendar (legacy)")
+            else:
+                logger.debug(f"AUTO-SYNC: Skipping Google Calendar sync for appointment {booking.id} - no Google Calendar connected (legacy)")
+                
+        except Exception as e:
+            # Don't fail appointment cancellation if calendar sync fails
+            logger.error(f"AUTO-SYNC: Error deleting appointment {booking.id} from Google Calendar (legacy): {str(e)}")
         
         return booking
 
@@ -1391,6 +1466,32 @@ def update_booking(
     # Commit changes
     db.commit()
     db.refresh(booking)
+    
+    # INSTANT AUTO-SYNC: Sync appointment update to Google Calendar immediately
+    try:
+        from services.google_calendar_service import GoogleCalendarService
+        
+        # Load barber relationship if not already loaded
+        if not hasattr(booking, 'barber') or booking.barber is None:
+            booking.barber = db.query(models.User).filter(
+                models.User.id == booking.barber_id
+            ).first()
+        
+        # Only sync if barber has Google Calendar connected
+        if booking.barber and booking.barber.google_calendar_credentials:
+            calendar_service = GoogleCalendarService(db)
+            success = calendar_service.update_appointment_in_google(booking)
+            
+            if success:
+                logger.info(f"AUTO-SYNC: Successfully updated appointment {booking.id} in Google Calendar")
+            else:
+                logger.warning(f"AUTO-SYNC: Failed to update appointment {booking.id} in Google Calendar")
+        else:
+            logger.debug(f"AUTO-SYNC: Skipping Google Calendar sync for appointment {booking.id} - no Google Calendar connected")
+            
+    except Exception as e:
+        # Don't fail appointment update if calendar sync fails
+        logger.error(f"AUTO-SYNC: Error syncing appointment update {booking.id} to Google Calendar: {str(e)}")
     
     logger.info(f"Updated booking {booking_id} for user {user_id}")
     
