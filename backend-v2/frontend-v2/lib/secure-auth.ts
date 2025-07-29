@@ -202,8 +202,13 @@ class SecureAuthService {
    */
   async logout(): Promise<void> {
     try {
-      await this.makeRequest('/api/v2/auth/logout', {
+      // Use direct fetch to avoid auth retry loop
+      await fetch(`${this.baseURL}/api/v2/auth/logout`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
       });
     } catch (error) {
       // Continue with logout even if server request fails

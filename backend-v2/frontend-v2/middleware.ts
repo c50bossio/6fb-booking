@@ -32,6 +32,7 @@ const publicRoutes = [
   '/offline',
   '/calendar-showcase',
   '/calendar', // Allow calendar to always show full interface
+  '/demo', // Allow all demo routes for development and testing
   '/test-modal', // Temporary for testing ShareBookingModal
   '/service-worker.js',
   '/manifest.json',
@@ -108,11 +109,20 @@ export function middleware(request: NextRequest) {
   }
   
   // Fallback to basic authentication handling
-  // Check localStorage token via custom header or cookie
-  // Since middleware runs on server, we check for token in different ways
-  const tokenFromCookie = request.cookies.get('token')?.value
+  // Check for secure auth cookies that our authentication system actually sets
+  const accessTokenCookie = request.cookies.get('access_token')?.value
+  const refreshTokenCookie = request.cookies.get('refresh_token')?.value
   const authHeader = request.headers.get('authorization')
-  const hasToken = tokenFromCookie || authHeader?.startsWith('Bearer ')
+  const hasToken = accessTokenCookie || refreshTokenCookie || authHeader?.startsWith('Bearer ')
+  
+  // DEBUG: Log cookie detection
+  if (process.env.NODE_ENV === 'development' && path.includes('/dashboard')) {
+    console.log(`🔍 MIDDLEWARE DEBUG for ${path}:`)
+    console.log(`   access_token cookie: ${accessTokenCookie ? 'FOUND' : 'MISSING'}`)
+    console.log(`   refresh_token cookie: ${refreshTokenCookie ? 'FOUND' : 'MISSING'}`)
+    console.log(`   hasToken: ${hasToken}`)
+    console.log(`   All cookies: ${Array.from(request.cookies.keys()).join(', ')}`)
+  }
 
   // Check if the route is public
   const isPublicRoute = publicRoutes.some(route => path === route || path.startsWith(route + '/'))
@@ -173,22 +183,22 @@ export function middleware(request: NextRequest) {
   if (process.env.NODE_ENV === 'development') {
     // Enhanced debugging with role and token info
     const userRoleCookie = request.cookies.get('user_role')?.value
-    const tokenCookie = request.cookies.get('token')?.value
+    const accessTokenCookie = request.cookies.get('access_token')?.value
     
     // Add debug headers
     response.headers.set('X-Debug-Route', path)
     response.headers.set('X-Debug-Auth', hasToken ? 'true' : 'false')
     response.headers.set('X-Debug-Role', userRoleCookie || 'none')
-    response.headers.set('X-Debug-Token-Present', tokenCookie ? 'true' : 'false')
+    response.headers.set('X-Debug-Access-Token-Present', accessTokenCookie ? 'true' : 'false')
     
     // Enhanced logging for authentication debugging
     if (path.includes('/calendar') || path.includes('/dashboard')) {
       console.log(`🔍 ${request.method} ${path} [${hasToken ? 'AUTH' : 'ANON'}] Role: ${userRoleCookie || 'none'}`)
       
-      if (tokenCookie) {
+      if (accessTokenCookie) {
         try {
           // Quick JWT payload inspection for debugging
-          const payload = JSON.parse(Buffer.from(tokenCookie.split('.')[1], 'base64').toString())
+          const payload = JSON.parse(Buffer.from(accessTokenCookie.split('.')[1], 'base64').toString())
           console.log(`🔑 Token Info: sub=${payload.sub}, role=${payload.role || 'missing'}, exp=${payload.exp}`)
         } catch (e) {
           console.log(`⚠️ Token parsing failed: ${e}`)

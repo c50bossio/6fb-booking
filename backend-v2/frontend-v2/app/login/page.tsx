@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { getProfile, resendVerification } from '@/lib/api'
 import { useSecureAuth } from '@/hooks/useSecureAuth'
 import { getDefaultDashboard } from '@/lib/routeGuards'
+import { secureAuth } from '@/lib/secure-auth'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/button'
@@ -35,8 +36,18 @@ function LoginContent() {
   const [resendState, resendActions] = useAsyncOperation()
   const rateLimit = useRateLimit('login-rate-limit')
   
-  // Use secure authentication hook
-  const { login: secureLogin, isLoading: secureAuthLoading } = useSecureAuth()
+  // Use only the login function to avoid auth checks on login page
+  const [authLoading, setAuthLoading] = useState(false)
+  
+  const secureLogin = async (email: string, password: string) => {
+    setAuthLoading(true)
+    try {
+      const userData = await secureAuth.login({ email, password })
+      return userData
+    } finally {
+      setAuthLoading(false)
+    }
+  }
 
   // Initialize form validation
   const {
@@ -350,7 +361,7 @@ function LoginContent() {
                     loadingText="Signing in..."
                     fullWidth
                     size="lg"
-                    disabled={!isFormValid || loginState.loading || secureAuthLoading || rateLimit.isLocked}
+                    disabled={!isFormValid || loginState.loading || authLoading || rateLimit.isLocked}
                     className="relative rounded-2xl bg-gradient-to-r from-teal-600 to-teal-700 dark:from-teal-500 dark:to-teal-600 hover:from-teal-700 hover:to-teal-800 dark:hover:from-teal-600 dark:hover:to-teal-700 text-white font-semibold py-4 px-6 shadow-md shadow-teal-500/20 dark:shadow-teal-400/15 transition-all duration-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     
@@ -362,7 +373,7 @@ function LoginContent() {
                           </svg>
                           Account Locked
                         </>
-                      ) : (loginState.loading || secureAuthLoading) ? (
+                      ) : (loginState.loading || authLoading) ? (
                         <>
                           <svg className="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

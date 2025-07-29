@@ -65,8 +65,17 @@ def set_auth_cookies(
         refresh_token: JWT refresh token  
         csrf_token: Optional CSRF token for additional protection
     """
-    # Determine if we're in production (use HTTPS cookies)
-    secure = getattr(settings, 'environment', 'development') == 'production'
+    # Determine environment and security settings
+    environment = getattr(settings, 'environment', 'development')
+    
+    # For cross-origin development (localhost:3000 -> localhost:8000), we need SameSite=None
+    # BUT we can't use Secure=True with HTTP localhost, so we disable it for development
+    if environment == 'development':
+        secure = False  # Allow HTTP localhost development
+        samesite = "none"  # Allows cross-origin cookie sending
+    else:
+        secure = True  # Always use secure cookies in production
+        samesite = "lax"  # More secure for same-origin production use
     
     # Set access token cookie (short-lived, HttpOnly)
     response.set_cookie(
@@ -74,7 +83,7 @@ def set_auth_cookies(
         value=access_token,
         httponly=True,
         secure=secure,
-        samesite="lax",
+        samesite=samesite,
         max_age=15 * 60,  # 15 minutes to match token expiry
         path="/"
     )
@@ -85,7 +94,7 @@ def set_auth_cookies(
         value=refresh_token,
         httponly=True,
         secure=secure,
-        samesite="lax",
+        samesite=samesite,
         max_age=7 * 24 * 60 * 60,  # 7 days to match token expiry
         path="/"  # Available to all paths including /api/v2/auth/
     )
@@ -97,7 +106,7 @@ def set_auth_cookies(
             value=csrf_token,
             httponly=False,  # JS needs to read this for CSRF headers
             secure=secure,
-            samesite="lax",
+            samesite=samesite,
             max_age=15 * 60,  # Same as access token
             path="/"
         )

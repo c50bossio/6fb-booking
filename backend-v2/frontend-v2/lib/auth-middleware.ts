@@ -9,30 +9,33 @@ import { checkRouteAccess } from './access-control'
 export function enhancedAuthMiddleware(request: NextRequest): NextResponse | null {
   const path = request.nextUrl.pathname
   
-  // Skip API routes and static files
+  // Skip API routes, static files, and demo routes
   if (
     path.startsWith('/api/') ||
     path.startsWith('/_next/') ||
     path.startsWith('/static/') ||
+    path.startsWith('/demo/') ||
+    path === '/demo' ||
     path.includes('.')
   ) {
     return null
   }
 
-  // Extract authentication information
-  const tokenFromCookie = request.cookies.get('token')?.value
+  // Extract authentication information from secure auth cookies
+  const accessTokenCookie = request.cookies.get('access_token')?.value
+  const refreshTokenCookie = request.cookies.get('refresh_token')?.value
   const authHeader = request.headers.get('authorization')
-  const hasToken = !!(tokenFromCookie || authHeader?.startsWith('Bearer '))
+  const hasToken = !!(accessTokenCookie || refreshTokenCookie || authHeader?.startsWith('Bearer '))
 
   // Enhanced user role extraction with multiple sources and JWT fallback
   let userRole = request.cookies.get('user_role')?.value || 
                  request.headers.get('x-user-role') || 
                  null
 
-  // If no role found in cookie/header, try to extract from JWT token
-  if (!userRole && tokenFromCookie) {
+  // If no role found in cookie/header, try to extract from JWT access token
+  if (!userRole && accessTokenCookie) {
     try {
-      const tokenPayload = JSON.parse(Buffer.from(tokenFromCookie.split('.')[1], 'base64').toString())
+      const tokenPayload = JSON.parse(Buffer.from(accessTokenCookie.split('.')[1], 'base64').toString())
       userRole = (tokenPayload.role || 
                  tokenPayload.user_role || 
                  tokenPayload.unified_role ||
