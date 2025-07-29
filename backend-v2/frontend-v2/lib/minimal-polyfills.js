@@ -7,4 +7,6 @@ if (typeof global !== 'undefined' && typeof self === 'undefined') {
   global.self = global;
 }
 
-module.exports = {};
+// Export global as default for webpack.ProvidePlugin
+module.exports = typeof global !== 'undefined' ? global : {};
+module.exports.default = module.exports;

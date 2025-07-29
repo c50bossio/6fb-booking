@@ -126,124 +126,43 @@ const nextConfig = {
     const webpack = require('webpack');
     const path = require('path');
     
-    // Server-side polyfills for Vercel deployment
+    // Server-side configuration for Vercel deployment
     if (isServer) {
       config.plugins = config.plugins || [];
       
-      // 1. Load minimal polyfills only
-      require('./lib/minimal-polyfills.js');
-      
-      // 2. DefinePlugin for self only
+      // 1. Define globals for SSR compatibility
       config.plugins.push(
         new webpack.DefinePlugin({
-          'typeof self': '"object"'
+          'typeof window': JSON.stringify('undefined'),
+          'typeof self': JSON.stringify('object')
         })
       );
       
-      // 3. Skip entry modification to avoid webpack runtime issues
+      // 2. Provide plugin for self global
+      config.plugins.push(
+        new webpack.ProvidePlugin({
+          self: [path.resolve(__dirname, 'lib/minimal-polyfills.js'), 'default']
+        })
+      );
       
-      // 4. Alias for consistent polyfill access
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'server-globals': path.resolve(__dirname, 'lib/server-globals.js')
-      };
-    }
-    
-    // SSR fix for browser globals and problematic dependencies
-    if (isServer) {
-      // Load comprehensive SSR polyfills before anything else
-      const path = require('path');
-      const nodeStartupPolyfillPath = path.resolve(__dirname, 'lib/node-startup-polyfills.js');
-      const globalPolyfillPath = path.resolve(__dirname, 'lib/global-polyfills.js');
-      const ssrPolyfillPath = path.resolve(__dirname, 'lib/ssr-polyfills.js');
-      const rootPolyfillPath = path.resolve(__dirname, 'polyfills.js');
-      
-      // Load Node.js startup polyfill FIRST (for styled-jsx)
-      if (require('fs').existsSync(nodeStartupPolyfillPath)) {
-        require(nodeStartupPolyfillPath);
-      }
-      
-      // Load global polyfill immediately
-      if (require('fs').existsSync(globalPolyfillPath)) {
-        require(globalPolyfillPath);
-      }
-      
-      // Load SSR polyfills
-      if (require('fs').existsSync(ssrPolyfillPath)) {
-        require(ssrPolyfillPath);
-      }
-      
-      // Load root polyfill
-      if (require('fs').existsSync(rootPolyfillPath)) {
-        require(rootPolyfillPath);
-      }
-      
-      // 5. Enhanced entry point modification for vendor chunks
-      // DISABLED: Causes webpack runtime errors on Vercel
-      /*
-      const originalEntry = config.entry;
-      config.entry = async () => {
-        const entries = await originalEntry();
-        
-        const polyfillPath = path.resolve(__dirname, 'lib/vercel-polyfills.js');
-        
-        // Force polyfills into EVERY entry including vendor chunks
-        if (typeof entries === 'function') {
-          const originalEntryFn = entries;
-          return async () => {
-            const result = await originalEntryFn();
-            // Inject into all entries
-            Object.keys(result).forEach(key => {
-              const entry = result[key];
-              if (Array.isArray(entry)) {
-                result[key] = [polyfillPath, ...entry];
-              } else if (typeof entry === 'string') {
-                result[key] = [polyfillPath, entry];
-              } else if (entry && entry.import) {
-                if (Array.isArray(entry.import)) {
-                  entry.import = [polyfillPath, ...entry.import];
-                } else {
-                  entry.import = [polyfillPath, entry.import];
-                }
-              }
-            });
-            return result;
-          };
-        } else {
-          // Direct entries object
-          Object.keys(entries).forEach(key => {
-            const entry = entries[key];
-            if (Array.isArray(entry)) {
-              entries[key] = [polyfillPath, ...entry];
-            } else if (typeof entry === 'string') {
-              entries[key] = [polyfillPath, entry];
-            } else if (entry && entry.import) {
-              if (Array.isArray(entry.import)) {
-                entry.import = [polyfillPath, ...entry.import];
-              } else {
-                entry.import = [polyfillPath, entry.import];
-              }
-            }
-          });
-        }
-        
-        return entries;
-      };
-      */
-      
-      // Add minimal alias
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'minimal-polyfills': path.resolve(__dirname, 'lib/minimal-polyfills.js')
+      // 3. Ensure proper module resolution
+      config.resolve = {
+        ...config.resolve,
+        alias: {
+          ...config.resolve.alias,
+          'server-globals': path.resolve(__dirname, 'lib/server-globals.js')
+        },
+        mainFields: ['main', 'module']
       };
       
+      // 4. Configure fallbacks for Node.js modules
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
         canvas: false,
-      }
+      };
       
       // Enhanced externalization for Vercel Lambda compatibility
       config.externals = config.externals || [];
@@ -437,42 +356,28 @@ const nextConfig = {
         },
       }
     } else if (!dev && process.env.VERCEL === '1') {
-      // Enhanced Vercel optimization with SSR-safe chunk splitting
+      // Simplified Vercel optimization to avoid webpack runtime errors
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
           cacheGroups: {
-            // Separate problematic browser-only libraries
-            browserLibs: {
-              test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2|recharts|qrcode|jspdf|canvas)[\\/]/,
-              name: 'browser-libs',
-              chunks: 'all',
-              priority: 30,
-              enforce: true,
+            default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true
             },
-            // Safe vendor libraries
             vendor: {
-              test: function(module) {
-                // Include node_modules but exclude problematic libraries
-                if (!module.resource) return false;
-                
-                const isNodeModule = /[\\/]node_modules[\\/]/.test(module.resource);
-                const isProblematic = /[\\/]node_modules[\\/](chart\.js|react-chartjs-2|recharts|qrcode|jspdf|canvas)[\\/]/.test(module.resource);
-                
-                return isNodeModule && !isProblematic;
-              },
+              test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
-              chunks: 'all',
-              priority: 10,
-            },
-          },
+              priority: -10
+            }
+          }
         },
-        // Enhanced module concatenation for Vercel
+        // Module concatenation
         concatenateModules: true,
-        // Better tree shaking
-        usedExports: true,
-        sideEffects: false,
+        // Tree shaking
+        usedExports: true
       }
     }
 

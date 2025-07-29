@@ -1,6 +1,15 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run build",
+  "outputDirectory": ".next",
   "installCommand": "npm install",
-  "outputDirectory": ".next"
+  "functions": {
+    "app/**/*.js": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NODE_OPTIONS": "--max-old-space-size=4096"
+  }
 }

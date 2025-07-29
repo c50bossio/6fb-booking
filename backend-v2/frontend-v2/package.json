@@ -7,7 +7,7 @@
     "dev:turbo": "next dev --turbo",
     "staging": "cp .env.staging .env.local && next dev -p 3001",
     "staging:turbo": "cp .env.staging .env.local && next dev --turbo -p 3001",
-    "build": "node -r ./vercel-build-polyfills.js ./node_modules/.bin/next build",
+    "build": "next build",
     "build:analyze": "ANALYZE=true next build",
     "build:profile": "next build --profile",
     "build:debug": "next build --debug",
