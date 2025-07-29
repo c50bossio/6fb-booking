@@ -229,8 +229,13 @@ const nextConfig = {
           ? path.resolve(__dirname, 'lib/vercel-polyfills.js')
           : globalPolyfillPath;
         
-        // Prepend polyfills to all entries (startup polyfill first)
+        // Prepend polyfills to entries (excluding edge runtime routes)
         Object.keys(entries).forEach(key => {
+          // Skip edge runtime routes to avoid global scope conflicts
+          if (key.includes('edge-runtime') || key.includes('/api/')) {
+            return;
+          }
+          
           const entry = entries[key];
           if (Array.isArray(entry)) {
             entries[key] = [nodeStartupPolyfillPath, polyfillPath, ...entry];
