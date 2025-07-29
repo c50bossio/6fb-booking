@@ -69,38 +69,66 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       try {
         const userData = await getProfile()
-        setUser(userData)
-        setError(null)
         
-        // Sync user role with localStorage if missing
-        if (userData && !hasUserRole) {
-          const userRole = userData.role || 'barber'
-          localStorage.setItem('user_role', userRole)
-          document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+        // Success: Set user data and clear any errors
+        if (userData && userData.id) {
+          setUser(userData)
+          setError(null)
+          
+          // Sync user role with localStorage if missing
+          if (!hasUserRole) {
+            const userRole = userData.role || 'barber'
+            localStorage.setItem('user_role', userRole)
+            document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+          }
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Authentication successful:', { 
+              user: userData.email, 
+              role: userData.role 
+            })
+            // Temporary visual indicator
+            document.title = '✅ Auth Success - ' + document.title
+          }
+        } else {
+          // Invalid user data received
+          throw new Error('Invalid user data received from server')
         }
         
       } catch (err: any) {
-        
         // Enhanced error logging for debugging
         if (process.env.NODE_ENV === 'development') {
-          console.log('Auth error debug:', {
+          console.log('❌ Authentication failed:', {
             status: err.status,
             message: err.message,
+            name: err.name,
             hasToken: !!hasToken,
-            tokenPreview: hasToken ? hasToken.substring(0, 10) + '...' : 'none'
+            endpoint: '/api/v2/auth/me',
+            fullError: err
           })
+          // Temporary visual indicator with error details
+          document.title = `❌ Auth Failed (${err.status || 'unknown'}: ${err.message || 'no message'}) - ` + document.title.replace(/^❌.*? - /, '')
         }
         
-        // Don't provide fake user data - leave as null for proper state management
-        setUser(null)
-        setError('Authentication required')
-        
-        // Use centralized auth error handling
-        handleAuthError(err, router, { 
-          clearTokens: true, 
-          redirectToLogin: routeIsProtected,
-          skipPublicRoutes: false 
-        })
+        // Only show error and redirect if this is actually an auth error
+        if (err.status === 401 || err.status === 403 || !hasToken) {
+          setUser(null)
+          setError('Authentication required')
+          
+          // Use centralized auth error handling
+          handleAuthError(err, router, { 
+            clearTokens: true, 
+            redirectToLogin: routeIsProtected,
+            skipPublicRoutes: false 
+          })
+        } else {
+          // For other errors (network, server errors), don't clear auth state
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('⚠️ Non-auth error during profile fetch:', err.message)
+          }
+          // Don't set error state for non-auth issues
+          setError(null)
+        }
       } finally {
         setLoading(false)
       }

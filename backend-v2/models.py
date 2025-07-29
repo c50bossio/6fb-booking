@@ -142,11 +142,11 @@ class User(Base):
     six_fb_dashboards = relationship("SixFBMethodologyDashboard", back_populates="user", cascade="all, delete-orphan")
     
     # Six Figure Barber CRM relationships
-    six_fb_crm_communications = relationship("SixFBClientCommunication", back_populates="user", cascade="all, delete-orphan")
-    six_fb_crm_engagements = relationship("SixFBClientEngagementHistory", back_populates="user", cascade="all, delete-orphan")
-    six_fb_crm_workflows = relationship("SixFBAutomatedWorkflow", back_populates="user", cascade="all, delete-orphan")
-    six_fb_crm_workflow_executions = relationship("SixFBWorkflowExecution", back_populates="user", cascade="all, delete-orphan")
-    six_fb_crm_analytics = relationship("SixFBClientAnalyticsSummary", back_populates="user", cascade="all, delete-orphan")
+    # six_fb_crm_communications = relationship("SixFBClientCommunication", back_populates="user", cascade="all, delete-orphan")
+    # six_fb_crm_engagements = relationship("SixFBClientEngagementHistory", back_populates="user", cascade="all, delete-orphan")
+    # six_fb_crm_workflows = relationship("SixFBAutomatedWorkflow", back_populates="user", cascade="all, delete-orphan")
+    # six_fb_crm_workflow_executions = relationship("SixFBWorkflowExecution", back_populates="user", cascade="all, delete-orphan")
+    # six_fb_crm_analytics = relationship("SixFBClientAnalyticsSummary", back_populates="user", cascade="all, delete-orphan")
     
     # Gamification relationships
     achievements = relationship("UserAchievement", back_populates="user", cascade="all, delete-orphan")
@@ -583,14 +583,14 @@ class Client(Base):
     six_fb_value_profile = relationship("SixFBClientValueProfile", back_populates="client", uselist=False, cascade="all, delete-orphan")
     
     # Six Figure Barber CRM relationships
-    six_fb_crm_communications = relationship("SixFBClientCommunication", back_populates="client", cascade="all, delete-orphan")
-    six_fb_crm_engagements = relationship("SixFBClientEngagementHistory", back_populates="client", cascade="all, delete-orphan")
-    six_fb_crm_journey_stages = relationship("SixFBClientJourneyStage", back_populates="client", cascade="all, delete-orphan")
-    six_fb_crm_touchpoint_plans = relationship("SixFBClientTouchpointPlan", back_populates="client", cascade="all, delete-orphan")
-    six_fb_crm_workflow_executions = relationship("SixFBWorkflowExecution", back_populates="client", cascade="all, delete-orphan")
-    six_fb_crm_behavior_analytics = relationship("SixFBClientBehaviorAnalytics", back_populates="client", cascade="all, delete-orphan")
-    six_fb_crm_communication_profiles = relationship("SixFBClientCommunicationProfile", back_populates="client", cascade="all, delete-orphan")
-    six_fb_crm_tier_history = relationship("SixFBClientValueTierHistory", back_populates="client", cascade="all, delete-orphan")
+    # six_fb_crm_communications = relationship("SixFBClientCommunication", back_populates="client", cascade="all, delete-orphan")
+    # six_fb_crm_engagements = relationship("SixFBClientEngagementHistory", back_populates="client", cascade="all, delete-orphan")
+    # six_fb_crm_journey_stages = relationship("SixFBClientJourneyStage", back_populates="client", cascade="all, delete-orphan")
+    # six_fb_crm_touchpoint_plans = relationship("SixFBClientTouchpointPlan", back_populates="client", cascade="all, delete-orphan")
+    # six_fb_crm_workflow_executions = relationship("SixFBWorkflowExecution", back_populates="client", cascade="all, delete-orphan")
+    # six_fb_crm_behavior_analytics = relationship("SixFBClientBehaviorAnalytics", back_populates="client", cascade="all, delete-orphan")
+    # six_fb_crm_communication_profiles = relationship("SixFBClientCommunicationProfile", back_populates="client", cascade="all, delete-orphan")
+    # six_fb_crm_tier_history = relationship("SixFBClientValueTierHistory", back_populates="client", cascade="all, delete-orphan")
     
     @property
     def name(self) -> str:

@@ -61,6 +61,7 @@ export function handleAuthError(
   // Clear stored tokens and role information
   if (clearTokens && typeof window !== 'undefined') {
     localStorage.removeItem('token')
+    localStorage.removeItem('access_token') // FIX: Also clear access_token 
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user_role')
     // Clear cookies too
