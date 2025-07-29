@@ -27,6 +27,11 @@
       "destination": "/api/:path*"
     }
   ],
+  "functions": {
+    "app/**": {
+      "maxDuration": 300
+    }
+  },
   "env": {
     "NODE_ENV": "production",
     "NEXT_TELEMETRY_DISABLED": "1",

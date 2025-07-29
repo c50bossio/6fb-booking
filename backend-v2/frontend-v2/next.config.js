@@ -483,12 +483,12 @@ const nextConfig = {
     keepAliveTimeout: 5000,
   },
 
-  // Temporarily skip TypeScript/ESLint errors to get app running
+  // Skip TypeScript/ESLint during Vercel builds for speed
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: process.env.VERCEL === '1',
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: process.env.VERCEL === '1',
   },
 
   // Client-side error handling
