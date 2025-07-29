@@ -157,6 +157,32 @@ const nextConfig = {
 
   // Webpack optimizations
   webpack: (config, { isServer, dev }) => {
+    // Fix for 'self is not defined' error in SSR
+    if (isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: require.resolve('crypto-browserify'),
+        stream: require.resolve('stream-browserify'),
+        buffer: require.resolve('buffer'),
+      }
+      
+      // Define globals for server-side rendering
+      config.plugins = config.plugins || []
+      config.plugins.push(
+        new config.constructor.DefinePlugin({
+          'typeof window': JSON.stringify('undefined'),
+          'typeof self': JSON.stringify('undefined'),
+          'typeof navigator': JSON.stringify('undefined'),
+          'self': 'undefined',
+          'window': 'undefined',
+          'navigator': 'undefined',
+        })
+      )
+    }
+
     // Port conflict prevention and better development experience
     if (dev && !isServer) {
       // Handle port conflicts more gracefully
