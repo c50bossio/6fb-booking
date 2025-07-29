@@ -29,7 +29,7 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
         return
       }
       
-      const hasTokens = localStorage.getItem('token') || localStorage.getItem('refresh_token')
+      const hasTokens = localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('refresh_token')
       if (!hasTokens) {
         setUser(null)
         setIsLoading(false)
@@ -49,8 +49,8 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
     setError(null)
     
     try {
-      // Check if we have a token first
-      const token = localStorage.getItem('token')
+      // Check if we have a token first (try new naming, fall back to legacy)
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token')
       
       if (!token) {
         setUser(null)
@@ -87,10 +87,13 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
           setError(null)
         } else if (response.status === 401 || response.status === 403) {
           // Clear invalid tokens and STOP further auth attempts
-          localStorage.removeItem('token')
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('token') // Legacy cleanup
           localStorage.removeItem('refresh_token')
           localStorage.removeItem('user')
-          document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+          document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax'
+          document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax'
+          document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax' // Legacy cleanup
           
           // CRITICAL: Set a flag to prevent further auth loops
           localStorage.setItem('auth_disabled', 'true')
@@ -135,13 +138,17 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
       
       // Ensure complete cleanup of all auth storage
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('token')
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('token') // Legacy cleanup
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
         // Clear session storage too
         sessionStorage.clear()
-        // Clear auth cookie
-        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+        // Clear auth cookies with correct names
+        document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax'
+        document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax'
+        document.cookie = 'csrf_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax'
+        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax' // Legacy cleanup
       }
       
       // Redirect to homepage after logout
@@ -197,8 +204,9 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
           if (data.refresh_token) {
             localStorage.setItem('refresh_token', data.refresh_token)
           }
-          // Update cookie as well
-          document.cookie = `token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+          // Update cookies with correct names that match backend/middleware expectations
+          document.cookie = `access_token=${data.access_token}; path=/; max-age=${15 * 60}; samesite=lax`
+          document.cookie = `refresh_token=${data.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`
         }
         
         // Re-check auth state to update user
@@ -217,15 +225,16 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
   const setAuthTokens = (accessToken: string, refreshToken: string) => {
     
     if (typeof window !== 'undefined') {
-      // Store tokens in localStorage
-      localStorage.setItem('token', accessToken)
+      // Store tokens in localStorage with correct names
+      localStorage.setItem('access_token', accessToken)
       localStorage.setItem('refresh_token', refreshToken)
       
       // Clear auth disabled flag on successful login
       localStorage.removeItem('auth_disabled')
       
-      // Also set the auth cookie for middleware
-      document.cookie = `token=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+      // Set cookies with correct names that match backend/middleware expectations
+      document.cookie = `access_token=${accessToken}; path=/; max-age=${15 * 60}; samesite=lax`
+      document.cookie = `refresh_token=${refreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`
       
       // Trigger auth state check to update user profile
       checkAuthState()

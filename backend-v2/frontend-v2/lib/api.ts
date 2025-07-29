@@ -114,8 +114,8 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     }
   }
   // HYBRID AUTH: Support both cookies and localStorage for backward compatibility
-  // Try localStorage first, then fall back to cookies
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  // Try new naming convention first, then fall back to legacy
+  const token = typeof window !== 'undefined' ? (localStorage.getItem('access_token') || localStorage.getItem('token')) : null
   
   // SECURITY FIX: Import CSRF utilities for request protection
   const { getCsrfHeaders } = await import('./csrf-utils')

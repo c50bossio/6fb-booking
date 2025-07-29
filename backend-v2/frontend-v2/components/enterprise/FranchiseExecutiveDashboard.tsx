@@ -39,7 +39,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer
-} from 'recharts'
+} from '@/lib/recharts-dynamic'
 
 interface FranchiseExecutiveDashboardProps {
   networkId: string
