@@ -13,9 +13,10 @@ import {
   Legend,
   Filler,
   ChartOptions,
-  ChartData
-} from 'chart.js'
-import { Line, Bar } from 'react-chartjs-2'
+  ChartData,
+  Line,
+  Bar
+} from '@/lib/chartjs-dynamic'
 import { RevenueDataPoint } from '@/services/analytics_service'
 
 // Register Chart.js components

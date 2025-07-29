@@ -2,16 +2,16 @@
 
 import React from 'react'
 import {
-  Chart as ChartJS,
+  ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
   Title,
   Tooltip,
   Legend,
+  Bar,
   ChartOptions
-} from 'chart.js'
-import { Bar } from 'react-chartjs-2'
+} from '@/lib/chartjs-dynamic'
 import { ServiceMetrics } from '@/services/analytics_service'
 import { StarIcon } from '@heroicons/react/24/solid'
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import {
-  Chart as ChartJS,
+  ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
@@ -12,9 +12,11 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-  Filler
-} from 'chart.js'
-import { Line, Bar, Doughnut } from 'react-chartjs-2'
+  Filler,
+  Line,
+  Bar,
+  Doughnut
+} from '@/lib/chartjs-dynamic'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ProgressIndicator } from '@/components/ui/ProgressIndicator'

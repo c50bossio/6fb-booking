@@ -12,7 +12,7 @@ import {
   Tooltip,
   Legend,
   ChartOptions
-} from 'chart.js'
+} from '@/lib/chartjs-dynamic'
 import { Doughnut, Bar } from 'react-chartjs-2'
 import { ClientMetrics } from '@/services/analytics_service'
 
