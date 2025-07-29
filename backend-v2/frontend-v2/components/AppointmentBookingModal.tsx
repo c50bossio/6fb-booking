@@ -19,7 +19,7 @@ import { ClientSelector } from '@/components/calendar/shared/ClientSelector'
 import { DateTimePicker } from '@/components/calendar/shared/DateTimePicker'
 import { useAppointmentForm, useTimeSlots } from '@/components/calendar/hooks/useAppointmentForm'
 import { useAppointmentServices } from '@/components/calendar/hooks/useAppointmentServices'
-import { useConflictDetection } from '@/lib/appointment-conflicts'
+import { useConflictDetection } from '@/hooks/useBarberAvailability'
 import { 
   appointmentsAPI, 
   type Service, 

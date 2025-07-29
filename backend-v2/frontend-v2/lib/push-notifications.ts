@@ -136,14 +136,19 @@ export class PWAPushNotificationSystem {
   private scheduledNotifications: Map<string, ScheduledNotification> = new Map()
   private registration: ServiceWorkerRegistration | null = null
   private subscription: PushSubscription | null = null
+  private isBrowser = typeof window !== 'undefined'
 
   constructor(config?: Partial<NotificationConfig>) {
     this.config = { ...DEFAULT_CONFIG, ...config }
-    this.initializeSystem()
+    
+    // Only initialize in browser environment
+    if (this.isBrowser) {
+      this.initializeSystem()
+    }
   }
 
   private async initializeSystem() {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!this.isBrowser || !('serviceWorker' in navigator) || !('PushManager' in window)) {
       console.warn('Push notifications not supported')
       return
     }
@@ -757,6 +762,7 @@ class PushNotificationManager {
   private isInitialized = false;
   private userId: string | null = null;
   private barberId: string | null = null;
+  private isBrowser = typeof window !== 'undefined';
 
   /**
    * Initialize push notification system

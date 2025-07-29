@@ -48,21 +48,31 @@ class OfflineCalendarManager {
   private db: IDBDatabase | null = null;
   private dbVersion = 3;
   private syncQueue: OfflineAppointment[] = [];
-  private isOnline = navigator.onLine;
+  private isOnline = true; // Default to online
   private autoSyncInterval: NodeJS.Timeout | null = null;
   private conflictResolver: ConflictResolver;
+  private isBrowser = typeof window !== 'undefined';
 
   constructor() {
     this.conflictResolver = new ConflictResolver();
-    this.initializeDatabase();
-    this.setupNetworkListeners();
-    this.startAutoSync();
+    
+    // Only initialize browser-specific features if in browser environment
+    if (this.isBrowser) {
+      this.isOnline = navigator.onLine;
+      this.initializeDatabase();
+      this.setupNetworkListeners();
+      this.startAutoSync();
+    }
   }
 
   /**
    * Initialize IndexedDB for offline storage
    */
   private async initializeDatabase(): Promise<void> {
+    if (!this.isBrowser || typeof indexedDB === 'undefined') {
+      return Promise.resolve();
+    }
+    
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('BookedBarberCalendar', this.dbVersion);
 
@@ -133,6 +143,10 @@ class OfflineCalendarManager {
    * Setup network status listeners
    */
   private setupNetworkListeners(): void {
+    if (!this.isBrowser || typeof window === 'undefined') {
+      return;
+    }
+    
     window.addEventListener('online', () => {
       this.isOnline = true;
       this.syncPendingAppointments();
