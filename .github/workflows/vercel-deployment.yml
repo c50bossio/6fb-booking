@@ -68,7 +68,7 @@ jobs:
           NEXT_PUBLIC_CALENDAR_SYNC_INTERVAL: 300000
           
       - name: Deploy to Vercel (Staging)
-        uses: vercel/action@v1
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -133,7 +133,7 @@ jobs:
           NEXT_PUBLIC_CALENDAR_SYNC_INTERVAL: 300000
           
       - name: Deploy to Vercel (Production)
-        uses: vercel/action@v1
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -197,7 +197,7 @@ jobs:
           NEXT_PUBLIC_CALENDAR_SYNC_INTERVAL: 300000
           
       - name: Deploy Preview to Vercel
-        uses: vercel/action@v1
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
