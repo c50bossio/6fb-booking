@@ -1,0 +1,75 @@
+{
+  "root_group": {
+    "duration": 1800000,
+    "checks": 15420,
+    "iterations": 28500
+  },
+  "metrics": {
+    "http_req_duration": {
+      "values": {
+        "avg": 425.8,
+        "min": 156.3,
+        "max": 2150.9,
+        "p(90)": 789.4,
+        "p(95)": 1045.2,
+        "p(99)": 1650.7,
+        "count": 28500
+      }
+    },
+    "http_req_failed": {
+      "values": {
+        "rate": 0.012,
+        "passes": 28158,
+        "fails": 342
+      }
+    },
+    "http_reqs": {
+      "values": {
+        "count": 28500,
+        "rate": 15.8
+      }
+    },
+    "checks": {
+      "values": {
+        "passes": 14875,
+        "fails": 545
+      }
+    },
+    "vus": {
+      "values": {
+        "max": 5000,
+        "min": 0
+      }
+    },
+    "six_fb_dashboard_load_time": {
+      "values": {
+        "avg": 1250.3,
+        "min": 450.2,
+        "max": 3200.8,
+        "p(90)": 1890.5,
+        "p(95)": 2340.7,
+        "count": 2840
+      }
+    },
+    "six_fb_revenue_optimization_api_time": {
+      "values": {
+        "avg": 680.4,
+        "min": 320.1,
+        "max": 1850.6,
+        "p(90)": 1100.2,
+        "p(95)": 1350.8,
+        "count": 3120
+      }
+    },
+    "six_fb_crm_api_time": {
+      "values": {
+        "avg": 520.7,
+        "min": 280.5,
+        "max": 1450.3,
+        "p(90)": 890.1,
+        "p(95)": 1050.4,
+        "count": 2950
+      }
+    }
+  }
+}

@@ -93,23 +93,28 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const theme = localStorage.getItem('6fb-theme') || 'system';
-                const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                const resolvedTheme = theme === 'system' ? systemTheme : theme;
-                document.documentElement.classList.add(resolvedTheme);
-                document.documentElement.setAttribute('data-theme', resolvedTheme);
-                
-                // Set initial theme-color meta tag (with SSR protection)
-                if (typeof window !== 'undefined' && document.head && document.head.appendChild) {
-                  const metaThemeColor = document.createElement('meta');
-                  metaThemeColor.name = 'theme-color';
-                  metaThemeColor.content = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
-                  document.head.appendChild(metaThemeColor);
+                // SSR-safe theme initialization
+                if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+                  const theme = localStorage.getItem('6fb-theme') || 'system';
+                  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  const resolvedTheme = theme === 'system' ? systemTheme : theme;
+                  document.documentElement.classList.add(resolvedTheme);
+                  document.documentElement.setAttribute('data-theme', resolvedTheme);
+                  
+                  // Set initial theme-color meta tag (with SSR protection)
+                  if (document.head && document.head.appendChild) {
+                    const metaThemeColor = document.createElement('meta');
+                    metaThemeColor.name = 'theme-color';
+                    metaThemeColor.content = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
+                    document.head.appendChild(metaThemeColor);
+                  }
                 }
               } catch (e) {
-                // Fallback to light theme
-                document.documentElement.classList.add('light');
-                document.documentElement.setAttribute('data-theme', 'light');
+                // Fallback to light theme (SSR-safe)
+                if (typeof document !== 'undefined') {
+                  document.documentElement.classList.add('light');
+                  document.documentElement.setAttribute('data-theme', 'light');
+                }
               }
             `,
           }}
@@ -119,19 +124,22 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              
-              // Set default consent state - all denied until user consents
-              gtag('consent', 'default', {
-                'analytics_storage': 'denied',
-                'ad_storage': 'denied',
-                'ad_user_data': 'denied',
-                'ad_personalization': 'denied',
-                'functionality_storage': 'denied',
-                'personalization_storage': 'denied',
-                'security_storage': 'granted'
-              });
+              // SSR-safe Google Consent Mode initialization
+              if (typeof window !== 'undefined') {
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                
+                // Set default consent state - all denied until user consents
+                gtag('consent', 'default', {
+                  'analytics_storage': 'denied',
+                  'ad_storage': 'denied',
+                  'ad_user_data': 'denied',
+                  'ad_personalization': 'denied',
+                  'functionality_storage': 'denied',
+                  'personalization_storage': 'denied',
+                  'security_storage': 'granted'
+                });
+              }
             `,
           }}
         />
@@ -202,8 +210,8 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Web Vitals monitoring
-              if ('PerformanceObserver' in window) {
+              // SSR-safe Web Vitals monitoring
+              if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
                 const observer = new PerformanceObserver((list) => {
                   for (const entry of list.getEntries()) {
                     if (entry.entryType === 'largest-contentful-paint') {

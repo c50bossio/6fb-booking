@@ -228,11 +228,7 @@ class SecurityMonitoring:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": f"*Security Event*
-*Type*: {event_data['event_type']}
-*Severity*: {event_data['severity']}
-*Description*: {event_data['description']}
-*Time*: {event_data['timestamp']}"
+                            "text": f"*Security Event*\n*Type*: {event_data['event_type']}\n*Severity*: {event_data['severity']}\n*Description*: {event_data['description']}\n*Time*: {event_data['timestamp']}"
                         }
                     }
                 ]

@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 from main import app
 from db import get_db, Base
 from models import User, Appointment, Location, Service
-from services.booking_service import BookingService
+# from services.booking_service import BookingService  # Service may not exist
 from services.payment_service import PaymentService
 from services.notification_service import NotificationService
 from services.integration_service import IntegrationService

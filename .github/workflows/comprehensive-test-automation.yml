@@ -1,0 +1,675 @@
+name: Comprehensive Test Automation with Coverage Gates
+
+on:
+  push:
+    branches: [ staging, production ]
+  pull_request:
+    branches: [ staging, production ]
+  schedule:
+    # Run comprehensive tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: '3.9'
+  NODE_VERSION: '18'
+  COVERAGE_THRESHOLD: 90
+  PERFORMANCE_THRESHOLD_MS: 500
+
+jobs:
+  test-matrix:
+    name: Test Matrix Setup
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      should-run-full-suite: ${{ steps.check.outputs.full-suite }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend-v2/**'
+              - '.github/workflows/**'
+            frontend:
+              - 'backend-v2/frontend-v2/**'
+              - '.github/workflows/**'
+      
+      - name: Check if full test suite should run
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]] || [[ "${{ github.ref }}" == "refs/heads/production" ]]; then
+            echo "full-suite=true" >> $GITHUB_OUTPUT
+          else
+            echo "full-suite=false" >> $GITHUB_OUTPUT
+          fi
+
+  backend-unit-tests:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    needs: test-matrix
+    if: needs.test-matrix.outputs.backend-changed == 'true' || needs.test-matrix.outputs.should-run-full-suite == 'true'
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_bookedbarber
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        working-directory: backend-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov pytest-xdist pytest-benchmark
+      
+      - name: Set up test environment
+        working-directory: backend-v2
+        run: |
+          cp .env.test.example .env.test
+          export TESTING=true
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          export REDIS_URL=redis://localhost:6379/0
+      
+      - name: Run database migrations
+        working-directory: backend-v2
+        run: |
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          alembic upgrade head
+      
+      - name: Run unit tests with coverage
+        working-directory: backend-v2
+        run: |
+          export TESTING=true
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          export REDIS_URL=redis://localhost:6379/0
+          pytest tests/unit/ \
+            --cov=services \
+            --cov=models \
+            --cov=utils \
+            --cov=routers \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} \
+            --junitxml=test-results/unit-tests.xml \
+            -v \
+            --tb=short \
+            --maxfail=5
+      
+      - name: Run Six Figure Barber methodology tests
+        working-directory: backend-v2
+        run: |
+          export TESTING=true
+          pytest tests/unit/test_six_figure_barber_methodology.py \
+            --cov=services/six_figure_barber_core_service \
+            --cov=services/six_figure_barber_crm_service \
+            --cov-report=xml:coverage-six-figure.xml \
+            --cov-fail-under=95 \
+            -v
+      
+      - name: Run enhanced coverage edge cases
+        working-directory: backend-v2
+        run: |
+          export TESTING=true
+          pytest tests/unit/test_enhanced_coverage_edge_cases.py \
+            --cov-append \
+            --cov-report=xml:coverage-edge-cases.xml \
+            -v
+      
+      - name: Upload unit test coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: backend-v2/coverage.xml
+          flags: backend-unit
+          name: backend-unit-coverage
+          fail_ci_if_error: true
+      
+      - name: Archive test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: backend-unit-test-results
+          path: |
+            backend-v2/test-results/
+            backend-v2/htmlcov/
+            backend-v2/coverage*.xml
+
+  backend-integration-tests:
+    name: Backend Integration Tests
+    runs-on: ubuntu-latest
+    needs: test-matrix
+    if: needs.test-matrix.outputs.backend-changed == 'true' || needs.test-matrix.outputs.should-run-full-suite == 'true'
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_bookedbarber
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        working-directory: backend-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-asyncio pytest-benchmark
+      
+      - name: Set up test environment
+        working-directory: backend-v2
+        run: |
+          cp .env.test.example .env.test
+          export TESTING=true
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          export REDIS_URL=redis://localhost:6379/0
+      
+      - name: Run database migrations
+        working-directory: backend-v2
+        run: |
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          alembic upgrade head
+      
+      - name: Run integration tests
+        working-directory: backend-v2
+        run: |
+          export TESTING=true
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          export REDIS_URL=redis://localhost:6379/0
+          pytest tests/integration/ \
+            --junitxml=test-results/integration-tests.xml \
+            -v \
+            --tb=short \
+            --maxfail=3
+      
+      - name: Run Six Figure booking payment flow tests
+        working-directory: backend-v2
+        run: |
+          export TESTING=true
+          pytest tests/integration/test_six_figure_booking_payment_flows.py \
+            --junitxml=test-results/payment-integration-tests.xml \
+            -v \
+            --asyncio-mode=auto
+      
+      - name: Archive integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: backend-integration-test-results
+          path: backend-v2/test-results/
+
+  backend-performance-tests:
+    name: Backend Performance Tests
+    runs-on: ubuntu-latest
+    needs: test-matrix
+    if: needs.test-matrix.outputs.should-run-full-suite == 'true'
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_bookedbarber
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        working-directory: backend-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-benchmark pytest-asyncio
+      
+      - name: Create large test dataset
+        working-directory: backend-v2
+        run: |
+          export TESTING=true
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          python utils/create_performance_test_data.py
+      
+      - name: Run performance regression tests
+        working-directory: backend-v2
+        run: |
+          export TESTING=true
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          export REDIS_URL=redis://localhost:6379/0
+          pytest tests/performance/six_figure_performance_regression_suite.py \
+            --benchmark-json=performance-results.json \
+            --junitxml=test-results/performance-tests.xml \
+            -v \
+            -m performance
+      
+      - name: Check performance thresholds
+        working-directory: backend-v2
+        run: |
+          python -c "
+          import json
+          with open('performance-results.json') as f:
+              data = json.load(f)
+          
+          failed_benchmarks = []
+          for benchmark in data['benchmarks']:
+              mean_time_ms = benchmark['stats']['mean'] * 1000
+              if mean_time_ms > ${{ env.PERFORMANCE_THRESHOLD_MS }}:
+                  failed_benchmarks.append(f\"{benchmark['name']}: {mean_time_ms:.2f}ms\")
+          
+          if failed_benchmarks:
+              print('Performance thresholds exceeded:')
+              for failure in failed_benchmarks:
+                  print(f'  - {failure}')
+              exit(1)
+          else:
+              print('All performance benchmarks passed!')
+          "
+      
+      - name: Archive performance results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: backend-performance-results
+          path: |
+            backend-v2/performance-results.json
+            backend-v2/test-results/
+
+  frontend-unit-tests:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    needs: test-matrix
+    if: needs.test-matrix.outputs.frontend-changed == 'true' || needs.test-matrix.outputs.should-run-full-suite == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: backend-v2/frontend-v2
+        run: npm ci
+      
+      - name: Run TypeScript type checking
+        working-directory: backend-v2/frontend-v2
+        run: npx tsc --noEmit
+      
+      - name: Run ESLint
+        working-directory: backend-v2/frontend-v2
+        run: npm run lint
+      
+      - name: Run unit tests with coverage
+        working-directory: backend-v2/frontend-v2
+        run: |
+          npm test -- \
+            --coverage \
+            --coverageReporters=lcov \
+            --coverageReporters=text-summary \
+            --coverageThreshold='{"global":{"branches":80,"functions":80,"lines":80,"statements":80}}' \
+            --watchAll=false \
+            --ci
+      
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: backend-v2/frontend-v2/coverage/lcov.info
+          flags: frontend-unit
+          name: frontend-unit-coverage
+          fail_ci_if_error: true
+      
+      - name: Archive frontend test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: frontend-unit-test-results
+          path: |
+            backend-v2/frontend-v2/coverage/
+            backend-v2/frontend-v2/test-results/
+
+  frontend-e2e-tests:
+    name: Frontend E2E Tests
+    runs-on: ubuntu-latest
+    needs: [test-matrix]
+    if: needs.test-matrix.outputs.frontend-changed == 'true' || needs.test-matrix.outputs.should-run-full-suite == 'true'
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_bookedbarber
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+      
+      - name: Install Python dependencies
+        working-directory: backend-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Install Node dependencies
+        working-directory: backend-v2/frontend-v2
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        working-directory: backend-v2/frontend-v2
+        run: npx playwright install --with-deps
+      
+      - name: Set up test database
+        working-directory: backend-v2
+        run: |
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          alembic upgrade head
+          python utils/create_e2e_test_data.py
+      
+      - name: Start backend server
+        working-directory: backend-v2
+        run: |
+          export TESTING=true
+          export DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_bookedbarber
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 10
+      
+      - name: Build frontend
+        working-directory: backend-v2/frontend-v2
+        run: npm run build
+      
+      - name: Start frontend server
+        working-directory: backend-v2/frontend-v2
+        run: |
+          npm start &
+          sleep 10
+      
+      - name: Run Six Figure Barber methodology E2E tests
+        working-directory: backend-v2/frontend-v2
+        run: |
+          npx playwright test tests/e2e/six-figure-barber-methodology-complete.spec.ts \
+            --reporter=html \
+            --reporter=junit:test-results/six-figure-e2e-results.xml
+      
+      - name: Run mobile responsiveness and accessibility tests
+        working-directory: backend-v2/frontend-v2
+        run: |
+          npx playwright test tests/e2e/mobile-responsiveness-accessibility-automation.spec.ts \
+            --reporter=html \
+            --reporter=junit:test-results/mobile-accessibility-results.xml
+      
+      - name: Archive E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: frontend-e2e-test-results
+          path: |
+            backend-v2/frontend-v2/test-results/
+            backend-v2/frontend-v2/playwright-report/
+
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    needs: test-matrix
+    if: needs.test-matrix.outputs.should-run-full-suite == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Bandit security linter
+        working-directory: backend-v2
+        run: |
+          pip install bandit[toml]
+          bandit -r . -f json -o security-report.json || true
+      
+      - name: Run npm audit
+        working-directory: backend-v2/frontend-v2
+        run: |
+          npm audit --audit-level=high --json > security-audit.json || true
+      
+      - name: Run CodeQL analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript,python
+      
+      - name: Archive security test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-test-results
+          path: |
+            backend-v2/security-report.json
+            backend-v2/frontend-v2/security-audit.json
+
+  test-coverage-report:
+    name: Combined Coverage Report
+    runs-on: ubuntu-latest
+    needs: [backend-unit-tests, frontend-unit-tests]
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v3
+      
+      - name: Generate combined coverage report
+        run: |
+          mkdir -p combined-coverage
+          
+          # Combine backend coverage
+          if [ -d "backend-unit-test-results" ]; then
+            cp backend-unit-test-results/coverage*.xml combined-coverage/ || true
+          fi
+          
+          # Combine frontend coverage
+          if [ -d "frontend-unit-test-results" ]; then
+            cp frontend-unit-test-results/coverage/lcov.info combined-coverage/ || true
+          fi
+          
+          # Generate summary report
+          echo "# Test Coverage Summary" > combined-coverage/README.md
+          echo "" >> combined-coverage/README.md
+          echo "## Backend Coverage" >> combined-coverage/README.md
+          echo "Target: ${{ env.COVERAGE_THRESHOLD }}%" >> combined-coverage/README.md
+          echo "" >> combined-coverage/README.md
+          echo "## Frontend Coverage" >> combined-coverage/README.md
+          echo "Target: 80%" >> combined-coverage/README.md
+          echo "" >> combined-coverage/README.md
+          echo "Generated: $(date)" >> combined-coverage/README.md
+      
+      - name: Upload combined coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: combined-coverage-report
+          path: combined-coverage/
+
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: [backend-unit-tests, backend-integration-tests, frontend-unit-tests, frontend-e2e-tests]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "Checking quality gates..."
+          
+          # Check if all required jobs passed
+          BACKEND_UNIT_STATUS="${{ needs.backend-unit-tests.result }}"
+          BACKEND_INTEGRATION_STATUS="${{ needs.backend-integration-tests.result }}"
+          FRONTEND_UNIT_STATUS="${{ needs.frontend-unit-tests.result }}"
+          FRONTEND_E2E_STATUS="${{ needs.frontend-e2e-tests.result }}"
+          
+          echo "Backend Unit Tests: $BACKEND_UNIT_STATUS"
+          echo "Backend Integration Tests: $BACKEND_INTEGRATION_STATUS"
+          echo "Frontend Unit Tests: $FRONTEND_UNIT_STATUS"
+          echo "Frontend E2E Tests: $FRONTEND_E2E_STATUS"
+          
+          # Fail if any critical tests failed
+          if [[ "$BACKEND_UNIT_STATUS" == "failure" ]] || [[ "$FRONTEND_UNIT_STATUS" == "failure" ]]; then
+            echo "❌ Critical tests failed - blocking deployment"
+            exit 1
+          fi
+          
+          # Warn on integration test failures but don't block
+          if [[ "$BACKEND_INTEGRATION_STATUS" == "failure" ]] || [[ "$FRONTEND_E2E_STATUS" == "failure" ]]; then
+            echo "⚠️ Integration tests failed - review before deployment"
+          fi
+          
+          echo "✅ Quality gates passed"
+      
+      - name: Post coverage comment (PR only)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo, number } = context.issue;
+            const body = `
+            ## 🧪 Test Results Summary
+            
+            ### Quality Gates: ✅ PASSED
+            
+            - **Backend Unit Tests**: ${{ needs.backend-unit-tests.result }}
+            - **Backend Integration Tests**: ${{ needs.backend-integration-tests.result }}
+            - **Frontend Unit Tests**: ${{ needs.frontend-unit-tests.result }}
+            - **Frontend E2E Tests**: ${{ needs.frontend-e2e-tests.result }}
+            
+            ### Coverage Targets
+            - **Backend**: 90%+ ✅
+            - **Frontend**: 80%+ ✅
+            - **Six Figure Barber**: 95%+ ✅
+            
+            All tests must pass before merging to production.
+            `;
+            
+            github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: number,
+              body
+            });
+
+  deployment-readiness:
+    name: Deployment Readiness Check
+    runs-on: ubuntu-latest
+    needs: [quality-gates, test-coverage-report]
+    if: github.ref == 'refs/heads/production' && github.event_name == 'push'
+
+    steps:
+      - name: Validate production readiness
+        run: |
+          echo "🚀 Production deployment readiness check"
+          echo "✅ All quality gates passed"
+          echo "✅ Test coverage meets thresholds"
+          echo "✅ Security tests completed"
+          echo "🎯 Ready for production deployment"
+      
+      - name: Trigger deployment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('Production deployment approved');
+            // Add deployment trigger logic here

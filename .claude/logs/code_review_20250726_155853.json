@@ -1,0 +1,225 @@
+{
+  "trigger_event": "test_code_review",
+  "files_analyzed": [
+    "backend-v2/test_code_review_python.py",
+    "backend-v2/frontend-v2/test_code_review_typescript.tsx"
+  ],
+  "total_issues": 18,
+  "critical_issues": 5,
+  "warning_issues": 6,
+  "suggestion_issues": 7,
+  "issues": [
+    {
+      "category": "suggestion",
+      "type": "documentation",
+      "severity": "low",
+      "file_path": "backend-v2/test_code_review_python.py",
+      "line_number": 11,
+      "title": "Missing Docstring",
+      "description": "Public function 'process_payment' lacks documentation",
+      "recommendation": "Add docstring explaining the function's purpose, parameters, and return value",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "suggestion",
+      "type": "documentation",
+      "severity": "low",
+      "file_path": "backend-v2/test_code_review_python.py",
+      "line_number": 34,
+      "title": "Missing Docstring",
+      "description": "Public function 'create_booking' lacks documentation",
+      "recommendation": "Add docstring explaining the function's purpose, parameters, and return value",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "suggestion",
+      "type": "documentation",
+      "severity": "low",
+      "file_path": "backend-v2/test_code_review_python.py",
+      "line_number": 54,
+      "title": "Missing Docstring",
+      "description": "Public function 'get_all_bookings' lacks documentation",
+      "recommendation": "Add docstring explaining the function's purpose, parameters, and return value",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "suggestion",
+      "type": "documentation",
+      "severity": "low",
+      "file_path": "backend-v2/test_code_review_python.py",
+      "line_number": 59,
+      "title": "Missing Docstring",
+      "description": "Public function 'complex_commission_calculation' lacks documentation",
+      "recommendation": "Add docstring explaining the function's purpose, parameters, and return value",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "critical",
+      "type": "security",
+      "severity": "high",
+      "file_path": "backend-v2/test_code_review_python.py",
+      "line_number": 7,
+      "title": "Hardcoded Secret",
+      "description": "Potential hardcoded secret or sensitive data",
+      "recommendation": "Move sensitive data to environment variables or secure configuration",
+      "six_figure_barber_aligned": false
+    },
+    {
+      "category": "critical",
+      "type": "security",
+      "severity": "high",
+      "file_path": "backend-v2/test_code_review_python.py",
+      "line_number": 8,
+      "title": "Hardcoded Secret",
+      "description": "Potential hardcoded secret or sensitive data",
+      "recommendation": "Move sensitive data to environment variables or secure configuration",
+      "six_figure_barber_aligned": false
+    },
+    {
+      "category": "critical",
+      "type": "security",
+      "severity": "high",
+      "file_path": "backend-v2/test_code_review_python.py",
+      "line_number": 13,
+      "title": "Potential SQL Injection",
+      "description": "String concatenation in SQL query detected",
+      "recommendation": "Use parameterized queries or ORM methods to prevent SQL injection",
+      "six_figure_barber_aligned": false
+    },
+    {
+      "category": "critical",
+      "type": "security",
+      "severity": "high",
+      "file_path": "backend-v2/test_code_review_python.py",
+      "line_number": 25,
+      "title": "Unsafe Code Execution",
+      "description": "Use of eval() or exec() detected",
+      "recommendation": "Avoid dynamic code execution; use safer alternatives",
+      "six_figure_barber_aligned": false
+    },
+    {
+      "category": "warning",
+      "type": "type_safety",
+      "severity": "medium",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": null,
+      "title": "Excessive 'any' Type Usage",
+      "description": "Found 1 instances of 'any' type",
+      "recommendation": "Replace 'any' with specific types for better type safety",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "suggestion",
+      "type": "type_safety",
+      "severity": "low",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": 73,
+      "title": "Missing Type Annotations",
+      "description": "Function parameters lack type annotations",
+      "recommendation": "Add type annotations to function parameters for better type safety",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "suggestion",
+      "type": "react_performance",
+      "severity": "low",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": 49,
+      "title": "Inline Function in JSX",
+      "description": "Inline function definition may cause unnecessary re-renders",
+      "recommendation": "Consider using useCallback or defining function outside JSX",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "critical",
+      "type": "security",
+      "severity": "high",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": 31,
+      "title": "XSS Vulnerability Risk",
+      "description": "Use of dangerouslySetInnerHTML detected",
+      "recommendation": "Sanitize HTML content or use safer alternatives to prevent XSS attacks",
+      "six_figure_barber_aligned": false
+    },
+    {
+      "category": "warning",
+      "type": "security",
+      "severity": "medium",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": 36,
+      "title": "Sensitive Data in localStorage",
+      "description": "Storing sensitive data in localStorage",
+      "recommendation": "Consider using secure, httpOnly cookies for sensitive data storage",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "warning",
+      "type": "security",
+      "severity": "medium",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": 37,
+      "title": "Sensitive Data in localStorage",
+      "description": "Storing sensitive data in localStorage",
+      "recommendation": "Consider using secure, httpOnly cookies for sensitive data storage",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "warning",
+      "type": "performance",
+      "severity": "medium",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": 3,
+      "title": "Large Bundle Import",
+      "description": "Importing entire lodash library",
+      "recommendation": "Import specific functions instead: import { debounce } from 'lodash/debounce'",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "suggestion",
+      "type": "performance",
+      "severity": "low",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": 20,
+      "title": "Expensive Operation Without Memoization",
+      "description": "Complex array operation detected without memoization",
+      "recommendation": "Consider using useMemo for expensive calculations to improve performance",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "warning",
+      "type": "accessibility",
+      "severity": "medium",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": 45,
+      "title": "Missing Alt Attribute",
+      "description": "Image element lacks alt attribute",
+      "recommendation": "Add descriptive alt attribute for screen readers",
+      "six_figure_barber_aligned": true
+    },
+    {
+      "category": "warning",
+      "type": "accessibility",
+      "severity": "medium",
+      "file_path": "backend-v2/frontend-v2/test_code_review_typescript.tsx",
+      "line_number": 55,
+      "title": "Missing Input Label",
+      "description": "Form input lacks proper labeling",
+      "recommendation": "Add aria-label or associate with a label element",
+      "six_figure_barber_aligned": true
+    }
+  ],
+  "overall_score": 0,
+  "six_figure_barber_score": 25,
+  "security_score": 0,
+  "performance_score": 70,
+  "maintainability_score": 40,
+  "summary": "Code Review Summary:\n- Found 18 total issues (5 critical, 6 warnings, 7 suggestions)\n- Overall Quality Score: 0/100\n- Six Figure Barber Alignment: 25/100\n- Security Score: 0/100\n- Performance Score: 70/100\n- Maintainability Score: 40/100",
+  "recommendations": [
+    "\ud83d\udea8 CRITICAL: Address all critical issues before deployment",
+    "\ud83d\udd12 SECURITY: Review and fix security vulnerabilities immediately",
+    "\ud83d\udcb0 BUSINESS: Align code better with Six Figure Barber methodology for revenue optimization",
+    "\u26a1 PERFORMANCE: Optimize code for better appointment booking system performance",
+    "\u26a0\ufe0f CODE QUALITY: Address warnings to improve code maintainability"
+  ],
+  "timestamp": "2025-07-26T15:58:53.398510"
+}

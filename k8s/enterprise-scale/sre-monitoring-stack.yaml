@@ -1,0 +1,655 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sre-monitoring
+  labels:
+    name: sre-monitoring
+    tier: infrastructure
+    sre-enabled: "true"
+---
+# SRE Prometheus Configuration with 99.99% Uptime Focus
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sre-prometheus-config
+  namespace: sre-monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 10s
+      evaluation_interval: 10s
+      external_labels:
+        cluster: '{{ cluster_name }}'
+        region: '{{ aws_region }}'
+        environment: 'production'
+        sre_target: '99.99%'
+        
+    rule_files:
+      - /etc/prometheus/sre-rules/*.yml
+      
+    scrape_configs:
+    # BookedBarber Backend SRE Metrics
+    - job_name: 'bookedbarber-sre'
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - bookedbarber-enterprise
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: kubernetes_service
+      metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'sre_.*|uptime_.*|incident_.*|recovery_.*|circuit_breaker_.*'
+        action: keep
+        
+    # SRE Health Checks (High Frequency)
+    - job_name: 'sre-health-checks'
+      scrape_interval: 5s
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - bookedbarber-enterprise
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_sre_health_check]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+        replacement: /sre/health/comprehensive
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+        
+    # External Dependency Monitoring
+    - job_name: 'external-dependencies'
+      scrape_interval: 30s
+      static_configs:
+      - targets: ['dependency-monitor:8080']
+      relabel_configs:
+      - target_label: job
+        replacement: external-dependencies
+      - target_label: sre_critical
+        replacement: 'true'
+        
+    # Circuit Breaker Status
+    - job_name: 'circuit-breakers'
+      scrape_interval: 15s
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - bookedbarber-enterprise
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_circuit_breaker_metrics]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+        replacement: /sre/circuit-breakers
+        
+    # Business Metrics (Six Figure Barber)
+    - job_name: 'business-metrics'
+      scrape_interval: 30s
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - bookedbarber-enterprise
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_business_metrics]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+        replacement: /sre/metrics
+      metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'sixfb_.*|booking_.*|payment_.*|revenue_.*'
+        action: keep
+
+    alerting:
+      alertmanagers:
+      - static_configs:
+        - targets:
+          - sre-alertmanager:9093
+---
+# SRE Alert Rules for 99.99% Uptime
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sre-alert-rules
+  namespace: sre-monitoring
+data:
+  sre-critical.yml: |
+    groups:
+    - name: sre.critical
+      interval: 10s
+      rules:
+      # SLA Breach Alerts
+      - alert: SLA_UptimeBreach
+        expr: sre_uptime_percentage < 99.99
+        for: 1m
+        labels:
+          severity: critical
+          sla: "99.99%"
+          priority: p0
+        annotations:
+          summary: "SLA uptime breach detected"
+          description: "System uptime ({{ $value }}%) is below 99.99% SLA target"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/uptime-breach"
+          escalation: "immediate"
+          
+      - alert: SLA_ErrorRateBreach
+        expr: sre_error_rate > 0.001
+        for: 2m
+        labels:
+          severity: critical
+          sla: "99.99%"
+          priority: p0
+        annotations:
+          summary: "SLA error rate breach detected"
+          description: "Error rate ({{ $value }}%) exceeds 0.1% threshold"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/error-rate-breach"
+          
+      # Service Down Alerts
+      - alert: CriticalServiceDown
+        expr: up{job="bookedbarber-sre"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          priority: p0
+        annotations:
+          summary: "Critical service {{ $labels.instance }} is down"
+          description: "BookedBarber service has been down for more than 30 seconds"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/service-down"
+          mttr_target: "5 minutes"
+          
+      # Database Issues
+      - alert: DatabaseConnectionFailure
+        expr: sre_database_status != 1
+        for: 15s
+        labels:
+          severity: critical
+          priority: p0
+        annotations:
+          summary: "Database connection failure"
+          description: "Cannot connect to primary database"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/database-failure"
+          
+      # Payment System Failures
+      - alert: PaymentSystemFailure
+        expr: circuit_breaker_state{service="stripe"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          priority: p0
+          business_impact: "high"
+        annotations:
+          summary: "Payment system circuit breaker open"
+          description: "Stripe payment processing is unavailable"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/payment-failure"
+          business_impact: "Revenue loss, customer impact"
+          
+    - name: sre.performance
+      interval: 30s
+      rules:
+      # Performance Degradation
+      - alert: HighLatency_P95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          priority: p1
+        annotations:
+          summary: "High latency detected"
+          description: "95th percentile latency is {{ $value }}s (>2s threshold)"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/high-latency"
+          
+      - alert: HighLatency_P99_Critical
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 5
+        for: 2m
+        labels:
+          severity: critical
+          priority: p0
+        annotations:
+          summary: "Critical latency detected"
+          description: "99th percentile latency is {{ $value }}s (>5s threshold)"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/critical-latency"
+          
+      # Resource Exhaustion
+      - alert: HighMemoryUsage
+        expr: sre_memory_usage_percentage > 85
+        for: 5m
+        labels:
+          severity: warning
+          priority: p2
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% (>85% threshold)"
+          
+      - alert: CriticalMemoryUsage
+        expr: sre_memory_usage_percentage > 95
+        for: 1m
+        labels:
+          severity: critical
+          priority: p1
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is {{ $value }}% (>95% threshold)"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/memory-exhaustion"
+          
+    - name: sre.business
+      interval: 60s
+      rules:
+      # Business Impact Alerts
+      - alert: BookingRateDropped
+        expr: rate(sixfb_booking_created[5m]) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          priority: p2
+          business_impact: "medium"
+        annotations:
+          summary: "Booking rate significantly dropped"
+          description: "Booking creation rate is {{ $value }}/min (normal: >0.1/min)"
+          business_impact: "Potential revenue loss"
+          
+      - alert: PaymentFailureSpike
+        expr: rate(sixfb_payment_failed[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          priority: p0
+          business_impact: "high"
+        annotations:
+          summary: "Payment failure rate spike"
+          description: "Payment failure rate is {{ $value }}/min (>0.05/min threshold)"
+          business_impact: "Direct revenue impact"
+          
+      # Recovery Performance
+      - alert: SlowIncidentRecovery
+        expr: sre_mttr_current_minutes > 5
+        for: 0m
+        labels:
+          severity: warning
+          priority: p1
+        annotations:
+          summary: "Incident recovery taking too long"
+          description: "Current MTTR is {{ $value }} minutes (>5min target)"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/slow-recovery"
+---
+# SRE AlertManager Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sre-alertmanager-config
+  namespace: sre-monitoring
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'smtp.sendgrid.net:587'
+      smtp_from: 'sre@bookedbarber.com'
+      smtp_auth_username: 'apikey'
+      smtp_auth_password: '{{ SENDGRID_API_KEY }}'
+      
+    route:
+      group_by: ['alertname', 'priority']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      receiver: 'default'
+      routes:
+      # P0 Critical - Immediate escalation
+      - match:
+          priority: p0
+        receiver: 'critical-escalation'
+        group_wait: 0s
+        repeat_interval: 15m
+      # P1 High - Fast response
+      - match:
+          priority: p1
+        receiver: 'high-priority'
+        group_wait: 30s
+        repeat_interval: 30m
+      # P2 Medium - Standard response
+      - match:
+          priority: p2
+        receiver: 'standard'
+        
+    receivers:
+    - name: 'default'
+      email_configs:
+      - to: 'sre@bookedbarber.com'
+        subject: '[SRE] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Runbook: {{ .Annotations.runbook }}
+          {{ end }}
+          
+    - name: 'critical-escalation'
+      email_configs:
+      - to: 'sre-critical@bookedbarber.com,engineering@bookedbarber.com'
+        subject: '🚨 [CRITICAL] {{ .GroupLabels.alertname }}'
+        body: |
+          CRITICAL ALERT - IMMEDIATE ACTION REQUIRED
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Priority: {{ .Labels.priority }}
+          MTTR Target: {{ .Annotations.mttr_target }}
+          Runbook: {{ .Annotations.runbook }}
+          Business Impact: {{ .Annotations.business_impact }}
+          {{ end }}
+          
+    - name: 'high-priority'
+      email_configs:
+      - to: 'sre@bookedbarber.com'
+        subject: '[HIGH] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Runbook: {{ .Annotations.runbook }}
+          {{ end }}
+          
+    - name: 'standard'
+      email_configs:
+      - to: 'monitoring@bookedbarber.com'
+        subject: '[MONITOR] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          {{ end }}
+
+    inhibit_rules:
+    - source_match:
+        severity: 'critical'
+      target_match:
+        severity: 'warning'
+      equal: ['alertname', 'instance']
+---
+# SRE Prometheus Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sre-prometheus
+  namespace: sre-monitoring
+  labels:
+    app: sre-prometheus
+    component: monitoring
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sre-prometheus
+  template:
+    metadata:
+      labels:
+        app: sre-prometheus
+        component: monitoring
+    spec:
+      serviceAccountName: sre-prometheus
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.47.0
+        args:
+        - --config.file=/etc/prometheus/prometheus.yml
+        - --storage.tsdb.path=/prometheus/
+        - --web.console.libraries=/etc/prometheus/console_libraries
+        - --web.console.templates=/etc/prometheus/consoles
+        - --storage.tsdb.retention.time=30d
+        - --web.enable-lifecycle
+        - --storage.tsdb.no-lockfile
+        - --web.route-prefix=/
+        - --web.enable-admin-api
+        - --query.timeout=2m
+        - --query.max-concurrency=100
+        ports:
+        - containerPort: 9090
+          name: prometheus
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "2000m"
+          limits:
+            memory: "16Gi"
+            cpu: "4000m"
+        volumeMounts:
+        - name: prometheus-config-volume
+          mountPath: /etc/prometheus/
+        - name: prometheus-rules-volume
+          mountPath: /etc/prometheus/sre-rules/
+        - name: prometheus-storage-volume
+          mountPath: /prometheus/
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+          periodSeconds: 5
+      volumes:
+      - name: prometheus-config-volume
+        configMap:
+          defaultMode: 420
+          name: sre-prometheus-config
+      - name: prometheus-rules-volume
+        configMap:
+          defaultMode: 420
+          name: sre-alert-rules
+      - name: prometheus-storage-volume
+        persistentVolumeClaim:
+          claimName: sre-prometheus-storage
+---
+# SRE Prometheus Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sre-prometheus-storage
+  namespace: sre-monitoring
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Ti
+  storageClassName: gp3-encrypted
+---
+# SRE AlertManager Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sre-alertmanager
+  namespace: sre-monitoring
+  labels:
+    app: sre-alertmanager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sre-alertmanager
+  template:
+    metadata:
+      labels:
+        app: sre-alertmanager
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:v0.26.0
+        args:
+        - --config.file=/etc/alertmanager/alertmanager.yml
+        - --storage.path=/alertmanager
+        - --web.external-url=http://alertmanager:9093
+        - --cluster.listen-address=0.0.0.0:9094
+        ports:
+        - containerPort: 9093
+          name: alertmanager
+        - containerPort: 9094
+          name: cluster
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: alertmanager-config
+          mountPath: /etc/alertmanager
+        - name: alertmanager-storage
+          mountPath: /alertmanager
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9093
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9093
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+      volumes:
+      - name: alertmanager-config
+        configMap:
+          name: sre-alertmanager-config
+      - name: alertmanager-storage
+        persistentVolumeClaim:
+          claimName: sre-alertmanager-storage
+---
+# SRE AlertManager Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sre-alertmanager-storage
+  namespace: sre-monitoring
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp3-encrypted
+---
+# SRE Services
+apiVersion: v1
+kind: Service
+metadata:
+  name: sre-prometheus
+  namespace: sre-monitoring
+  labels:
+    app: sre-prometheus
+spec:
+  selector:
+    app: sre-prometheus
+  ports:
+  - port: 9090
+    targetPort: 9090
+    name: prometheus
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sre-alertmanager
+  namespace: sre-monitoring
+  labels:
+    app: sre-alertmanager
+spec:
+  selector:
+    app: sre-alertmanager
+  ports:
+  - port: 9093
+    targetPort: 9093
+    name: alertmanager
+  type: ClusterIP
+---
+# SRE RBAC
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sre-prometheus
+  namespace: sre-monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sre-prometheus
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sre-prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sre-prometheus
+subjects:
+- kind: ServiceAccount
+  name: sre-prometheus
+  namespace: sre-monitoring

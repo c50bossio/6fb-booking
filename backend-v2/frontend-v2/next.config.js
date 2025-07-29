@@ -1,20 +1,107 @@
 /** @type {import('next').NextConfig} */
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   typescript: {
-    ignoreBuildErrors: true,
+    // Enable TypeScript build errors for production safety
+    ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    // Enable ESLint checks during builds for code quality
+    ignoreDuringBuilds: false,
   },
   images: {
+    // Secure image domain restrictions
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.gravatar.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.bookedbarber.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
       },
     ],
+    dangerouslyAllowSVG: false,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
+  // Performance optimizations
+  experimental: {
+    optimizeCss: true,
+    gzipSize: true,
+  },
+  // Bundle optimization
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Security headers including CSP
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://www.google-analytics.com https://www.googletagmanager.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "img-src 'self' data: https: blob:",
+              "connect-src 'self' https://api.stripe.com https://www.google-analytics.com",
+              "frame-src 'self' https://js.stripe.com",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+              "upgrade-insecure-requests"
+            ].join('; ')
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
+          }
+        ]
+      }
+    ];
+  },
+  // API rewrites to proxy backend calls
+  async rewrites() {
+    return [
+      {
+        source: '/api/v2/:path*',
+        destination: 'http://localhost:8000/api/v2/:path*',
+      },
+    ];
   },
   webpack: (config, { isServer, dev }) => {
     const webpack = require('webpack');
@@ -40,8 +127,51 @@ const nextConfig = {
       );
     }
 
+    // Performance optimizations
+    if (!dev) {
+      // Bundle splitting optimizations
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: 10,
+              reuseExistingChunk: true,
+            },
+            common: {
+              name: 'common',
+              minChunks: 2,
+              priority: 5,
+              reuseExistingChunk: true,
+            },
+            analytics: {
+              test: /[\\/]components[\\/]analytics[\\/]/,
+              name: 'analytics',
+              priority: 15,
+              reuseExistingChunk: true,
+            },
+            dashboard: {
+              test: /[\\/]components[\\/]dashboard[\\/]/,
+              name: 'dashboard',
+              priority: 15,
+              reuseExistingChunk: true,
+            },
+            calendar: {
+              test: /[\\/]components[\\/]calendar[\\/]/,
+              name: 'calendar',
+              priority: 15,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      };
+    }
+
     return config;
   },
 }
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

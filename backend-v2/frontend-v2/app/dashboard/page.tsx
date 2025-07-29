@@ -72,9 +72,21 @@ const ArrowRightIcon = () => (
   </svg>
 )
 
+const BrainIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+  </svg>
+)
+
 const PlusIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+  </svg>
+)
+
+const DollarSignIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
   </svg>
 )
 
@@ -354,7 +366,7 @@ function DashboardContent() {
                     Dashboard
                   </h1>
                   <p className="text-gray-600 dark:text-gray-300 mt-1">
-                    Welcome back, {user?.first_name || 'there'}. Here's your day at a glance.
+                    Welcome back, {user?.first_name || 'there'}. Here&apos;s your day at a glance.
                   </p>
                 </div>
               </div>
@@ -379,8 +391,17 @@ function DashboardContent() {
             {/* Quick Actions - Enhanced with better hierarchy */}
             <div className="flex items-center space-x-3">
               <Button 
-                onClick={() => router.push('/calendar')} 
+                onClick={() => router.push('/ai-business-calendar')} 
                 variant="primary" 
+                size="md"
+                leftIcon={<BrainIcon />}
+                className="shadow-sm hover:shadow-md transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                AI Calendar
+              </Button>
+              <Button 
+                onClick={() => router.push('/calendar')} 
+                variant="secondary" 
                 size="md"
                 leftIcon={<CalendarIcon />}
                 className="shadow-sm hover:shadow-md transition-all duration-200"
@@ -389,7 +410,7 @@ function DashboardContent() {
               </Button>
               <Button 
                 onClick={() => router.push('/clients')} 
-                variant="secondary" 
+                variant="ghost" 
                 size="md"
                 leftIcon={<UserIcon />}
               >
@@ -511,6 +532,80 @@ function DashboardContent() {
             </div>
           </ErrorBoundary>
 
+          {/* AI Business Calendar Feature Highlight */}
+          <ErrorBoundary feature="ai-business-calendar-promotion" userId={user?.id}>
+            <Card variant="hero" className="mb-8 border-2 border-gradient-to-r from-blue-200 to-purple-200 dark:from-blue-800 dark:to-purple-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                      <BrainIcon className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        AI Business Calendar
+                      </CardTitle>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">
+                        Powered by intelligent business coaches for optimal revenue and efficiency
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => router.push('/ai-business-calendar')}
+                    variant="primary"
+                    size="lg"
+                    leftIcon={<ArrowRightIcon />}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    Launch AI Calendar
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                      <DollarSignIcon className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Financial Coach</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Revenue optimization</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <ArrowTrendingUpIcon className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Growth Strategist</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Client retention</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                      <UserIcon className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Operations Optimizer</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Schedule efficiency</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                      <BrainIcon className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Brand Developer</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Service excellence</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </ErrorBoundary>
 
           <ErrorBoundary 
             feature="barber-dashboard"

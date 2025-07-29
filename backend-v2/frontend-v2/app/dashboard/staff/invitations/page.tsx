@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -91,9 +91,9 @@ export default function StaffInvitationsPage() {
     if (organizationId) {
       fetchInvitations()
     }
-  }, [organizationId, activeTab])
+  }, [organizationId, fetchInvitations])
 
-  const fetchInvitations = async () => {
+  const fetchInvitations = useCallback(async () => {
     if (!organizationId) return
     
     setLoading(true)
@@ -120,7 +120,7 @@ export default function StaffInvitationsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [organizationId, activeTab, toast])
 
   const sendInvitation = async () => {
     if (!organizationId || !inviteEmail) {

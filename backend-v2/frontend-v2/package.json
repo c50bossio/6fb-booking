@@ -70,6 +70,7 @@
     "npm": ">=9.0.0"
   },
   "dependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",

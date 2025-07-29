@@ -14,31 +14,38 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:8000/api/v2/auth/login', {
+      const response = await fetch('/api/v2/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
+        credentials: 'include',
       })
 
       if (response.ok) {
         const data = await response.json()
-        // Store tokens in both localStorage and cookies for compatibility
-        localStorage.setItem('access_token', data.access_token)
-        localStorage.setItem('token', data.access_token) // Legacy support
-        if (data.refresh_token) {
-          localStorage.setItem('refresh_token', data.refresh_token)
+        // Store tokens in both localStorage and cookies for compatibility (SSR safe)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('access_token', data.access_token)
+          localStorage.setItem('token', data.access_token) // Legacy support
+          if (data.refresh_token) {
+            localStorage.setItem('refresh_token', data.refresh_token)
+          }
         }
         
-        // Also set cookies to match middleware expectations
-        document.cookie = `access_token=${data.access_token}; path=/; max-age=${15 * 60}; samesite=lax`
-        if (data.refresh_token) {
-          document.cookie = `refresh_token=${data.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`
+        // Also set cookies to match middleware expectations (SSR safe)
+        if (typeof document !== 'undefined') {
+          document.cookie = `access_token=${data.access_token}; path=/; max-age=${15 * 60}; samesite=lax`
+          if (data.refresh_token) {
+            document.cookie = `refresh_token=${data.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`
+          }
         }
         
-        // Redirect to dashboard
-        window.location.href = '/dashboard'
+        // Redirect to dashboard (SSR safe)
+        if (typeof window !== 'undefined') {
+          window.location.href = '/dashboard'
+        }
       } else {
         const errorData = await response.json()
         setError(errorData.detail || 'Login failed')

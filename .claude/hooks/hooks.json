@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "description": "Claude Code hooks configuration for task completion notifications",
+  "hooks": {
+    "task-completion-sound": {
+      "enabled": true,
+      "description": "Plays sound notifications when tasks are completed",
+      "script": "./task-completion-sound.py",
+      "triggers": [
+        "assistant_message",
+        "tool_result",
+        "todo_update"
+      ],
+      "timeout": 5000,
+      "priority": "low",
+      "settings": {
+        "debug": false,
+        "volume": "system",
+        "sounds": {
+          "task_complete": "Blow",
+          "todo_done": "Pop", 
+          "deployment": "Glass",
+          "success": "Ping",
+          "error": "Basso",
+          "celebration": "Sosumi"
+        }
+      }
+    }
+  },
+  "global_settings": {
+    "hook_timeout_default": 10000,
+    "enable_debugging": false,
+    "max_concurrent_hooks": 3
+  }
+}

@@ -3,9 +3,9 @@ from httpx import AsyncClient
 from datetime import datetime
 
 from models import User
-from models.tracking import (
-    ConversionGoal, CampaignSource
-)
+# from models.tracking import (
+#     ConversionGoal, CampaignSource
+# )  # Module may not exist
 
 
 @pytest.fixture

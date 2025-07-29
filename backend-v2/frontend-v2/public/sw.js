@@ -14,7 +14,7 @@
  * - Improved network resilience
  */
 
-const CACHE_VERSION = 'bb-v6.0.0';
+const CACHE_VERSION = 'bb-v6.1.0';
 const CACHE_NAMES = {
   STATIC: `${CACHE_VERSION}-static`,
   DYNAMIC: `${CACHE_VERSION}-dynamic`,
@@ -239,7 +239,7 @@ class PWAServiceWorker {
     const url = new URL(request.url);
     
     // Skip service worker for critical endpoints to avoid CORS/security issues
-    const criticalEndpoints = ['/auth/', '/api/v2/auth/', '/payments/', '/billing/', '/webhooks/'];
+    const criticalEndpoints = ['/auth/', '/api/v2/auth/', '/payments/', '/billing/', '/webhooks/', '/login'];
     if (criticalEndpoints.some(endpoint => url.pathname.includes(endpoint))) {
       // Don't intercept critical requests - let them go directly to server
       return;

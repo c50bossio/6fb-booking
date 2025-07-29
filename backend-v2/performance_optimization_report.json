@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-07-29 15:29:24",
+  "overall_success_rate": 81.81818181818183,
+  "total_checks": 22,
+  "passed_checks": 18,
+  "failed_checks": 4,
+  "detailed_results": {
+    "frontend_optimization": {
+      "bundle_analyzer_config": true,
+      "dynamic_loading_utility": true,
+      "code_splitting_config": true,
+      "compression_enabled": false
+    },
+    "database_optimization": {
+      "performance_config_exists": true,
+      "connection_pooling_configured": true,
+      "indexes_configured": true,
+      "health_check_available": false
+    },
+    "caching_optimization": {
+      "redis_manager_exists": true,
+      "cache_decorators_available": false,
+      "invalidation_strategies": true,
+      "cache_health_check": false
+    },
+    "api_optimization": {
+      "performance_middleware_exists": true,
+      "compression_middleware": true,
+      "rate_limiting_middleware": true,
+      "performance_monitoring": true,
+      "cache_control_headers": true
+    },
+    "monitoring_optimization": {
+      "monitoring_router_exists": true,
+      "health_check_endpoint": true,
+      "metrics_endpoints": true,
+      "performance_alerts": true,
+      "live_metrics": true
+    }
+  },
+  "recommendations": []
+}

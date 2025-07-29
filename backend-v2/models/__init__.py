@@ -173,6 +173,14 @@ from .gamification import (
     NotificationType, ChallengeType, LeaderboardType
 )
 
+# Business Intelligence Agent Models
+from .business_intelligence_agents import (
+    BusinessIntelligenceAgent, BusinessCoachingSession, BusinessInsight,
+    SixFigureBarberPrincipleTracking, CoachingActionItem,
+    BusinessIntelligenceAgentType, CoachingSessionType, InsightPriority,
+    CoachingStatus
+)
+
 # Location Models (import from separate file)
 import sys
 import os
@@ -267,6 +275,11 @@ __all__ = [
     'GamificationNotification', 'GamificationAnalytics',
     'AchievementCategory', 'AchievementRarity', 'AchievementType', 'XPSource',
     'NotificationType', 'ChallengeType', 'LeaderboardType',
+    # Business Intelligence Agent Models
+    'BusinessIntelligenceAgent', 'BusinessCoachingSession', 'BusinessInsight',
+    'SixFigureBarberPrincipleTracking', 'CoachingActionItem',
+    'BusinessIntelligenceAgentType', 'CoachingSessionType', 'InsightPriority',
+    'CoachingStatus',
     # Location Models
     'Location', 'BarbershopLocation', 'BarberLocation', 'ChairInventory', 'ChairAssignmentHistory',
     'CompensationPlan', 'CompensationModel', 'LocationStatus', 'ChairStatus', 'ChairType',

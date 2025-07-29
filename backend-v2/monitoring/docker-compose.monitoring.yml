@@ -1,0 +1,478 @@
+# =============================================================================
+# BookedBarber V2 - Comprehensive Monitoring Stack
+# =============================================================================
+# 📊 Full observability with Prometheus, Grafana, and log aggregation
+# 🚨 Advanced alerting with multiple notification channels
+# 📈 Performance monitoring and business metrics tracking
+# =============================================================================
+
+services:
+  # =============================================================================
+  # Prometheus - Time Series Database & Monitoring
+  # =============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: bookedbarber-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=50GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+      - '--log.level=info'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks:
+      - monitoring
+      - bookedbarber-backend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "nobody:nobody"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # Grafana - Visualization & Dashboards
+  # =============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: bookedbarber-grafana
+    environment:
+      # Security Settings
+      - GF_SECURITY_ADMIN_PASSWORD_FILE=/run/secrets/grafana_admin_password
+      - GF_SECURITY_DISABLE_GRAVATAR=true
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_STRICT_TRANSPORT_SECURITY=true
+      - GF_SECURITY_CONTENT_TYPE_NOSNIFF=true
+      - GF_SECURITY_X_CONTENT_TYPE_OPTIONS=nosniff
+      - GF_SECURITY_X_XSS_PROTECTION=true
+      
+      # Analytics & Telemetry
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=""
+      
+      # Database Settings
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=postgres:5432
+      - GF_DATABASE_NAME=grafana
+      - GF_DATABASE_USER=grafana
+      - GF_DATABASE_PASSWORD_FILE=/run/secrets/grafana_db_password
+      - GF_DATABASE_SSL_MODE=require
+      
+      # SMTP Configuration
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=smtp.sendgrid.net:587
+      - GF_SMTP_USER=apikey
+      - GF_SMTP_PASSWORD_FILE=/run/secrets/sendgrid_api_key
+      - GF_SMTP_FROM_ADDRESS=alerts@bookedbarber.com
+      - GF_SMTP_FROM_NAME=BookedBarber Monitoring
+      
+      # Server Settings
+      - GF_SERVER_DOMAIN=grafana.bookedbarber.com
+      - GF_SERVER_ROOT_URL=https://grafana.bookedbarber.com
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+    secrets:
+      - grafana_admin_password
+      - grafana_db_password
+      - sendgrid_api_key
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/plugins:/var/lib/grafana/plugins:ro
+    ports:
+      - "127.0.0.1:3001:3000"
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "472:472"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # AlertManager - Alert Management & Routing
+  # =============================================================================
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: bookedbarber-alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=https://alerts.bookedbarber.com'
+      - '--web.route-prefix=/'
+      - '--log.level=info'
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    ports:
+      - "127.0.0.1:9093:9093"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "nobody:nobody"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # Node Exporter - System Metrics
+  # =============================================================================
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: bookedbarber-node-exporter
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.textfile.directory=/var/lib/node_exporter/textfile_collector'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - node_exporter_textfiles:/var/lib/node_exporter/textfile_collector
+    ports:
+      - "127.0.0.1:9100:9100"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # =============================================================================
+  # cAdvisor - Container Metrics
+  # =============================================================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: bookedbarber-cadvisor
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /cgroup:/cgroup:ro
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # =============================================================================
+  # PostgreSQL Exporter - Database Metrics
+  # =============================================================================
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: bookedbarber-postgres-exporter
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres_exporter:postgres_exporter_password@postgres:5432/bookedbarber_production?sslmode=require
+      - PG_EXPORTER_EXTEND_QUERY_PATH=/etc/postgres_exporter/queries.yaml
+    volumes:
+      - ./monitoring/postgres-queries.yaml:/etc/postgres_exporter/queries.yaml:ro
+    ports:
+      - "127.0.0.1:9187:9187"
+    networks:
+      - monitoring
+      - bookedbarber-backend
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # =============================================================================
+  # Redis Exporter - Cache Metrics
+  # =============================================================================
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: bookedbarber-redis-exporter
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD_FILE=/run/secrets/redis_password
+    secrets:
+      - redis_password
+    ports:
+      - "127.0.0.1:9121:9121"
+    networks:
+      - monitoring
+      - bookedbarber-backend
+    depends_on:
+      - redis
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # =============================================================================
+  # Nginx Exporter - Reverse Proxy Metrics
+  # =============================================================================
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: bookedbarber-nginx-exporter
+    command:
+      - '-nginx.scrape-uri=http://nginx:8080/nginx_status'
+    ports:
+      - "127.0.0.1:9113:9113"
+    networks:
+      - monitoring
+      - bookedbarber-frontend
+    depends_on:
+      - nginx
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+        reservations:
+          memory: 64M
+          cpus: '0.05'
+
+  # =============================================================================
+  # Loki - Log Aggregation
+  # =============================================================================
+  loki:
+    image: grafana/loki:latest
+    container_name: bookedbarber-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./monitoring/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "127.0.0.1:3100:3100"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "10001:10001"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # =============================================================================
+  # Promtail - Log Collection Agent
+  # =============================================================================
+  promtail:
+    image: grafana/promtail:latest
+    container_name: bookedbarber-promtail
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./monitoring/promtail-config.yaml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./logs:/app/logs:ro
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # =============================================================================
+  # Blackbox Exporter - External Monitoring
+  # =============================================================================
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: bookedbarber-blackbox-exporter
+    volumes:
+      - ./monitoring/blackbox.yml:/config/blackbox.yml:ro
+    ports:
+      - "127.0.0.1:9115:9115"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "nobody:nobody"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # =============================================================================
+  # Jaeger - Distributed Tracing
+  # =============================================================================
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: bookedbarber-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+    ports:
+      - "127.0.0.1:16686:16686"  # Jaeger UI
+      - "127.0.0.1:14268:14268"  # HTTP collector
+      - "127.0.0.1:14250:14250"  # gRPC collector
+    networks:
+      - monitoring
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+# =============================================================================
+# Monitoring Secrets
+# =============================================================================
+secrets:
+  grafana_admin_password:
+    external: true
+  grafana_db_password:
+    external: true
+  redis_password:
+    external: true
+  sendgrid_api_key:
+    external: true
+
+# =============================================================================
+# Monitoring Volumes
+# =============================================================================
+volumes:
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/bookedbarber/data/prometheus
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/bookedbarber/data/grafana
+  alertmanager_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/bookedbarber/data/alertmanager
+  loki_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/bookedbarber/data/loki
+  node_exporter_textfiles:
+    driver: local
+
+# =============================================================================
+# Monitoring Networks
+# =============================================================================
+networks:
+  monitoring:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.23.0.0/24
+  bookedbarber-backend:
+    external: true
+  bookedbarber-frontend:
+    external: true

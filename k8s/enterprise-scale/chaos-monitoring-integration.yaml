@@ -1,0 +1,658 @@
+# Chaos Engineering Monitoring Integration
+# Connects chaos experiments with existing SRE monitoring stack
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaos-monitoring-config
+  namespace: sre-monitoring
+  labels:
+    component: chaos-monitoring
+    sre-enabled: "true"
+data:
+  chaos-prometheus-rules.yml: |
+    groups:
+    - name: chaos.experiments
+      interval: 10s
+      rules:
+      # Chaos Experiment Metrics
+      - record: chaos_experiment_active
+        expr: count by (experiment_name, namespace) (chaos_mesh_experiments{status="running"})
+        
+      - record: chaos_experiment_total_count
+        expr: count(chaos_mesh_experiments)
+        
+      - record: chaos_experiment_success_rate
+        expr: (count(chaos_mesh_experiments{status="succeeded"}) / count(chaos_mesh_experiments)) * 100
+        
+      - record: chaos_experiment_failure_rate
+        expr: (count(chaos_mesh_experiments{status="failed"}) / count(chaos_mesh_experiments)) * 100
+        
+      # Business Impact During Experiments
+      - record: chaos_experiment_baseline_booking_rate
+        expr: avg_over_time(rate(sixfb_booking_created[5m])[1h:5m] offset 24h)
+        
+      - record: chaos_experiment_baseline_payment_failure_rate
+        expr: avg_over_time(rate(sixfb_payment_failed[5m])[1h:5m] offset 24h)
+        
+      - record: chaos_experiment_baseline_response_time
+        expr: avg_over_time(histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))[1h:5m] offset 24h)
+        
+      # Real-time Impact Metrics
+      - record: chaos_experiment_booking_rate_impact
+        expr: |
+          (
+            (rate(sixfb_booking_created[2m]) - chaos_experiment_baseline_booking_rate) 
+            / chaos_experiment_baseline_booking_rate
+          ) * 100
+          
+      - record: chaos_experiment_payment_failure_impact
+        expr: |
+          (
+            (rate(sixfb_payment_failed[2m]) - chaos_experiment_baseline_payment_failure_rate)
+            / chaos_experiment_baseline_payment_failure_rate
+          ) * 100
+          
+      - record: chaos_experiment_response_time_impact
+        expr: |
+          (
+            (histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[2m])) - chaos_experiment_baseline_response_time)
+            / chaos_experiment_baseline_response_time
+          ) * 100
+          
+      # Safety Monitoring
+      - record: chaos_safety_violation_total
+        expr: increase(chaos_safety_controller_violations_total[5m])
+        
+      - record: chaos_experiment_unauthorized_total
+        expr: increase(chaos_safety_controller_unauthorized_experiments_total[5m])
+        
+      - record: chaos_experiment_aborted_total
+        expr: increase(chaos_safety_controller_aborted_experiments_total[5m])
+        
+      # Recovery Metrics
+      - record: chaos_experiment_mttr_seconds
+        expr: avg(chaos_mesh_experiment_duration_seconds{status="failed"})
+        
+      - record: chaos_experiment_recovery_success_rate
+        expr: (count(chaos_mesh_experiments{status="recovered"}) / count(chaos_mesh_experiments{status=~"failed|recovered"})) * 100
+        
+    - name: chaos.business_impact
+      interval: 30s
+      rules:
+      # Revenue Impact Calculations
+      - record: chaos_experiment_estimated_revenue_impact
+        expr: |
+          (
+            chaos_experiment_booking_rate_impact / 100 * 
+            avg_over_time(sixfb_average_booking_value[1h]) *
+            rate(sixfb_booking_created[5m]) *
+            300  # 5 minute window in seconds
+          )
+          
+      - record: chaos_experiment_customer_impact_score
+        expr: |
+          (
+            abs(chaos_experiment_booking_rate_impact) * 0.4 +
+            abs(chaos_experiment_response_time_impact) * 0.3 +
+            abs(chaos_experiment_payment_failure_impact) * 0.3
+          )
+          
+      # System Health During Experiments
+      - record: chaos_experiment_system_health_score
+        expr: |
+          (
+            (100 - abs(chaos_experiment_booking_rate_impact)) * 0.3 +
+            (100 - abs(chaos_experiment_response_time_impact)) * 0.3 +
+            (100 - abs(chaos_experiment_payment_failure_impact)) * 0.2 +
+            sre_uptime_percentage * 0.2
+          )
+          
+    - name: chaos.alerting
+      interval: 15s
+      rules:
+      # Experiment Impact Alerts
+      - alert: ChaosExperimentHighBusinessImpact
+        expr: chaos_experiment_customer_impact_score > 15 and chaos_experiment_active > 0
+        for: 1m
+        labels:
+          severity: critical
+          priority: p0
+          component: chaos-engineering
+          business_impact: "high"
+        annotations:
+          summary: "Chaos experiment causing high business impact"
+          description: "Customer impact score: {{ $value }}% during active experiment"
+          estimated_revenue_impact: "{{ $labels.chaos_experiment_estimated_revenue_impact }}"
+          experiment_name: "{{ $labels.experiment_name }}"
+          action: "Consider experiment termination"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/chaos-high-impact"
+          
+      - alert: ChaosExperimentSystemDegradation
+        expr: chaos_experiment_system_health_score < 90 and chaos_experiment_active > 0
+        for: 2m
+        labels:
+          severity: warning
+          priority: p1
+          component: chaos-engineering
+        annotations:
+          summary: "System degradation detected during chaos experiment"
+          description: "System health score: {{ $value }}% during experiment"
+          experiment_name: "{{ $labels.experiment_name }}"
+          recommendation: "Monitor closely and consider early termination"
+          
+      - alert: ChaosExperimentRecoveryFailure
+        expr: chaos_experiment_mttr_seconds > 300
+        for: 0s
+        labels:
+          severity: critical
+          priority: p0
+          component: chaos-engineering
+        annotations:
+          summary: "Chaos experiment recovery taking too long"
+          description: "MTTR is {{ $value }}s (>5min threshold)"
+          action: "Manual intervention required"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/chaos-recovery-failure"
+          
+  chaos-grafana-dashboard.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "Chaos Engineering - Six Figure Barber Platform",
+        "tags": ["chaos-engineering", "sre", "reliability"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Active Chaos Experiments",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(chaos_experiment_active)",
+                "legendFormat": "Active Experiments"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"  
+                },
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 1},
+                    {"color": "red", "value": 2}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Experiment Success Rate",
+            "type": "stat", 
+            "targets": [
+              {
+                "expr": "chaos_experiment_success_rate",
+                "legendFormat": "Success Rate %"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "percent",
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 80},
+                    {"color": "green", "value": 95}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Business Impact Score",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "chaos_experiment_customer_impact_score",
+                "legendFormat": "Impact Score"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 10},
+                    {"color": "red", "value": 15}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0}
+          },
+          {
+            "id": 4,
+            "title": "System Health During Experiments",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "chaos_experiment_system_health_score",
+                "legendFormat": "Health Score %"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "percent",
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 90},
+                    {"color": "green", "value": 95}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0}
+          },
+          {
+            "id": 5,
+            "title": "Real-time Business Metrics During Experiments",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(sixfb_booking_created[2m])",
+                "legendFormat": "Booking Rate (current)"
+              },
+              {
+                "expr": "chaos_experiment_baseline_booking_rate",
+                "legendFormat": "Booking Rate (baseline)"
+              },
+              {
+                "expr": "rate(sixfb_payment_failed[2m])",
+                "legendFormat": "Payment Failures (current)"
+              },
+              {
+                "expr": "chaos_experiment_baseline_payment_failure_rate",
+                "legendFormat": "Payment Failures (baseline)"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Rate per second",
+                "show": true
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4}
+          },
+          {
+            "id": 6,
+            "title": "Response Time Impact",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[2m]))",
+                "legendFormat": "P95 Response Time (current)"
+              },
+              {
+                "expr": "chaos_experiment_baseline_response_time",
+                "legendFormat": "P95 Response Time (baseline)"
+              },
+              {
+                "expr": "chaos_experiment_response_time_impact",
+                "legendFormat": "Impact %"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Response Time (seconds)",
+                "show": true
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4}
+          },
+          {
+            "id": 7,
+            "title": "Experiment Timeline",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "chaos_experiment_active",
+                "legendFormat": "{{ experiment_name }}"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Active (1=yes, 0=no)",
+                "show": true
+              }
+            ],
+            "gridPos": {"h": 6, "w": 24, "x": 0, "y": 12}
+          },
+          {
+            "id": 8,
+            "title": "Safety Violations & Actions",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "increase(chaos_safety_violation_total[5m])",
+                "legendFormat": "Safety Violations"
+              },
+              {
+                "expr": "increase(chaos_experiment_aborted_total[5m])",
+                "legendFormat": "Aborted Experiments"
+              },
+              {
+                "expr": "increase(chaos_experiment_unauthorized_total[5m])",
+                "legendFormat": "Unauthorized Attempts"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Count",
+                "show": true
+              }
+            ],
+            "gridPos": {"h": 6, "w": 12, "x": 0, "y": 18}
+          },
+          {
+            "id": 9,
+            "title": "Recovery Metrics",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "chaos_experiment_mttr_seconds",
+                "legendFormat": "MTTR (seconds)"
+              },
+              {
+                "expr": "chaos_experiment_recovery_success_rate",
+                "legendFormat": "Recovery Success Rate %"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Time / Percentage",
+                "show": true
+              }
+            ],
+            "gridPos": {"h": 6, "w": 12, "x": 12, "y": 18}
+          }
+        ],
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "refresh": "10s"
+      }
+    }
+---
+# ServiceMonitor for Chaos Engineering Components
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: chaos-engineering-monitoring
+  namespace: sre-monitoring
+  labels:
+    app: chaos-engineering
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      component: chaos-controller
+  namespaceSelector:
+    matchNames:
+    - chaos-engineering
+  endpoints:
+  - port: metrics
+    interval: 10s
+    path: /metrics
+    scheme: http
+  - port: api
+    interval: 30s
+    path: /metrics
+    scheme: http
+---
+# Additional ServiceMonitor for Safety Controller
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: chaos-safety-monitoring
+  namespace: sre-monitoring
+  labels:
+    app: chaos-safety-controller
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      component: safety-controls
+  namespaceSelector:
+    matchNames:
+    - chaos-engineering
+  endpoints:
+  - port: metrics
+    interval: 10s
+    path: /metrics
+    scheme: http
+  - port: api
+    interval: 30s
+    path: /api/metrics
+    scheme: http
+---
+# Chaos Engineering Webhook for Real-time Notifications
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaos-webhook-config
+  namespace: chaos-engineering
+  labels:
+    component: notifications
+data:
+  webhook-config.yml: |
+    webhooks:
+      experiment_started:
+        url: "${SLACK_WEBHOOK_URL}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: |
+          {
+            "text": "🧪 Chaos Experiment Started",
+            "attachments": [
+              {
+                "color": "warning",
+                "fields": [
+                  {
+                    "title": "Experiment",
+                    "value": "{{ .experiment_name }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Category", 
+                    "value": "{{ .experiment_category }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Duration",
+                    "value": "{{ .duration }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Business Impact",
+                    "value": "{{ .business_impact }}",
+                    "short": true
+                  }
+                ]
+              }
+            ]
+          }
+          
+      experiment_completed:
+        url: "${SLACK_WEBHOOK_URL}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: |
+          {
+            "text": "✅ Chaos Experiment Completed",
+            "attachments": [
+              {
+                "color": "good",
+                "fields": [
+                  {
+                    "title": "Experiment",
+                    "value": "{{ .experiment_name }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Status",
+                    "value": "{{ .status }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Duration",
+                    "value": "{{ .actual_duration }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Impact Score",
+                    "value": "{{ .customer_impact_score }}%",
+                    "short": true
+                  }
+                ]
+              }
+            ]
+          }
+          
+      safety_violation:
+        url: "${SLACK_WEBHOOK_URL}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: |
+          {
+            "text": "🚨 CHAOS SAFETY VIOLATION",
+            "attachments": [
+              {
+                "color": "danger",
+                "fields": [
+                  {
+                    "title": "Violation Type",
+                    "value": "{{ .violation_type }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Experiment",
+                    "value": "{{ .experiment_name }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Action Taken",
+                    "value": "{{ .action_taken }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Business Impact",
+                    "value": "{{ .business_impact }}%",
+                    "short": true
+                  }
+                ]
+              }
+            ]
+          }
+---
+# Business Hours Detection Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: business-hours-detector
+  namespace: chaos-engineering
+  labels:
+    app: business-hours-detector
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: business-hours-detector
+  template:
+    metadata:
+      labels:
+        app: business-hours-detector
+        component: monitoring
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: business-hours-detector
+        image: bookedbarber/business-hours-detector:v1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: metrics
+        env:
+        - name: TIMEZONE
+          value: "America/New_York"
+        - name: BUSINESS_START_HOUR
+          value: "9"
+        - name: BUSINESS_END_HOUR
+          value: "18"
+        - name: BUSINESS_DAYS
+          value: "monday,tuesday,wednesday,thursday,friday,saturday"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp-volume  
+          mountPath: /tmp
+      volumes:
+      - name: tmp-volume
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: business-hours-detector
+  namespace: chaos-engineering
+  labels:
+    app: business-hours-detector
+    component: monitoring
+spec:
+  selector:
+    app: business-hours-detector
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: metrics
+  type: ClusterIP

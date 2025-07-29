@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -33,7 +33,7 @@ export default function SixFigureBarberDashboard() {
   const { toast } = useToast()
 
   // Load dashboard data
-  const loadDashboardData = async (showRefreshIndicator = false) => {
+  const loadDashboardData = useCallback(async (showRefreshIndicator = false) => {
     try {
       if (showRefreshIndicator) {
         setRefreshing(true)
@@ -69,14 +69,14 @@ export default function SixFigureBarberDashboard() {
       setLoading(false)
       setRefreshing(false)
     }
-  }
+  }, [toast])
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
     loadDashboardData()
     const interval = setInterval(() => loadDashboardData(true), 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [loadDashboardData])
 
   // Export dashboard data
   const exportDashboard = (format: 'json' | 'csv' = 'json') => {

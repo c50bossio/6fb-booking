@@ -3,9 +3,9 @@ import asyncio
 from httpx import AsyncClient
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from backend.main import app
-from backend.models import User
-from backend.tests.conftest import get_test_db, create_test_user
+from main import app
+from models import User
+from tests.conftest import get_test_db, create_test_user
 import json
 import time
 

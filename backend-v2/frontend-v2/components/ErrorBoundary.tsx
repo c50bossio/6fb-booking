@@ -228,7 +228,10 @@ export class ErrorBoundary extends Component<Props, State> {
                   )
                   
                   if (isChunkLoadError) {
-                    window.location.reload()
+                    // SSR-safe page reload
+                    if (typeof window !== 'undefined') {
+                      window.location.reload()
+                    }
                   } else {
                     this.resetErrorBoundary()
                   }
@@ -246,7 +249,10 @@ export class ErrorBoundary extends Component<Props, State> {
                     'navigation',
                     { feature: this.props.feature }
                   )
-                  window.location.href = '/'
+                  // SSR-safe navigation
+                  if (typeof window !== 'undefined') {
+                    window.location.href = '/'
+                  }
                 }}
                 variant="outline"
                 size="sm"

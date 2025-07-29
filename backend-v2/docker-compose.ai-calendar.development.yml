@@ -1,0 +1,386 @@
+# ================================================================================
+# AI Business Calendar - Development Docker Compose Configuration
+# ================================================================================
+# 🚀 Fast development setup with hot reload and debugging
+# 🔧 SQLite for simplicity, Redis for caching
+# 🧪 All AI features enabled with mock/test providers
+# ================================================================================
+
+version: '3.8'
+
+services:
+  # ================================================================================
+  # Redis Cache (Development)
+  # ================================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ai-calendar-redis-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_dev_data:/data
+    ports:
+      - "6381:6379"
+    networks:
+      - ai-calendar-dev-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+          cpus: '0.25'
+
+  # ================================================================================
+  # AI Business Calendar Backend (Development)
+  # ================================================================================
+  ai-calendar-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai-calendar.development
+      target: development
+      args:
+        - BUILD_ENV=development
+        - PYTHON_VERSION=3.11
+    image: ai-business-calendar:development
+    container_name: ai-calendar-backend-dev
+    restart: unless-stopped
+    environment:
+      # Database Configuration (SQLite for development)
+      DATABASE_URL: sqlite:///./shared/ai_business_calendar_dev.db
+      
+      # Redis Configuration
+      REDIS_URL: redis://redis:6379/0
+      
+      # Application Settings
+      ENVIRONMENT: development
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+      PORT: 8000
+      HOST: 0.0.0.0
+      
+      # AI Provider Configuration (Mock/Test Keys)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-sk-ant-mock-development-key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-mock-development-key}
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-mock-development-key}
+      VOYAGE_AI_API_KEY: ${VOYAGE_AI_API_KEY:-mock-development-key}
+      COHERE_API_KEY: ${COHERE_API_KEY:-mock-development-key}
+      
+      # AI Development Settings
+      DEFAULT_AI_PROVIDER: anthropic
+      AI_TEMPERATURE: 0.8
+      AI_MAX_TOKENS: 500
+      AI_RETRY_ATTEMPTS: 1
+      AI_TIMEOUT_SECONDS: 60
+      AI_FALLBACK_ENABLED: "true"
+      AI_RATE_LIMIT_PER_MINUTE: 30
+      AI_RATE_LIMIT_PER_HOUR: 300
+      
+      # Security Configuration (Development Keys - Not Secure)
+      SECRET_KEY: ai_calendar_development_secret_key_not_for_production_use_only
+      JWT_SECRET_KEY: ai_calendar_development_jwt_secret_key_not_secure
+      
+      # External Services (Test Keys)
+      STRIPE_SECRET_KEY: sk_test_development_key
+      STRIPE_PUBLISHABLE_KEY: pk_test_development_key
+      SENDGRID_API_KEY: SG.development_test_key
+      TWILIO_AUTH_TOKEN: development_test_token
+      
+      # Google Calendar (Development)
+      GOOGLE_CLIENT_ID: development_google_client_id
+      GOOGLE_CLIENT_SECRET: development_google_client_secret
+      GOOGLE_REDIRECT_URI: http://localhost:8000/api/calendar/callback
+      
+      # Feature Flags (All enabled for development)
+      FEATURE_AI_CALENDAR_ENABLED: "true"
+      FEATURE_BUSINESS_INTELLIGENCE_ENABLED: "true"
+      FEATURE_PREDICTIVE_ANALYTICS_ENABLED: "true"
+      FEATURE_SMART_NOTIFICATIONS_ENABLED: "true"
+      AI_AGENT_ORCHESTRATOR_ENABLED: "true"
+      AI_SENTIMENT_ANALYSIS_ENABLED: "true"
+      AI_RECOMMENDATION_ENGINE_ENABLED: "true"
+      AI_ANOMALY_DETECTION_ENABLED: "true"
+      
+      # Development Tools (All enabled)
+      SWAGGER_UI_ENABLED: "true"
+      DEBUG_TOOLBAR_ENABLED: "true"
+      PROFILER_ENABLED: "true"
+      API_DOCS_ENABLED: "true"
+      TEST_MODE_ENABLED: "true"
+      MOCK_EXTERNAL_SERVICES: "true"
+      
+      # CORS (Permissive for development)
+      API_CORS_ENABLED: "true"
+      API_CORS_ORIGINS: "*"
+      API_CORS_CREDENTIALS: "true"
+      
+      # Performance Settings (Relaxed)
+      WORKERS: 1
+      WORKER_CLASS: uvicorn.workers.UvicornWorker
+      TIMEOUT: 120
+      KEEPALIVE: 5
+      
+      # Caching (Enabled but short TTL)
+      ENABLE_CACHING: "true"
+      CACHE_DEFAULT_TTL: 60
+      CACHE_AI_RESPONSES_TTL: 300
+      CACHE_CALENDAR_EVENTS_TTL: 120
+      
+      # Health Checks
+      HEALTH_CHECK_ENABLED: "true"
+      HEALTH_CHECK_DATABASE: "true"
+      HEALTH_CHECK_REDIS: "true"
+      HEALTH_CHECK_EXTERNAL_SERVICES: "false"
+      
+      # Hot Reload
+      RELOAD: "true"
+      RELOAD_DIRS: "/app"
+    volumes:
+      # Live code sync for hot reload
+      - .:/app
+      - /app/__pycache__
+      - /app/node_modules
+      
+      # Data directories
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - ai_calendar_dev_cache:/app/cache
+      - ai_calendar_dev_models:/app/models
+      
+      # Shared SQLite database
+      - .:/app/shared
+    ports:
+      - "8002:8000"
+    networks:
+      - ai-calendar-dev-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health", "--max-time", "5"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # ================================================================================
+  # AI Agent Orchestrator (Development)
+  # ================================================================================
+  ai-agent-orchestrator:
+    build:
+      context: ./ai-agents
+      dockerfile: Dockerfile.orchestrator.development
+    image: ai-agent-orchestrator:development
+    container_name: ai-calendar-agent-orchestrator-dev
+    restart: unless-stopped
+    environment:
+      # AI Configuration (Mock Keys)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-sk-ant-mock-development-key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-mock-development-key}
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-mock-development-key}
+      
+      # Queue Configuration
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      
+      # Agent Settings (Reduced for development)
+      AI_AGENT_MAX_CONCURRENT: 2
+      AI_AGENT_QUEUE_SIZE: 20
+      AI_AGENT_TIMEOUT_SECONDS: 120
+      AI_AGENT_RETRY_ATTEMPTS: 1
+      
+      # Debug Settings
+      LOG_LEVEL: DEBUG
+      DEBUG_MODE: "true"
+      MOCK_AI_RESPONSES: "true"
+      
+      # Performance Settings
+      WORKERS: 1
+      CONCURRENCY: 2
+    volumes:
+      - ai_agent_dev_logs:/app/logs
+      - ai_calendar_dev_models:/app/models
+      # Live code sync for development
+      - ./ai-agents:/app
+      - /app/__pycache__
+    networks:
+      - ai-calendar-dev-network
+    depends_on:
+      redis:
+        condition: service_healthy
+      ai-calendar-backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.125'
+
+  # ================================================================================
+  # Development Database Browser (Optional)
+  # ================================================================================
+  db-browser:
+    image: adminer:latest
+    container_name: ai-calendar-db-browser-dev
+    restart: unless-stopped
+    profiles: ["tools"]
+    ports:
+      - "8083:8080"
+    networks:
+      - ai-calendar-dev-network
+    environment:
+      ADMINER_DEFAULT_SERVER: ai-calendar-backend
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+
+  # ================================================================================
+  # Redis Commander (Development Tool)
+  # ================================================================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: ai-calendar-redis-commander-dev
+    restart: unless-stopped
+    profiles: ["tools"]
+    environment:
+      REDIS_HOSTS: "local:redis:6379"
+      HTTP_USER: ${REDIS_COMMANDER_USER:-admin}
+      HTTP_PASSWORD: ${REDIS_COMMANDER_PASSWORD:-admin}
+    ports:
+      - "8084:8081"
+    networks:
+      - ai-calendar-dev-network
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.1'
+
+  # ================================================================================
+  # Mailhog for Email Testing
+  # ================================================================================
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ai-calendar-mailhog-dev
+    restart: unless-stopped
+    profiles: ["tools"]
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8085:8025"  # Web interface
+    networks:
+      - ai-calendar-dev-network
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.1'
+
+  # ================================================================================
+  # Jupyter Notebook for AI Model Development
+  # ================================================================================
+  jupyter:
+    build:
+      context: ./notebooks
+      dockerfile: Dockerfile.jupyter
+    image: ai-calendar-jupyter:development
+    container_name: ai-calendar-jupyter-dev
+    restart: unless-stopped
+    profiles: ["ai-dev"]
+    environment:
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN:-ai-calendar-dev-token}
+      JUPYTER_ENABLE_LAB: "yes"
+      # Database access
+      DATABASE_URL: sqlite:///./shared/ai_business_calendar_dev.db
+      # AI Provider access
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-sk-ant-mock-development-key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-mock-development-key}
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./ai-agents:/home/jovyan/work/ai-agents
+      - ai_calendar_dev_models:/home/jovyan/work/models
+      - .:/home/jovyan/work/shared
+    ports:
+      - "8888:8888"
+    networks:
+      - ai-calendar-dev-network
+    depends_on:
+      - ai-calendar-backend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # ================================================================================
+  # Nginx (Development - Optional)
+  # ================================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: ai-calendar-nginx-dev
+    restart: unless-stopped
+    profiles: ["nginx"]
+    volumes:
+      - ./nginx/nginx-ai-calendar-dev.conf:/etc/nginx/nginx.conf:ro
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "8086:80"
+    networks:
+      - ai-calendar-dev-network
+    depends_on:
+      - ai-calendar-backend
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.1'
+
+# ================================================================================
+# Named Volumes for Data Persistence
+# ================================================================================
+volumes:
+  redis_dev_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/redis-dev
+  ai_calendar_dev_cache:
+    driver: local
+  ai_calendar_dev_models:
+    driver: local
+  ai_agent_dev_logs:
+    driver: local
+
+# ================================================================================
+# Networks
+# ================================================================================
+networks:
+  ai-calendar-dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.27.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: ai-calendar-dev-br0
