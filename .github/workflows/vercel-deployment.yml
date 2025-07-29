@@ -1,0 +1,145 @@
+name: Vercel Deployment Workflow
+
+on:
+  push:
+    branches:
+      - staging      # Triggers staging deployment
+      - production   # Triggers production deployment
+  pull_request:
+    branches:
+      - staging
+      - production
+
+jobs:
+  deploy-staging:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend-v2/frontend-v2/package-lock.json'
+          
+      - name: Install dependencies
+        run: |
+          cd backend-v2/frontend-v2
+          npm ci
+          
+      - name: Run linting
+        run: |
+          cd backend-v2/frontend-v2
+          npm run lint
+          
+      - name: Run tests
+        run: |
+          cd backend-v2/frontend-v2
+          npm test -- --watchAll=false
+          
+      - name: Build application
+        run: |
+          cd backend-v2/frontend-v2
+          npm run build
+          
+      - name: Deploy to Vercel (Staging)
+        uses: vercel/action@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_STAGING_PROJECT_ID }}
+          working-directory: 'backend-v2/frontend-v2'
+          vercel-args: '--prod'
+          
+  deploy-production:
+    if: github.ref == 'refs/heads/production'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend-v2/frontend-v2/package-lock.json'
+          
+      - name: Install dependencies
+        run: |
+          cd backend-v2/frontend-v2
+          npm ci
+          
+      - name: Run linting (strict)
+        run: |
+          cd backend-v2/frontend-v2
+          npm run lint
+          
+      - name: Run comprehensive tests
+        run: |
+          cd backend-v2/frontend-v2
+          npm test -- --watchAll=false --coverage --coverageThreshold='{"global":{"branches":80,"functions":80,"lines":80,"statements":80}}'
+          
+      - name: Build application
+        run: |
+          cd backend-v2/frontend-v2
+          npm run build
+          
+      - name: Deploy to Vercel (Production)
+        uses: vercel/action@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PRODUCTION_PROJECT_ID }}
+          working-directory: 'backend-v2/frontend-v2'
+          vercel-args: '--prod'
+          
+  preview-deployment:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend-v2/frontend-v2/package-lock.json'
+          
+      - name: Install dependencies
+        run: |
+          cd backend-v2/frontend-v2
+          npm ci
+          
+      - name: Run linting
+        run: |
+          cd backend-v2/frontend-v2
+          npm run lint
+          
+      - name: Run tests
+        run: |
+          cd backend-v2/frontend-v2
+          npm test -- --watchAll=false
+          
+      - name: Build application
+        run: |
+          cd backend-v2/frontend-v2
+          npm run build
+          
+      - name: Deploy Preview to Vercel
+        uses: vercel/action@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_STAGING_PROJECT_ID }}
+          working-directory: 'backend-v2/frontend-v2'
