@@ -505,3 +505,6 @@ export function MobileCalendarLayout({
     </div>
   );
 }
+
+// Default export for compatibility
+export default MobileCalendarLayout;

@@ -30,4 +30,20 @@ export const conflictManager: ConflictManager = {
   }
 };
 
+/**
+ * React hook for conflict detection
+ */
+export function useConflictDetection(appointments: any[] = []) {
+  const checkConflicts = (appointments: any[]) => conflictManager.checkConflicts(appointments);
+  const resolveConflict = (conflictId: string) => conflictManager.resolveConflict(conflictId);
+  const getConflictSuggestions = (conflict: ConflictType) => conflictManager.getConflictSuggestions(conflict);
+
+  return {
+    checkConflicts,
+    resolveConflict,
+    getConflictSuggestions,
+    conflictManager
+  };
+}
+
 export default conflictManager;
