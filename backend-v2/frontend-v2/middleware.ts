@@ -2,8 +2,15 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Simple middleware - just pass through all requests
-  return NextResponse.next()
+  // Ultra-minimal middleware to prevent SSR errors
+  // Avoid accessing request.headers or user-agent parsing
+  const response = NextResponse.next()
+  
+  // Add basic security headers without using request properties that trigger SSR issues
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  
+  return response
 }
 
 export const config = {

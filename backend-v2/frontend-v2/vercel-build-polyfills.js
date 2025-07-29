@@ -85,6 +85,19 @@ if (typeof global !== 'undefined' && typeof window === 'undefined') {
       enumerable: false
     });
   }
+  
+  // Patch process.env for webpack runtime compatibility
+  if (typeof process !== 'undefined' && process.env) {
+    // Ensure NODE_ENV is set
+    if (!process.env.NODE_ENV) {
+      process.env.NODE_ENV = 'production';
+    }
+  }
+  
+  // Add minimal polyfill for potential undefined checks
+  global.__webpack_require__ = global.__webpack_require__ || function(moduleId) {
+    return require(moduleId);
+  };
 }
 
 console.log('[Vercel Build] Polyfills applied successfully');

@@ -111,44 +111,12 @@ const nextConfig = {
 
   // Enhanced performance optimizations
   experimental: {
-    optimizeCss: false, // Disabled for Vercel deployment compatibility
     // Better handling of server components and streaming
     serverComponentsExternalPackages: ['@stripe/stripe-js', 'qrcode'],
     // Better caching for development
     isrFlushToDisk: false,
-    // Better static generation
-    staticWorkerRequestDeduping: true,
-    // SSR Fix for browser globals
-    esmExternals: 'loose',
-    // Disable node polyfills that might cause SSR issues
-    fallbackNodePolyfills: false,
-    // Skip failing during build for problematic pages
-    // staticPageGenerationTimeout: 300, // Removed - not supported in Next.js 14
-    // Enhanced package optimization (excluding browser-only libraries)
-    optimizePackageImports: [
-      '@heroicons/react',
-      'lucide-react', 
-      '@radix-ui/react-alert-dialog',
-      '@radix-ui/react-avatar',
-      '@radix-ui/react-checkbox',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      '@radix-ui/react-popover',
-      '@radix-ui/react-progress',
-      '@radix-ui/react-radio-group',
-      '@radix-ui/react-scroll-area',
-      '@radix-ui/react-select',
-      '@radix-ui/react-toast',
-      '@radix-ui/react-tooltip',
-      'class-variance-authority',
-      'clsx',
-      'tailwind-merge',
-      'date-fns',
-      '@tanstack/react-query',
-      'framer-motion'
-    ],
-    // Better development experience
-    optimisticClientCache: true,
+    // SSR Fix for browser globals - changed to false for Vercel compatibility
+    esmExternals: false,
     // Enhanced server-side rendering
     scrollRestoration: true,
   },
@@ -162,40 +130,17 @@ const nextConfig = {
     if (isServer) {
       config.plugins = config.plugins || [];
       
-      // 1. Load server globals immediately
-      require('./lib/server-globals.js');
+      // 1. Load minimal polyfills only
+      require('./lib/minimal-polyfills.js');
       
-      // 2. DefinePlugin for typeof checks
+      // 2. DefinePlugin for self only
       config.plugins.push(
         new webpack.DefinePlugin({
-          'typeof self': '"object"',
-          'typeof window': '"object"',
-          'typeof document': '"object"',
-          'typeof navigator': '"object"',
-          'typeof globalThis': '"object"'
+          'typeof self': '"object"'
         })
       );
       
-      // 3. Modify entry to include polyfills
-      const originalEntry = config.entry;
-      config.entry = async () => {
-        const entries = await originalEntry();
-        const serverGlobalsPath = path.resolve(__dirname, 'lib/server-globals.js');
-        
-        // Add polyfills to main entry
-        if (entries.main && Array.isArray(entries.main)) {
-          entries.main.unshift(serverGlobalsPath);
-        }
-        
-        // Add to all entries
-        Object.keys(entries).forEach(key => {
-          if (Array.isArray(entries[key]) && !entries[key].includes(serverGlobalsPath)) {
-            entries[key].unshift(serverGlobalsPath);
-          }
-        });
-        
-        return entries;
-      };
+      // 3. Skip entry modification to avoid webpack runtime issues
       
       // 4. Alias for consistent polyfill access
       config.resolve.alias = {
@@ -234,6 +179,8 @@ const nextConfig = {
       }
       
       // 5. Enhanced entry point modification for vendor chunks
+      // DISABLED: Causes webpack runtime errors on Vercel
+      /*
       const originalEntry = config.entry;
       config.entry = async () => {
         const entries = await originalEntry();
@@ -282,16 +229,12 @@ const nextConfig = {
         
         return entries;
       };
+      */
       
-      // Add polyfill as webpack alias for consistent access
+      // Add minimal alias
       config.resolve.alias = {
         ...config.resolve.alias,
-        'global-polyfills': globalPolyfillPath,
-        'ssr-polyfills': ssrPolyfillPath,
-        // Vercel-specific aliases
-        'vercel-polyfills': process.env.VERCEL === '1' 
-          ? path.resolve(__dirname, 'lib/vercel-polyfills.js')
-          : globalPolyfillPath
+        'minimal-polyfills': path.resolve(__dirname, 'lib/minimal-polyfills.js')
       };
       
       config.resolve.fallback = {
