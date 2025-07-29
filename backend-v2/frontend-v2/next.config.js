@@ -483,12 +483,18 @@ const nextConfig = {
             },
             // Safe vendor libraries
             vendor: {
-              test: /[\\/]node_modules[\\/]/,
+              test: function(module) {
+                // Include node_modules but exclude problematic libraries
+                if (!module.resource) return false;
+                
+                const isNodeModule = /[\\/]node_modules[\\/]/.test(module.resource);
+                const isProblematic = /[\\/]node_modules[\\/](chart\.js|react-chartjs-2|recharts|qrcode|jspdf|canvas)[\\/]/.test(module.resource);
+                
+                return isNodeModule && !isProblematic;
+              },
               name: 'vendors',
               chunks: 'all',
               priority: 10,
-              // Exclude problematic libraries from main vendors bundle
-              exclude: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2|recharts|qrcode|jspdf|canvas)[\\/]/,
             },
           },
         },

@@ -51,11 +51,11 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
         return
       }
 
-      // REASONABLE RATE LIMITING: Only prevent excessive requests (reduced from 5 seconds to 1 second)
+      // MINIMAL RATE LIMITING: Only prevent rapid-fire requests (100ms)
       const lastCheck = localStorage.getItem('auth_last_check')
       const now = Date.now()
-      if (lastCheck && (now - parseInt(lastCheck)) < 1000) {
-        // Skip if checked within last 1 second (much more reasonable)
+      if (lastCheck && (now - parseInt(lastCheck)) < 100) {
+        // Skip only if checked within last 100ms
         setIsLoading(false)
         return
       }
@@ -115,10 +115,10 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
 
   const logout = async () => {
     try {
-      // REASONABLE PROTECTION: Prevent rapid logout calls (reduced to 500ms)
+      // MINIMAL PROTECTION: Prevent only rapid-fire logout calls (100ms)
       const lastLogout = localStorage.getItem('auth_last_logout')
       const now = Date.now()
-      if (lastLogout && (now - parseInt(lastLogout)) < 500) {
+      if (lastLogout && (now - parseInt(lastLogout)) < 100) {
         console.log('🔄 useAuth: Logout called too frequently, skipping')
         return
       }
@@ -164,10 +164,10 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
 
   const refreshToken = async () => {
     try {
-      // REASONABLE PROTECTION: Prevent rapid refresh calls (reduced to 2 seconds)
+      // MINIMAL PROTECTION: Prevent rapid refresh calls (500ms)
       const lastRefresh = localStorage.getItem('auth_last_refresh')
       const now = Date.now()
-      if (lastRefresh && (now - parseInt(lastRefresh)) < 2000) {
+      if (lastRefresh && (now - parseInt(lastRefresh)) < 500) {
         console.log('🔄 useAuth: Refresh called too frequently, skipping')
         throw new Error('Refresh called too frequently')
       }

@@ -24,8 +24,19 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json()
-        // Store token in localStorage for now
+        // Store tokens in both localStorage and cookies for compatibility
         localStorage.setItem('access_token', data.access_token)
+        localStorage.setItem('token', data.access_token) // Legacy support
+        if (data.refresh_token) {
+          localStorage.setItem('refresh_token', data.refresh_token)
+        }
+        
+        // Also set cookies to match middleware expectations
+        document.cookie = `access_token=${data.access_token}; path=/; max-age=${15 * 60}; samesite=lax`
+        if (data.refresh_token) {
+          document.cookie = `refresh_token=${data.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`
+        }
+        
         // Redirect to dashboard
         window.location.href = '/dashboard'
       } else {
