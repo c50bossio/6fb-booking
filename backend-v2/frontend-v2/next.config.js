@@ -16,18 +16,30 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    const webpack = require('webpack');
+    const path = require('path');
+    
+    // Server-side polyfills for SSR
     if (isServer) {
-      // Simple polyfill injection
-      const webpack = require('webpack');
+      // Inject our comprehensive polyfills
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'window': path.resolve(__dirname, 'lib/ssr-polyfills.js'),
+        'global': path.resolve(__dirname, 'lib/ssr-polyfills.js'),
+        'self': path.resolve(__dirname, 'lib/ssr-polyfills.js'),
+      };
+
+      // Define globals for SSR
       config.plugins.push(
-        new webpack.DefinePlugin({
-          'typeof self': '"object"',
-          'typeof window': '"object"',
-          'typeof document': '"object"',
+        new webpack.ProvidePlugin({
+          window: path.resolve(__dirname, 'lib/ssr-polyfills.js'),
+          global: path.resolve(__dirname, 'lib/ssr-polyfills.js'),
+          self: path.resolve(__dirname, 'lib/ssr-polyfills.js'),
         })
       );
     }
+
     return config;
   },
 }

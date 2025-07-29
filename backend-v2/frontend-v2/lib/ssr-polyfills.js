@@ -58,23 +58,32 @@ safeWindow.location = safeWindow.location || {
 
 // Safe document object for SSR
 safeWindow.document = safeWindow.document || {
-  createElement: (tag) => ({
-    tagName: tag.toUpperCase(),
-    setAttribute: () => {},
-    getAttribute: () => null,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    style: {},
-    innerHTML: '',
-    textContent: '',
-    appendChild: () => {},
-    removeChild: () => {},
-    querySelector: () => null,
-    querySelectorAll: () => [],
-    getElementById: () => null,
-    getElementsByTagName: () => [],
-    getElementsByClassName: () => []
-  }),
+  createElement: (tag) => {
+    const element = {
+      tagName: tag.toUpperCase(),
+      setAttribute: function(name, value) { this[name] = value; },
+      getAttribute: function(name) { return this[name] || null; },
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      style: {},
+      innerHTML: '',
+      textContent: '',
+      appendChild: () => {},
+      removeChild: () => {},
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      getElementById: () => null,
+      getElementsByTagName: () => [],
+      getElementsByClassName: () => [],
+      click: () => {},
+      focus: () => {},
+      blur: () => {},
+      dispatchEvent: () => true,
+      nodeType: 1, // ELEMENT_NODE
+      nodeName: tag.toUpperCase()
+    };
+    return element;
+  },
   createTextNode: (text) => ({ textContent: text, nodeType: 3 }),
   body: {
     appendChild: () => {},
@@ -156,25 +165,44 @@ safeWindow.fetch = safeWindow.fetch || (() =>
   Promise.reject(new Error('fetch not available in SSR'))
 );
 
-// Safe WebSocket for SSR
-safeWindow.WebSocket = safeWindow.WebSocket || class WebSocket {
-  constructor() {
-    this.readyState = 3; // CLOSED
-    this.CONNECTING = 0;
-    this.OPEN = 1;
-    this.CLOSING = 2;
-    this.CLOSED = 3;
+// Safe WebSocket for SSR - check if property is writable first
+if (!safeWindow.WebSocket) {
+  try {
+    // Try to define WebSocket if it doesn't exist
+    Object.defineProperty(safeWindow, 'WebSocket', {
+      value: class WebSocket {
+        constructor() {
+          this.readyState = 3; // CLOSED
+          this.CONNECTING = 0;
+          this.OPEN = 1;
+          this.CLOSING = 2;
+          this.CLOSED = 3;
+        }
+        close() {}
+        send() {}
+        addEventListener() {}
+        removeEventListener() {}
+      },
+      writable: true,
+      configurable: true
+    });
+  } catch (e) {
+    // If we can't define WebSocket, it might already exist as a read-only property
+    // In that case, just skip it since the browser already has WebSocket
+    console.warn('Could not polyfill WebSocket, using existing implementation:', e.message);
   }
-  close() {}
-  send() {}
-  addEventListener() {}
-  removeEventListener() {}
-};
+}
 
 // Safe requestAnimationFrame/cancelAnimationFrame for SSR
 safeWindow.requestAnimationFrame = safeWindow.requestAnimationFrame || 
   ((callback) => setTimeout(callback, 16));
 safeWindow.cancelAnimationFrame = safeWindow.cancelAnimationFrame || 
+  ((id) => clearTimeout(id));
+
+// Safe requestIdleCallback/cancelIdleCallback for SSR
+safeWindow.requestIdleCallback = safeWindow.requestIdleCallback || 
+  ((callback) => setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 50 }), 1));
+safeWindow.cancelIdleCallback = safeWindow.cancelIdleCallback || 
   ((id) => clearTimeout(id));
 
 // Safe intersection observer for SSR
@@ -230,9 +258,18 @@ if (typeof global !== 'undefined') {
   global.sessionStorage = global.sessionStorage || safeWindow.sessionStorage;
   global.console = global.console || safeWindow.console;
   global.fetch = global.fetch || safeWindow.fetch;
-  global.WebSocket = global.WebSocket || safeWindow.WebSocket;
+  if (!global.WebSocket) {
+    try {
+      global.WebSocket = safeWindow.WebSocket;
+    } catch (e) {
+      // WebSocket might be read-only, skip if it exists
+      console.warn('Could not assign global WebSocket:', e.message);
+    }
+  }
   global.requestAnimationFrame = global.requestAnimationFrame || safeWindow.requestAnimationFrame;
   global.cancelAnimationFrame = global.cancelAnimationFrame || safeWindow.cancelAnimationFrame;
+  global.requestIdleCallback = global.requestIdleCallback || safeWindow.requestIdleCallback;
+  global.cancelIdleCallback = global.cancelIdleCallback || safeWindow.cancelIdleCallback;
   global.IntersectionObserver = global.IntersectionObserver || safeWindow.IntersectionObserver;
   global.MutationObserver = global.MutationObserver || safeWindow.MutationObserver;
   global.ResizeObserver = global.ResizeObserver || safeWindow.ResizeObserver;
