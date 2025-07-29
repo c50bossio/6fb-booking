@@ -2,11 +2,6 @@
   "version": 2,
   "regions": ["iad1"],
   "buildCommand": "npm run build",
-  "functions": {
-    "app/**": {
-      "maxDuration": 30
-    }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
