@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { RealTimeBookingUpdates } from '@/components/RealTimeBookingUpdates'
 import { BookingConflictResolution } from '@/components/BookingConflictResolution'
-import { CalendarGridView } from '@/components/CalendarGridView'
+import { CalendarWithBookingModal } from '@/components/calendar/CalendarWithBookingModal'
 import { RealtimeCalendarManager, RealtimeStatusIndicator, RealtimeEventBadge } from '@/components/RealtimeCalendarManager'
 import { RealtimeConflictResolver } from '@/components/RealtimeConflictResolver'
 import { useRealtimeCalendar, useConflictManagement } from '@/hooks/useRealtimeCalendar'
@@ -21,6 +21,7 @@ export default function CalendarPage() {
   const [conflictCount, setConflictCount] = useState(2) // Demo: 2 active conflicts
   const [calendarView, setCalendarView] = useState('grid') // 'list' or 'grid'
   const [selectedBarberId, setSelectedBarberId] = useState<number | undefined>()
+  const [currentDate, setCurrentDate] = useState(() => new Date('2025-07-28T12:00:00')) // Stable date to prevent hydration errors
 
   // Initialize real-time calendar system
   const realtimeCalendar = useRealtimeCalendar({
@@ -47,10 +48,9 @@ export default function CalendarPage() {
       } catch (error) {
         console.log('API failed, loading demo data:', error)
         
-        // Load demo data on API failure
-        const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(today.getDate() + 1)
+        // Load demo data on API failure - use stable dates to prevent hydration errors
+        const today = new Date('2025-07-28T12:00:00')
+        const tomorrow = new Date('2025-07-29T12:00:00')
         
         setAppointments([
           {
@@ -59,7 +59,7 @@ export default function CalendarPage() {
             client_name: 'John Smith',  
             appointment_date: today.toISOString(),
             start_time: new Date(today.setHours(10, 0, 0, 0)).toISOString(),
-            created_at: new Date().toISOString()
+            created_at: today.toISOString()
           },
           {
             id: 2,
@@ -67,7 +67,7 @@ export default function CalendarPage() {
             client_name: 'Mike Wilson',
             appointment_date: today.toISOString(), 
             start_time: new Date(today.setHours(14, 0, 0, 0)).toISOString(),
-            created_at: new Date().toISOString()
+            created_at: today.toISOString()
           },
           {
             id: 3,
@@ -75,7 +75,7 @@ export default function CalendarPage() {
             client_name: 'David Chen',
             appointment_date: tomorrow.toISOString(),
             start_time: new Date(tomorrow.setHours(9, 30, 0, 0)).toISOString(),
-            created_at: new Date().toISOString()
+            created_at: today.toISOString()
           }
         ])
         
@@ -106,8 +106,8 @@ export default function CalendarPage() {
             id: event.appointmentId,
             service_name: event.serviceName,
             client_name: event.clientName,
-            appointment_date: event.newDate || new Date().toISOString(),
-            start_time: event.newTime || new Date().toISOString(),
+            appointment_date: event.newDate || today.toISOString(),
+            start_time: event.newTime || today.toISOString(),
             created_at: event.timestamp,
           }
           setAppointments(prev => [newAppointment, ...prev])
@@ -394,16 +394,38 @@ export default function CalendarPage() {
           <div className="xl:col-span-2 order-2 xl:order-1">
             {calendarView === 'grid' ? (
               <div>
-                <div className="mb-4 p-4 bg-red-100 border border-red-300 rounded-lg">
-                  <h3 className="font-bold text-red-800">🚨 GRID VIEW ACTIVATED!</h3>
-                  <p className="text-red-700">About to render CalendarGridView component...</p>
+                {/* Date Navigation Controls */}
+                <div className="mb-6 flex items-center gap-4">
+                  <button
+                    onClick={() => setCurrentDate(new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000))}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg"
+                  >
+                    Previous Week
+                  </button>
+                  <span className="text-lg font-medium text-gray-900 dark:text-white">
+                    {currentDate.getFullYear()}-{String(currentDate.getMonth() + 1).padStart(2, '0')}-{String(currentDate.getDate()).padStart(2, '0')}
+                  </span>
+                  <button
+                    onClick={() => setCurrentDate(new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000))}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg"
+                  >
+                    Next Week
+                  </button>
+                  <button
+                    onClick={() => setCurrentDate(new Date('2025-07-28T12:00:00'))}
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg"
+                  >
+                    Today
+                  </button>
                 </div>
-                <CalendarGridView
+                <CalendarWithBookingModal
+                  currentDate={currentDate}
                   appointments={appointments}
-                  barbers={barbers}
-                  onAppointmentClick={handleAppointmentClick}
-                  onTimeSlotClick={handleTimeSlotClick}
-                  onAppointmentReschedule={handleAppointmentReschedule}
+                  onAppointmentCreated={(newAppointment) => {
+                    setAppointments(prev => [...prev, newAppointment])
+                  }}
+                  className="shadow-lg"
+                  isDemo={false}
                 />
               </div>
             ) : (

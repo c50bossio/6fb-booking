@@ -12,6 +12,7 @@ interface UseAppointmentServicesProps {
   isPublicBooking?: boolean
   cacheEnabled?: boolean
   cacheDuration?: number
+  isDemo?: boolean
 }
 
 const DEFAULT_CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
@@ -19,7 +20,8 @@ const DEFAULT_CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 export function useAppointmentServices({
   isPublicBooking = false,
   cacheEnabled = true,
-  cacheDuration = DEFAULT_CACHE_DURATION
+  cacheDuration = DEFAULT_CACHE_DURATION,
+  isDemo = false
 }: UseAppointmentServicesProps = {}) {
   const [services, setServices] = useState<Service[]>([])
   const [barbers, setBarbers] = useState<User[]>([])
@@ -150,11 +152,13 @@ export function useAppointmentServices({
     await Promise.all([loadServices(), loadBarbers()])
   }
 
-  // Load data on mount
+  // Load data on mount (skip in demo mode)
   useEffect(() => {
-    loadServices()
-    loadBarbers()
-  }, [isPublicBooking])
+    if (!isDemo) {
+      loadServices()
+      loadBarbers()
+    }
+  }, [isPublicBooking, isDemo])
 
   return {
     services,

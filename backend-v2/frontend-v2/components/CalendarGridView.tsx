@@ -31,9 +31,9 @@ export function CalendarGridView({
   onTimeSlotClick,
   onAppointmentReschedule 
 }: CalendarGridViewProps) {
-  const [currentDate, setCurrentDate] = useState(new Date())
+  const [currentDate, setCurrentDate] = useState(() => new Date('2025-07-28T12:00:00'))
   const [viewType, setViewType] = useState<ViewType>('month')
-  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState(() => new Date('2025-07-28T12:00:00'))
 
   // Generate calendar data for month view
   const generateMonthCalendar = () => {

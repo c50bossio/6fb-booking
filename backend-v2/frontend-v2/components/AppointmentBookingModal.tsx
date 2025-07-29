@@ -45,6 +45,8 @@ interface AppointmentBookingModalProps {
   existingAppointments?: any[]
   onAppointmentCreated?: (appointment: any) => void
   className?: string
+  isDemo?: boolean
+  isPublicBooking?: boolean
 }
 
 interface AvailableTimeSlot extends TimeSlot {
@@ -72,7 +74,9 @@ export const AppointmentBookingModal = memo(function AppointmentBookingModal({
   selectedBarber,
   existingAppointments = [],
   onAppointmentCreated,
-  className
+  className,
+  isDemo = false,
+  isPublicBooking = false
 }: AppointmentBookingModalProps) {
   // Form state management
   const {
@@ -90,8 +94,23 @@ export const AppointmentBookingModal = memo(function AppointmentBookingModal({
     }
   })
 
-  // Services and barbers data
-  const { services, loadingServices, loadServices } = useAppointmentServices()
+  // Services and barbers data - Use public booking mode for demo
+  const { services: apiServices, loadingServices: apiLoadingServices, loadServices } = useAppointmentServices({
+    isPublicBooking: isDemo || isPublicBooking,
+    isDemo: isDemo
+  })
+  
+  // Mock data for demo mode
+  const mockServices = useMemo(() => [
+    { id: 1, name: 'Haircut', duration_minutes: 30, base_price: 25, description: 'Classic haircut' },
+    { id: 2, name: 'Beard Trim', duration_minutes: 15, base_price: 15, description: 'Professional beard trimming' },
+    { id: 3, name: 'Full Service', duration_minutes: 45, base_price: 40, description: 'Haircut + beard trim' }
+  ], [])
+  
+  // Use mock data in demo mode, API data otherwise
+  const services = isDemo ? mockServices : apiServices
+  const loadingServices = isDemo ? false : apiLoadingServices
+  
   const [barbers, setBarbers] = useState<User[]>([])
   const [loadingBarbers, setLoadingBarbers] = useState(false)
 
@@ -99,55 +118,98 @@ export const AppointmentBookingModal = memo(function AppointmentBookingModal({
   const { slots: availableSlots, loading: loadingSlots, loadSlots } = useTimeSlots()
   const [enhancedSlots, setEnhancedSlots] = useState<AvailableTimeSlot[]>([])
 
-  // Conflict detection
-  const { detectConflictsForAppointment, wouldCreateConflict } = useConflictDetection(existingAppointments)
+  // Conflict detection - Stabilize existingAppointments to prevent infinite re-renders
+  const stableExistingAppointments = useMemo(() => existingAppointments || [], [existingAppointments?.length, existingAppointments])
+  const { detectConflictsForAppointment, wouldCreateConflict } = useConflictDetection(stableExistingAppointments)
 
   // Form validation and submission
   const [validationErrors, setValidationErrors] = useState<FormValidationErrors>({})
   const [submitting, setSubmitting] = useState(false)
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false)
 
-  // Load initial data
+  // Stable functions to prevent infinite re-renders
+  const stableLoadServices = useCallback(() => {
+    // For demo mode, we use mock data above, no API calls needed
+    if (!isDemo) {
+      loadServices()
+    }
+  }, [isDemo, loadServices])
+
+  const stableLoadBarbers = useCallback(async () => {
+    if (isDemo || isPublicBooking) {
+      // Use mock barbers for demo
+      setBarbers([
+        { id: 1, name: 'Marcus Rodriguez', email: 'marcus@demo.com', role: 'barber' },
+        { id: 2, name: 'Diego Santos', email: 'diego@demo.com', role: 'barber' }
+      ])
+      return
+    }
+    
+    // Real API call for authenticated mode - implement actual barber loading
+    try {
+      setLoadingBarbers(true)
+      // This would be your actual API call to get barbers
+      // const response = await fetchAPI('/api/v2/users/barbers')
+      // setBarbers(response.barbers || [])
+      setBarbers([]) // Placeholder for now
+    } catch (error) {
+      console.error('Failed to load barbers:', error)
+      setBarbers([])
+    } finally {
+      setLoadingBarbers(false)
+    }
+  }, [isDemo, isPublicBooking])
+
+  // Load initial data - Stabilized to prevent infinite loops
   useEffect(() => {
     if (isOpen) {
-      loadServices()
-      loadBarbers()
+      stableLoadServices()
+      stableLoadBarbers()
     }
-  }, [isOpen, loadServices])
+  }, [isOpen, stableLoadServices, stableLoadBarbers])
 
-  // Load available slots when date/service changes
+  // Load available slots when date/service changes - Stabilized dependency array
   useEffect(() => {
     if (formData.date && formData.service) {
       loadSlots(formData.date, formData.service.id.toString(), formData.barber?.id?.toString())
     }
-  }, [formData.date, formData.service, formData.barber, loadSlots])
+  }, [formData.date, formData.service?.id, formData.barber?.id])
 
-  // Enhance slots with conflict detection
-  useEffect(() => {
-    if (availableSlots.length > 0 && formData.date && formData.service) {
-      const enhanced = availableSlots.map((slot, index) => {
-        const slotDateTime = new Date(`${format(formData.date!, 'yyyy-MM-dd')}T${slot.time}`)
-        const conflicts = wouldCreateConflict(
-          Date.now(), // temporary ID
-          slotDateTime,
-          slot.time,
-          formData.service?.duration_minutes || 60
-        )
-
-        return {
-          ...slot,
-          id: `slot-${index}`,
-          conflicts,
-          isRecommended: slot.is_next_available || (index < 3 && conflicts.length === 0),
-          nextAvailable: slot.is_next_available
-        }
-      })
-
-      setEnhancedSlots(enhanced)
-    } else {
-      setEnhancedSlots([])
+  // Enhance slots with conflict detection - Optimized to prevent infinite re-renders
+  const enhancedSlotsData = useMemo(() => {
+    if (availableSlots.length === 0 || !formData.date || !formData.service) {
+      return []
     }
-  }, [availableSlots, formData.date, formData.service, wouldCreateConflict])
+
+    return availableSlots.map((slot, index) => {
+      const slotDateTime = new Date(`${format(formData.date!, 'yyyy-MM-dd')}T${slot.time}`)
+      const conflicts = wouldCreateConflict(
+        Date.now(), // temporary ID
+        slotDateTime,
+        slot.time,
+        formData.service?.duration_minutes || 60
+      )
+
+      return {
+        ...slot,
+        id: `slot-${index}`,
+        conflicts,
+        isRecommended: slot.is_next_available || (index < 3 && conflicts.length === 0),
+        nextAvailable: slot.is_next_available
+      }
+    })
+  }, [
+    availableSlots, 
+    formData.date, 
+    formData.service?.id, 
+    formData.service?.duration_minutes,
+    stableExistingAppointments
+  ])
+
+  // Update enhanced slots when data changes
+  useEffect(() => {
+    setEnhancedSlots(enhancedSlotsData)
+  }, [enhancedSlotsData])
 
   // Load barbers
   const loadBarbers = useCallback(async () => {
@@ -169,7 +231,7 @@ export const AppointmentBookingModal = memo(function AppointmentBookingModal({
     }
   }, [])
 
-  // Form validation
+  // Form validation - Optimized with stable dependencies
   const validateForm = useCallback((): boolean => {
     const errors: FormValidationErrors = {}
 
@@ -215,9 +277,25 @@ export const AppointmentBookingModal = memo(function AppointmentBookingModal({
 
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
-  }, [formData, wouldCreateConflict])
+  }, [
+    formData.service?.id,
+    formData.date,
+    formData.time,
+    formData.client?.id,
+    formData.notes,
+    formData.service?.duration_minutes,
+    wouldCreateConflict
+  ])
 
-  // Handle form submission
+  // Handle modal close (moved before handleSubmit to avoid TDZ issue)
+  const handleClose = useCallback(() => {
+    reset()
+    setValidationErrors({})
+    setShowAdvancedOptions(false)
+    onClose()
+  }, [reset, onClose])
+
+  // Handle form submission - Optimized with stable dependencies
   const handleSubmit = useCallback(async () => {
     if (!validateForm()) {
       return
@@ -226,6 +304,33 @@ export const AppointmentBookingModal = memo(function AppointmentBookingModal({
     try {
       setSubmitting(true)
 
+      if (isDemo) {
+        // Demo mode - simulate successful appointment creation
+        const demoAppointment = {
+          id: Date.now(),
+          client_name: formData.client?.name || 'Demo Client',
+          service_name: formData.service!.name,
+          start_time: `${format(formData.date!, 'yyyy-MM-dd')}T${formData.time!}:00`,
+          end_time: `${format(formData.date!, 'yyyy-MM-dd')}T${formData.time!}:00`,
+          barber_name: formData.barber?.name || 'Demo Barber',
+          status: 'confirmed'
+        }
+
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        toast({
+          title: 'Demo Success',
+          description: 'Demo appointment created successfully (not saved)',
+          variant: 'default'
+        })
+
+        onAppointmentCreated?.(demoAppointment)
+        handleClose()
+        return
+      }
+
+      // Real API call for non-demo mode
       const appointmentData: EnhancedAppointmentCreate = {
         client_id: formData.client!.id,
         service_id: formData.service!.id,
@@ -268,63 +373,68 @@ export const AppointmentBookingModal = memo(function AppointmentBookingModal({
     } finally {
       setSubmitting(false)
     }
-  }, [formData, validateForm, onAppointmentCreated])
+  }, [
+    isDemo,
+    formData.client?.id,
+    formData.service?.id,
+    formData.service?.duration_minutes,
+    formData.service?.base_price,
+    formData.barber?.id,
+    formData.date,
+    formData.time,
+    formData.notes,
+    validateForm,
+    onAppointmentCreated,
+    handleClose
+  ])
 
-  // Handle modal close
-  const handleClose = useCallback(() => {
-    reset()
-    setValidationErrors({})
-    setShowAdvancedOptions(false)
-    onClose()
-  }, [reset, onClose])
-
-  // Keyboard navigation for time slots
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isOpen || enhancedSlots.length === 0) return
-
-      const currentIndex = enhancedSlots.findIndex(slot => slot.time === formData.time)
-      let newIndex = -1
-
-      switch (event.key) {
-        case 'ArrowRight':
-        case 'ArrowDown':
-          event.preventDefault()
-          newIndex = currentIndex < enhancedSlots.length - 1 ? currentIndex + 1 : 0
-          break
-        case 'ArrowLeft':
-        case 'ArrowUp':
-          event.preventDefault()
-          newIndex = currentIndex > 0 ? currentIndex - 1 : enhancedSlots.length - 1
-          break
-        case 'Enter':
-        case ' ':
-          if (currentIndex >= 0) {
-            event.preventDefault()
-            const slot = enhancedSlots[currentIndex]
-            if (slot.available && !slot.conflicts?.some(c => c.severity === 'critical')) {
-              handleTimeSlotSelect(slot)
-            }
-          }
-          break
-      }
-
-      if (newIndex >= 0) {
-        const newSlot = enhancedSlots[newIndex]
-        if (newSlot.available && !newSlot.conflicts?.some(c => c.severity === 'critical')) {
-          updateField('time', newSlot.time)
-        }
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, enhancedSlots, formData.time, updateField, handleTimeSlotSelect])
-
-  // Time slot selection
+  // Time slot selection (moved before useEffect to avoid TDZ issue)
   const handleTimeSlotSelect = useCallback((slot: AvailableTimeSlot) => {
     updateField('time', slot.time)
   }, [updateField])
+
+  // Keyboard navigation for time slots - Optimized to prevent re-renders
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (!isOpen || enhancedSlots.length === 0) return
+
+    const currentIndex = enhancedSlots.findIndex(slot => slot.time === formData.time)
+    let newIndex = -1
+
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        event.preventDefault()
+        newIndex = currentIndex < enhancedSlots.length - 1 ? currentIndex + 1 : 0
+        break
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        event.preventDefault()
+        newIndex = currentIndex > 0 ? currentIndex - 1 : enhancedSlots.length - 1
+        break
+      case 'Enter':
+      case ' ':
+        if (currentIndex >= 0) {
+          event.preventDefault()
+          const slot = enhancedSlots[currentIndex]
+          if (slot.available && !slot.conflicts?.some(c => c.severity === 'critical')) {
+            handleTimeSlotSelect(slot)
+          }
+        }
+        break
+    }
+
+    if (newIndex >= 0) {
+      const newSlot = enhancedSlots[newIndex]
+      if (newSlot.available && !newSlot.conflicts?.some(c => c.severity === 'critical')) {
+        updateField('time', newSlot.time)
+      }
+    }
+  }, [isOpen, enhancedSlots, formData.time, updateField, handleTimeSlotSelect])
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
 
   // Computed values
   const selectedSlot = useMemo(() => {

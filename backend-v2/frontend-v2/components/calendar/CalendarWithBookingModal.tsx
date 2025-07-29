@@ -25,14 +25,19 @@ interface CalendarWithBookingModalProps {
   appointments: CalendarAppointment[]
   onAppointmentCreated?: (appointment: any) => void
   className?: string
+  isDemo?: boolean
 }
 
 export const CalendarWithBookingModal = memo(function CalendarWithBookingModal({
   currentDate,
   appointments,
   onAppointmentCreated,
-  className
+  className,
+  isDemo = false
 }: CalendarWithBookingModalProps) {
+  // Use stable date for demo mode to prevent hydration errors
+  const stableToday = isDemo ? new Date('2025-07-28T12:00:00') : new Date()
+  
   // Get calendar week
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 })
@@ -91,7 +96,7 @@ export const CalendarWithBookingModal = memo(function CalendarWithBookingModal({
           Week of {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
         </h2>
         <Button
-          onClick={() => openForTimeSlot(new Date(), '09:00')}
+          onClick={() => openForTimeSlot(stableToday, '09:00')}
           className="flex items-center gap-2"
         >
           <PlusIcon className="w-4 h-4" />
@@ -114,7 +119,7 @@ export const CalendarWithBookingModal = memo(function CalendarWithBookingModal({
                 </div>
                 <div className={cn(
                   'text-lg font-bold mt-1',
-                  isSameDay(day, new Date()) 
+                  isSameDay(day, stableToday) 
                     ? 'text-primary-600 dark:text-primary-400' 
                     : 'text-gray-700 dark:text-gray-300'
                 )}>
@@ -138,8 +143,8 @@ export const CalendarWithBookingModal = memo(function CalendarWithBookingModal({
                 {/* Day Columns */}
                 {daysInWeek.map((day) => {
                   const appointment = getAppointmentForSlot(day, time)
-                  const isToday = isSameDay(day, new Date())
-                  const isPast = day < startOfWeek(new Date()) || (isToday && time < format(new Date(), 'HH:mm'))
+                  const isToday = isSameDay(day, stableToday)
+                  const isPast = day < startOfWeek(stableToday) || (isToday && time < format(stableToday, 'HH:mm'))
 
                   return (
                     <div
@@ -177,7 +182,7 @@ export const CalendarWithBookingModal = memo(function CalendarWithBookingModal({
       {/* Mobile-Optimized Quick Actions */}
       <div className="lg:hidden mt-6 flex flex-wrap gap-3">
         <Button
-          onClick={() => openForTimeSlot(new Date(), '09:00')}
+          onClick={() => openForTimeSlot(stableToday, '09:00')}
           className="flex-1 min-w-[150px] py-3"
           size="lg"
         >
@@ -186,7 +191,7 @@ export const CalendarWithBookingModal = memo(function CalendarWithBookingModal({
         </Button>
         <Button
           variant="outline"
-          onClick={() => openForTimeSlot(new Date(), '14:00')}
+          onClick={() => openForTimeSlot(stableToday, '14:00')}
           className="flex-1 min-w-[150px] py-3"
           size="lg"
         >
@@ -204,6 +209,7 @@ export const CalendarWithBookingModal = memo(function CalendarWithBookingModal({
         selectedBarber={modalState.selectedBarber}
         existingAppointments={modalState.existingAppointments}
         onAppointmentCreated={handleAppointmentCreated}
+        isDemo={isDemo}
       />
     </div>
   )
