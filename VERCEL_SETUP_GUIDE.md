@@ -3,7 +3,7 @@
 ## Overview
 
 This guide sets up a professional deployment workflow with:
-- **Staging Environment**: `6fb-client-staging.vercel.app` (staging branch)
+- **Staging Environment**: `bookedbarber-staging.vercel.app` (staging branch)
 - **Production Environment**: `bookedbarber.com` (production branch)  
 - **Preview Deployments**: Automatic previews for pull requests
 - **GitHub Integration**: Automatic deployments on push
@@ -14,7 +14,7 @@ Your repository is already set up with the perfect branch structure:
 
 ```
 📁 6fb-booking (GitHub Repository)
-├── 🌿 staging branch      → Deploys to staging.vercel.app
+├── 🌿 staging branch      → Deploys to bookedbarber-staging.vercel.app
 ├── 🌿 production branch   → Deploys to bookedbarber.com
 └── 🌿 feature branches    → Create preview deployments
 ```
@@ -28,7 +28,7 @@ Your repository is already set up with the perfect branch structure:
 2. Connect your GitHub account
 3. Select repository: `6fb-booking`
 4. Configure project:
-   - **Project Name**: `6fb-client-staging`
+   - **Project Name**: `bookedbarber-staging`
    - **Framework**: Next.js
    - **Root Directory**: `backend-v2/frontend-v2`
    - **Build Command**: `npm run build`
@@ -40,7 +40,7 @@ Your repository is already set up with the perfect branch structure:
 1. Go to [vercel.com/new](https://vercel.com/new) again
 2. Select repository: `6fb-booking`
 3. Configure project:
-   - **Project Name**: `6fb-client-production` or `bookedbarber`
+   - **Project Name**: `bookedbarber`
    - **Framework**: Next.js
    - **Root Directory**: `backend-v2/frontend-v2`
    - **Build Command**: `npm run build`
@@ -131,7 +131,7 @@ Your repository is already set up with the perfect branch structure:
 
 After setup, you'll have:
 
-- **Staging**: `https://6fb-client-staging.vercel.app`
+- **Staging**: `https://bookedbarber-staging.vercel.app`
 - **Production**: `https://bookedbarber.com` (with custom domain)
 - **Preview**: `https://6fb-booking-git-feature-branch.vercel.app` (for PRs)
 
