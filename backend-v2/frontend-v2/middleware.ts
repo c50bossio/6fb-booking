@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { enhancedAuthMiddleware } from './lib/auth-middleware'
+// import { enhancedAuthMiddleware } from './lib/auth-middleware' // TEMPORARILY DISABLED
 
 /**
  * Enhanced Next.js Middleware with Homepage Consolidation Enforcement
@@ -102,11 +102,11 @@ export function middleware(request: NextRequest) {
   
   // ==================== ENHANCED AUTHENTICATION HANDLING ====================
   
-  // Try enhanced auth middleware first (role-based access control)
-  const enhancedResponse = enhancedAuthMiddleware(request)
-  if (enhancedResponse) {
-    return enhancedResponse
-  }
+  // TEMPORARILY DISABLED - Enhanced auth middleware disabled during system recovery
+  // const enhancedResponse = enhancedAuthMiddleware(request)
+  // if (enhancedResponse) {
+  //   return enhancedResponse
+  // }
   
   // Fallback to basic authentication handling
   // Check for secure auth cookies that our authentication system actually sets

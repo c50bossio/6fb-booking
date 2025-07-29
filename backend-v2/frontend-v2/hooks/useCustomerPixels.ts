@@ -99,13 +99,17 @@ function loadGTM(containerId: string) {
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','${containerId}');
   `
-  document.head.appendChild(script)
+  if (typeof window !== 'undefined' && document.head && document.head.appendChild) {
+    document.head.appendChild(script)
+  }
 
   // GTM noscript (for users with JS disabled)
   const noscript = document.createElement('noscript')
   noscript.innerHTML = `<iframe src="https://www.googletagmanager.com/ns.html?id=${containerId}"
     height="0" width="0" style="display:none;visibility:hidden"></iframe>`
-  document.body.insertBefore(noscript, document.body.firstChild)
+  if (typeof window !== 'undefined' && document.body && document.body.insertBefore) {
+    document.body.insertBefore(noscript, document.body.firstChild)
+  }
 }
 
 /**
@@ -118,7 +122,9 @@ function loadGA4(measurementId: string) {
   const script = document.createElement('script')
   script.async = true
   script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
-  document.head.appendChild(script)
+  if (typeof window !== 'undefined' && document.head && document.head.appendChild) {
+    document.head.appendChild(script)
+  }
 
   // Initialize gtag
   window.dataLayer = window.dataLayer || []
@@ -152,7 +158,9 @@ function loadMetaPixel(pixelId: string) {
     fbq('init', '${pixelId}');
     fbq('track', 'PageView');
   `
-  document.head.appendChild(script)
+  if (typeof window !== 'undefined' && document.head && document.head.appendChild) {
+    document.head.appendChild(script)
+  }
 
   // Meta Pixel noscript
   const noscript = document.createElement('noscript')
@@ -172,7 +180,9 @@ function loadGoogleAdsConversion(conversionId: string, conversionLabel?: string)
     const script = document.createElement('script')
     script.async = true
     script.src = `https://www.googletagmanager.com/gtag/js?id=${conversionId}`
+    if (typeof window !== 'undefined' && document.head && document.head.appendChild) {
     document.head.appendChild(script)
+  }
 
     window.dataLayer = window.dataLayer || []
     window.gtag = function() {

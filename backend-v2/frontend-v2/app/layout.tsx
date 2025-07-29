@@ -99,11 +99,13 @@ export default function RootLayout({
                 document.documentElement.classList.add(resolvedTheme);
                 document.documentElement.setAttribute('data-theme', resolvedTheme);
                 
-                // Set initial theme-color meta tag
-                const metaThemeColor = document.createElement('meta');
-                metaThemeColor.name = 'theme-color';
-                metaThemeColor.content = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
-                document.head.appendChild(metaThemeColor);
+                // Set initial theme-color meta tag (with SSR protection)
+                if (typeof window !== 'undefined' && document.head && document.head.appendChild) {
+                  const metaThemeColor = document.createElement('meta');
+                  metaThemeColor.name = 'theme-color';
+                  metaThemeColor.content = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
+                  document.head.appendChild(metaThemeColor);
+                }
               } catch (e) {
                 // Fallback to light theme
                 document.documentElement.classList.add('light');

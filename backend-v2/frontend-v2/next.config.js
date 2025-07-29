@@ -155,13 +155,54 @@ const nextConfig = {
 
   // Webpack optimizations
   webpack: (config, { isServer, dev }) => {
+    // ENHANCED SSR fix - comprehensive global replacement for Vercel
+    if (isServer) {
+      config.plugins = config.plugins || [];
+      
+      // Enhanced DefinePlugin with comprehensive global mapping
+      config.plugins.unshift(
+        new (require('webpack').DefinePlugin)({
+          'typeof self': '"object"',
+          'typeof window': '"object"',
+          'typeof document': '"object"',
+          'typeof navigator': '"object"',
+          'self': 'global',
+          'window': 'global',
+          'document': 'global.document',
+          'navigator': 'global.navigator',
+          'globalThis': 'global',
+          // Vercel-specific Lambda compatibility
+          'process.browser': 'false',
+          'process.client': 'false'
+        })
+      );
+
+      // Vercel-specific: inject polyfills into ALL server chunks
+      if (process.env.VERCEL === '1') {
+        const ProvidePlugin = require('webpack').ProvidePlugin;
+        config.plugins.push(
+          new ProvidePlugin({
+            'self': ['global'],
+            'window': ['global'],
+            'globalThis': ['global']
+          })
+        );
+      }
+    }
+    
     // SSR fix for browser globals and problematic dependencies
     if (isServer) {
       // Load comprehensive SSR polyfills before anything else
       const path = require('path');
+      const nodeStartupPolyfillPath = path.resolve(__dirname, 'lib/node-startup-polyfills.js');
       const globalPolyfillPath = path.resolve(__dirname, 'lib/global-polyfills.js');
       const ssrPolyfillPath = path.resolve(__dirname, 'lib/ssr-polyfills.js');
       const rootPolyfillPath = path.resolve(__dirname, 'polyfills.js');
+      
+      // Load Node.js startup polyfill FIRST (for styled-jsx)
+      if (require('fs').existsSync(nodeStartupPolyfillPath)) {
+        require(nodeStartupPolyfillPath);
+      }
       
       // Load global polyfill immediately
       if (require('fs').existsSync(globalPolyfillPath)) {
@@ -178,18 +219,32 @@ const nextConfig = {
         require(rootPolyfillPath);
       }
       
-      // Inject polyfills as the very first entry point
+      // Enhanced polyfill injection with Vercel-specific optimizations
       const originalEntry = config.entry;
       config.entry = async () => {
         const entries = await originalEntry();
         
-        // Prepend polyfills to all entry points
+        // Choose appropriate polyfills based on environment
+        const polyfillPath = process.env.VERCEL === '1' 
+          ? path.resolve(__dirname, 'lib/vercel-polyfills.js')
+          : globalPolyfillPath;
+        
+        // Prepend polyfills to all entries (startup polyfill first)
         Object.keys(entries).forEach(key => {
           const entry = entries[key];
           if (Array.isArray(entry)) {
-            entries[key] = [globalPolyfillPath, ...entry];
+            entries[key] = [nodeStartupPolyfillPath, polyfillPath, ...entry];
           } else if (typeof entry === 'string') {
-            entries[key] = [globalPolyfillPath, entry];
+            entries[key] = [nodeStartupPolyfillPath, polyfillPath, entry];
+          } else if (entry && typeof entry === 'object') {
+            // Handle complex entry objects
+            if (entry.import) {
+              if (Array.isArray(entry.import)) {
+                entry.import = [nodeStartupPolyfillPath, polyfillPath, ...entry.import];
+              } else {
+                entry.import = [nodeStartupPolyfillPath, polyfillPath, entry.import];
+              }
+            }
           }
         });
         
@@ -200,7 +255,11 @@ const nextConfig = {
       config.resolve.alias = {
         ...config.resolve.alias,
         'global-polyfills': globalPolyfillPath,
-        'ssr-polyfills': ssrPolyfillPath
+        'ssr-polyfills': ssrPolyfillPath,
+        // Vercel-specific aliases
+        'vercel-polyfills': process.env.VERCEL === '1' 
+          ? path.resolve(__dirname, 'lib/vercel-polyfills.js')
+          : globalPolyfillPath
       };
       
       config.resolve.fallback = {
@@ -211,16 +270,61 @@ const nextConfig = {
         canvas: false,
       }
       
-      // Externalize problematic packages for SSR
+      // Enhanced externalization for Vercel Lambda compatibility
       config.externals = config.externals || [];
-      config.externals.push({
+      
+      const problematicPackages = {
         'qrcode': 'qrcode',
-        'canvas': 'canvas',
+        'canvas': 'canvas', 
         'chart.js': 'chart.js',
         'react-chartjs-2': 'react-chartjs-2',
         'jspdf': 'jspdf',
-        'jspdf-autotable': 'jspdf-autotable'
-      });
+        'jspdf-autotable': 'jspdf-autotable',
+        'ws': 'ws',
+        'recharts': 'recharts'
+      };
+
+      // Enhanced Vercel-specific externalization for AWS Lambda
+      if (process.env.VERCEL === '1') {
+        // More aggressive externalization for Vercel/AWS Lambda
+        config.externals.push(
+          // Core problematic packages
+          problematicPackages,
+          // Pattern-based externalization
+          /^@?chart\.js/,
+          /^react-chartjs-2/,
+          /^recharts/,
+          /^qrcode/,
+          /^canvas/,
+          /^jspdf/,
+          /^ws$/,
+          // Browser-specific APIs that cause issues in Lambda
+          function ({ context, request }, callback) {
+            // Externalize any request that might use browser globals
+            if (/\b(self|window|document|navigator)\b/.test(request)) {
+              return callback(null, 'commonjs ' + request);
+            }
+            // Externalize chart.js related imports
+            if (/chart\.js|chartjs|recharts/.test(request)) {
+              return callback(null, 'commonjs ' + request);
+            }
+            callback();
+          }
+        );
+        
+        // Enhanced resolve configuration for Vercel
+        config.resolve.alias = {
+          ...config.resolve.alias,
+          // Redirect problematic modules to our polyfills
+          'chart.js': path.resolve(__dirname, 'lib/chartjs-dynamic.tsx'),
+          'react-chartjs-2': path.resolve(__dirname, 'lib/chartjs-dynamic.tsx'),
+          'qrcode': false, // Disable server-side QR generation
+          'canvas': false,
+          'jspdf': false
+        };
+      } else {
+        config.externals.push(problematicPackages);
+      }
     }
 
     // Port conflict prevention and better development experience
@@ -358,19 +462,36 @@ const nextConfig = {
         },
       }
     } else if (!dev && process.env.VERCEL === '1') {
-      // Simplified optimization for Vercel builds to prevent timeout
+      // Enhanced Vercel optimization with SSR-safe chunk splitting
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
           cacheGroups: {
+            // Separate problematic browser-only libraries
+            browserLibs: {
+              test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2|recharts|qrcode|jspdf|canvas)[\\/]/,
+              name: 'browser-libs',
+              chunks: 'all',
+              priority: 30,
+              enforce: true,
+            },
+            // Safe vendor libraries
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
               chunks: 'all',
+              priority: 10,
+              // Exclude problematic libraries from main vendors bundle
+              exclude: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2|recharts|qrcode|jspdf|canvas)[\\/]/,
             },
           },
         },
+        // Enhanced module concatenation for Vercel
+        concatenateModules: true,
+        // Better tree shaking
+        usedExports: true,
+        sideEffects: false,
       }
     }
 

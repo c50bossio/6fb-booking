@@ -4,28 +4,65 @@
  * MUST RUN BEFORE ANY OTHER CODE
  */
 
-// Immediately define self in the global scope - this MUST be first
+// ENHANCED: Immediately define self in the global scope for all environments
 (function() {
   'use strict';
   
-  // Get the global object
+  // Get the global object (AWS Lambda compatible)
   const globalScope = (function() {
+    // Check for AWS Lambda environment (Vercel uses this)
     if (typeof globalThis !== 'undefined') return globalThis;
     if (typeof global !== 'undefined') return global;
     if (typeof window !== 'undefined') return window;
     if (typeof self !== 'undefined') return self;
-    // Last resort - create one
-    return (function() { return this; })();
+    // Last resort - create one (AWS Lambda compatible)
+    try {
+      return (function() { return this; })() || {};
+    } catch (e) {
+      return {};
+    }
   })();
   
-  // Define self immediately 
+  // VERCEL/AWS Lambda specific: Define self with additional safety
   if (!globalScope.self) {
-    globalScope.self = globalScope;
+    try {
+      Object.defineProperty(globalScope, 'self', {
+        value: globalScope,
+        configurable: true,
+        writable: true
+      });
+    } catch (e) {
+      // Fallback for read-only environments
+      globalScope.self = globalScope;
+    }
   }
   
-  // Also define on global specifically for Node.js
-  if (typeof global !== 'undefined' && !global.self) {
-    global.self = global;
+  // Node.js/Lambda specific global definitions
+  if (typeof global !== 'undefined') {
+    if (!global.self) {
+      try {
+        Object.defineProperty(global, 'self', {
+          value: global,
+          configurable: true,
+          writable: true
+        });
+      } catch (e) {
+        global.self = global;
+      }
+    }
+    
+    // Ensure globalThis points to global in serverless
+    if (!global.globalThis) {
+      try {
+        Object.defineProperty(global, 'globalThis', {
+          value: global,
+          configurable: true,
+          writable: true
+        });
+      } catch (e) {
+        global.globalThis = global;
+      }
+    }
   }
 })();
 

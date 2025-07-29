@@ -20,15 +20,8 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // ANTI-LOOP PROTECTION: Check if auth has been disabled due to failures
+    // SIMPLIFIED: Just check if we have tokens and verify auth state
     if (typeof window !== 'undefined') {
-      const authDisabled = localStorage.getItem('auth_disabled')
-      if (authDisabled === 'true') {
-        setUser(null)
-        setIsLoading(false)
-        return
-      }
-      
       const hasTokens = localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('refresh_token')
       if (!hasTokens) {
         setUser(null)
@@ -58,11 +51,11 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
         return
       }
 
-      // ANTI-LOOP PROTECTION: Check if we're making too many requests
+      // REASONABLE RATE LIMITING: Only prevent excessive requests (reduced from 5 seconds to 1 second)
       const lastCheck = localStorage.getItem('auth_last_check')
       const now = Date.now()
-      if (lastCheck && (now - parseInt(lastCheck)) < 5000) {
-        // Skip if checked within last 5 seconds
+      if (lastCheck && (now - parseInt(lastCheck)) < 1000) {
+        // Skip if checked within last 1 second (much more reasonable)
         setIsLoading(false)
         return
       }
@@ -86,7 +79,7 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
           setUser(userData)
           setError(null)
         } else if (response.status === 401 || response.status === 403) {
-          // Clear invalid tokens and STOP further auth attempts
+          // Clear invalid tokens (but allow retry - don't permanently block user)
           localStorage.removeItem('access_token')
           localStorage.removeItem('token') // Legacy cleanup
           localStorage.removeItem('refresh_token')
@@ -95,8 +88,7 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
           document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax'
           document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax' // Legacy cleanup
           
-          // CRITICAL: Set a flag to prevent further auth loops
-          localStorage.setItem('auth_disabled', 'true')
+          // REMOVED: Don't permanently block user - they should be able to login again
           
           setUser(null)
           setError(null)
@@ -123,10 +115,10 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
 
   const logout = async () => {
     try {
-      // ANTI-LOOP PROTECTION: Prevent rapid logout calls
+      // REASONABLE PROTECTION: Prevent rapid logout calls (reduced to 500ms)
       const lastLogout = localStorage.getItem('auth_last_logout')
       const now = Date.now()
-      if (lastLogout && (now - parseInt(lastLogout)) < 2000) {
+      if (lastLogout && (now - parseInt(lastLogout)) < 500) {
         console.log('🔄 useAuth: Logout called too frequently, skipping')
         return
       }
@@ -172,10 +164,10 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
 
   const refreshToken = async () => {
     try {
-      // ANTI-LOOP PROTECTION: Prevent rapid refresh calls
+      // REASONABLE PROTECTION: Prevent rapid refresh calls (reduced to 2 seconds)
       const lastRefresh = localStorage.getItem('auth_last_refresh')
       const now = Date.now()
-      if (lastRefresh && (now - parseInt(lastRefresh)) < 10000) {
+      if (lastRefresh && (now - parseInt(lastRefresh)) < 2000) {
         console.log('🔄 useAuth: Refresh called too frequently, skipping')
         throw new Error('Refresh called too frequently')
       }
