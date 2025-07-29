@@ -1,12 +1,33 @@
 /**
  * Global SSR Polyfills - Loaded before all other code
  * Defines critical browser globals to prevent "self is not defined" errors
+ * MUST RUN BEFORE ANY OTHER CODE
  */
 
-// Define self before anything else can fail
-if (typeof self === 'undefined') {
-  global.self = global;
-}
+// Immediately define self in the global scope - this MUST be first
+(function() {
+  'use strict';
+  
+  // Get the global object
+  const globalScope = (function() {
+    if (typeof globalThis !== 'undefined') return globalThis;
+    if (typeof global !== 'undefined') return global;
+    if (typeof window !== 'undefined') return window;
+    if (typeof self !== 'undefined') return self;
+    // Last resort - create one
+    return (function() { return this; })();
+  })();
+  
+  // Define self immediately 
+  if (!globalScope.self) {
+    globalScope.self = globalScope;
+  }
+  
+  // Also define on global specifically for Node.js
+  if (typeof global !== 'undefined' && !global.self) {
+    global.self = global;
+  }
+})();
 
 // Define window for server-side rendering
 if (typeof window === 'undefined') {

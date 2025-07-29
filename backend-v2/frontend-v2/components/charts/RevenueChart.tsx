@@ -20,8 +20,9 @@ import {
 import { RevenueDataPoint } from '@/services/analytics_service'
 
 // Register Chart.js components
-ChartJS.register(
-  CategoryScale,
+if (typeof window !== 'undefined') {
+  ChartJS.register(
+    CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
@@ -30,7 +31,8 @@ ChartJS.register(
   Tooltip,
   Legend,
   Filler
-)
+  )
+}
 
 interface RevenueChartProps {
   data: RevenueDataPoint[]

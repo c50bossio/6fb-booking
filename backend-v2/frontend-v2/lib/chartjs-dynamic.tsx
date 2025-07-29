@@ -12,6 +12,9 @@ export const ChartJS = dynamic(
   }
 );
 
+// Export Chart for compatibility
+export const Chart = ChartJS;
+
 // Chart.js components
 export const CategoryScale = dynamic(() => import('chart.js').then(mod => ({ default: mod.CategoryScale })), { ssr: false });
 export const LinearScale = dynamic(() => import('chart.js').then(mod => ({ default: mod.LinearScale })), { ssr: false });

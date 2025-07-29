@@ -15,14 +15,16 @@ import {
 import { ServiceMetrics } from '@/services/analytics_service'
 import { StarIcon } from '@heroicons/react/24/solid'
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
+if (typeof window !== 'undefined') {
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+  )
+}
 
 interface ServicePerformanceChartProps {
   services: ServiceMetrics[]

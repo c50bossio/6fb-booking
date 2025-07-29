@@ -24,18 +24,20 @@ import { CalendarIcon, ArrowTrendingUpIcon, UserIcon, ClockIcon } from '@heroico
 import { cn } from '@/lib/utils'
 
 // Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  Filler
-)
+if (typeof window !== 'undefined') {
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+    Filler
+  )
+}
 
 interface AnalyticsData {
   revenue: {

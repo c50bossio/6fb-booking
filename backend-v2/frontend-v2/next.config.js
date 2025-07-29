@@ -157,10 +157,51 @@ const nextConfig = {
   webpack: (config, { isServer, dev }) => {
     // SSR fix for browser globals and problematic dependencies
     if (isServer) {
-      // Load polyfills before anything else
-      if (require('fs').existsSync('./polyfills.js')) {
-        require('./polyfills.js');
+      // Load comprehensive SSR polyfills before anything else
+      const path = require('path');
+      const globalPolyfillPath = path.resolve(__dirname, 'lib/global-polyfills.js');
+      const ssrPolyfillPath = path.resolve(__dirname, 'lib/ssr-polyfills.js');
+      const rootPolyfillPath = path.resolve(__dirname, 'polyfills.js');
+      
+      // Load global polyfill immediately
+      if (require('fs').existsSync(globalPolyfillPath)) {
+        require(globalPolyfillPath);
       }
+      
+      // Load SSR polyfills
+      if (require('fs').existsSync(ssrPolyfillPath)) {
+        require(ssrPolyfillPath);
+      }
+      
+      // Load root polyfill
+      if (require('fs').existsSync(rootPolyfillPath)) {
+        require(rootPolyfillPath);
+      }
+      
+      // Inject polyfills as the very first entry point
+      const originalEntry = config.entry;
+      config.entry = async () => {
+        const entries = await originalEntry();
+        
+        // Prepend polyfills to all entry points
+        Object.keys(entries).forEach(key => {
+          const entry = entries[key];
+          if (Array.isArray(entry)) {
+            entries[key] = [globalPolyfillPath, ...entry];
+          } else if (typeof entry === 'string') {
+            entries[key] = [globalPolyfillPath, entry];
+          }
+        });
+        
+        return entries;
+      };
+      
+      // Add polyfill as webpack alias for consistent access
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'global-polyfills': globalPolyfillPath,
+        'ssr-polyfills': ssrPolyfillPath
+      };
       
       config.resolve.fallback = {
         ...config.resolve.fallback,
