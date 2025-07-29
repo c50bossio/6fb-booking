@@ -138,19 +138,20 @@ const nextConfig = {
         })
       );
       
-      // 2. Provide plugin for self global
+      // 2. Provide plugin for self global - use complete polyfills for Vercel
       config.plugins.push(
         new webpack.ProvidePlugin({
-          self: [path.resolve(__dirname, 'lib/minimal-polyfills.js'), 'default']
+          self: [path.resolve(__dirname, 'lib/complete-ssr-polyfills.js'), 'default']
         })
       );
       
-      // 3. Ensure proper module resolution
+      // 3. Ensure proper module resolution with SSR polyfills
       config.resolve = {
         ...config.resolve,
         alias: {
           ...config.resolve.alias,
-          'server-globals': path.resolve(__dirname, 'lib/server-globals.js')
+          'server-globals': path.resolve(__dirname, 'lib/server-globals.js'),
+          'self': path.resolve(__dirname, 'lib/complete-ssr-polyfills.js')
         },
         mainFields: ['main', 'module']
       };
@@ -178,8 +179,8 @@ const nextConfig = {
         'recharts': 'recharts'
       };
 
-      // Enhanced Vercel-specific externalization for AWS Lambda
-      if (process.env.VERCEL === '1') {
+      // Enhanced Vercel-specific configuration for AWS Lambda
+      if (process.env.VERCEL === '1' || process.env.VERCEL) {
         // More aggressive externalization for Vercel/AWS Lambda
         config.externals.push(
           // Core problematic packages
@@ -206,7 +207,7 @@ const nextConfig = {
           }
         );
         
-        // Enhanced resolve configuration for Vercel
+        // Enhanced resolve configuration for Vercel with complete SSR polyfills
         config.resolve.alias = {
           ...config.resolve.alias,
           // Redirect problematic modules to our polyfills
@@ -214,7 +215,21 @@ const nextConfig = {
           'react-chartjs-2': path.resolve(__dirname, 'lib/chartjs-dynamic.tsx'),
           'qrcode': false, // Disable server-side QR generation
           'canvas': false,
-          'jspdf': false
+          'jspdf': false,
+          // Force polyfills for browser globals
+          'self': path.resolve(__dirname, 'lib/complete-ssr-polyfills.js')
+        };
+        
+        // Load polyfills at the entry point
+        const originalEntry = config.entry;
+        config.entry = async () => {
+          const entries = await originalEntry();
+          
+          if (entries['main.js'] && !entries['main.js'].includes('./lib/complete-ssr-polyfills.js')) {
+            entries['main.js'].unshift('./lib/complete-ssr-polyfills.js');
+          }
+          
+          return entries;
         };
       } else {
         config.externals.push(problematicPackages);

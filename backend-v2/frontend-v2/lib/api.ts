@@ -2,6 +2,7 @@ import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOp
 import { toast } from '@/hooks/use-toast'
 import { getEnhancedErrorMessage, formatErrorForToast, ErrorContext } from './error-messages'
 import { getCsrfHeaders } from './csrf-utils'
+import { safeLocalStorage, safeCookie, safeWindow, downloadBlob } from './ssr-safe-utils'
 
 // Use different URLs for browser vs server-side requests
 const API_URL = typeof window !== 'undefined' 
@@ -115,7 +116,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
   }
   // HYBRID AUTH: Support both cookies and localStorage for backward compatibility
   // Try new naming convention first, then fall back to legacy
-  const token = typeof window !== 'undefined' ? (localStorage.getItem('access_token') || localStorage.getItem('token')) : null
+  const token = safeLocalStorage.getItem('access_token') || safeLocalStorage.getItem('token')
   
   // SECURITY FIX: Import CSRF utilities for request protection
   const { getCsrfHeaders } = await import('./csrf-utils')
@@ -176,13 +177,13 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
                             tokenPayload.unified_role ||
                             tokenPayload.sub_role ||
                             'barber').toLowerCase()
-            document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
-            localStorage.setItem('user_role', userRole)
+            safeCookie.set('user_role', userRole, `path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`);
+            safeLocalStorage.setItem('user_role', userRole)
           } catch (error) {
             console.warn('⚠️ Failed to extract role from refreshed token:', error)
             const defaultRole = 'barber'
-            document.cookie = `user_role=${defaultRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
-            localStorage.setItem('user_role', defaultRole)
+            safeCookie.set('user_role', defaultRole, `path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`);
+            safeLocalStorage.setItem('user_role', defaultRole)
           }
           
           if (data.refresh_token) {
@@ -193,15 +194,13 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
         }
     } catch (error) {
       // If refresh fails, redirect to login
-      localStorage.removeItem('token')
-      localStorage.removeItem('refresh_token')
-      localStorage.removeItem('user_role')
+      safeLocalStorage.removeItem('token');
+      safeLocalStorage.removeItem('refresh_token');
+      safeLocalStorage.removeItem('user_role');
       // Remove the cookies
-      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-      document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login'
-      }
+      safeCookie.remove('token');
+      safeCookie.remove('user_role');
+      safeWindow.location.href('/login');
       throw error;
     }
   }
@@ -256,16 +255,14 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     // Handle automatic redirects for auth errors
     if (response.status === 401 && !retry) {
       // If refresh already failed, redirect to login
-      localStorage.removeItem('token')
-      localStorage.removeItem('refresh_token')
-      localStorage.removeItem('user_role')
-      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-      document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-      if (typeof window !== 'undefined') {
-        setTimeout(() => {
-          window.location.href = '/login'
-        }, 2000) // Give user time to read the error message
-      }
+      safeLocalStorage.removeItem('token');
+      safeLocalStorage.removeItem('refresh_token');
+      safeLocalStorage.removeItem('user_role');
+      safeCookie.remove('token');
+      safeCookie.remove('user_role');
+      setTimeout(() => {
+        safeWindow.location.href('/login');
+      }, 2000); // Give user time to read the error message
     }
     
     throw error
@@ -303,9 +300,9 @@ export async function login(email: string, password: string) {
   // Store tokens
   if (response.access_token) {
     // HYBRID AUTH: Store tokens in localStorage for immediate access
-    localStorage.setItem('token', response.access_token)
+    safeLocalStorage.setItem('token', response.access_token);
     if (response.refresh_token) {
-      localStorage.setItem('refresh_token', response.refresh_token)
+      safeLocalStorage.setItem('refresh_token', response.refresh_token);
     }
     
     // CRITICAL FIX: Extract user role from JWT token and set user_role cookie
@@ -333,17 +330,17 @@ export async function login(email: string, password: string) {
         console.error('Error logging JWT extraction debug info:', logError)
       }
       
-      document.cookie = `user_role=${userRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+      safeCookie.set('user_role', userRole, `path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`);
       
       // Also store role in localStorage for consistency
-      localStorage.setItem('user_role', userRole)
+      safeLocalStorage.setItem('user_role', userRole)
       
     } catch (error) {
       console.warn('⚠️ Failed to extract role from token, setting default role:', error)
       console.warn('⚠️ Token payload base64:', response.access_token.split('.')[1])
       const defaultRole = 'barber' // Default to barber for calendar access
-      document.cookie = `user_role=${defaultRole}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
-      localStorage.setItem('user_role', defaultRole)
+      safeCookie.set('user_role', defaultRole, `path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`);
+      safeLocalStorage.setItem('user_role', defaultRole)
     }
   }
   // SECURITY FIX: Refresh token is HttpOnly cookie set by backend
@@ -353,12 +350,12 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout() {
-  localStorage.removeItem('token')
-  localStorage.removeItem('refresh_token')
-  localStorage.removeItem('user_role')
+  safeLocalStorage.removeItem('token');
+  safeLocalStorage.removeItem('refresh_token');
+  safeLocalStorage.removeItem('user_role');
   // Remove the cookies by setting them with an expired date
-  document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-  document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+  safeCookie.remove('token');
+  safeCookie.remove('user_role');
 }
 
 
@@ -5781,15 +5778,8 @@ export const exportsAPI = {
     const byteArray = new Uint8Array(byteNumbers)
     
     // Create blob and download
-    const blob = new Blob([byteArray], { type: exportResponse.mime_type })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = exportResponse.filename
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
+    const blob = new Blob([byteArray], { type: exportResponse.mime_type });
+    downloadBlob(blob, exportResponse.filename);
   },
 }
 

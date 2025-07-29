@@ -19,20 +19,7 @@ import {
 } from '@/lib/chartjs-dynamic'
 import { RevenueDataPoint } from '@/services/analytics_service'
 
-// Register Chart.js components
-if (typeof window !== 'undefined') {
-  ChartJS.register(
-    CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-  )
-}
+// Chart.js registration is handled in chartjs-dynamic.tsx
 
 interface RevenueChartProps {
   data: RevenueDataPoint[]
