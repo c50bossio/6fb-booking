@@ -77,6 +77,7 @@ jobs:
         SECRET_KEY=test-secret-key-for-ci
         DATABASE_URL=sqlite:///./test_6fb_booking.db
         REDIS_URL=redis://localhost:6379/1
+        REDIS_PASSWORD=test_redis_password
         STRIPE_SECRET_KEY=sk_test_fake_key_for_ci
         STRIPE_WEBHOOK_SECRET=whsec_fake_webhook_secret
         TWILIO_ACCOUNT_SID=test_account_sid
@@ -84,6 +85,48 @@ jobs:
         SENDGRID_API_KEY=test_sendgrid_key
         ENVIRONMENT=test
         DEBUG=false
+        
+        # AI Services Configuration (Required for AI Business Calendar)
+        ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-test-key-for-ci-placeholder' }}
+        OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY || 'sk-test-openai-key-placeholder' }}
+        GOOGLE_AI_API_KEY=${{ secrets.GOOGLE_AI_API_KEY || 'test-google-ai-key-placeholder' }}
+        VOYAGE_API_KEY=${{ secrets.VOYAGE_API_KEY || 'test-voyage-api-key-placeholder' }}
+        
+        # AI Business Calendar Feature Flags
+        AI_BUSINESS_INTELLIGENCE_ENABLED=true
+        AI_COACHING_ENABLED=true
+        AI_AGENT_RESPONSE_TIMEOUT=30000
+        AI_AGENT_MAX_TOKENS=4000
+        AI_AGENT_DEFAULT_MODEL=claude-3-sonnet
+        
+        # Business Intelligence Features
+        ENABLE_FINANCIAL_COACH=true
+        ENABLE_GROWTH_STRATEGIST=true
+        ENABLE_OPERATIONS_OPTIMIZER=true
+        ENABLE_BRAND_DEVELOPER=true
+        
+        # Performance and Rate Limiting
+        AI_CHAT_RATE_LIMIT=20
+        AI_INSIGHTS_CACHE_TTL=300
+        BUSINESS_METRICS_REFRESH_INTERVAL=3600
+        
+        # Six Figure Barber Methodology Compliance
+        SIX_FIGURE_BARBER_TRACKING_ENABLED=true
+        COMPLIANCE_SCORING_ENABLED=true
+        AUTOMATED_COACHING_TRIGGERS=true
+        
+        # AI Chat Interface Configuration
+        CHAT_MESSAGE_HISTORY_LIMIT=100
+        CHAT_SESSION_TIMEOUT=1800000
+        ENABLE_CHAT_SUGGESTIONS=true
+        ENABLE_TYPING_INDICATORS=true
+        
+        # Enhanced Google Calendar Business Intelligence
+        GOOGLE_CALENDAR_BUSINESS_METADATA_ENABLED=true
+        GOOGLE_CALENDAR_SYNC_INTERVAL=300
+        GOOGLE_CALENDAR_CONFLICT_RESOLUTION=smart
+        ENABLE_EXTERNAL_CALENDAR_EVENTS=true
+        CALENDAR_BUSINESS_INSIGHTS_ENABLED=true
         EOF
         
         # Frontend environment
@@ -91,6 +134,29 @@ jobs:
         NEXT_PUBLIC_API_URL=http://localhost:8000
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_fake_key_for_ci
         NEXT_PUBLIC_ENVIRONMENT=test
+        
+        # AI Business Calendar Features (Frontend)
+        NEXT_PUBLIC_ENABLE_AI_BUSINESS_CALENDAR=true
+        NEXT_PUBLIC_ENABLE_AI_COACHING_CHAT=true
+        NEXT_PUBLIC_ENABLE_BUSINESS_INTELLIGENCE=true
+        NEXT_PUBLIC_ENABLE_SIX_FIGURE_BARBER_TRACKING=true
+        
+        # AI Agents Configuration (Frontend)
+        NEXT_PUBLIC_ENABLE_FINANCIAL_COACH=true
+        NEXT_PUBLIC_ENABLE_GROWTH_STRATEGIST=true
+        NEXT_PUBLIC_ENABLE_OPERATIONS_OPTIMIZER=true
+        NEXT_PUBLIC_ENABLE_BRAND_DEVELOPER=true
+        
+        # AI Chat Interface Settings (Frontend)
+        NEXT_PUBLIC_AI_CHAT_MAX_MESSAGES=100
+        NEXT_PUBLIC_AI_CHAT_TIMEOUT=1800000
+        NEXT_PUBLIC_ENABLE_CHAT_SUGGESTIONS=true
+        NEXT_PUBLIC_ENABLE_TYPING_INDICATORS=true
+        
+        # Google Calendar Enhanced Features (Frontend)
+        NEXT_PUBLIC_ENABLE_CALENDAR_BUSINESS_INSIGHTS=true
+        NEXT_PUBLIC_ENABLE_CALENDAR_METADATA_SYNC=true
+        NEXT_PUBLIC_CALENDAR_SYNC_INTERVAL=300000
         EOF
         
     - name: Set up Docker Compose
@@ -108,7 +174,20 @@ jobs:
               - DATABASE_URL=sqlite:///./test_6fb_booking.db
               - SECRET_KEY=test-secret-key-for-ci
               - REDIS_URL=redis://redis:6379/1
+              - REDIS_PASSWORD=test_redis_password
               - ENVIRONMENT=test
+              # AI Services Configuration
+              - ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-test-key-for-ci-placeholder' }}
+              - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY || 'sk-test-openai-key-placeholder' }}
+              - GOOGLE_AI_API_KEY=${{ secrets.GOOGLE_AI_API_KEY || 'test-google-ai-key-placeholder' }}
+              - VOYAGE_API_KEY=${{ secrets.VOYAGE_API_KEY || 'test-voyage-api-key-placeholder' }}
+              # AI Business Calendar Features
+              - AI_BUSINESS_INTELLIGENCE_ENABLED=true
+              - AI_COACHING_ENABLED=true
+              - ENABLE_FINANCIAL_COACH=true
+              - ENABLE_GROWTH_STRATEGIST=true
+              - ENABLE_OPERATIONS_OPTIMIZER=true
+              - ENABLE_BRAND_DEVELOPER=true
             depends_on:
               - redis
             volumes:
@@ -119,7 +198,7 @@ jobs:
             image: redis:7-alpine
             ports:
               - "6379:6379"
-            command: redis-server --appendonly yes
+            command: redis-server --appendonly yes --requirepass test_redis_password
             
           frontend:
             build: ./frontend-v2
@@ -128,6 +207,15 @@ jobs:
             environment:
               - NEXT_PUBLIC_API_URL=http://backend:8000
               - NEXT_PUBLIC_ENVIRONMENT=test
+              # AI Business Calendar Features (Frontend)
+              - NEXT_PUBLIC_ENABLE_AI_BUSINESS_CALENDAR=true
+              - NEXT_PUBLIC_ENABLE_AI_COACHING_CHAT=true
+              - NEXT_PUBLIC_ENABLE_BUSINESS_INTELLIGENCE=true
+              - NEXT_PUBLIC_ENABLE_SIX_FIGURE_BARBER_TRACKING=true
+              - NEXT_PUBLIC_ENABLE_FINANCIAL_COACH=true
+              - NEXT_PUBLIC_ENABLE_GROWTH_STRATEGIST=true
+              - NEXT_PUBLIC_ENABLE_OPERATIONS_OPTIMIZER=true
+              - NEXT_PUBLIC_ENABLE_BRAND_DEVELOPER=true
             depends_on:
               - backend
             volumes:
