@@ -122,7 +122,7 @@ const nextConfig = {
     // Better static generation
     staticWorkerRequestDeduping: true,
     // Skip failing during build for problematic pages
-    staticPageGenerationTimeout: 300,
+    // staticPageGenerationTimeout: 300, // Removed - not supported in Next.js 14
     // Enhanced package optimization
     optimizePackageImports: [
       '@heroicons/react',
@@ -201,8 +201,8 @@ const nextConfig = {
       }
     }
 
-    // Bundle analyzer in development (only if available)
-    if (!isServer && !dev) {
+    // Bundle analyzer disabled for Vercel builds to prevent timeout
+    if (!isServer && !dev && process.env.VERCEL !== '1') {
       try {
         const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
         config.plugins.push(
@@ -218,8 +218,8 @@ const nextConfig = {
       }
     }
 
-    // Enhanced chunk optimization
-    if (!dev) {
+    // Enhanced chunk optimization - simplified for Vercel builds
+    if (!dev && process.env.VERCEL !== '1') {
       config.optimization = {
         ...config.optimization,
         moduleIds: 'deterministic',
@@ -287,6 +287,21 @@ const nextConfig = {
               chunks: 'all',
               priority: 5,
               reuseExistingChunk: true,
+            },
+          },
+        },
+      }
+    } else if (!dev && process.env.VERCEL === '1') {
+      // Simplified optimization for Vercel builds to prevent timeout
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
             },
           },
         },

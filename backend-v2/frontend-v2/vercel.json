@@ -1,6 +1,12 @@
 {
   "version": 2,
   "regions": ["iad1"],
+  "buildCommand": "npm run build",
+  "functions": {
+    "app/**": {
+      "maxDuration": 30
+    }
+  },
   "headers": [
     {
       "source": "/api/(.*)",
@@ -28,6 +34,8 @@
   ],
   "env": {
     "NODE_ENV": "production",
-    "NEXT_TELEMETRY_DISABLED": "1"
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "SKIP_LINT": "true",
+    "DISABLE_ESLINT_PLUGIN": "true"
   }
 }
