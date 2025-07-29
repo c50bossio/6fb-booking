@@ -279,7 +279,7 @@ export default function VoiceCommandsAccessibilityDemo() {
               {lastTranscript && (
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
                   <div className="font-medium text-blue-800">🎤 You said</div>
-                  <div className="text-blue-700">"{lastTranscript}"</div>
+                  <div className="text-blue-700">&quot;{lastTranscript}&quot;</div>
                 </div>
               )}
               
@@ -314,7 +314,7 @@ export default function VoiceCommandsAccessibilityDemo() {
               {bookingCommands.serviceSelected ? (
                 <div className="text-green-600">✅ {bookingCommands.serviceSelected}</div>
               ) : (
-                <div className="text-gray-500">Say: "book a haircut"</div>
+                <div className="text-gray-500">Say: &quot;book a haircut&quot;</div>
               )}
             </div>
           </div>
@@ -325,7 +325,7 @@ export default function VoiceCommandsAccessibilityDemo() {
               {bookingCommands.barberSelected ? (
                 <div className="text-green-600">✅ {bookingCommands.barberSelected}</div>
               ) : (
-                <div className="text-gray-500">Say: "choose John" or "any barber"</div>
+                <div className="text-gray-500">Say: &quot;choose John&quot; or &quot;any barber&quot;</div>
               )}
             </div>
           </div>
@@ -336,7 +336,7 @@ export default function VoiceCommandsAccessibilityDemo() {
               {bookingCommands.timeSelected ? (
                 <div className="text-green-600">✅ {bookingCommands.timeSelected}</div>
               ) : (
-                <div className="text-gray-500">Say: "book for 2 PM"</div>
+                <div className="text-gray-500">Say: &quot;book for 2 PM&quot;</div>
               )}
             </div>
           </div>
@@ -362,11 +362,11 @@ export default function VoiceCommandsAccessibilityDemo() {
           <AlertDescription>
             <strong>Voice Commands to Try:</strong>
             <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>"book a haircut" or "I want a beard trim"</li>
-              <li>"choose John" or "any barber"</li>
-              <li>"book for 2 PM" or "schedule at 10:30"</li>
-              <li>"my name is John Smith"</li>
-              <li>"my email is john@example.com"</li>
+              <li>&quot;book a haircut&quot; or &quot;I want a beard trim&quot;</li>
+              <li>&quot;choose John&quot; or &quot;any barber&quot;</li>
+              <li>&quot;book for 2 PM&quot; or &quot;schedule at 10:30&quot;</li>
+              <li>&quot;my name is John Smith&quot;</li>
+              <li>&quot;my email is john@example.com&quot;</li>
             </ul>
           </AlertDescription>
         </Alert>
@@ -486,7 +486,7 @@ export default function VoiceCommandsAccessibilityDemo() {
         <CardHeader>
           <CardTitle>Quick Start</CardTitle>
           <CardDescription>
-            Choose how you'd like to explore voice commands
+            Choose how you&apos;d like to explore voice commands
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -537,7 +537,7 @@ export default function VoiceCommandsAccessibilityDemo() {
             <Alert>
               <AlertDescription>
                 <strong>Free Exploration Mode:</strong> Try any voice command! 
-                Say "help" to hear available commands, or explore the Settings tab to configure voice recognition.
+                Say &quot;help&quot; to hear available commands, or explore the Settings tab to configure voice recognition.
               </AlertDescription>
             </Alert>
           )}

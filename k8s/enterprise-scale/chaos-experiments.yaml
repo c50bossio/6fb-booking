@@ -1,0 +1,359 @@
+# Chaos Experiments for Six Figure Barber Platform
+# These experiments test system resilience while protecting business operations
+
+# Circuit Breaker Resilience Test
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: backend-pod-restart-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "low-risk"
+    business-impact: "low" 
+    service: "backend"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      app: backend
+      tier: api
+  mode: one
+  action: pod-kill
+  duration: "30s"
+  scheduler:
+    cron: "@every 6h"
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "backend-resilience"
+    chaos.bookedbarber.com/approved-by: "sre-team"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/max-duration: "2m"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Database Connection Pool Stress Test
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: database-connection-stress-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "medium-risk"
+    business-impact: "medium"
+    service: "database"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      app: postgres
+  mode: one
+  stressors:
+    workers: 4
+    # Simulate high database connection load
+    iomix:
+      workers: 2
+      size: "1GB"
+  duration: "2m"
+  scheduler:
+    cron: "0 2 * * 0"  # Sunday 2 AM only
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "database-connection-pool"
+    chaos.bookedbarber.com/approved-by: "sre-lead"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/requires-approval: "true"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Network Latency Injection Test
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: api-network-latency-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "low-risk"
+    business-impact: "low"
+    service: "network"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      app: backend
+  mode: fixed
+  value: "1"
+  action: delay
+  delay:
+    latency: "100ms"
+    correlation: "25"
+    jitter: "10ms"
+  duration: "5m"
+  direction: to
+  target:
+    selector:
+      namespaces:
+      - bookedbarber-v2
+      labelSelectors:
+        app: frontend
+  scheduler:
+    cron: "0 3 * * 1"  # Monday 3 AM
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "network-performance"
+    chaos.bookedbarber.com/approved-by: "sre-team"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Memory Stress Test (Non-Critical Services)
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos  
+metadata:
+  name: worker-memory-stress-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "medium-risk"
+    business-impact: "low"
+    service: "workers"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      component: worker
+  mode: fixed-percent
+  value: "50"  # Affect 50% of worker pods
+  stressors:
+    workers: 1
+    memory:
+      workers: 1
+      size: "256MB"
+  duration: "3m"
+  scheduler:
+    cron: "0 4 * * 2"  # Tuesday 4 AM
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "worker-memory-resilience"
+    chaos.bookedbarber.com/approved-by: "sre-team"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Redis Cache Failure Simulation
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: redis-cache-failure-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "high-risk"
+    business-impact: "medium"
+    service: "cache"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      app: redis
+  mode: one
+  action: pod-failure
+  duration: "1m"
+  scheduler:
+    cron: "0 1 * * 6"  # Saturday 1 AM only
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "cache-resilience"
+    chaos.bookedbarber.com/approved-by: "sre-lead,engineering-manager"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/requires-approval: "true"
+    chaos.bookedbarber.com/executive-approval: "false"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Container Resource Limit Test
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: backend-cpu-stress-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "low-risk"
+    business-impact: "low"
+    service: "backend"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      app: backend
+      tier: api
+  mode: fixed
+  value: "1"
+  stressors:
+    workers: 1
+    cpu:
+      workers: 2
+      load: 50  # 50% CPU load
+  duration: "4m"
+  scheduler:
+    cron: "0 5 * * 3"  # Wednesday 5 AM
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "cpu-scaling-response"
+    chaos.bookedbarber.com/approved-by: "sre-team"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Frontend Service Disruption Test
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: frontend-pod-kill-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "medium-risk"
+    business-impact: "medium"
+    service: "frontend"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      app: frontend
+  mode: fixed
+  value: "1"
+  action: pod-kill
+  duration: "1m"
+  scheduler:
+    cron: "0 6 * * 4"  # Thursday 6 AM
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "frontend-availability"
+    chaos.bookedbarber.com/approved-by: "sre-team"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/requires-approval: "true"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Disk I/O Stress Test
+apiVersion: chaos-mesh.org/v1alpha1
+kind: IOChaos
+metadata:
+  name: database-disk-io-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "medium-risk"
+    business-impact: "medium"
+    service: "database"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      app: postgres
+  mode: one
+  action: delay
+  delay: "100ms"
+  path: "/var/lib/postgresql/data"
+  percent: 50
+  duration: "2m"
+  scheduler:
+    cron: "0 7 * * 5"  # Friday 7 AM
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "database-io-performance"
+    chaos.bookedbarber.com/approved-by: "sre-lead"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/requires-approval: "true"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Network Partition Test (High Risk)
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: database-network-partition-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "high-risk"
+    business-impact: "high"
+    service: "database"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      app: backend
+  mode: fixed
+  value: "1"
+  action: partition
+  direction: both
+  target:
+    selector:
+      namespaces:
+      - bookedbarber-v2
+      labelSelectors:
+        app: postgres
+  duration: "30s"  # Very short duration for high-risk test
+  scheduler:
+    cron: "0 8 1 * *"  # First day of month, 8 AM only
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "database-partition-recovery"
+    chaos.bookedbarber.com/approved-by: "sre-lead,engineering-manager,executive"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/requires-approval: "true"
+    chaos.bookedbarber.com/executive-approval: "true"
+    chaos.bookedbarber.com/advance-notice: "48h"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Workload Scaling Response Test
+apiVersion: chaos-mesh.org/v1alpha1
+kind: HTTPChaos
+metadata:
+  name: api-load-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "low-risk"
+    business-impact: "low"
+    service: "api"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      app: backend
+  mode: all
+  target: Request
+  port: 8000
+  method: GET
+  path: "/health"
+  delay: "200ms"
+  duration: "3m"
+  scheduler:
+    cron: "0 9 * * 6"  # Saturday 9 AM
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "api-scaling-response"
+    chaos.bookedbarber.com/approved-by: "sre-team"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+---
+# Emergency Experiment Template (Manual Trigger Only)
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: emergency-disaster-recovery-test
+  namespace: chaos-engineering
+  labels:
+    experiment-category: "high-risk"
+    business-impact: "high"
+    service: "full-system"
+    trigger-type: "manual-only"
+spec:
+  selector:
+    namespaces:
+    - bookedbarber-v2
+    labelSelectors:
+      tier: api
+  mode: fixed-percent
+  value: "25"  # Kill 25% of API pods
+  action: pod-kill
+  duration: "1m"
+  # No scheduler - manual trigger only
+  annotations:
+    chaos.alpha.kubernetes.io/experiment: "disaster-recovery-validation"
+    chaos.bookedbarber.com/approved-by: "executive,sre-lead,engineering-manager"
+    chaos.bookedbarber.com/business-hours-allowed: "false"
+    chaos.bookedbarber.com/requires-approval: "true"
+    chaos.bookedbarber.com/executive-approval: "true"
+    chaos.bookedbarber.com/advance-notice: "72h"
+    chaos.bookedbarber.com/manual-trigger-only: "true"
+    chaos.bookedbarber.com/safety-monitoring: "enabled"
+    chaos.bookedbarber.com/business-continuity-test: "true"

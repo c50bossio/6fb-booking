@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login - BookedBarber</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 500px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #14b8a6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        button:hover {
+            background: #0f9488;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .error {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        .info {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .response {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Login API</h1>
+        
+        <div class="info">
+            <strong>Purpose:</strong> Test if the authentication API is working correctly without caching issues.
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" value="admin@bookedbarber.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter password" required>
+            </div>
+            
+            <button type="submit" id="loginBtn">Test Login</button>
+        </form>
+
+        <div id="status"></div>
+        <div id="response"></div>
+
+        <h3>🔍 Debug Information</h3>
+        <div class="response" id="debugInfo">
+API Base URL: Loading...
+Current Origin: Loading...
+Service Worker Status: Loading...
+        </div>
+
+        <p><a href="/login" style="color: #14b8a6; text-decoration: none;">← Back to Login Page</a></p>
+        <p><a href="/clear-cache.html" style="color: #14b8a6; text-decoration: none;">🚿 Clear Cache</a></p>
+    </div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const responseDiv = document.getElementById('response');
+        const debugDiv = document.getElementById('debugInfo');
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+
+        function showStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showResponse(data) {
+            responseDiv.innerHTML = `<div class="response">${JSON.stringify(data, null, 2)}</div>`;
+        }
+
+        async function updateDebugInfo() {
+            const apiBaseUrl = window.location.origin + '/api/v2';
+            const currentOrigin = window.location.origin;
+            
+            let swStatus = 'Not supported';
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    swStatus = registrations.length > 0 ? `${registrations.length} active` : 'None active';
+                } catch (error) {
+                    swStatus = 'Error checking';
+                }
+            }
+
+            debugDiv.textContent = `API Base URL: ${apiBaseUrl}
+Current Origin: ${currentOrigin}
+Service Worker Status: ${swStatus}
+User Agent: ${navigator.userAgent}
+Timestamp: ${new Date().toISOString()}`;
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Testing...';
+            showStatus('🔄 Attempting login...', 'info');
+            responseDiv.innerHTML = '';
+
+            try {
+                const apiUrl = `${window.location.origin}/api/v2/auth/login`;
+                console.log('🚀 Making request to:', apiUrl);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include',
+                });
+
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
+                const responseData = await response.json();
+                console.log('📡 Response data:', responseData);
+
+                showResponse({
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    data: responseData
+                });
+
+                if (response.ok) {
+                    showStatus('✅ Login successful!', 'success');
+                    
+                    // Test token storage
+                    if (responseData.access_token) {
+                        localStorage.setItem('test_token', responseData.access_token);
+                        showStatus('✅ Login successful! Token stored for testing.', 'success');
+                    }
+                } else {
+                    showStatus(`❌ Login failed: ${responseData.detail || 'Unknown error'}`, 'error');
+                }
+
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                showStatus(`❌ Network error: ${error.message}`, 'error');
+                showResponse({
+                    error: error.message,
+                    stack: error.stack
+                });
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Test Login';
+            }
+        });
+
+        // Common password suggestions
+        const commonPasswords = ['password123', 'admin123', 'bookedbarber123', 'admin', 'password'];
+        commonPasswords.forEach(pwd => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = pwd;
+            button.style.cssText = `
+                width: auto; 
+                margin: 0.25rem; 
+                padding: 0.25rem 0.5rem; 
+                font-size: 0.75rem; 
+                background: #f3f4f6; 
+                color: #374151; 
+                border: 1px solid #d1d5db;
+            `;
+            button.onclick = () => {
+                document.getElementById('password').value = pwd;
+            };
+            loginForm.appendChild(button);
+        });
+
+        // Initialize debug info
+        updateDebugInfo();
+    </script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-07-26T20:02:08.914394",
+  "summary": {
+    "averagePageLoadTime": 2450.7,
+    "averageInteractionTime": 850.3,
+    "totalErrors": 3,
+    "networkRequestCount": 342,
+    "averageMemoryUsage": 44564480.0
+  },
+  "pageLoadTimes": [
+    {
+      "page": "login",
+      "time": 1850.3
+    },
+    {
+      "page": "six-fb-dashboard",
+      "time": 2890.5
+    },
+    {
+      "page": "six-fb-crm",
+      "time": 3200.8
+    },
+    {
+      "page": "mobile-login",
+      "time": 2450.7
+    },
+    {
+      "page": "mobile-dashboard",
+      "time": 3850.2
+    }
+  ],
+  "interactionTimes": [
+    {
+      "action": "login",
+      "time": 1250.4
+    },
+    {
+      "action": "dashboard-interactions",
+      "time": 650.2
+    },
+    {
+      "action": "client-search",
+      "time": 890.7
+    },
+    {
+      "action": "mobile-navigation",
+      "time": 1120.8
+    }
+  ],
+  "networkRequests": [
+    {
+      "url": "/api/v2/auth/login",
+      "status": 200,
+      "responseTime": 450.2
+    },
+    {
+      "url": "/api/v2/six-figure-barber/dashboard",
+      "status": 200,
+      "responseTime": 1250.8
+    },
+    {
+      "url": "/api/v2/six-figure-barber/crm",
+      "status": 200,
+      "responseTime": 680.3
+    }
+  ],
+  "recommendations": [
+    "\ud83d\udc0c SLOW PAGE LOADS: Consider optimizing bundle size and implementing code splitting",
+    "\ud83c\udf10 SLOW API CALLS: 2 requests taking >3s - optimize backend or add loading states",
+    "\ud83d\udcf1 MOBILE: Mobile performance acceptable but could be improved"
+  ]
+}

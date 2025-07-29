@@ -1,0 +1,44 @@
+{
+  "name": "bookedbarber-v2-load-testing",
+  "version": "1.0.0",
+  "description": "Enterprise load testing suite for BookedBarber V2",
+  "scripts": {
+    "test:basic": "k6 run scenarios/basic-load-test.js",
+    "test:enterprise": "k6 run scenarios/enterprise-load-test.js",
+    "test:six-figure": "k6 run scenarios/six-figure-barber-test.js",
+    "test:stress": "k6 run scenarios/stress-test.js",
+    "test:frontend": "playwright test frontend-performance.spec.js",
+    "test:all": "./run-comprehensive-tests.sh",
+    "monitor": "node monitoring/real-time-monitor.js",
+    "report": "node reporting/generate-report.js",
+    "setup": "node setup/initialize-test-environment.js"
+  },
+  "dependencies": {
+    "k6": "^0.47.0",
+    "artillery": "^2.0.0",
+    "@playwright/test": "^1.40.0",
+    "axios": "^1.6.0",
+    "ws": "^8.14.0",
+    "uuid": "^9.0.0",
+    "moment": "^2.29.0",
+    "lodash": "^4.17.21",
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "table": "^6.8.1",
+    "chart.js": "^4.4.0",
+    "chartjs-node-canvas": "^4.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.7.0",
+    "@types/node": "^20.8.0"
+  },
+  "keywords": [
+    "load-testing",
+    "performance",
+    "k6",
+    "artillery",
+    "six-figure-barber",
+    "enterprise"
+  ]
+}

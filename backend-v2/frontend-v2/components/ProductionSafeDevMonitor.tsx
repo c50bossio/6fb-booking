@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AccessibleButton } from '@/components/ui/AccessibleButton'
 import { 
@@ -28,6 +29,7 @@ interface ProductionSafeDevMonitorProps {
 }
 
 export function ProductionSafeDevMonitor({ className }: ProductionSafeDevMonitorProps) {
+  const pathname = usePathname()
   const [isVisible, setIsVisible] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [health, setHealth] = useState<HealthStatus>({
@@ -39,7 +41,7 @@ export function ProductionSafeDevMonitor({ className }: ProductionSafeDevMonitor
     cpu: 0
   })
 
-  // Only show in development environment
+  // Only show in development environment, but NEVER on authentication pages
   useEffect(() => {
     const isDevelopment = process.env.NODE_ENV === 'development'
     const isLocalhost = typeof window !== 'undefined' && 
@@ -47,15 +49,26 @@ export function ProductionSafeDevMonitor({ className }: ProductionSafeDevMonitor
        window.location.hostname === '127.0.0.1' ||
        window.location.hostname.includes('dev'))
     
-    // Only show if explicitly in development AND on localhost
+    // CRITICAL: Never show on authentication pages to prevent performance issues
+    const authPages = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/check-email']
+    const isAuthPage = authPages.includes(pathname) || pathname.startsWith('/reset-password/') || pathname.startsWith('/verify-email/')
+    
+    if (isAuthPage) {
+      setIsVisible(false)
+      return // Early return - no monitoring on auth pages
+    }
+    
+    // Only show if explicitly in development AND on localhost AND not auth page
     if (isDevelopment && isLocalhost) {
       setIsVisible(true)
       
       // Start health monitoring
       const interval = setInterval(updateHealth, 5000)
       return () => clearInterval(interval)
+    } else {
+      setIsVisible(false)
     }
-  }, [])
+  }, [pathname])
 
   const updateHealth = async () => {
     try {

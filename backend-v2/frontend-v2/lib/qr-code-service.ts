@@ -1,4 +1,12 @@
-import * as QRCode from 'qrcode';
+// Dynamic import to prevent SSR issues with QRCode library
+let QRCode: any = null;
+
+async function getQRCode() {
+  if (!QRCode) {
+    QRCode = await import('qrcode');
+  }
+  return QRCode;
+}
 
 export type QRCodeSize = 'small' | 'medium' | 'large';
 export type QRCodeFormat = 'png' | 'svg';
@@ -43,6 +51,7 @@ export async function generateQRCodeDataUrl(
   options: QRCodeOptions
 ): Promise<string> {
   try {
+    const QRCodeLib = await getQRCode();
     const size = QR_CODE_SIZES[options.size];
     
     const qrOptions = {
@@ -53,12 +62,12 @@ export async function generateQRCodeDataUrl(
     };
 
     if (options.format === 'svg') {
-      return await QRCode.toString(text, {
+      return await QRCodeLib.toString(text, {
         ...qrOptions,
         type: 'svg',
       });
     } else {
-      return await QRCode.toDataURL(text, qrOptions);
+      return await QRCodeLib.toDataURL(text, qrOptions);
     }
   } catch (error) {
     console.error('Failed to generate QR code:', error);

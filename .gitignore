@@ -211,3 +211,4 @@ backend-v2/aws_credentials*
 backend-v2/production_keys*
 
 backend-v2/data/
+.vercel

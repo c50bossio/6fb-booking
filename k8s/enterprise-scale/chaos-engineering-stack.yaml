@@ -1,0 +1,524 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chaos-engineering
+  labels:
+    name: chaos-engineering
+    tier: infrastructure
+    sre-enabled: "true"
+    chaos-enabled: "true"
+---
+# Chaos Engineering RBAC
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: chaos-controller-manager
+  namespace: chaos-engineering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: chaos-controller-manager
+rules:
+- apiGroups: [""]
+  resources:
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  - configmaps
+  - secrets
+  - nodes
+  verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+- apiGroups: ["apps"]
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+- apiGroups: ["chaos-mesh.org"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["networkpolicies"]
+  verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: chaos-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: chaos-controller-manager
+subjects:
+- kind: ServiceAccount
+  name: chaos-controller-manager
+  namespace: chaos-engineering
+---
+# Chaos Mesh Custom Resource Definitions
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: podchaos.chaos-mesh.org
+spec:
+  group: chaos-mesh.org
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              selector:
+                type: object
+                properties:
+                  namespaces:
+                    type: array
+                    items:
+                      type: string
+                  labelSelectors:
+                    type: object
+                    additionalProperties:
+                      type: string
+              mode:
+                type: string
+                enum: ["one", "all", "fixed", "fixed-percent", "random-max-percent"]
+              value:
+                type: string
+              action:
+                type: string
+                enum: ["pod-kill", "pod-failure", "container-kill"]
+              duration:
+                type: string
+              scheduler:
+                type: object
+                properties:
+                  cron:
+                    type: string
+          status:
+            type: object
+  scope: Namespaced
+  names:
+    plural: podchaos
+    singular: podchaos
+    kind: PodChaos
+    shortNames:
+    - pc
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: networkchaos.chaos-mesh.org
+spec:
+  group: chaos-mesh.org
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              selector:
+                type: object
+                properties:
+                  namespaces:
+                    type: array
+                    items:
+                      type: string
+                  labelSelectors:
+                    type: object
+                    additionalProperties:
+                      type: string
+              mode:
+                type: string
+                enum: ["one", "all", "fixed", "fixed-percent", "random-max-percent"]
+              action:
+                type: string
+                enum: ["netem", "delay", "loss", "duplicate", "corrupt", "partition", "bandwidth"]
+              delay:
+                type: object
+                properties:
+                  latency:
+                    type: string
+                  correlation:
+                    type: string
+                  jitter:
+                    type: string
+              loss:
+                type: object
+                properties:
+                  loss:
+                    type: string
+                  correlation:
+                    type: string
+              duration:
+                type: string
+          status:
+            type: object
+  scope: Namespaced
+  names:
+    plural: networkchaos
+    singular: networkchaos
+    kind: NetworkChaos
+    shortNames:
+    - nc
+---
+# Chaos Controller Manager Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaos-controller-manager
+  namespace: chaos-engineering
+  labels:
+    app: chaos-controller-manager
+    component: chaos-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chaos-controller-manager
+  template:
+    metadata:
+      labels:
+        app: chaos-controller-manager
+        component: chaos-controller
+    spec:
+      serviceAccountName: chaos-controller-manager
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: manager
+        image: chaoseng/chaos-mesh:v2.6.0
+        command:
+        - /manager
+        args:
+        - --metrics-addr=0.0.0.0:8080
+        - --enable-leader-election
+        - --leader-election-namespace=chaos-engineering
+        - --chaos-dns-server-create=false
+        - --runtime=containerd
+        - --enable-profiling=false
+        - --qps=50
+        - --burst=100
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: TZ
+          value: UTC
+        ports:
+        - containerPort: 8080
+          name: metrics
+        - containerPort: 9443
+          name: webhook
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: webhook-certs
+          mountPath: /tmp/k8s-webhook-server/serving-certs
+          readOnly: true
+        - name: tmp-volume
+          mountPath: /tmp
+      volumes:
+      - name: webhook-certs
+        secret:
+          secretName: chaos-mesh-webhook-certs
+      - name: tmp-volume
+        emptyDir: {}
+---
+# Chaos Dashboard Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaos-dashboard
+  namespace: chaos-engineering
+  labels:
+    app: chaos-dashboard
+    component: chaos-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chaos-dashboard
+  template:
+    metadata:
+      labels:
+        app: chaos-dashboard
+        component: chaos-dashboard
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "2333"
+        prometheus.io/path: "/api/metrics"
+    spec:
+      serviceAccountName: chaos-controller-manager
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: dashboard
+        image: chaoseng/chaos-dashboard:v2.6.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 2333
+          name: http
+        env:
+        - name: METRICS_ADDR
+          value: "0.0.0.0:2333"
+        - name: ENABLE_LEADER_ELECTION
+          value: "false"
+        - name: DATABASE_DRIVER
+          value: "sqlite3"
+        - name: DATABASE_DATASOURCE
+          value: "/data/core.sqlite"
+        - name: TZ
+          value: UTC
+        - name: SECURITY_MODE
+          value: "true"
+        - name: DNS_SERVER_CREATE
+          value: "false"
+        - name: VERSION
+          value: "v2.6.0"
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /api/common/version
+            port: 2333
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/common/version
+            port: 2333
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: storage-volume
+          mountPath: /data
+        - name: tmp-volume
+          mountPath: /tmp
+      volumes:
+      - name: storage-volume
+        persistentVolumeClaim:
+          claimName: chaos-dashboard-storage
+      - name: tmp-volume
+        emptyDir: {}
+---
+# Chaos Dashboard Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chaos-dashboard-storage
+  namespace: chaos-engineering
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp3-encrypted
+---
+# Chaos Dashboard Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaos-dashboard
+  namespace: chaos-engineering
+  labels:
+    app: chaos-dashboard
+spec:
+  selector:
+    app: chaos-dashboard
+  ports:
+  - port: 2333
+    targetPort: 2333
+    name: http
+  type: ClusterIP
+---
+# Chaos Controller Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaos-controller-manager-metrics
+  namespace: chaos-engineering
+  labels:
+    app: chaos-controller-manager
+spec:
+  selector:
+    app: chaos-controller-manager
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: metrics
+  type: ClusterIP
+---
+# Webhook Configuration Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaos-mesh-controller-manager
+  namespace: chaos-engineering
+spec:
+  ports:
+  - port: 443
+    targetPort: 9443
+  selector:
+    app: chaos-controller-manager
+---
+# Webhook Certificates (generated by job)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: chaos-mesh-webhook-certs
+  namespace: chaos-engineering
+type: kubernetes.io/tls
+data:
+  tls.crt: ""
+  tls.key: ""
+---
+# Webhook Certificate Generation Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: chaos-mesh-webhook-cert-generator
+  namespace: chaos-engineering
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: chaos-controller-manager
+      containers:
+      - name: cert-generator
+        image: alpine/openssl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Generate CA private key
+          openssl genrsa -out ca.key 4096
+          
+          # Generate CA certificate
+          openssl req -new -x509 -key ca.key -sha256 -subj "/C=US/ST=CA/O=BookedBarber/CN=chaos-mesh-ca" -days 3650 -out ca.crt
+          
+          # Generate server private key
+          openssl genrsa -out server.key 4096
+          
+          # Generate server certificate signing request
+          openssl req -new -key server.key -out server.csr -subj "/C=US/ST=CA/O=BookedBarber/CN=chaos-mesh-controller-manager.chaos-engineering.svc"
+          
+          # Generate server certificate
+          openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256 -extensions v3_ext -extfile <(cat <<EOF
+          [v3_ext]
+          subjectAltName = @alt_names
+          [alt_names]
+          DNS.1 = chaos-mesh-controller-manager
+          DNS.2 = chaos-mesh-controller-manager.chaos-engineering
+          DNS.3 = chaos-mesh-controller-manager.chaos-engineering.svc
+          DNS.4 = chaos-mesh-controller-manager.chaos-engineering.svc.cluster.local
+          EOF
+          )
+          
+          # Update the secret with base64 encoded certificates
+          kubectl patch secret chaos-mesh-webhook-certs -n chaos-engineering \
+            --type='json' \
+            -p="[{\"op\": \"replace\", \"path\": \"/data/tls.crt\", \"value\":\"$(cat server.crt | base64 -w 0)\"}, {\"op\": \"replace\", \"path\": \"/data/tls.key\", \"value\":\"$(cat server.key | base64 -w 0)\"}]"
+        volumeMounts:
+        - name: cert-temp
+          mountPath: /tmp/certs
+      volumes:
+      - name: cert-temp
+        emptyDir: {}
+---
+# Validating Admission Webhook
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionWebhook
+metadata:
+  name: chaos-mesh-validation
+webhooks:
+- name: validation.chaos-mesh.org
+  clientConfig:
+    service:
+      name: chaos-mesh-controller-manager
+      namespace: chaos-engineering
+      path: "/validate"
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["chaos-mesh.org"]
+    apiVersions: ["v1alpha1"]
+    resources: ["*"]
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  failurePolicy: Fail
+---
+# Mutating Admission Webhook
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionWebhook
+metadata:
+  name: chaos-mesh-mutation
+webhooks:
+- name: mutation.chaos-mesh.org
+  clientConfig:
+    service:
+      name: chaos-mesh-controller-manager
+      namespace: chaos-engineering
+      path: "/mutate"
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["chaos-mesh.org"]
+    apiVersions: ["v1alpha1"]
+    resources: ["*"]
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  failurePolicy: Fail

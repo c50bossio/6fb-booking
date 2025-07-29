@@ -43,7 +43,7 @@ import {
   PieChart,
   Search
 } from 'lucide-react'
-import { PieChart as RechartsPieChart, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { PieChart as RechartsPieChart, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from '@/lib/recharts-dynamic'
 
 import { 
   getClientValueTiers,

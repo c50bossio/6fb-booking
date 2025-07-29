@@ -1,0 +1,63 @@
+{
+  "tasks": [
+    {
+      "id": "debugger-agent-ssr-test",
+      "type": "comprehensive-ssr-testing",
+      "priority": "high",
+      "agent": "debugger",
+      "description": "Test all major pages for SSR errors and browser compatibility",
+      "pages": ["/", "/login", "/dashboard", "/booking"],
+      "validations": [
+        "no-window-undefined-errors",
+        "no-document-undefined-errors", 
+        "no-console-errors",
+        "proper-hydration"
+      ]
+    },
+    {
+      "id": "qa-agent-login-flow",
+      "type": "end-to-end-testing",
+      "priority": "high", 
+      "agent": "qa-engineer",
+      "description": "Validate complete login flow without SSR issues",
+      "flow": [
+        "navigate-to-login",
+        "fill-credentials",
+        "submit-form",
+        "verify-redirect",
+        "check-token-storage"
+      ]
+    },
+    {
+      "id": "frontend-specialist-component-validation",
+      "type": "component-isolation-testing",
+      "priority": "medium",
+      "agent": "frontend-specialist", 
+      "description": "Test individual components for SSR safety",
+      "components": [
+        "ErrorBoundary",
+        "AppLayout",
+        "UXOptimizedCookieConsent",
+        "ProductionSafeDevMonitor"
+      ]
+    },
+    {
+      "id": "performance-engineer-ssr-impact",
+      "type": "performance-analysis",
+      "priority": "medium",
+      "agent": "performance-engineer",
+      "description": "Measure SSR performance impact of fixes",
+      "metrics": [
+        "first-contentful-paint",
+        "largest-contentful-paint", 
+        "time-to-interactive",
+        "hydration-time"
+      ]
+    }
+  ],
+  "coordination": {
+    "status_updates": true,
+    "shared_findings": true,
+    "consolidated_report": true
+  }
+}

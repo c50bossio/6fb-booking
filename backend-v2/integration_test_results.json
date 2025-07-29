@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-07-29T15:31:07.393257",
+  "tests": {
+    "user_registration_flow": {
+      "passed": false,
+      "timestamp": "2025-07-29T15:31:07.422732"
+    },
+    "booking_creation_flow": {
+      "passed": false,
+      "timestamp": "2025-07-29T15:31:07.422744"
+    },
+    "error_handling": {
+      "passed": false,
+      "timestamp": "2025-07-29T15:31:07.446526"
+    },
+    "api_consistency": {
+      "passed": false,
+      "timestamp": "2025-07-29T15:31:07.469041"
+    },
+    "data_validation": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:31:07.476875"
+    },
+    "system_health": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:31:07.480354"
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 2,
+    "failed": 4,
+    "integration_issues": [
+      "GET /api/v2/users/profile: got 405, expected [401]",
+      "/api/v2/services: returned 401"
+    ]
+  }
+}

@@ -48,7 +48,7 @@ export default function PWAPage() {
     offlineCapable: false,
     pushNotificationsEnabled: false,
     installable: false,
-    networkOnline: navigator.onLine,
+    networkOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
     cacheHealth: 'good',
     dataIntegrity: 'good'
   })
@@ -86,10 +86,10 @@ export default function PWAPage() {
   const checkPWAHealth = async () => {
     const health: PWAHealth = {
       serviceWorkerActive: isRegistered,
-      offlineCapable: 'serviceWorker' in navigator && 'caches' in window,
+      offlineCapable: typeof navigator !== 'undefined' && 'serviceWorker' in navigator && 'caches' in window,
       pushNotificationsEnabled: isSupported && permission === 'granted' && isSubscribed,
       installable: false, // Will be detected by beforeinstallprompt
-      networkOnline: navigator.onLine,
+      networkOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
       cacheHealth: 'good',
       dataIntegrity: 'good'
     }

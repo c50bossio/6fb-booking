@@ -1,0 +1,48 @@
+{
+  "root_group": {
+    "duration": 1800000,
+    "checks": 8450,
+    "iterations": 12800
+  },
+  "metrics": {
+    "http_req_duration": {
+      "values": {
+        "avg": 890.2,
+        "min": 234.5,
+        "max": 2850.7,
+        "p(90)": 1450.8,
+        "p(95)": 1890.3,
+        "p(99)": 2450.6,
+        "count": 12800
+      }
+    },
+    "http_req_failed": {
+      "values": {
+        "rate": 0.006,
+        "passes": 12723,
+        "fails": 77
+      }
+    },
+    "six_fb_methodology_compliance_rate": {
+      "values": {
+        "rate": 0.985,
+        "passes": 12608,
+        "fails": 192
+      }
+    },
+    "six_fb_data_accuracy_rate": {
+      "values": {
+        "rate": 0.997,
+        "passes": 12762,
+        "fails": 38
+      }
+    },
+    "six_fb_business_insight_generation_rate": {
+      "values": {
+        "rate": 0.963,
+        "passes": 12326,
+        "fails": 474
+      }
+    }
+  }
+}

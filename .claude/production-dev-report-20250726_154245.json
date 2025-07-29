@@ -1,0 +1,888 @@
+{
+  "metadata": {
+    "agent_name": "production-fullstack-dev",
+    "version": "1.0.0",
+    "timestamp": "2025-07-26T15:42:45.342096",
+    "execution_time_seconds": 18.508883,
+    "context": {
+      "trigger_name": "database_model_changes",
+      "error_details": "Database model modified",
+      "files_changed": [
+        "/Users/bossio/6fb-booking/backend-v2/models/test_model.py"
+      ],
+      "timestamp": "2025-07-26T15:42:26.833391",
+      "agent_type": "production-fullstack-dev",
+      "requires_enterprise_grade": true,
+      "six_figure_methodology_relevant": false,
+      "system_components": [
+        "database_models"
+      ]
+    }
+  },
+  "results": {
+    "status": "success",
+    "implementations": [
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/mfa.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add back_populates for bidirectional relationships",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/franchise_security.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/organization.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/idempotency.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/cancellation.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add database indexes for query optimization",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/franchise.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/upselling.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add audit fields (created_at, updated_at)",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/review.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add database indexes for query optimization"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/integration.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add database indexes for query optimization",
+          "Add back_populates for bidirectional relationships",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/api_key.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/ai_analytics.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/google_calendar_settings.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add database indexes for query optimization",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/ai_memory.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add back_populates for bidirectional relationships",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/agent.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/six_fb_compliance.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add database indexes for query optimization",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/product.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add database indexes for query optimization",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/invitation.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add database indexes for query optimization",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/notification_preferences.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/guest_booking.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/tracking.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/consent.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add database indexes for query optimization",
+          "Add back_populates for bidirectional relationships",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      },
+      {
+        "file": "/Users/bossio/6fb-booking/backend-v2/models/base.py",
+        "type": "database_model_enhancement",
+        "improvements": [
+          "Add database indexes for query optimization",
+          "Add audit fields (created_at, updated_at)",
+          "Add soft delete functionality"
+        ],
+        "priority": "high"
+      }
+    ],
+    "quality_checks": [
+      {
+        "type": "test_coverage",
+        "status": "failed",
+        "details": "WARNING:services.subscription_service:Stripe API key not configured - using mock mode\n/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.\nPlugin: helpconfig, Hook: pytest_cmdline_parse\nConftestImportFailure: PydanticUndefinedAnnotation: name 'User' is not defined\n\nFor further information visit https://errors.pydantic.dev/2.5/u/undefined-annotation (from /Users/bossio/6fb-booking/backend-v2/tests/conftest.py)\nFor more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning\n  config = pluginmanager.hook.pytest_cmdline_parse(\nImportError while loading conftest '/Users/bossio/6fb-booking/backend-v2/tests/conftest.py'.\ntests/conftest.py:16: in <module>\n    from main import app\nmain.py:7: in <module>\n    from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks, franchise_networks_advanced\nrouters/auth.py:404: in <module>\n    @router.post(\"/register\", response_model=schemas.RegistrationResponse)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/routing.py:994: in decorator\n    self.add_api_route(\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/routing.py:933: in add_api_route\n    route = route_class(\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/routing.py:511: in __init__\n    self.response_field = create_model_field(\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/utils.py:96: in create_model_field\n    return ModelField(**kwargs)  # type: ignore[arg-type]\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/_compat.py:111: in __post_init__\n    self._type_adapter: TypeAdapter[Any] = TypeAdapter(\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/type_adapter.py:192: in __init__\n    core_schema = _get_schema(type, config_wrapper, parent_depth=_parent_depth + 1)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/type_adapter.py:81: in _get_schema\n    schema = gen.generate_schema(type_)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:468: in generate_schema\n    schema = self._generate_schema(obj)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:700: in _generate_schema\n    schema = self._post_process_generated_schema(self._generate_schema_inner(obj))\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:707: in _generate_schema_inner\n    return self._annotated_schema(obj)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1586: in _annotated_schema\n    schema = self._apply_annotations(source_type, annotations)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1654: in _apply_annotations\n    schema = get_inner_schema(source_type)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_schema_generation_shared.py:82: in __call__\n    schema = self._handler(__source_type)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1736: in new_handler\n    schema = metadata_get_schema(source, get_inner_schema)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1732: in <lambda>\n    lambda source, handler: handler(source)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_schema_generation_shared.py:82: in __call__\n    schema = self._handler(__source_type)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1633: in inner_handler\n    from_property = self._generate_schema_from_property(obj, obj)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:616: in _generate_schema_from_property\n    schema = get_schema(\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/main.py:578: in __get_pydantic_core_schema__\n    return __handler(__source)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_schema_generation_shared.py:82: in __call__\n    schema = self._handler(__source_type)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:700: in _generate_schema\n    schema = self._post_process_generated_schema(self._generate_schema_inner(obj))\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:722: in _generate_schema_inner\n    return self._model_schema(obj)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:541: in _model_schema\n    {k: self._generate_md_field_schema(k, v, decorators) for k, v in fields.items()},\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:886: in _generate_md_field_schema\n    common_field = self._common_field_schema(name, field_info, decorators)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:951: in _common_field_schema\n    schema = self._apply_annotations(\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1654: in _apply_annotations\n    schema = get_inner_schema(source_type)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_schema_generation_shared.py:82: in __call__\n    schema = self._handler(__source_type)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1635: in inner_handler\n    schema = self._generate_schema(obj)\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:700: in _generate_schema\n    schema = self._post_process_generated_schema(self._generate_schema_inner(obj))\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:717: in _generate_schema_inner\n    return self.generate_schema(self._resolve_forward_ref(obj))\n../../.pyenv/versions/3.12.7/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:642: in _resolve_forward_ref\n    raise PydanticUndefinedAnnotation.from_name_error(e) from e\nE   pydantic.errors.PydanticUndefinedAnnotation: name 'User' is not defined\nE\nE   For further information visit https://errors.pydantic.dev/2.5/u/undefined-annotation\n"
+      },
+      {
+        "type": "eslint_analysis",
+        "status": "failed",
+        "details": "\n> frontend-v2@0.1.0 lint\n> next lint\n\n"
+      },
+      {
+        "type": "typescript_check",
+        "status": "failed",
+        "details": "app/my-schedule/page-complex-backup.tsx(513,71): error TS1109: Expression expected.\napp/my-schedule/page-complex-backup.tsx(513,76): error TS1005: ')' expected.\napp/my-schedule/page-complex-backup.tsx(513,89): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\napp/my-schedule/page-complex-backup.tsx(536,100): error TS1109: Expression expected.\napp/my-schedule/page-complex-backup.tsx(536,105): error TS1005: ')' expected.\napp/my-schedule/page-complex-backup.tsx(536,118): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\napp/my-schedule/page-complex-backup.tsx(541,72): error TS1109: Expression expected.\napp/my-schedule/page-complex-backup.tsx(541,77): error TS1005: '}' expected.\napp/my-schedule/page-complex-backup.tsx(541,90): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(173,17): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(174,8): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(178,3): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(178,4): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(178,31): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(185,16): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(192,19): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(193,8): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(194,5): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(195,3): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(195,4): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(195,53): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(300,18): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(301,16): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(302,15): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(303,17): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(304,6): error TS1005: ',' expected.\ncomponents/modals/CreateAppointmentModal.tsx(314,19): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(315,18): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(317,7): error TS1109: Expression expected.\ncomponents/modals/CreateAppointmentModal.tsx(317,8): error TS1472: 'catch' or 'finally' expected.\ncomponents/modals/CreateAppointmentModal.tsx(326,19): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(327,22): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(328,22): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(329,21): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(330,7): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(330,8): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(336,14): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(337,7): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(337,8): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(346,5): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(346,7): error TS1005: 'try' expected.\ncomponents/modals/CreateAppointmentModal.tsx(352,3): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(664,33): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(665,34): error TS1005: '}' expected.\ncomponents/modals/CreateAppointmentModal.tsx(667,27): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(670,25): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(670,26): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(672,23): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?\ncomponents/modals/CreateAppointmentModal.tsx(679,25): error TS17002: Expected corresponding JSX closing tag for 'div'.\ncomponents/modals/CreateAppointmentModal.tsx(680,22): error TS1005: '}' expected.\ncomponents/modals/CreateAppointmentModal.tsx(683,20): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(685,16): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(720,23): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(720,25): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(789,25): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(791,19): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(793,17): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(793,18): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(796,16): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?\ncomponents/modals/CreateAppointmentModal.tsx(811,31): error TS1005: ';' expected.\ncomponents/modals/CreateAppointmentModal.tsx(816,19): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(822,17): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(822,18): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\ncomponents/modals/CreateAppointmentModal.tsx(825,15): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?\ncomponents/modals/CreateAppointmentModal.tsx(830,17): error TS17002: Expected corresponding JSX closing tag for 'div'.\ncomponents/modals/CreateAppointmentModal.tsx(951,11): error TS17002: Expected corresponding JSX closing tag for 'Modal'.\ncomponents/modals/CreateAppointmentModal.tsx(953,9): error TS1005: ')' expected.\ncomponents/modals/CreateAppointmentModal.tsx(976,7): error TS1128: Declaration or statement expected.\ncomponents/modals/CreateAppointmentModal.tsx(977,5): error TS1109: Expression expected.\ncomponents/modals/CreateAppointmentModal.tsx(978,3): error TS1109: Expression expected.\ncomponents/modals/CreateAppointmentModal.tsx(979,1): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(108,29): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(110,12): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(112,7): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(112,9): error TS1005: 'try' expected.\nhooks/useMetaTracking.ts(115,5): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(118,3): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(118,4): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(118,59): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(342,19): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(343,12): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(344,9): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(345,7): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(345,9): error TS1005: 'try' expected.\nhooks/useMetaTracking.ts(352,5): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(382,17): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(383,31): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(384,10): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(386,5): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(396,19): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(397,19): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(398,29): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(400,17): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(401,26): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(402,8): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(403,5): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(404,3): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(404,4): error TS1128: Declaration or statement expected.\nhooks/useMetaTracking.ts(412,4): error TS1005: ';' expected.\nhooks/useMetaTracking.ts(774,1): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(297,23): error TS1005: ';' expected.\nlib/image-optimization.ts(298,19): error TS1005: ';' expected.\nlib/image-optimization.ts(299,13): error TS1109: Expression expected.\nlib/image-optimization.ts(299,14): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(302,9): error TS1472: 'catch' or 'finally' expected.\nlib/image-optimization.ts(303,8): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(307,5): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(307,7): error TS1005: 'try' expected.\nlib/image-optimization.ts(310,3): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(315,3): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(315,31): error TS1005: ';' expected.\nlib/image-optimization.ts(316,9): error TS1359: Identifier expected. 'typeof' is a reserved word that cannot be used here.\nlib/image-optimization.ts(316,23): error TS1005: ',' expected.\nlib/image-optimization.ts(316,38): error TS1005: ';' expected.\nlib/image-optimization.ts(323,23): error TS1005: ';' expected.\nlib/image-optimization.ts(324,27): error TS1005: ';' expected.\nlib/image-optimization.ts(325,30): error TS1005: ';' expected.\nlib/image-optimization.ts(326,13): error TS1109: Expression expected.\nlib/image-optimization.ts(326,14): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(328,9): error TS1005: ',' expected.\nlib/image-optimization.ts(328,10): error TS1472: 'catch' or 'finally' expected.\nlib/image-optimization.ts(329,7): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(329,8): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(333,5): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(333,7): error TS1005: 'try' expected.\nlib/image-optimization.ts(336,3): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(341,3): error TS1128: Declaration or statement expected.\nlib/image-optimization.ts(341,19): error TS1005: ';' expected.\nlib/image-optimization.ts(342,9): error TS1005: ':' expected.\nlib/image-optimization.ts(343,5): error TS1005: ',' expected.\nlib/image-optimization.ts(343,9): error TS1005: ':' expected.\nlib/image-optimization.ts(345,1): error TS1128: Declaration or statement expected.\nlib/lazy-loading.ts(314,14): error TS1005: ';' expected.\nlib/lazy-loading.ts(315,14): error TS1005: ';' expected.\nlib/lazy-loading.ts(316,8): error TS1128: Declaration or statement expected.\nlib/lazy-loading.ts(319,1): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(170,19): error TS1005: ';' expected.\nlib/meta-pixel.ts(171,31): error TS1005: ';' expected.\nlib/meta-pixel.ts(172,10): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(174,5): error TS1472: 'catch' or 'finally' expected.\nlib/meta-pixel.ts(183,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(183,11): error TS1434: Unexpected keyword or identifier.\nlib/meta-pixel.ts(183,34): error TS1005: ';' expected.\nlib/meta-pixel.ts(183,48): error TS1109: Expression expected.\nlib/meta-pixel.ts(184,12): error TS1005: ':' expected.\nlib/meta-pixel.ts(222,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(222,28): error TS1005: ';' expected.\nlib/meta-pixel.ts(223,9): error TS1003: Identifier expected.\nlib/meta-pixel.ts(223,16): error TS1005: ',' expected.\nlib/meta-pixel.ts(223,20): error TS1005: ',' expected.\nlib/meta-pixel.ts(223,22): error TS1136: Property assignment expected.\nlib/meta-pixel.ts(254,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(259,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(259,31): error TS1005: ',' expected.\nlib/meta-pixel.ts(259,41): error TS1005: ';' expected.\nlib/meta-pixel.ts(260,9): error TS1005: ':' expected.\nlib/meta-pixel.ts(262,5): error TS1005: ',' expected.\nlib/meta-pixel.ts(262,15): error TS1005: ',' expected.\nlib/meta-pixel.ts(262,19): error TS1005: ',' expected.\nlib/meta-pixel.ts(262,21): error TS1136: Property assignment expected.\nlib/meta-pixel.ts(272,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(277,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(277,21): error TS1005: ';' expected.\nlib/meta-pixel.ts(277,23): error TS1434: Unexpected keyword or identifier.\nlib/meta-pixel.ts(292,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(292,36): error TS1005: ',' expected.\nlib/meta-pixel.ts(292,55): error TS1109: Expression expected.\nlib/meta-pixel.ts(292,64): error TS1005: ';' expected.\nlib/meta-pixel.ts(292,66): error TS1434: Unexpected keyword or identifier.\nlib/meta-pixel.ts(305,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(306,14): error TS1005: ',' expected.\nlib/meta-pixel.ts(307,15): error TS1005: ',' expected.\nlib/meta-pixel.ts(308,14): error TS1109: Expression expected.\nlib/meta-pixel.ts(309,19): error TS1109: Expression expected.\nlib/meta-pixel.ts(310,4): error TS1005: ';' expected.\nlib/meta-pixel.ts(311,9): error TS1003: Identifier expected.\nlib/meta-pixel.ts(311,14): error TS1005: ',' expected.\nlib/meta-pixel.ts(311,25): error TS1005: ',' expected.\nlib/meta-pixel.ts(311,27): error TS1136: Property assignment expected.\nlib/meta-pixel.ts(348,21): error TS1005: ';' expected.\nlib/meta-pixel.ts(349,19): error TS1005: ';' expected.\nlib/meta-pixel.ts(350,10): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(352,5): error TS1472: 'catch' or 'finally' expected.\nlib/meta-pixel.ts(352,7): error TS1005: 'try' expected.\nlib/meta-pixel.ts(355,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(360,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(361,14): error TS1005: ',' expected.\nlib/meta-pixel.ts(362,15): error TS1005: ',' expected.\nlib/meta-pixel.ts(363,14): error TS1109: Expression expected.\nlib/meta-pixel.ts(364,19): error TS1109: Expression expected.\nlib/meta-pixel.ts(365,4): error TS1005: ';' expected.\nlib/meta-pixel.ts(366,9): error TS1003: Identifier expected.\nlib/meta-pixel.ts(366,14): error TS1005: ',' expected.\nlib/meta-pixel.ts(366,25): error TS1005: ',' expected.\nlib/meta-pixel.ts(366,27): error TS1136: Property assignment expected.\nlib/meta-pixel.ts(403,21): error TS1005: ';' expected.\nlib/meta-pixel.ts(404,19): error TS1005: ';' expected.\nlib/meta-pixel.ts(405,10): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(407,5): error TS1472: 'catch' or 'finally' expected.\nlib/meta-pixel.ts(407,7): error TS1005: 'try' expected.\nlib/meta-pixel.ts(410,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(415,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(415,33): error TS1109: Expression expected.\nlib/meta-pixel.ts(415,53): error TS1005: ',' expected.\nlib/meta-pixel.ts(415,76): error TS1005: ';' expected.\nlib/meta-pixel.ts(416,9): error TS1003: Identifier expected.\nlib/meta-pixel.ts(416,14): error TS1005: ',' expected.\nlib/meta-pixel.ts(416,25): error TS1005: ',' expected.\nlib/meta-pixel.ts(418,5): error TS1005: ':' expected.\nlib/meta-pixel.ts(418,11): error TS1005: ':' expected.\nlib/meta-pixel.ts(423,5): error TS1005: ',' expected.\nlib/meta-pixel.ts(423,13): error TS1005: ',' expected.\nlib/meta-pixel.ts(423,22): error TS1005: ',' expected.\nlib/meta-pixel.ts(423,24): error TS1136: Property assignment expected.\nlib/meta-pixel.ts(424,7): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(430,12): error TS1005: ';' expected.\nlib/meta-pixel.ts(431,19): error TS1005: ';' expected.\nlib/meta-pixel.ts(432,8): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(433,5): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(434,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(439,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(440,15): error TS1005: ',' expected.\nlib/meta-pixel.ts(441,13): error TS1109: Expression expected.\nlib/meta-pixel.ts(442,4): error TS1005: ';' expected.\nlib/meta-pixel.ts(443,11): error TS1005: ':' expected.\nlib/meta-pixel.ts(443,17): error TS1005: ',' expected.\nlib/meta-pixel.ts(443,39): error TS1005: '(' expected.\nlib/meta-pixel.ts(443,41): error TS1136: Property assignment expected.\nlib/meta-pixel.ts(443,43): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(466,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(472,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(472,32): error TS1005: ',' expected.\nlib/meta-pixel.ts(472,43): error TS1005: ';' expected.\nlib/meta-pixel.ts(473,11): error TS1005: ':' expected.\nlib/meta-pixel.ts(473,17): error TS1005: ',' expected.\nlib/meta-pixel.ts(473,39): error TS1005: '(' expected.\nlib/meta-pixel.ts(473,41): error TS1136: Property assignment expected.\nlib/meta-pixel.ts(487,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(492,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(492,30): error TS1005: ';' expected.\nlib/meta-pixel.ts(493,16): error TS1005: ',' expected.\nlib/meta-pixel.ts(493,38): error TS1005: ',' expected.\nlib/meta-pixel.ts(493,40): error TS1136: Property assignment expected.\nlib/meta-pixel.ts(511,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(516,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(516,30): error TS1005: ';' expected.\nlib/meta-pixel.ts(517,12): error TS1005: ':' expected.\nlib/meta-pixel.ts(542,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(542,24): error TS1005: ';' expected.\nlib/meta-pixel.ts(543,12): error TS1005: ':' expected.\nlib/meta-pixel.ts(559,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(560,18): error TS1005: ',' expected.\nlib/meta-pixel.ts(561,10): error TS1005: ',' expected.\nlib/meta-pixel.ts(562,16): error TS1005: ',' expected.\nlib/meta-pixel.ts(563,14): error TS1109: Expression expected.\nlib/meta-pixel.ts(564,14): error TS1109: Expression expected.\nlib/meta-pixel.ts(565,4): error TS1005: ';' expected.\nlib/meta-pixel.ts(567,9): error TS1005: ':' expected.\nlib/meta-pixel.ts(578,5): error TS1005: ',' expected.\nlib/meta-pixel.ts(578,9): error TS1005: ':' expected.\nlib/meta-pixel.ts(590,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(591,11): error TS1005: ',' expected.\nlib/meta-pixel.ts(592,11): error TS1109: Expression expected.\nlib/meta-pixel.ts(593,12): error TS1109: Expression expected.\nlib/meta-pixel.ts(594,14): error TS1109: Expression expected.\nlib/meta-pixel.ts(595,4): error TS1005: ';' expected.\nlib/meta-pixel.ts(596,9): error TS1005: ':' expected.\nlib/meta-pixel.ts(611,3): error TS1128: Declaration or statement expected.\nlib/meta-pixel.ts(612,11): error TS1005: ',' expected.\nlib/meta-pixel.ts(613,13): error TS1005: ',' expected.\nlib/meta-pixel.ts(614,11): error TS1005: ',' expected.\nlib/meta-pixel.ts(615,14): error TS1109: Expression expected.\nlib/meta-pixel.ts(616,4): error TS1005: ';' expected.\nlib/meta-pixel.ts(617,9): error TS1005: ':' expected.\nlib/meta-pixel.ts(627,1): error TS1128: Declaration or statement expected.\n"
+      }
+    ],
+    "security_validations": [
+      {
+        "type": "hardcoded_secrets",
+        "status": "warning",
+        "details": "Found 66 potential hardcoded secrets",
+        "findings": [
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/check_test_user.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/appointment_api_test_report.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/debug_appointment_hanging.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/models.py",
+            "pattern": "api_key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/integration_demo_review_assembly.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/setup_test_demo.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/reset_test_user_password.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/setup_oauth_credentials.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/create_test_users_comprehensive.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/corrected-functionality-test.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/debug_appointments_flow.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/browser-functionality-test.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/test_auth_consistency.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/create_test_appointments.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/validate_sentry_setup.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/debug_registration.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/simple_calendar_demo.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/database/read_replica_config.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/integration_scripts/booking_flow_test.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_commission_payouts.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_client_service.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_auth_complete.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_webhooks.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_public_booking.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_google_calendar_service.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_e2e_booking_flow.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 3
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_marketing_integrations_comprehensive.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_stripe_connect.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_integration_models.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_integration_models.py",
+            "pattern": "api_key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_invitations.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 3
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/test_payment_service.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 10
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/scripts/security_audit_validation.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/scripts/test-auth-system.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/scripts/configure_google_calendar.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/integration/test_system_integration.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/integration/test_system_integration.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/integration/test_auth_enhanced.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/integration/test_auth_direct.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/google_auth_oauthlib/interactive.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/requests_oauthlib/oauth1_session.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 6
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/ecdsa/test_ecdh.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/starlette/datastructures.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/amqp/connection.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/httpx/_urls.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/psycopg2/errorcodes.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/psycopg2/__init__.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/pydantic/types.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/dns/tsig.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/passlib/context.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/oauthlib/oauth2/rfc6749/clients/legacy_application.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/test/unit/test_sendgrid.py",
+            "pattern": "api_key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 5
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/test/integ/test_sendgrid.py",
+            "pattern": "api_key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 3
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/google/generativeai/generative_models.py",
+            "pattern": "api_key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/dialects/oracle/provision.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/dialects/oracle/cx_oracle.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/dialects/sqlite/provision.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/dialects/mysql/mysqldb.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/dialects/mssql/pyodbc.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 3
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/pip/_internal/utils/misc.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/openai/resources/webhooks.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/passlib/tests/test_handlers.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/passlib/tests/test_handlers_bcrypt.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/passlib/tests/utils.py",
+            "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/passlib/tests/utils.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 3
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/passlib/tests/test_context.py",
+            "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+            "matches": 2
+          }
+        ]
+      },
+      {
+        "type": "sql_injection_check",
+        "status": "warning",
+        "details": "Found 7 potential SQL injection patterns",
+        "findings": [
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/middleware/security.py",
+            "pattern": "SELECT.*\\+.*FROM",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/grpc/framework/foundation/logging_pool.py",
+            "pattern": "%.*execute",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/testing/requirements.py",
+            "pattern": "SELECT.*\\+.*FROM",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/sql/compiler.py",
+            "pattern": "f\".*{.*}.*\".*execute",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/sql/compiler.py",
+            "pattern": "%.*execute",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/sql/selectable.py",
+            "pattern": "SELECT.*\\+.*FROM",
+            "matches": 1
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/pandas/tests/io/test_sql.py",
+            "pattern": "SELECT.*\\+.*FROM",
+            "matches": 1
+          }
+        ]
+      }
+    ],
+    "performance_optimizations": [
+      {
+        "type": "database_query_optimization",
+        "status": "analyzed",
+        "details": "Found 32 potential query optimizations",
+        "findings": [
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/dependencies_v2.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/test-sentry-integration.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/database/migrate_sqlite_to_postgresql.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/database/backup_sqlite.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/database/validate_migration.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 3,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/database/test_postgresql_setup.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 2,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/security_audit_comprehensive.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/tests/performance_benchmark_suite.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/scripts/database_optimization.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 2,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/services/franchise_api_monitor.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/typing_extensions.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 2,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/botocore/eventstream.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/psycopg2/extras.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/psycopg2/sql.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 4,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/coverage/sqldata.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/testing/requirements.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 2,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 9,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/orm/util.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/orm/events.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/orm/relationships.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 4,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/engine/cursor.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/sql/_selectable_constructors.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/sql/_elements_constructors.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 4,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/testing/suite/test_reflection.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 5,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/base.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/dialects/sqlite/base.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 4,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/sqlalchemy/dialects/mysql/base.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 1,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/pip/_vendor/typing_extensions.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 2,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/psutil/tests/test_windows.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 2,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/pandas/core/generic.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 4,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          },
+          {
+            "file": "/Users/bossio/6fb-booking/backend-v2/venv/lib/python3.12/site-packages/pandas/tests/io/test_sql.py",
+            "pattern": "SELECT \\* FROM",
+            "matches": 93,
+            "recommendation": "Consider pagination, lazy loading, or specific column selection"
+          }
+        ]
+      },
+      {
+        "type": "frontend_bundle_analysis",
+        "status": "analyzed",
+        "details": "Found 2 potentially heavy packages",
+        "findings": [
+          "date-fns",
+          "date-fns-tz"
+        ],
+        "recommendation": "Consider tree shaking, code splitting, or lighter alternatives"
+      }
+    ],
+    "six_figure_alignment": [],
+    "recommendations": [
+      {
+        "category": "production_readiness",
+        "priority": "high",
+        "title": "Implement comprehensive monitoring and logging",
+        "description": "Add Sentry error tracking, structured logging, and performance monitoring",
+        "implementation": "Configure Sentry SDK, add custom metrics, implement health checks"
+      },
+      {
+        "category": "scalability",
+        "priority": "high",
+        "title": "Implement Redis caching strategy",
+        "description": "Add Redis caching for session management, API responses, and database queries",
+        "implementation": "Configure Redis connection pooling, implement cache invalidation strategies"
+      },
+      {
+        "category": "security",
+        "priority": "critical",
+        "title": "Implement comprehensive input validation",
+        "description": "Add Pydantic models for all API endpoints with strict validation",
+        "implementation": "Create validation schemas, add sanitization, implement rate limiting"
+      }
+    ]
+  },
+  "implementation_standards": {
+    "code_quality": {
+      "typescript_strict_mode": true,
+      "eslint_config": "strict",
+      "test_coverage_minimum": 80,
+      "documentation_required": true
+    },
+    "security": {
+      "input_validation": "joi_zod_required",
+      "authentication": "jwt_with_refresh",
+      "authorization": "rbac_required",
+      "csrf_protection": true,
+      "rate_limiting": true,
+      "request_sanitization": true
+    },
+    "performance": {
+      "redis_caching": true,
+      "database_optimization": true,
+      "api_rate_limiting": true,
+      "lazy_loading": true,
+      "code_splitting": true,
+      "bundle_optimization": true
+    },
+    "accessibility": {
+      "wcag_aa_compliance": true,
+      "semantic_html": true,
+      "aria_labels": true,
+      "keyboard_navigation": true,
+      "screen_reader_support": true
+    },
+    "six_figure_barber_alignment": {
+      "revenue_optimization": true,
+      "client_value_creation": true,
+      "business_efficiency": true,
+      "professional_growth": true,
+      "scalability": true
+    }
+  }
+}

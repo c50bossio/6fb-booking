@@ -1,0 +1,7 @@
+<svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <rect width="180" height="180" rx="36" fill="#14b8a6"/>
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" 
+        font-size="72" font-weight="bold" fill="white" font-family="system-ui">
+    BB
+  </text>
+</svg>

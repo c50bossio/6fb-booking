@@ -1,0 +1,2482 @@
+{
+  "timestamp": "2025-07-28T04:11:42.246315",
+  "modified_files": [],
+  "error_count": 275,
+  "errors": [
+    {
+      "file": "app/my-schedule/page-complex-backup.tsx",
+      "line": 513,
+      "column": 71,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "app/my-schedule/page-complex-backup.tsx",
+      "line": 513,
+      "column": 76,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "')' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "app/my-schedule/page-complex-backup.tsx",
+      "line": 513,
+      "column": 89,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "app/my-schedule/page-complex-backup.tsx",
+      "line": 536,
+      "column": 100,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "app/my-schedule/page-complex-backup.tsx",
+      "line": 536,
+      "column": 105,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "')' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "app/my-schedule/page-complex-backup.tsx",
+      "line": 536,
+      "column": 118,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "app/my-schedule/page-complex-backup.tsx",
+      "line": 541,
+      "column": 72,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "app/my-schedule/page-complex-backup.tsx",
+      "line": 541,
+      "column": 77,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'}' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "app/my-schedule/page-complex-backup.tsx",
+      "line": 541,
+      "column": 90,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 173,
+      "column": 17,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 174,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 178,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 178,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 178,
+      "column": 31,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 185,
+      "column": 16,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 192,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 193,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 194,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 195,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 195,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 195,
+      "column": 53,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 300,
+      "column": 18,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 301,
+      "column": 16,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 302,
+      "column": 15,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 303,
+      "column": 17,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 304,
+      "column": 6,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 314,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 315,
+      "column": 18,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 317,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 317,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1472",
+      "message": "'catch' or 'finally' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 326,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 327,
+      "column": 22,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 328,
+      "column": 22,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 329,
+      "column": 21,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 330,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 330,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 336,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 337,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 337,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 346,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 346,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'try' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 352,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 664,
+      "column": 33,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 665,
+      "column": 34,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'}' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 667,
+      "column": 27,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 670,
+      "column": 25,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 670,
+      "column": 26,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 672,
+      "column": 23,
+      "severity": "error",
+      "code": "TS1382",
+      "message": "Unexpected token. Did you mean `{'>'}` or `&gt;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 679,
+      "column": 25,
+      "severity": "error",
+      "code": "TS17002",
+      "message": "Expected corresponding JSX closing tag for 'div'.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 680,
+      "column": 22,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'}' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 683,
+      "column": 20,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 685,
+      "column": 16,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 720,
+      "column": 23,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 720,
+      "column": 25,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 789,
+      "column": 25,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 791,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 793,
+      "column": 17,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 793,
+      "column": 18,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 796,
+      "column": 16,
+      "severity": "error",
+      "code": "TS1382",
+      "message": "Unexpected token. Did you mean `{'>'}` or `&gt;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 811,
+      "column": 31,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 816,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 822,
+      "column": 17,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 822,
+      "column": 18,
+      "severity": "error",
+      "code": "TS1381",
+      "message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 825,
+      "column": 15,
+      "severity": "error",
+      "code": "TS1382",
+      "message": "Unexpected token. Did you mean `{'>'}` or `&gt;`?",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 830,
+      "column": 17,
+      "severity": "error",
+      "code": "TS17002",
+      "message": "Expected corresponding JSX closing tag for 'div'.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 951,
+      "column": 11,
+      "severity": "error",
+      "code": "TS17002",
+      "message": "Expected corresponding JSX closing tag for 'Modal'.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 953,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "')' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 976,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 977,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 978,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "components/modals/CreateAppointmentModal.tsx",
+      "line": 979,
+      "column": 1,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 108,
+      "column": 29,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 110,
+      "column": 12,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 112,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 112,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'try' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 115,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 118,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 118,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 118,
+      "column": 59,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 342,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 343,
+      "column": 12,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 344,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 345,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 345,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'try' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 352,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 382,
+      "column": 17,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 383,
+      "column": 31,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 384,
+      "column": 10,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 386,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 396,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 397,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 398,
+      "column": 29,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 400,
+      "column": 17,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 401,
+      "column": 26,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 402,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 403,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 404,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 404,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 412,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "hooks/useMetaTracking.ts",
+      "line": 774,
+      "column": 1,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 303,
+      "column": 23,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 304,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 305,
+      "column": 13,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 305,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 308,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1472",
+      "message": "'catch' or 'finally' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 309,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 313,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 313,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'try' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 316,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 321,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 321,
+      "column": 31,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 322,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1359",
+      "message": "Identifier expected. 'typeof' is a reserved word that cannot be used here.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 322,
+      "column": 23,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 322,
+      "column": 38,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 329,
+      "column": 23,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 330,
+      "column": 27,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 331,
+      "column": 30,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 332,
+      "column": 13,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 332,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 334,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 334,
+      "column": 10,
+      "severity": "error",
+      "code": "TS1472",
+      "message": "'catch' or 'finally' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 335,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 335,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 339,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 339,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'try' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 342,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 347,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 347,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 348,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 349,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 349,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/image-optimization.ts",
+      "line": 351,
+      "column": 1,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/lazy-loading.ts",
+      "line": 314,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/lazy-loading.ts",
+      "line": 315,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/lazy-loading.ts",
+      "line": 316,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/lazy-loading.ts",
+      "line": 319,
+      "column": 1,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 170,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 171,
+      "column": 31,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 172,
+      "column": 10,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 174,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1472",
+      "message": "'catch' or 'finally' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 183,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 183,
+      "column": 11,
+      "severity": "error",
+      "code": "TS1434",
+      "message": "Unexpected keyword or identifier.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 183,
+      "column": 34,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 183,
+      "column": 48,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 184,
+      "column": 12,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 222,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 222,
+      "column": 28,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 223,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1003",
+      "message": "Identifier expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 223,
+      "column": 16,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 223,
+      "column": 20,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 223,
+      "column": 22,
+      "severity": "error",
+      "code": "TS1136",
+      "message": "Property assignment expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 254,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 259,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 259,
+      "column": 31,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 259,
+      "column": 41,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 260,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 262,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 262,
+      "column": 15,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 262,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 262,
+      "column": 21,
+      "severity": "error",
+      "code": "TS1136",
+      "message": "Property assignment expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 272,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 277,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 277,
+      "column": 21,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 277,
+      "column": 23,
+      "severity": "error",
+      "code": "TS1434",
+      "message": "Unexpected keyword or identifier.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 292,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 292,
+      "column": 36,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 292,
+      "column": 55,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 292,
+      "column": 64,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 292,
+      "column": 66,
+      "severity": "error",
+      "code": "TS1434",
+      "message": "Unexpected keyword or identifier.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 305,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 306,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 307,
+      "column": 15,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 308,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 309,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 310,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 311,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1003",
+      "message": "Identifier expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 311,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 311,
+      "column": 25,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 311,
+      "column": 27,
+      "severity": "error",
+      "code": "TS1136",
+      "message": "Property assignment expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 348,
+      "column": 21,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 349,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 350,
+      "column": 10,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 352,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1472",
+      "message": "'catch' or 'finally' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 352,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'try' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 355,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 360,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 361,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 362,
+      "column": 15,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 363,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 364,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 365,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 366,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1003",
+      "message": "Identifier expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 366,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 366,
+      "column": 25,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 366,
+      "column": 27,
+      "severity": "error",
+      "code": "TS1136",
+      "message": "Property assignment expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 403,
+      "column": 21,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 404,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 405,
+      "column": 10,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 407,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1472",
+      "message": "'catch' or 'finally' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 407,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'try' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 410,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 415,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 415,
+      "column": 33,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 415,
+      "column": 53,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 415,
+      "column": 76,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 416,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1003",
+      "message": "Identifier expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 416,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 416,
+      "column": 25,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 418,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 418,
+      "column": 11,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 423,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 423,
+      "column": 13,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 423,
+      "column": 22,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 423,
+      "column": 24,
+      "severity": "error",
+      "code": "TS1136",
+      "message": "Property assignment expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 424,
+      "column": 7,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 430,
+      "column": 12,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 431,
+      "column": 19,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 432,
+      "column": 8,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 433,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 434,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 439,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 440,
+      "column": 15,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 441,
+      "column": 13,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 442,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 443,
+      "column": 11,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 443,
+      "column": 17,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 443,
+      "column": 39,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'(' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 443,
+      "column": 41,
+      "severity": "error",
+      "code": "TS1136",
+      "message": "Property assignment expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 443,
+      "column": 43,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 466,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 472,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 472,
+      "column": 32,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 472,
+      "column": 43,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 473,
+      "column": 11,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 473,
+      "column": 17,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 473,
+      "column": 39,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "'(' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 473,
+      "column": 41,
+      "severity": "error",
+      "code": "TS1136",
+      "message": "Property assignment expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 487,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 492,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 492,
+      "column": 30,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 493,
+      "column": 16,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 493,
+      "column": 38,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 493,
+      "column": 40,
+      "severity": "error",
+      "code": "TS1136",
+      "message": "Property assignment expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 511,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 516,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 516,
+      "column": 30,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 517,
+      "column": 12,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 542,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 542,
+      "column": 24,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 543,
+      "column": 12,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 559,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 560,
+      "column": 18,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 561,
+      "column": 10,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 562,
+      "column": 16,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 563,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 564,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 565,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 567,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 578,
+      "column": 5,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 578,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 590,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 591,
+      "column": 11,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 592,
+      "column": 11,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 593,
+      "column": 12,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 594,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 595,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 596,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 611,
+      "column": 3,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 612,
+      "column": 11,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 613,
+      "column": 13,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 614,
+      "column": 11,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "',' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 615,
+      "column": 14,
+      "severity": "error",
+      "code": "TS1109",
+      "message": "Expression expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 616,
+      "column": 4,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "';' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 617,
+      "column": 9,
+      "severity": "error",
+      "code": "TS1005",
+      "message": "':' expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    },
+    {
+      "file": "lib/meta-pixel.ts",
+      "line": 627,
+      "column": 1,
+      "severity": "error",
+      "code": "TS1128",
+      "message": "Declaration or statement expected.",
+      "project_dir": "/Users/bossio/6fb-booking/backend-v2/frontend-v2"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# Vercel ignore file - prevent uploading large cache directories
+.next/cache/
+.next/trace/
+node_modules/.cache/
+*.log
+.env*
+.DS_Store
+bundle-analyzer.html
+coverage/
+test-reports/
+test-results/

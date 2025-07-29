@@ -1,0 +1,350 @@
+# =============================================================================
+# BookedBarber V2 - Alerting Rules
+# =============================================================================
+# 🚨 Comprehensive alerting for production monitoring
+# 📊 Business and technical metrics monitoring
+# ⚡ Multi-severity alerting with escalation paths
+# =============================================================================
+
+groups:
+  # =============================================================================
+  # Critical Infrastructure Alerts
+  # =============================================================================
+  - name: infrastructure.critical
+    interval: 30s
+    rules:
+      # Service Down Alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/service-down"
+
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: (100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 90% for more than 5 minutes on {{ $labels.instance }}."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/high-cpu"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 90% for more than 5 minutes on {{ $labels.instance }}."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/high-memory"
+
+      # Disk Space Critical
+      - alert: DiskSpaceCritical
+        expr: ((node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Disk usage is above 95% on {{ $labels.instance }} {{ $labels.mountpoint }}."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/disk-space"
+
+  # =============================================================================
+  # Application Performance Alerts
+  # =============================================================================
+  - name: application.performance
+    interval: 30s
+    rules:
+      # High Response Time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 2
+        for: 3m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High response time for {{ $labels.service }}"
+          description: "95th percentile response time for {{ $labels.service }} is above 2 seconds for more than 3 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/high-response-time"
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: (sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service)) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "High error rate for {{ $labels.service }}"
+          description: "Error rate for {{ $labels.service }} is above 5% for more than 2 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/high-error-rate"
+
+      # Too Many Requests
+      - alert: TooManyRequests
+        expr: sum(rate(http_requests_total[1m])) by (service) > 1000
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High request rate for {{ $labels.service }}"
+          description: "{{ $labels.service }} is receiving more than 1000 requests per second."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/high-traffic"
+
+      # API Endpoint Down
+      - alert: APIEndpointDown
+        expr: probe_success == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "API endpoint {{ $labels.instance }} is down"
+          description: "API endpoint {{ $labels.instance }} has been unreachable for more than 1 minute."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/api-down"
+
+  # =============================================================================
+  # Database Alerts
+  # =============================================================================
+  - name: database.alerts
+    interval: 30s
+    rules:
+      # Database Connection Issues
+      - alert: DatabaseConnectionHigh
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "High number of database connections"
+          description: "PostgreSQL has more than 80 active connections for more than 5 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/db-connections"
+
+      # Database Locks
+      - alert: DatabaseLocks
+        expr: pg_locks_count > 50
+        for: 2m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "High number of database locks"
+          description: "PostgreSQL has more than 50 locks for more than 2 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/db-locks"
+
+      # Slow Queries
+      - alert: SlowQueries
+        expr: pg_stat_activity_max_tx_duration > 300
+        for: 1m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "PostgreSQL has queries running for more than 5 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/slow-queries"
+
+      # Database Size Growth
+      - alert: DatabaseSizeGrowth
+        expr: increase(pg_database_size_bytes[1h]) > 1073741824  # 1GB per hour
+        for: 0m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Rapid database growth detected"
+          description: "Database size increased by more than 1GB in the last hour."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/db-growth"
+
+  # =============================================================================
+  # Redis Cache Alerts
+  # =============================================================================
+  - name: redis.alerts
+    interval: 30s
+    rules:
+      # Redis Memory Usage
+      - alert: RedisMemoryHigh
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis memory usage is above 90% for more than 5 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/redis-memory"
+
+      # Redis Connection Issues
+      - alert: RedisConnectionsHigh
+        expr: redis_connected_clients > 100
+        for: 2m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "High number of Redis connections"
+          description: "Redis has more than 100 connected clients."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/redis-connections"
+
+      # Cache Hit Rate Low
+      - alert: CacheHitRateLow
+        expr: (redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)) * 100 < 80
+        for: 10m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "Redis cache hit rate is low"
+          description: "Redis cache hit rate is below 80% for more than 10 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/cache-hit-rate"
+
+  # =============================================================================
+  # Business Logic Alerts
+  # =============================================================================
+  - name: business.alerts
+    interval: 60s
+    rules:
+      # Failed Bookings
+      - alert: HighBookingFailureRate
+        expr: (sum(rate(booking_attempts_total{status="failed"}[5m])) / sum(rate(booking_attempts_total[5m]))) * 100 > 10
+        for: 3m
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "High booking failure rate"
+          description: "Booking failure rate is above 10% for more than 3 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/booking-failures"
+
+      # Payment Processing Issues
+      - alert: PaymentProcessingIssues
+        expr: sum(rate(payment_attempts_total{status="failed"}[5m])) > 5
+        for: 2m
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "Payment processing issues detected"
+          description: "More than 5 payment failures per second for more than 2 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/payment-issues"
+
+      # No Bookings Alert
+      - alert: NoBookingsReceived
+        expr: sum(rate(booking_attempts_total[30m])) == 0
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "No bookings received"
+          description: "No booking attempts received in the last 30 minutes during business hours."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/no-bookings"
+
+      # Revenue Drop
+      - alert: RevenueDrop
+        expr: (sum(rate(revenue_total[1h])) < sum(rate(revenue_total[1h] offset 24h)) * 0.7) and (hour() >= 9 and hour() <= 18)
+        for: 15m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Significant revenue drop detected"
+          description: "Revenue is 30% lower than the same time yesterday during business hours."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/revenue-drop"
+
+  # =============================================================================
+  # Security Alerts
+  # =============================================================================
+  - name: security.alerts
+    interval: 30s
+    rules:
+      # Multiple Failed Login Attempts
+      - alert: HighFailedLoginRate
+        expr: sum(rate(auth_login_attempts_total{status="failed"}[5m])) > 10
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High failed login rate"
+          description: "More than 10 failed login attempts per second for more than 2 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/failed-logins"
+
+      # Suspicious API Usage
+      - alert: SuspiciousAPIUsage
+        expr: sum(rate(http_requests_total{status="429"}[5m])) > 50
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High rate of rate-limited requests"
+          description: "More than 50 rate-limited requests per second, possible attack."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/rate-limiting"
+
+      # SSL Certificate Expiry
+      - alert: SSLCertificateExpiry
+        expr: probe_ssl_earliest_cert_expiry - time() < 604800  # 7 days
+        for: 0m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in less than 7 days."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/ssl-expiry"
+
+  # =============================================================================
+  # External Dependencies Alerts
+  # =============================================================================
+  - name: external.alerts
+    interval: 60s
+    rules:
+      # Stripe API Issues
+      - alert: StripeAPIIssues
+        expr: sum(rate(external_api_requests_total{service="stripe", status=~"5.."}[5m])) > 1
+        for: 3m
+        labels:
+          severity: critical
+          category: external
+        annotations:
+          summary: "Stripe API issues detected"
+          description: "Stripe API is returning errors for more than 3 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/stripe-issues"
+
+      # Email Service Issues
+      - alert: EmailServiceIssues
+        expr: sum(rate(external_api_requests_total{service="sendgrid", status=~"5.."}[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          category: external
+        annotations:
+          summary: "Email service issues detected"
+          description: "SendGrid API is returning errors for more than 5 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/email-issues"
+
+      # SMS Service Issues
+      - alert: SMSServiceIssues
+        expr: sum(rate(external_api_requests_total{service="twilio", status=~"5.."}[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          category: external
+        annotations:
+          summary: "SMS service issues detected"
+          description: "Twilio API is returning errors for more than 5 minutes."
+          runbook_url: "https://docs.bookedbarber.com/runbooks/sms-issues"

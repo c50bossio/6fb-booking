@@ -1,0 +1,249 @@
+# =============================================================================
+# BookedBarber V2 - Production Prometheus Configuration
+# =============================================================================
+# 📊 Comprehensive monitoring with custom metrics and alerting
+# 🔍 Multi-service discovery and health monitoring
+# ⚡ Performance optimized for high-throughput environments
+# =============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    cluster: 'bookedbarber-production'
+    replica: 'prometheus-1'
+
+# Rule files for alerting
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      scheme: http
+      timeout: 10s
+      api_version: v2
+
+# Scrape configurations
+scrape_configs:
+  # =============================================================================
+  # Prometheus Self-Monitoring
+  # =============================================================================
+  - job_name: 'prometheus'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+
+  # =============================================================================
+  # BookedBarber Backend API Monitoring
+  # =============================================================================
+  - job_name: 'bookedbarber-backend'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: 
+          - 'backend:8000'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'backend:8000'
+    metric_relabel_configs:
+      # Add custom labels
+      - source_labels: [__name__]
+        target_label: service
+        replacement: 'bookedbarber-backend'
+
+  # =============================================================================
+  # BookedBarber Frontend Monitoring
+  # =============================================================================
+  - job_name: 'bookedbarber-frontend'
+    scrape_interval: 15s
+    scrape_timeout: 5s
+    metrics_path: '/api/metrics'
+    static_configs:
+      - targets: 
+          - 'frontend:3000'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: service
+        replacement: 'bookedbarber-frontend'
+
+  # =============================================================================
+  # PostgreSQL Database Monitoring
+  # =============================================================================
+  - job_name: 'postgres-exporter'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    relabel_configs:
+      - target_label: service
+        replacement: 'postgresql'
+
+  # =============================================================================
+  # Redis Cache Monitoring
+  # =============================================================================
+  - job_name: 'redis-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    relabel_configs:
+      - target_label: service
+        replacement: 'redis'
+
+  # =============================================================================
+  # Nginx Reverse Proxy Monitoring
+  # =============================================================================
+  - job_name: 'nginx-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    relabel_configs:
+      - target_label: service
+        replacement: 'nginx'
+
+  # =============================================================================
+  # Node/Container Monitoring
+  # =============================================================================
+  - job_name: 'node-exporter'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['node-exporter:9100']
+    relabel_configs:
+      - target_label: service
+        replacement: 'system'
+
+  # =============================================================================
+  # cAdvisor Container Monitoring
+  # =============================================================================
+  - job_name: 'cadvisor'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['cadvisor:8080']
+    relabel_configs:
+      - target_label: service
+        replacement: 'containers'
+
+  # =============================================================================
+  # Custom Application Metrics
+  # =============================================================================
+  - job_name: 'custom-metrics'
+    scrape_interval: 10s
+    honor_labels: true
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics/custom'
+    params:
+      format: ['prometheus']
+
+  # =============================================================================
+  # Business Metrics (Revenue, Bookings, etc.)
+  # =============================================================================
+  - job_name: 'business-metrics'
+    scrape_interval: 60s  # Less frequent for business metrics
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics/business'
+    relabel_configs:
+      - target_label: metric_type
+        replacement: 'business'
+
+  # =============================================================================
+  # External Service Health Monitoring
+  # =============================================================================
+  - job_name: 'external-services'
+    scrape_interval: 60s
+    scrape_timeout: 30s
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics/external'
+    relabel_configs:
+      - target_label: metric_type
+        replacement: 'external'
+
+  # =============================================================================
+  # Kubernetes Monitoring (if deployed on K8s)
+  # =============================================================================
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+      - role: endpoints
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: "https://prometheus-remote-write.bookedbarber.com/api/v1/write"
+    remote_timeout: 30s
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500
+    write_relabel_configs:
+      # Only send high-value metrics to remote storage
+      - source_labels: [__name__]
+        regex: (http_requests_total|http_request_duration_seconds|database_connections|redis_connected_clients|business_.*|error_rate)
+        action: keep
+
+# Retention policy
+storage:
+  tsdb:
+    retention.time: 15d
+    retention.size: 50GB
+    wal-compression: true

@@ -1,0 +1,535 @@
+# Chaos Engineering Automation and Scheduling System
+# Handles automated experiment execution, approval workflows, and scheduling
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaos-scheduler-config
+  namespace: chaos-engineering
+  labels:
+    component: automation
+    sre-enabled: "true"
+data:
+  scheduler-config.yml: |
+    # Chaos Experiment Scheduler Configuration
+    scheduler:
+      enabled: true
+      timezone: "America/New_York"
+      check_interval: "60s"
+      max_concurrent_experiments: 1
+      
+    # Automated Scheduling Rules
+    scheduling_rules:
+      low_risk_experiments:
+        auto_schedule: true
+        preferred_time_windows:
+          - days: ["tuesday", "wednesday", "thursday"]
+            start_time: "02:00"
+            end_time: "06:00"
+          - days: ["saturday", "sunday"] 
+            start_time: "01:00"
+            end_time: "05:00"
+        avoid_dates:
+          - "2024-11-28"  # Thanksgiving
+          - "2024-12-25"  # Christmas
+          - "2024-01-01"  # New Year
+          
+      medium_risk_experiments:
+        auto_schedule: false
+        manual_approval_required: true
+        preferred_time_windows:
+          - days: ["sunday"]
+            start_time: "02:00"
+            end_time: "04:00"
+        advance_notice_hours: 24
+        
+      high_risk_experiments:
+        auto_schedule: false
+        manual_approval_required: true
+        executive_approval_required: true
+        preferred_time_windows:
+          - days: ["sunday"]
+            start_time: "01:00"
+            end_time: "02:00"
+        advance_notice_hours: 72
+        
+    # Pre-execution Checks
+    pre_execution_checks:
+      system_health:
+        enabled: true
+        minimum_uptime_percentage: 99.95
+        maximum_error_rate: 0.001
+        maximum_incident_count: 0
+        
+      business_metrics:
+        enabled: true
+        minimum_booking_rate: true  # Based on historical average
+        maximum_payment_failure_rate: 0.02
+        
+      external_dependencies:
+        enabled: true
+        stripe_status: "operational"
+        sendgrid_status: "operational"
+        twilio_status: "operational"
+        
+      resource_availability:
+        enabled: true
+        minimum_cpu_availability: 50
+        minimum_memory_availability: 40
+        
+    # Post-execution Actions  
+    post_execution_actions:
+      generate_report: true
+      send_notifications: true
+      update_metrics: true
+      schedule_next_experiment: false  # Manual review required
+      
+  approval-automation.yml: |
+    # Automated Approval System Configuration
+    approval_system:
+      enabled: true
+      approval_timeout: "2h"
+      escalation_enabled: true
+      
+    # Approval Matrix
+    approval_matrix:
+      low_risk:
+        auto_approve: true
+        conditions:
+          - current_incidents == 0
+          - system_health_score >= 95
+          - business_hours == false
+          - no_conflicting_experiments == true
+          
+      medium_risk:
+        required_approvals:
+          - role: "sre_engineer"
+            count: 1
+            timeout: "1h"
+        conditions:
+          - current_incidents == 0
+          - system_health_score >= 98
+          - business_hours == false
+          - advance_notice >= 24h
+          
+      high_risk:
+        required_approvals:
+          - role: "sre_lead"
+            count: 1
+            timeout: "2h"
+          - role: "engineering_manager"  
+            count: 1
+            timeout: "4h"
+          - role: "executive"
+            count: 1
+            timeout: "24h"
+        conditions:
+          - current_incidents == 0
+          - system_health_score >= 99
+          - business_hours == false
+          - advance_notice >= 72h
+          - business_continuity_review == true
+          
+    # Notification Templates
+    notification_templates:
+      approval_request:
+        subject: "[CHAOS] Approval Required: {{ .experiment_name }}"
+        body: |
+          Chaos Experiment Approval Required
+          
+          Experiment: {{ .experiment_name }}
+          Category: {{ .experiment_category }} 
+          Risk Level: {{ .risk_level }}
+          Scheduled Time: {{ .scheduled_time }}
+          Duration: {{ .duration }}
+          
+          Business Impact: {{ .business_impact }}
+          Pre-checks Status: {{ .pre_checks_status }}
+          
+          System Health Score: {{ .system_health_score }}%
+          Current Incidents: {{ .current_incidents }}
+          
+          Approve: {{ .approval_url }}
+          Reject: {{ .rejection_url }}
+          
+      approval_granted:
+        subject: "[CHAOS] Experiment Approved: {{ .experiment_name }}"
+        body: |
+          Chaos Experiment Approved
+          
+          Experiment: {{ .experiment_name }}
+          Approved By: {{ .approved_by }}
+          Scheduled Time: {{ .scheduled_time }}
+          
+          Monitoring Dashboard: {{ .dashboard_url }}
+          
+      approval_denied:
+        subject: "[CHAOS] Experiment Rejected: {{ .experiment_name }}"
+        body: |
+          Chaos Experiment Rejected
+          
+          Experiment: {{ .experiment_name }}
+          Rejected By: {{ .rejected_by }}
+          Reason: {{ .rejection_reason }}
+          
+          Next Available Slot: {{ .next_available_slot }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaos-scheduler
+  namespace: chaos-engineering
+  labels:
+    app: chaos-scheduler
+    component: automation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chaos-scheduler
+  template:
+    metadata:
+      labels:
+        app: chaos-scheduler
+        component: automation
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: chaos-controller-manager
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: scheduler
+        image: bookedbarber/chaos-scheduler:v1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: metrics
+        - containerPort: 9090
+          name: api
+        env:
+        - name: PROMETHEUS_URL
+          value: "http://sre-prometheus.sre-monitoring.svc.cluster.local:9090"
+        - name: CHAOS_DASHBOARD_URL
+          value: "http://chaos-dashboard.chaos-engineering.svc.cluster.local:2333"
+        - name: SAFETY_CONTROLLER_URL
+          value: "http://chaos-safety-controller.chaos-engineering.svc.cluster.local:9090"
+        - name: SCHEDULER_CONFIG_PATH
+          value: "/etc/scheduler/scheduler-config.yml"
+        - name: APPROVAL_CONFIG_PATH
+          value: "/etc/scheduler/approval-automation.yml"
+        - name: SENDGRID_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sendgrid-secrets
+              key: api-key
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: slack-secrets
+              key: webhook-url
+        - name: DATABASE_URL
+          value: "sqlite:///data/scheduler.db"
+        command:
+        - /app/chaos-scheduler
+        args:
+        - --metrics-addr=0.0.0.0:8080
+        - --api-addr=0.0.0.0:9090
+        - --config-reload-interval=60s
+        - --scheduling-check-interval=60s
+        - --approval-check-interval=300s
+        - --log-level=info
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9090
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 9090
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: scheduler-config
+          mountPath: /etc/scheduler
+          readOnly: true
+        - name: scheduler-data
+          mountPath: /data
+        - name: tmp-volume
+          mountPath: /tmp
+      volumes:
+      - name: scheduler-config
+        configMap:
+          name: chaos-scheduler-config
+      - name: scheduler-data
+        persistentVolumeClaim:
+          claimName: chaos-scheduler-storage
+      - name: tmp-volume
+        emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chaos-scheduler-storage
+  namespace: chaos-engineering
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: gp3-encrypted
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaos-scheduler
+  namespace: chaos-engineering
+  labels:
+    app: chaos-scheduler
+    component: automation
+spec:
+  selector:
+    app: chaos-scheduler
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: metrics
+  - port: 9090
+    targetPort: 9090
+    name: api
+  type: ClusterIP
+---
+# Chaos Experiment Approval CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: chaos-approval-processor
+  namespace: chaos-engineering
+  labels:
+    component: automation
+spec:
+  schedule: "*/5 * * * *"  # Every 5 minutes
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: chaos-controller-manager
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            fsGroup: 1001
+          containers:
+          - name: approval-processor
+            image: bookedbarber/chaos-approval-processor:v1.0.0
+            imagePullPolicy: Always
+            env:
+            - name: CHAOS_SCHEDULER_URL
+              value: "http://chaos-scheduler.chaos-engineering.svc.cluster.local:9090"
+            - name: SAFETY_CONTROLLER_URL
+              value: "http://chaos-safety-controller.chaos-engineering.svc.cluster.local:9090"
+            - name: PROMETHEUS_URL
+              value: "http://sre-prometheus.sre-monitoring.svc.cluster.local:9090"
+            - name: SENDGRID_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sendgrid-secrets
+                  key: api-key
+            command:
+            - /app/process-approvals
+            args:
+            - --check-pending-approvals
+            - --process-timeouts
+            - --send-reminders
+            - --update-status
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 200m
+                memory: 512Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+          volumes:
+          - name: tmp-volume
+            emptyDir: {}
+---
+# Pre-execution Health Check CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: chaos-pre-execution-checks
+  namespace: chaos-engineering
+  labels:
+    component: automation
+spec:
+  schedule: "*/10 * * * *"  # Every 10 minutes
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: chaos-controller-manager
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            fsGroup: 1001
+          containers:
+          - name: pre-execution-checker
+            image: bookedbarber/chaos-pre-execution-checker:v1.0.0
+            imagePullPolicy: Always
+            env:
+            - name: PROMETHEUS_URL
+              value: "http://sre-prometheus.sre-monitoring.svc.cluster.local:9090"
+            - name: CHAOS_SCHEDULER_URL
+              value: "http://chaos-scheduler.chaos-engineering.svc.cluster.local:9090"
+            - name: SAFETY_CONTROLLER_URL
+              value: "http://chaos-safety-controller.chaos-engineering.svc.cluster.local:9090"
+            - name: STRIPE_STATUS_URL
+              value: "https://status.stripe.com/api/v2/status.json"
+            - name: SENDGRID_STATUS_URL
+              value: "https://status.sendgrid.com/api/v2/status.json"
+            command:
+            - /app/pre-execution-check
+            args:
+            - --check-system-health
+            - --check-business-metrics
+            - --check-external-dependencies
+            - --check-resource-availability
+            - --validate-scheduling-constraints
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 200m
+                memory: 512Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+          volumes:
+          - name: tmp-volume
+            emptyDir: {}
+---
+# Chaos Experiment Cleanup Job
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: chaos-experiment-cleanup
+  namespace: chaos-engineering
+  labels:
+    component: automation
+spec:
+  schedule: "0 1 * * *"  # Daily at 1 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: chaos-controller-manager
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            fsGroup: 1001
+          containers:
+          - name: cleanup
+            image: bookedbarber/chaos-cleanup:v1.0.0
+            imagePullPolicy: Always
+            env:
+            - name: KUBERNETES_NAMESPACE
+              value: "bookedbarber-v2"
+            - name: CHAOS_NAMESPACE
+              value: "chaos-engineering"
+            - name: RETENTION_DAYS
+              value: "30"
+            command:
+            - /app/cleanup
+            args:
+            - --cleanup-completed-experiments
+            - --cleanup-old-logs
+            - --cleanup-temporary-resources
+            - --generate-cleanup-report
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 200m
+                memory: 512Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+          volumes:
+          - name: tmp-volume
+            emptyDir: {}
+---
+# RBAC for Automation Components
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: chaos-engineering
+  name: chaos-automation
+rules:
+- apiGroups: ["chaos-mesh.org"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: chaos-automation
+  namespace: chaos-engineering
+subjects:
+- kind: ServiceAccount
+  name: chaos-controller-manager
+  namespace: chaos-engineering
+roleRef:
+  kind: Role
+  name: chaos-automation
+  apiGroup: rbac.authorization.k8s.io

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { checkRouteAccess, getRoleDisplayName } from '@/lib/access-control'
@@ -26,10 +26,9 @@ interface AccessControlProps {
 }
 
 /**
- * Comprehensive access control wrapper component
- * Provides role-based access control with user-friendly error messages
+ * Internal access control component that uses useSearchParams
  */
-export default function AccessControl({
+function AccessControlContent({
   children,
   requiredRoles = [],
   fallback,
@@ -156,6 +155,18 @@ export default function AccessControl({
 }
 
 /**
+ * Comprehensive access control wrapper component with Suspense boundary
+ * Provides role-based access control with user-friendly error messages
+ */
+export default function AccessControl(props: AccessControlProps) {
+  return (
+    <Suspense fallback={<PageLoading />}>
+      <AccessControlContent {...props} />
+    </Suspense>
+  )
+}
+
+/**
  * Access denied page component
  */
 function AccessDeniedPage({ 
@@ -166,11 +177,19 @@ function AccessDeniedPage({
   userRole?: string 
 }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  
+  // Make search params access safe for SSR
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null)
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setSearchParams(new URLSearchParams(window.location.search))
+    }
+  }, [])
 
-  const error = searchParams.get('error')
-  const attemptedPath = searchParams.get('attempted_path')
-  const requiredRole = searchParams.get('required_role')
+  const error = searchParams?.get('error')
+  const attemptedPath = searchParams?.get('attempted_path')
+  const requiredRole = searchParams?.get('required_role')
 
   const getErrorMessage = () => {
     if (error === 'authentication_required') {
@@ -281,17 +300,19 @@ function AccessDeniedPage({
  * Component to show access control notifications
  */
 function AccessControlNotifications() {
-  const searchParams = useSearchParams()
   const [showNotification, setShowNotification] = useState(false)
 
   useEffect(() => {
-    const error = searchParams.get('error')
-    if (error === 'access_denied') {
-      setShowNotification(true)
-      // Auto-hide after 5 seconds
-      setTimeout(() => setShowNotification(false), 5000)
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search)
+      const error = searchParams.get('error')
+      if (error === 'access_denied') {
+        setShowNotification(true)
+        // Auto-hide after 5 seconds
+        setTimeout(() => setShowNotification(false), 5000)
+      }
     }
-  }, [searchParams])
+  }, [])
 
   if (!showNotification) return null
 
