@@ -111,7 +111,7 @@ const nextConfig = {
 
   // Enhanced performance optimizations
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false, // Disabled for Vercel deployment compatibility
     webpackBuildWorker: true,
     // Better handling of server components and streaming
     serverComponentsExternalPackages: ['@stripe/stripe-js'],
@@ -121,6 +121,8 @@ const nextConfig = {
     isrFlushToDisk: false,
     // Better static generation
     staticWorkerRequestDeduping: true,
+    // Skip failing during build for problematic pages
+    staticPageGenerationTimeout: 300,
     // Enhanced package optimization
     optimizePackageImports: [
       '@heroicons/react',
