@@ -155,39 +155,53 @@ const nextConfig = {
 
   // Webpack optimizations
   webpack: (config, { isServer, dev }) => {
-    // ENHANCED SSR fix - comprehensive global replacement for Vercel
+    const webpack = require('webpack');
+    const path = require('path');
+    
+    // Server-side polyfills for Vercel deployment
     if (isServer) {
       config.plugins = config.plugins || [];
       
-      // Enhanced DefinePlugin with comprehensive global mapping
-      config.plugins.unshift(
-        new (require('webpack').DefinePlugin)({
+      // 1. Load server globals immediately
+      require('./lib/server-globals.js');
+      
+      // 2. DefinePlugin for typeof checks
+      config.plugins.push(
+        new webpack.DefinePlugin({
           'typeof self': '"object"',
           'typeof window': '"object"',
           'typeof document': '"object"',
           'typeof navigator': '"object"',
-          'self': 'global',
-          'window': 'global',
-          'document': 'global.document',
-          'navigator': 'global.navigator',
-          'globalThis': 'global',
-          // Vercel-specific Lambda compatibility
-          'process.browser': 'false',
-          'process.client': 'false'
+          'typeof globalThis': '"object"'
         })
       );
-
-      // Vercel-specific: inject polyfills into ALL server chunks
-      if (process.env.VERCEL === '1') {
-        const ProvidePlugin = require('webpack').ProvidePlugin;
-        config.plugins.push(
-          new ProvidePlugin({
-            'self': ['global'],
-            'window': ['global'],
-            'globalThis': ['global']
-          })
-        );
-      }
+      
+      // 3. Modify entry to include polyfills
+      const originalEntry = config.entry;
+      config.entry = async () => {
+        const entries = await originalEntry();
+        const serverGlobalsPath = path.resolve(__dirname, 'lib/server-globals.js');
+        
+        // Add polyfills to main entry
+        if (entries.main && Array.isArray(entries.main)) {
+          entries.main.unshift(serverGlobalsPath);
+        }
+        
+        // Add to all entries
+        Object.keys(entries).forEach(key => {
+          if (Array.isArray(entries[key]) && !entries[key].includes(serverGlobalsPath)) {
+            entries[key].unshift(serverGlobalsPath);
+          }
+        });
+        
+        return entries;
+      };
+      
+      // 4. Alias for consistent polyfill access
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'server-globals': path.resolve(__dirname, 'lib/server-globals.js')
+      };
     }
     
     // SSR fix for browser globals and problematic dependencies
@@ -219,39 +233,52 @@ const nextConfig = {
         require(rootPolyfillPath);
       }
       
-      // Enhanced polyfill injection with Vercel-specific optimizations
+      // 5. Enhanced entry point modification for vendor chunks
       const originalEntry = config.entry;
       config.entry = async () => {
         const entries = await originalEntry();
         
-        // Choose appropriate polyfills based on environment
-        const polyfillPath = process.env.VERCEL === '1' 
-          ? path.resolve(__dirname, 'lib/vercel-polyfills.js')
-          : globalPolyfillPath;
+        const polyfillPath = path.resolve(__dirname, 'lib/vercel-polyfills.js');
         
-        // Prepend polyfills to entries (excluding edge runtime routes)
-        Object.keys(entries).forEach(key => {
-          // Skip edge runtime routes to avoid global scope conflicts
-          if (key.includes('edge-runtime') || key.includes('/api/')) {
-            return;
-          }
-          
-          const entry = entries[key];
-          if (Array.isArray(entry)) {
-            entries[key] = [nodeStartupPolyfillPath, polyfillPath, ...entry];
-          } else if (typeof entry === 'string') {
-            entries[key] = [nodeStartupPolyfillPath, polyfillPath, entry];
-          } else if (entry && typeof entry === 'object') {
-            // Handle complex entry objects
-            if (entry.import) {
+        // Force polyfills into EVERY entry including vendor chunks
+        if (typeof entries === 'function') {
+          const originalEntryFn = entries;
+          return async () => {
+            const result = await originalEntryFn();
+            // Inject into all entries
+            Object.keys(result).forEach(key => {
+              const entry = result[key];
+              if (Array.isArray(entry)) {
+                result[key] = [polyfillPath, ...entry];
+              } else if (typeof entry === 'string') {
+                result[key] = [polyfillPath, entry];
+              } else if (entry && entry.import) {
+                if (Array.isArray(entry.import)) {
+                  entry.import = [polyfillPath, ...entry.import];
+                } else {
+                  entry.import = [polyfillPath, entry.import];
+                }
+              }
+            });
+            return result;
+          };
+        } else {
+          // Direct entries object
+          Object.keys(entries).forEach(key => {
+            const entry = entries[key];
+            if (Array.isArray(entry)) {
+              entries[key] = [polyfillPath, ...entry];
+            } else if (typeof entry === 'string') {
+              entries[key] = [polyfillPath, entry];
+            } else if (entry && entry.import) {
               if (Array.isArray(entry.import)) {
-                entry.import = [nodeStartupPolyfillPath, polyfillPath, ...entry.import];
+                entry.import = [polyfillPath, ...entry.import];
               } else {
-                entry.import = [nodeStartupPolyfillPath, polyfillPath, entry.import];
+                entry.import = [polyfillPath, entry.import];
               }
             }
-          }
-        });
+          });
+        }
         
         return entries;
       };
@@ -483,12 +510,18 @@ const nextConfig = {
             },
             // Safe vendor libraries
             vendor: {
-              test: /[\\/]node_modules[\\/]/,
+              test: function(module) {
+                // Include node_modules but exclude problematic libraries
+                if (!module.resource) return false;
+                
+                const isNodeModule = /[\\/]node_modules[\\/]/.test(module.resource);
+                const isProblematic = /[\\/]node_modules[\\/](chart\.js|react-chartjs-2|recharts|qrcode|jspdf|canvas)[\\/]/.test(module.resource);
+                
+                return isNodeModule && !isProblematic;
+              },
               name: 'vendors',
               chunks: 'all',
               priority: 10,
-              // Exclude problematic libraries from main vendors bundle
-              exclude: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2|recharts|qrcode|jspdf|canvas)[\\/]/,
             },
           },
         },

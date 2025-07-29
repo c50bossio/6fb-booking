@@ -46,8 +46,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     const loadUser = async () => {
       const routeIsProtected = isProtectedRoute(pathname)
       
-      // CRITICAL: Completely skip all authentication logic for public routes
-      if (!routeIsProtected) {
+      // CRITICAL: Completely skip all authentication logic for public routes AND login page
+      if (!routeIsProtected || pathname === '/login') {
         setLoading(false)
         setUser(null)
         setError(null)
@@ -107,11 +107,11 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
 
     // Only run if mounted to prevent hydration issues
-    // CRITICAL: Only run auth logic for protected routes
-    if (mounted && !isPublicRoute) {
+    // CRITICAL: Only run auth logic for protected routes (excluding login)
+    if (mounted && !isPublicRoute && pathname !== '/login') {
       loadUser()
-    } else if (mounted && isPublicRoute) {
-      // For public routes, immediately set clean state
+    } else if (mounted && (isPublicRoute || pathname === '/login')) {
+      // For public routes and login page, immediately set clean state
       setLoading(false)
       setUser(null)
       setError(null)
