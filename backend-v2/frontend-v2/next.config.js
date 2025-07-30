@@ -66,7 +66,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
-              "connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 http://localhost:* http://127.0.0.1:* http://backend:8000 http://bookedbarber-backend:8000 https://api.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://connect.facebook.net wss: ws:",
+              "connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 http://localhost:* http://127.0.0.1:* http://backend:8000 http://bookedbarber-backend:8000 https://api.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://connect.facebook.net https://www.facebook.com wss: ws: blob:",
               "frame-src 'self' https://js.stripe.com",
               "object-src 'none'",
               "base-uri 'self'",

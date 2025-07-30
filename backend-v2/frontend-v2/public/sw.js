@@ -35,31 +35,19 @@ const APP_SHELL = [
 ];
 
 // Calendar-specific routes for offline access - Enhanced for barber workflows
+// NOTE: API routes removed to prevent CSP violations - only UI routes cached
 const CALENDAR_ROUTES = [
   '/calendar',
   '/dashboard',
   '/clients',
   '/my-schedule',
   '/analytics',
-  '/api/v2/appointments',
-  '/api/v2/availability',
-  '/api/v2/services',
-  '/api/v2/barbers',
-  '/api/v2/clients',
 ];
 
-// API endpoints to cache for offline functionality - Enhanced patterns
+// API endpoints to cache for offline functionality - DISABLED to prevent CSP violations
+// NOTE: All API caching disabled to avoid CSP issues in Docker environment
 const CACHE_API_PATTERNS = [
-  /\/api\/v2\/appointments/,
-  /\/api\/v2\/availability/,
-  /\/api\/v2\/services/,
-  /\/api\/v2\/barbers/,
-  /\/api\/v2\/clients/,
-  /\/api\/v2\/auth/,
-  /\/api\/v2\/analytics/,
-  /\/api\/v2\/revenue/,
-  /\/api\/v2\/payments/,
-  /\/api\/v2\/notifications/,
+  // API caching disabled - service worker now skips all /api/ requests
 ];
 
 // Background sync tags - Enhanced for barber workflow
@@ -238,10 +226,21 @@ class PWAServiceWorker {
     const { request } = event;
     const url = new URL(request.url);
     
-    // Skip service worker for critical endpoints to avoid CORS/security issues
-    const criticalEndpoints = ['/auth/', '/api/v2/auth/', '/payments/', '/billing/', '/webhooks/', '/login'];
-    if (criticalEndpoints.some(endpoint => url.pathname.includes(endpoint))) {
-      // Don't intercept critical requests - let them go directly to server
+    // Skip external analytics and tracking domains to avoid CSP violations
+    const externalDomains = [
+      'www.googletagmanager.com',
+      'www.google-analytics.com', 
+      'connect.facebook.net',
+      'js.stripe.com'
+    ];
+    if (externalDomains.some(domain => url.hostname.includes(domain))) {
+      // Let external requests go directly without service worker interference
+      return;
+    }
+    
+    // Skip service worker for ALL API endpoints to avoid CSP/CORS issues
+    if (url.pathname.startsWith('/api/') || url.pathname.includes('/auth/') || url.pathname.includes('/login')) {
+      // Don't intercept API requests - let them go directly to server
       return;
     }
     
@@ -274,10 +273,11 @@ class PWAServiceWorker {
         return await this.networkFirstWithOffline(request, CACHE_NAMES.CALENDAR);
       }
       
-      // 3. API Calls - Network First with IndexedDB fallback
-      if (CACHE_API_PATTERNS.some(pattern => pattern.test(url.pathname))) {
-        return await this.apiNetworkFirst(request);
-      }
+      // 3. API Calls - DISABLED to prevent CSP violations
+      // API caching completely disabled - all API requests go directly to network
+      // if (CACHE_API_PATTERNS.some(pattern => pattern.test(url.pathname))) {
+      //   return await this.apiNetworkFirst(request);
+      // }
       
       // 4. Images - Cache First with network fallback
       if (request.destination === 'image') {

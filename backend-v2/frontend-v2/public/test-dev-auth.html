@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development Auth Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .danger { background: #dc3545; }
+        .danger:hover { background: #c82333; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Development Authentication Test</h1>
+    <p>This page tests the development authentication bypass functionality.</p>
+
+    <div id="status"></div>
+
+    <h2>Controls</h2>
+    <button onclick="initDevAuth()">Initialize Dev Auth</button>
+    <button onclick="clearAuth()" class="danger">Clear Auth</button>
+    <button onclick="testAPI()">Test API Access</button>
+    <button onclick="refreshStatus()">Refresh Status</button>
+
+    <h2>Current Status</h2>
+    <pre id="auth-status">Loading...</pre>
+
+    <h2>API Test Results</h2>
+    <div id="api-results"></div>
+
+    <h2>Instructions</h2>
+    <div class="info">
+        <p><strong>Development Bypass Token:</strong> <code>dev-token-bypass</code></p>
+        <p>This token automatically authenticates as <code>dev@bookedbarber.com</code> in development mode.</p>
+        <p>Use this to test API endpoints without going through the full login flow.</p>
+    </div>
+
+    <script>
+        const DEV_BYPASS_TOKEN = 'dev-token-bypass';
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+        }
+
+        function initDevAuth() {
+            localStorage.setItem('access_token', DEV_BYPASS_TOKEN);
+            localStorage.setItem('token', DEV_BYPASS_TOKEN);
+            updateStatus('✅ Development auth bypass initialized', 'success');
+            refreshStatus();
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token');
+            localStorage.removeItem('refresh_token');
+            updateStatus('🧹 Authentication cleared', 'info');
+            refreshStatus();
+        }
+
+        function refreshStatus() {
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            const refreshToken = localStorage.getItem('refresh_token');
+            
+            const status = {
+                environment: window.location.hostname === 'localhost' ? 'development' : 'production',
+                hasAccessToken: !!token,
+                hasRefreshToken: !!refreshToken,
+                tokenType: token === DEV_BYPASS_TOKEN ? 'dev-bypass' : (token ? 'regular' : 'none'),
+                tokenPreview: token ? `${token.substring(0, 20)}...` : null
+            };
+
+            document.getElementById('auth-status').textContent = JSON.stringify(status, null, 2);
+        }
+
+        async function testAPI() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<p>Testing API endpoints...</p>';
+
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            
+            if (!token) {
+                resultsDiv.innerHTML = '<div class="error">❌ No auth token found. Click "Initialize Dev Auth" first.</div>';
+                return;
+            }
+
+            const tests = [
+                {
+                    name: 'User Profile',
+                    url: '/api/v2/auth/me',
+                    expected: 'User profile data'
+                },
+                {
+                    name: 'Recent Searches', 
+                    url: '/api/v2/search/recent',
+                    expected: 'Search results array'
+                },
+                {
+                    name: 'Global Search',
+                    url: '/api/v2/search/?q=test',
+                    expected: 'Search response object'
+                }
+            ];
+
+            let results = '';
+
+            for (const test of tests) {
+                try {
+                    const response = await fetch(`http://localhost:8000${test.url}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        results += `<div class="success">✅ <strong>${test.name}</strong>: ${response.status} OK</div>`;
+                        results += `<pre>${JSON.stringify(data, null, 2).substring(0, 200)}...</pre>`;
+                    } else {
+                        results += `<div class="error">❌ <strong>${test.name}</strong>: ${response.status} ${response.statusText}</div>`;
+                    }
+                } catch (error) {
+                    results += `<div class="error">❌ <strong>${test.name}</strong>: ${error.message}</div>`;
+                }
+            }
+
+            resultsDiv.innerHTML = results;
+        }
+
+        // Initialize on page load
+        refreshStatus();
+
+        // Auto-init dev auth if no token exists and we're on localhost
+        if (window.location.hostname === 'localhost') {
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            if (!token) {
+                setTimeout(() => {
+                    initDevAuth();
+                    updateStatus('🔧 Auto-initialized development auth bypass', 'success');
+                }, 500);
+            }
+        }
+    </script>
+</body>
+</html>

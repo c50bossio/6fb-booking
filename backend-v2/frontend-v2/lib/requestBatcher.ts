@@ -1,6 +1,7 @@
 'use client'
 
 import { APIPerformanceMonitor } from './apiUtils'
+import { safeLocalStorage } from './ssr-safe-utils'
 
 // Batch strategy types
 export type BatchStrategy = 'time' | 'count' | 'hybrid'
@@ -322,7 +323,7 @@ export class RequestBatcher {
   // Make the actual HTTP request
   private async makeRequest(endpoint: string, options: RequestInit): Promise<any> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const token = safeLocalStorage.getItem('access_token') || safeLocalStorage.getItem('token')
     
     const config: RequestInit = {
       ...options,

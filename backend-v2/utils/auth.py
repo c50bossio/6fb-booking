@@ -81,13 +81,26 @@ async def get_current_user(
             dev_user = User(
                 email="dev@bookedbarber.com",
                 name="Dev User",
-                role="barber",
+                role="admin",
+                unified_role="super_admin",
                 hashed_password=get_password_hash("dev"),
                 is_active=True
             )
             db.add(dev_user)
             db.commit()
             db.refresh(dev_user)
+        else:
+            # Update existing dev user to ensure admin role and unified role
+            needs_update = False
+            if dev_user.role != "admin":
+                dev_user.role = "admin"
+                needs_update = True
+            if dev_user.unified_role != "super_admin":
+                dev_user.unified_role = "super_admin"
+                needs_update = True
+            if needs_update:
+                db.commit()
+                db.refresh(dev_user)
         return dev_user
     
     # Check if token is blacklisted first
@@ -175,7 +188,8 @@ async def get_current_user_optional(
             dev_user = User(
                 email="dev@bookedbarber.com",
                 name="Dev User",
-                role="barber",
+                role="admin",
+                unified_role="super_admin",
                 hashed_password=get_password_hash("dev"),
                 is_active=True
             )
