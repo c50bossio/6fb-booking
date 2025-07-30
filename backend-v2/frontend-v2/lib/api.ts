@@ -1279,6 +1279,12 @@ export async function updateOnboardingStatus(onboardingData: {
   })
 }
 
+export async function resetOnboardingStatus(): Promise<User> {
+  return fetchAPI('/api/v2/users/onboarding/reset', {
+    method: 'PUT',
+  })
+}
+
 export async function updateUserRole(userId: number, role: string): Promise<User> {
   return fetchAPI(`/api/v2/users/${userId}/role`, {
     method: 'PUT',

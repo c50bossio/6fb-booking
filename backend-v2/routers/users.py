@@ -173,3 +173,32 @@ def update_user_role(
     db.refresh(user)
     
     return user
+
+@router.put("/onboarding/reset", response_model=schemas.UserResponse)
+def reset_onboarding_status(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Reset user's onboarding status to start fresh"""
+    # Reset onboarding fields to initial state
+    current_user.onboarding_completed = False
+    current_user.is_new_user = True
+    
+    # Reset onboarding status JSON to initial state
+    current_user.onboarding_status = {
+        "completed_steps": [],
+        "current_step": 0,
+        "skipped": False
+    }
+    
+    try:
+        db.commit()
+        db.refresh(current_user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to reset onboarding status: {str(e)}"
+        )
+    
+    return current_user

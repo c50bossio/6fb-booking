@@ -33,6 +33,12 @@ interface SettingCard {
 const settingsCards: SettingCard[] = [
   // Account & Profile
   {
+    title: 'Setup & Onboarding',
+    description: 'Manage your account setup process and restart the welcome wizard',
+    href: '/settings/onboarding',
+    icon: '🚀'
+  },
+  {
     title: 'Profile',
     description: 'Manage your personal information, password, and timezone settings',
     href: '/settings/profile',
