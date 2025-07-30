@@ -117,3 +117,7 @@ class RateLimiter:
             # Remove empty keys
             for key in keys_to_remove:
                 del self.requests[key]
+
+
+# Global rate limiter instance
+rate_limiter = RateLimiter()

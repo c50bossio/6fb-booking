@@ -1998,6 +1998,159 @@ class MarketingUsage(Base):
     )
 
 
+# A/B Testing Models
+
+class ABTest(Base):
+    """A/B Test configuration and metadata"""
+    __tablename__ = "ab_tests"
+    
+    id = Column(String, primary_key=True)  # UUID
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Test configuration
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    target_metric = Column(String, nullable=False)  # 'conversion_rate', 'revenue', 'click_through_rate'
+    traffic_split = Column(Float, default=0.5)
+    min_sample_size = Column(Integer, default=100)
+    max_duration_days = Column(Integer, default=30)
+    confidence_level = Column(Float, default=0.95)
+    minimum_effect_size = Column(Float, default=0.05)
+    six_figure_alignment = Column(Text, nullable=True)  # How test aligns with Six Figure Barber methodology
+    
+    # Test status
+    status = Column(String, default="draft")  # draft, active, paused, completed, archived
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow)
+    started_at = Column(DateTime, nullable=True)
+    ends_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    
+    # Relationships
+    owner = relationship("User", backref="ab_tests")
+    variants = relationship("ABTestVariant", back_populates="test", cascade="all, delete-orphan")
+    events = relationship("ABTestEvent", back_populates="test", cascade="all, delete-orphan")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_ab_test_user_status', 'user_id', 'status'),
+        Index('idx_ab_test_status_dates', 'status', 'created_at'),
+    )
+
+
+class ABTestVariant(Base):
+    """A/B Test variant configuration"""
+    __tablename__ = "ab_test_variants"
+    
+    id = Column(String, primary_key=True)  # UUID
+    test_id = Column(String, ForeignKey("ab_tests.id"), nullable=False)
+    
+    # Variant configuration
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    type = Column(String, nullable=False)  # 'control', 'treatment'
+    config = Column(JSON, default=dict)  # Variant-specific configuration
+    weight = Column(Float, default=0.5)  # Traffic allocation weight
+    is_control = Column(Boolean, default=False)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    
+    # Relationships
+    test = relationship("ABTest", back_populates="variants")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_variant_test_type', 'test_id', 'type'),
+    )
+
+
+class ABTestEvent(Base):
+    """A/B Test event tracking"""
+    __tablename__ = "ab_test_events"
+    
+    id = Column(String, primary_key=True)  # UUID
+    test_id = Column(String, ForeignKey("ab_tests.id"), nullable=False)
+    
+    # Event data
+    user_identifier = Column(String, nullable=False)  # Can be user_id, session_id, etc.
+    variant = Column(String, nullable=False)  # 'control', 'treatment'
+    event_type = Column(String, nullable=False)  # 'view', 'click', 'conversion', 'revenue'
+    value = Column(Float, default=0.0)  # Optional numeric value (e.g., revenue amount)
+    event_metadata = Column(JSON, default=dict)  # Additional event context
+    
+    # Timestamps
+    timestamp = Column(DateTime, default=utcnow, index=True)
+    
+    # Relationships
+    test = relationship("ABTest", back_populates="events")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_ab_event_test_variant', 'test_id', 'variant'),
+        Index('idx_ab_event_user_test', 'user_identifier', 'test_id'),
+        Index('idx_ab_event_timestamp', 'timestamp'),
+        Index('idx_ab_event_type_test', 'event_type', 'test_id'),
+    )
+
+
+class ABConversionEvent(Base):
+    """A/B testing conversion event tracking for analytics"""
+    __tablename__ = "ab_conversion_events"
+    
+    id = Column(String, primary_key=True)  # UUID
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    session_id = Column(String, nullable=True)
+    
+    # Event details
+    event_type = Column(String, nullable=False)  # 'page_view', 'cta_click', 'form_submit', 'booking_complete'
+    page_url = Column(String, nullable=True)
+    cta_id = Column(String, nullable=True)  # CTA identifier for tracking
+    variant_id = Column(String, nullable=True)  # A/B test variant if applicable
+    
+    # Conversion funnel tracking
+    funnel_step = Column(String, nullable=True)  # 'awareness', 'interest', 'consideration', 'booking', 'retention'
+    conversion_value = Column(Float, default=0.0)  # Revenue or other numeric value
+    
+    # Context
+    user_agent = Column(String, nullable=True)
+    referrer = Column(String, nullable=True)
+    utm_source = Column(String, nullable=True)
+    utm_medium = Column(String, nullable=True)
+    utm_campaign = Column(String, nullable=True)
+    
+    # Device/browser info
+    device_type = Column(String, nullable=True)  # 'desktop', 'mobile', 'tablet'
+    browser = Column(String, nullable=True)
+    os = Column(String, nullable=True)
+    
+    # Geographic info
+    ip_address = Column(String, nullable=True)
+    country = Column(String, nullable=True)
+    region = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    
+    # Additional metadata
+    event_metadata = Column(JSON, default=dict)
+    
+    # Timestamps
+    timestamp = Column(DateTime, default=utcnow, index=True)
+    
+    # Relationships
+    user = relationship("User", backref="conversion_events")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_conversion_event_type', 'event_type'),
+        Index('idx_conversion_timestamp', 'timestamp'),
+        Index('idx_conversion_user_session', 'user_id', 'session_id'),
+        Index('idx_conversion_cta', 'cta_id'),
+        Index('idx_conversion_funnel', 'funnel_step'),
+    )
+
+
 # ================================================================================
 # ENHANCED NOTIFICATION PREFERENCES MODELS
 # ================================================================================
@@ -2793,3 +2946,225 @@ class SemanticSearchConfiguration(Base):
             enable_analytics=True,
             business_id=1
         )
+
+
+# ================================================================================
+# CUSTOMER RETENTION AND LOYALTY SYSTEM MODELS
+# ================================================================================
+
+class LoyaltyTransaction(Base):
+    """Tracks loyalty points earned and redeemed by clients"""
+    __tablename__ = "loyalty_transactions"
+    
+    id = Column(String, primary_key=True)  # UUID
+    client_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Transaction details
+    transaction_type = Column(String, nullable=False)  # 'earned' or 'redeemed'
+    points = Column(Integer, nullable=False)  # Positive for earned, negative for redeemed
+    activity_type = Column(String, nullable=False)  # 'booking_completed', 'referral_successful', etc.
+    description = Column(String, nullable=True)
+    
+    # Context and metadata
+    transaction_metadata = Column(JSON, default=dict)  # Changed from metadata to avoid SQLAlchemy reserved word
+    appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=True)
+    campaign_id = Column(String, nullable=True)  # If part of a campaign
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    
+    # Relationships
+    client = relationship("User", backref="loyalty_transactions")
+    appointment = relationship("Appointment", backref="loyalty_transactions")
+    
+    # Indexes for performance
+    __table_args__ = (
+        Index('idx_loyalty_client_type', 'client_id', 'transaction_type'),
+        Index('idx_loyalty_timestamp', 'created_at'),
+        Index('idx_loyalty_activity', 'activity_type'),
+    )
+
+
+class ClientLoyaltyProfile(Base):
+    """Stores aggregated loyalty information for each client"""
+    __tablename__ = "client_loyalty_profiles"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    
+    # Current loyalty status
+    loyalty_tier = Column(String, default="newcomer")  # newcomer, regular, vip, platinum
+    points_balance = Column(Integer, default=0)
+    total_points_earned = Column(Integer, default=0)
+    total_points_redeemed = Column(Integer, default=0)
+    
+    # Retention metrics
+    retention_status = Column(String, default="active")  # active, at_risk, lapsed, churned
+    churn_risk_score = Column(Float, default=0.0)  # 0-1, higher = more likely to churn
+    lifetime_value = Column(Float, default=0.0)
+    visit_frequency = Column(Float, default=0.0)  # Visits per month
+    last_visit_date = Column(Date, nullable=True)
+    
+    # Tier progression tracking
+    visits_count = Column(Integer, default=0)
+    total_spend = Column(Float, default=0.0)
+    tier_upgrade_date = Column(DateTime, nullable=True)
+    next_tier_visits_needed = Column(Integer, default=3)
+    next_tier_spend_needed = Column(Float, default=200.0)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    last_calculated_at = Column(DateTime, default=utcnow, nullable=False)
+    
+    # Relationships
+    client = relationship("User", backref="loyalty_profile")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_loyalty_tier', 'loyalty_tier'),
+        Index('idx_loyalty_status', 'retention_status'),
+        Index('idx_loyalty_churn_risk', 'churn_risk_score'),
+        Index('idx_loyalty_lifetime_value', 'lifetime_value'),
+    )
+
+
+class RetentionCampaign(Base):
+    """Stores retention campaigns targeting specific clients"""
+    __tablename__ = "retention_campaigns"
+    
+    id = Column(String, primary_key=True)  # UUID
+    campaign_id = Column(String, nullable=False)  # Groups multiple client campaigns
+    client_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Campaign details
+    campaign_type = Column(String, nullable=False)  # welcome_series, tier_upgrade, win_back, etc.
+    status = Column(String, default="scheduled")  # scheduled, active, completed, failed, cancelled
+    trigger_date = Column(DateTime, nullable=False)
+    completion_date = Column(DateTime, nullable=True)
+    
+    # Campaign content
+    messages = Column(JSON, default=list)  # List of message configurations
+    incentives = Column(JSON, default=list)  # List of incentives offered
+    success_metrics = Column(JSON, default=dict)  # Target metrics for success
+    
+    # Performance tracking
+    messages_sent = Column(Integer, default=0)
+    opens = Column(Integer, default=0)
+    clicks = Column(Integer, default=0)
+    conversions = Column(Integer, default=0)
+    conversion_value = Column(Float, default=0.0)
+    
+    # Targeting criteria (stored for analysis)
+    target_criteria = Column(JSON, default=dict)
+    client_tier_at_start = Column(String, nullable=True)
+    client_status_at_start = Column(String, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    
+    # Relationships
+    client = relationship("User", backref="retention_campaigns")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_retention_campaign_id', 'campaign_id'),
+        Index('idx_retention_client_type', 'client_id', 'campaign_type'),
+        Index('idx_retention_status', 'status'),
+        Index('idx_retention_trigger_date', 'trigger_date'),
+    )
+
+
+class LoyaltyReward(Base):
+    """Defines available loyalty rewards and their requirements"""
+    __tablename__ = "loyalty_rewards"
+    
+    id = Column(String, primary_key=True)  # UUID
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Barber/shop owner
+    
+    # Reward details
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    reward_type = Column(String, nullable=False)  # discount, upgrade, free_service, product
+    
+    # Requirements
+    points_required = Column(Integer, nullable=False)
+    minimum_tier = Column(String, default="newcomer")  # Minimum loyalty tier required
+    max_uses_per_client = Column(Integer, nullable=True)  # Limit redemptions per client
+    max_total_uses = Column(Integer, nullable=True)  # Total limit across all clients
+    
+    # Reward configuration
+    discount_percentage = Column(Float, nullable=True)  # For discount rewards
+    discount_amount = Column(Float, nullable=True)  # Fixed amount discount
+    service_upgrade_from = Column(String, nullable=True)  # Service to upgrade from
+    service_upgrade_to = Column(String, nullable=True)  # Service to upgrade to
+    free_service_id = Column(Integer, ForeignKey("services.id"), nullable=True)  # Free service reward
+    custom_reward_data = Column(JSON, default=dict)  # Flexible reward configuration
+    
+    # Status and validity
+    is_active = Column(Boolean, default=True)
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
+    
+    # Usage tracking
+    total_redeemed = Column(Integer, default=0)
+    total_value_redeemed = Column(Float, default=0.0)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    
+    # Relationships
+    barber = relationship("User", backref="loyalty_rewards")
+    free_service = relationship("Service", backref="loyalty_rewards")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_loyalty_reward_user', 'user_id'),
+        Index('idx_loyalty_reward_points', 'points_required'),
+        Index('idx_loyalty_reward_tier', 'minimum_tier'),
+        Index('idx_loyalty_reward_active', 'is_active'),
+    )
+
+
+class LoyaltyRedemption(Base):
+    """Tracks when clients redeem loyalty rewards"""
+    __tablename__ = "loyalty_redemptions"
+    
+    id = Column(String, primary_key=True)  # UUID
+    client_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    reward_id = Column(String, ForeignKey("loyalty_rewards.id"), nullable=False)
+    loyalty_transaction_id = Column(String, ForeignKey("loyalty_transactions.id"), nullable=False)
+    
+    # Redemption details
+    points_used = Column(Integer, nullable=False)
+    redemption_value = Column(Float, default=0.0)  # Dollar value of the reward
+    redemption_status = Column(String, default="pending")  # pending, applied, expired, cancelled
+    
+    # Usage details
+    appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=True)  # If used on appointment
+    used_date = Column(DateTime, nullable=True)
+    expires_date = Column(DateTime, nullable=True)
+    
+    # Context
+    redemption_notes = Column(String, nullable=True)
+    redemption_context = Column(JSON, default=dict)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    
+    # Relationships
+    client = relationship("User", backref="loyalty_redemptions")
+    reward = relationship("LoyaltyReward", backref="redemptions")
+    loyalty_transaction = relationship("LoyaltyTransaction", backref="redemption")
+    appointment = relationship("Appointment", backref="loyalty_redemptions")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_loyalty_redemption_client', 'client_id'),
+        Index('idx_loyalty_redemption_status', 'redemption_status'),
+        Index('idx_loyalty_redemption_date', 'created_at'),
+        Index('idx_loyalty_redemption_expires', 'expires_date'),
+    )
