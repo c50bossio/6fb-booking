@@ -82,6 +82,15 @@ RetentionCampaign = models_file.RetentionCampaign
 LoyaltyReward = models_file.LoyaltyReward
 LoyaltyRedemption = models_file.LoyaltyRedemption
 
+# Dynamic Pricing Intelligence Models
+PricingKPISnapshot = models_file.PricingKPISnapshot
+PricingRecommendationRecord = models_file.PricingRecommendationRecord
+TimeBasedPricingAnalysis = models_file.TimeBasedPricingAnalysis
+CelebratoryPricingCampaignRecord = models_file.CelebratoryPricingCampaignRecord
+InflationPricingAdjustment = models_file.InflationPricingAdjustment
+MarketPricingBenchmark = models_file.MarketPricingBenchmark
+PricingIntelligenceDashboard = models_file.PricingIntelligenceDashboard
+
 # Timezone Models
 TimezoneCache = models_file.TimezoneCache
 TimezoneConversionLog = models_file.TimezoneConversionLog
@@ -234,6 +243,9 @@ __all__ = [
     'EmbeddingCache', 'SearchAnalytics', 'SearchQuerySuggestions', 'SemanticSearchConfiguration',
     # Customer Retention and Loyalty Models
     'LoyaltyTransaction', 'ClientLoyaltyProfile', 'RetentionCampaign', 'LoyaltyReward', 'LoyaltyRedemption',
+    # Dynamic Pricing Intelligence Models
+    'PricingKPISnapshot', 'PricingRecommendationRecord', 'TimeBasedPricingAnalysis', 'CelebratoryPricingCampaignRecord', 
+    'InflationPricingAdjustment', 'MarketPricingBenchmark', 'PricingIntelligenceDashboard',
     # Timezone Models
     'TimezoneCache', 'TimezoneConversionLog',
     # Tables

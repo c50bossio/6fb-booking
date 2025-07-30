@@ -12,7 +12,7 @@ from api.v2.endpoints import google_calendar_webhook
 from routers import unified_analytics
 
 # Import V2 API endpoints for Six Figure Barber enhancements
-from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization, six_figure_barber_analytics, six_figure_barber_crm, analytics, customer_retention
+from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization, six_figure_barber_analytics, six_figure_barber_crm, analytics, customer_retention, dynamic_pricing
 # Import enhanced Six Figure Barber analytics
 from routers import six_figure_enhanced_analytics
 # Import deployment test endpoint
@@ -507,6 +507,7 @@ app.include_router(six_figure_barber_analytics.router, prefix="/api/v2")  # Six 
 app.include_router(six_figure_barber_crm.router, prefix="/api/v2")  # Six Figure Barber CRM system
 app.include_router(analytics.router, prefix="/api/v2")  # Comprehensive Six Figure Barber Analytics Dashboard
 app.include_router(customer_retention.router, prefix="/api/v2")  # Customer retention and loyalty program system
+app.include_router(dynamic_pricing.router, prefix="/api/v2")  # Dynamic pricing intelligence and KPI recommendations
 app.include_router(six_figure_enhanced_analytics.router)  # Enhanced Six Figure Barber Analytics with Advanced Features
 app.include_router(smart_insights.router)  # Smart Insights Hub - intelligent consolidation of all analytics
 app.include_router(search.router, prefix="/api/v2")  # Global search functionality
