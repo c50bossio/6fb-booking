@@ -31,6 +31,7 @@ from middleware.enhanced_security import EnhancedSecurityMiddleware, WebhookSecu
 from middleware.configuration_security import ConfigurationSecurityMiddleware, configuration_reporter
 from middleware.cache_middleware import SmartCacheMiddleware
 from middleware.csrf_middleware import CSRFMiddleware
+from middleware.api_rate_limiting_middleware import APIRateLimitingMiddleware
 import logging
 import sys
 
@@ -250,6 +251,9 @@ if ENVIRONMENT == "development" and ENABLE_DEVELOPMENT_MODE:
     # Add smart cache middleware for development
     app.add_middleware(SmartCacheMiddleware, enable_cache=True)
     
+    # Add API rate limiting middleware for public API endpoints
+    app.add_middleware(APIRateLimitingMiddleware)
+    
     # Add CSRF protection middleware (essential for security)
     app.add_middleware(CSRFMiddleware)
     
@@ -308,6 +312,9 @@ else:
     # Add MFA enforcement middleware for admin operations
     app.add_middleware(MFAEnforcementMiddleware)
 
+    # Add API rate limiting middleware for public API endpoints
+    app.add_middleware(APIRateLimitingMiddleware)
+    
     # Add CSRF protection middleware (before other security middleware)
     app.add_middleware(CSRFMiddleware)
     
@@ -500,6 +507,10 @@ app.include_router(services_public_router, prefix="/api/v2")
 # Include Public API for third-party integrations
 from api.v2.endpoints.public_api import router as public_api_router
 app.include_router(public_api_router, prefix="/api/v2")
+
+# Include Developer Portal for third-party integration documentation and tools
+from api.v2.endpoints.developer_portal import router as developer_portal_router
+app.include_router(developer_portal_router, prefix="/api/v2")
 
 # V2 API endpoints for Six Figure Barber enhancements
 app.include_router(client_lifecycle.router, prefix="/api/v2")  # Client lifecycle management
