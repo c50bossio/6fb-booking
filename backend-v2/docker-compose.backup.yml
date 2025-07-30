@@ -1,0 +1,109 @@
+# =============================================================================
+# BookedBarber V2 - Backup Services Docker Compose
+# =============================================================================
+# 🔄 Automated backup strategy for PostgreSQL and Redis
+# 💾 Configurable retention policies and restoration procedures
+# 🔒 Encrypted backups with compression
+# =============================================================================
+
+services:
+  # =============================================================================
+  # PostgreSQL Automated Backup Service
+  # =============================================================================
+  postgres-backup:
+    image: postgres:15-alpine
+    container_name: bookedbarber-postgres-backup
+    environment:
+      PGHOST: postgres
+      PGDATABASE: bookedbarber_v2
+      PGUSER: bookedbarber
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_SCHEDULE: "0 2 * * *"  # Daily at 2 AM
+      BACKUP_RETENTION_DAYS: 30
+      BACKUP_ENCRYPTION_KEY: ${BACKUP_ENCRYPTION_KEY}
+    volumes:
+      - ./backups/postgres:/backups
+      - ./scripts/backup-postgres.sh:/backup-postgres.sh:ro
+    networks:
+      - bookedbarber-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "
+        apk add --no-cache dcron &&
+        echo '$${BACKUP_SCHEDULE} /backup-postgres.sh' | crontab - &&
+        crond -f -l 2
+      "
+    healthcheck:
+      test: ["CMD", "test", "-f", "/backups/latest.sql.gz"]
+      interval: 1h
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # Redis Backup Service
+  # =============================================================================
+  redis-backup:
+    image: redis:7-alpine
+    container_name: bookedbarber-redis-backup
+    environment:
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      BACKUP_SCHEDULE: "0 3 * * *"  # Daily at 3 AM
+      BACKUP_RETENTION_DAYS: 7
+    volumes:
+      - ./backups/redis:/backups
+      - ./scripts/backup-redis.sh:/backup-redis.sh:ro
+    networks:
+      - bookedbarber-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "
+        apk add --no-cache dcron &&
+        echo '$${BACKUP_SCHEDULE} /backup-redis.sh' | crontab - &&
+        crond -f -l 2
+      "
+
+  # =============================================================================
+  # Backup Restoration Service (On-demand)
+  # =============================================================================
+  backup-restore:
+    image: postgres:15-alpine
+    container_name: bookedbarber-backup-restore
+    environment:
+      PGHOST: postgres
+      PGDATABASE: bookedbarber_v2
+      PGUSER: bookedbarber
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_ENCRYPTION_KEY: ${BACKUP_ENCRYPTION_KEY}
+    volumes:
+      - ./backups:/backups:ro
+      - ./scripts/restore-backup.sh:/restore-backup.sh:ro
+    networks:
+      - bookedbarber-network
+    profiles:
+      - restore  # Only start when explicitly requested
+    command: ["tail", "-f", "/dev/null"]  # Keep container running for manual restore
+
+networks:
+  bookedbarber-network:
+    external: true
+
+volumes:
+  postgres_backup_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./backups/postgres
+  redis_backup_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./backups/redis
