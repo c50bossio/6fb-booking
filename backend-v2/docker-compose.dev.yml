@@ -66,19 +66,23 @@ services:
       dockerfile: Dockerfile
       target: development
       args:
-        # Build-time environment variables
+        # Build-time environment variables (client-side accessible)
         NEXT_PUBLIC_API_URL: http://localhost:8000
         NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
         NEXT_PUBLIC_ENVIRONMENT: development
         NODE_ENV: development
     container_name: bookedbarber-frontend-dev
     environment:
-      # Runtime environment variables
+      # Runtime environment variables (client-side accessible)
       NEXT_PUBLIC_API_URL: http://localhost:8000
       NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
       NEXT_PUBLIC_ENVIRONMENT: development
       NODE_ENV: development
       PORT: 3000
+      
+      # Internal Docker network URL for server-side API calls
+      NEXT_INTERNAL_API_URL: http://backend:8000
+      DOCKER_BACKEND_URL: http://backend:8000
       
       # Development Service Keys (Test/Demo)
       NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_51234567890

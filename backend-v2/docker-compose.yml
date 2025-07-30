@@ -186,8 +186,8 @@ services:
       target: development
       args:
         # Build-time environment variables (browser-accessible URLs)
-        NEXT_PUBLIC_API_URL: http://localhost:8000
-        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+        NEXT_PUBLIC_API_URL: http://backend:8000
+        NEXT_PUBLIC_API_BASE_URL: http://backend:8000/api/v2
         NEXT_PUBLIC_ENVIRONMENT: development
         NODE_ENV: development
     container_name: bookedbarber-frontend
@@ -201,8 +201,8 @@ services:
           cpus: '0.75'
     environment:
       # Runtime environment variables (browser-accessible URLs)
-      NEXT_PUBLIC_API_URL: http://localhost:8000
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+      NEXT_PUBLIC_API_URL: http://backend:8000
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8000/api/v2
       NEXT_PUBLIC_ENVIRONMENT: development
       NODE_ENV: development
       PORT: 3000

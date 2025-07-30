@@ -1,4 +1,5 @@
 
+import os
 from fastapi import Request
 from fastapi.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
@@ -16,7 +17,16 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         if request.url.scheme == "https":
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
         
-        # Content Security Policy
+        # Content Security Policy - Environment-aware configuration
+        is_development = os.getenv("ENVIRONMENT", "development").lower() in ["development", "dev", "local"]
+        
+        # Base CSP directives
+        base_connect_src = "'self' https://api.stripe.com https://www.google-analytics.com https://www.googletagmanager.com"
+        
+        # Add localhost URLs for development
+        if is_development:
+            base_connect_src += " http://localhost:8000 http://127.0.0.1:8000 http://localhost:* http://127.0.0.1:* ws: wss:"
+        
         csp_policy = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
@@ -25,7 +35,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https: https://www.google-analytics.com; "
-            "connect-src 'self' https://api.stripe.com https://www.google-analytics.com; "
+            f"connect-src {base_connect_src}; "
             "frame-src 'self' https://js.stripe.com https://hooks.stripe.com; "
             "object-src 'none'; "
             "base-uri 'self'; "

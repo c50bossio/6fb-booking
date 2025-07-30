@@ -93,9 +93,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                // SSR-safe theme initialization
+                // SSR-safe theme initialization - Default to light theme for professional appearance
                 if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-                  const theme = localStorage.getItem('6fb-theme') || 'system';
+                  const theme = localStorage.getItem('6fb-theme') || 'light';
                   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                   const resolvedTheme = theme === 'system' ? systemTheme : theme;
                   document.documentElement.classList.add(resolvedTheme);

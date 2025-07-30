@@ -5,6 +5,7 @@ from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 # Import tracking models to register them with SQLAlchemy
 from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks, smart_insights, pwa, cache_performance, realtime_calendar, ai_business_calendar, business_intelligence_agents  # calendar_export temporarily disabled due to icalendar import issue
+from routers import ai_dashboard_router
 
 # Import V2 webhook endpoints
 from api.v2.endpoints import google_calendar_webhook
@@ -536,6 +537,7 @@ app.include_router(realtime_calendar.router)  # Real-time calendar updates (incl
 app.include_router(ai_business_calendar.router)  # AI Business Calendar with Google Calendar sync and business intelligence
 app.include_router(business_intelligence_agents.router)  # Business Intelligence AI Agents for coaching and insights
 
+app.include_router(ai_dashboard_router.router)  # Unified AI Dashboard with orchestrator, memory, vector knowledge, strategy engine, and ROI tracking
 # DEPLOYMENT TEST ENDPOINT - Remove after deployment verification
 app.include_router(test_deployment_router, prefix="/api/v2")
 

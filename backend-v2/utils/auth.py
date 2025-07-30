@@ -73,6 +73,23 @@ async def get_current_user(
     """Get the current authenticated user from JWT token with blacklist checking."""
     token = credentials.credentials
     
+    # DEVELOPMENT: Handle dev bypass token
+    if settings.environment == "development" and token == "dev-token-bypass":
+        # Create or get dev user
+        dev_user = db.query(User).filter(User.email == "dev@bookedbarber.com").first()
+        if not dev_user:
+            dev_user = User(
+                email="dev@bookedbarber.com",
+                name="Dev User",
+                role="barber",
+                hashed_password=get_password_hash("dev"),
+                is_active=True
+            )
+            db.add(dev_user)
+            db.commit()
+            db.refresh(dev_user)
+        return dev_user
+    
     # Check if token is blacklisted first
     from services.token_blacklist import is_token_blacklisted
     if is_token_blacklisted(token):
@@ -149,6 +166,23 @@ async def get_current_user_optional(
             return None
     except ValueError:
         return None
+    
+    # DEVELOPMENT: Handle dev bypass token
+    if settings.environment == "development" and token == "dev-token-bypass":
+        # Create or get dev user
+        dev_user = db.query(User).filter(User.email == "dev@bookedbarber.com").first()
+        if not dev_user:
+            dev_user = User(
+                email="dev@bookedbarber.com",
+                name="Dev User",
+                role="barber",
+                hashed_password=get_password_hash("dev"),
+                is_active=True
+            )
+            db.add(dev_user)
+            db.commit()
+            db.refresh(dev_user)
+        return dev_user
         
     try:
         payload = decode_token(token)

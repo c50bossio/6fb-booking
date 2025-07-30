@@ -11,6 +11,7 @@ Implements comprehensive security hardening including:
 """
 
 import re
+import os
 import logging
 from typing import List, Dict, Any
 from fastapi import Request
@@ -67,11 +68,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                     "https://www.google-analytics.com "
                     "https://analytics.google.com "
                     "https://region1.google-analytics.com "  # GA4 endpoint
+                    "https://www.googletagmanager.com "  # Google Tag Manager
                     "https://graph.facebook.com "  # Meta Graph API
                     "https://www.facebook.com "  # Meta Pixel endpoint
                     "https://googleads.g.doubleclick.net "  # Google Ads
                     "https://www.google-analytics.com/g/collect "  # GA4 collection
-                    "https://stats.g.doubleclick.net; "  # Google stats
+                    "https://stats.g.doubleclick.net "
+                    + (" http://localhost:8000 http://127.0.0.1:8000 http://localhost:* http://127.0.0.1:* ws: wss:" 
+                       if os.getenv("ENVIRONMENT", "development").lower() in ["development", "dev", "local"] 
+                       else "") + "; "  # Google stats
                 "frame-src 'self' https://js.stripe.com "
                     "https://bid.g.doubleclick.net; "  # Google Ads frames
                 "media-src 'self' data: blob:; "

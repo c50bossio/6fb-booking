@@ -65,9 +65,10 @@ class PricingValidationRequest(BaseModel):
     include_market_analysis: bool = Field(False, description="Include market analysis")
 
     @field_validator('max_price')
-    def validate_max_price(cls, v, values):
-        if v is not None and 'min_price' in values and values['min_price'] is not None:
-            if v < values['min_price']:
+    def validate_max_price(cls, v, info):
+        min_price = info.data.get('min_price')
+        if v is not None and min_price is not None:
+            if v < min_price:
                 raise ValueError('Maximum price cannot be less than minimum price')
         return v
 

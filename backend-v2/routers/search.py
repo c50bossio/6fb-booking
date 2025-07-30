@@ -18,10 +18,9 @@ from db import get_db
 from dependencies import get_current_user
 from models import User, Appointment, Service
 from utils.role_permissions import Permission, get_permission_checker, PermissionChecker
-# Temporarily disabled due to dependency issues
-# from services.semantic_search_service import semantic_search, SemanticMatch
-# from services.enhanced_semantic_search_service import enhanced_semantic_search, EnhancedSemanticMatch, SearchContext
-# from services.advanced_search_service import advanced_search, RerankingResult
+from services.semantic_search_service import semantic_search, SemanticMatch
+from services.enhanced_semantic_search_service import enhanced_semantic_search, EnhancedSemanticMatch, SearchContext
+from services.advanced_search_service import advanced_search, RerankingResult
 
 router = APIRouter(prefix="/search", tags=["search"])
 
