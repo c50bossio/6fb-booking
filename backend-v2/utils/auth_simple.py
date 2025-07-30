@@ -4,10 +4,12 @@ This is a temporary workaround for the schema mismatch issue.
 """
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from jose import jwt
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from fastapi import HTTPException, status, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from config import settings
 
 # Security settings
@@ -18,6 +20,9 @@ REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# HTTP Bearer security for token extraction
+security = HTTPBearer()
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash."""
@@ -80,3 +85,43 @@ def authenticate_user_simple(db: Session, email: str, password: str):
     except Exception as e:
         print(f"Authentication error: {e}")
         return False
+
+def decode_token(token: str):
+    """Decode and validate a JWT token."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+async def get_current_user_from_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> dict:
+    """Extract and validate current user from JWT token."""
+    token = credentials.credentials
+    
+    try:
+        payload = decode_token(token)
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Return user data from token payload
+        return {
+            "email": email,
+            "role": payload.get("role", "client")
+        }
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )

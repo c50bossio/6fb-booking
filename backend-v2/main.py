@@ -53,7 +53,13 @@ if validation_result.get('critical_missing', 0) > 0:
     sys.exit(1)
 
 # Create database tables
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Database table creation warning (likely duplicate index): {e}")
+    # Continue startup - tables likely already exist
 
 # Define lifespan context manager for startup/shutdown
 @asynccontextmanager

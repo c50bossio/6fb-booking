@@ -10,6 +10,7 @@ from utils.auth_simple import (
     authenticate_user_simple, 
     create_access_token,
     create_refresh_token,
+    get_current_user_from_token,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 from utils.rate_limit import login_rate_limit  # CRITICAL: Rate limiting for security
@@ -51,13 +52,11 @@ async def login_simple(request: Request, user_credentials: schemas.UserLogin, db
     }
 
 @router.get("/me")
-async def get_current_user_simple(db: Session = Depends(get_db)):
-    """Get current user information - simplified version"""
+async def get_current_user_simple(current_user: dict = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
+    """Get current user information with proper authentication"""
     try:
-        # For now, return the admin user since that's what we're testing with
-        # In a full implementation, this would decode the JWT token
         from models import User
-        user = db.query(User).filter(User.email == "admin@bookedbarber.com").first()
+        user = db.query(User).filter(User.email == current_user["email"]).first()
         
         if not user:
             raise HTTPException(

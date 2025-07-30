@@ -17,8 +17,8 @@ from pydantic import BaseModel, Field
 import logging
 from datetime import datetime
 
-from database import get_db
-from auth.dependencies import get_current_user
+from dependencies_v2 import get_db
+from utils.auth import get_current_user
 from models import User
 from services.ai_orchestrator_service import AIOrchestrator, ConversationContext
 from services.ai_memory_service import AIMemoryService

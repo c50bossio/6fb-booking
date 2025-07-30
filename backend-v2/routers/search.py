@@ -90,11 +90,11 @@ async def global_search(
                     id=appointment.id,
                     type="appointment",
                     title=f"{appointment.service_name}",
-                    subtitle=f"{appointment.appointment_date.strftime('%B %d, %Y')} at {appointment.appointment_time}",
+                    subtitle=f"{appointment.start_time.strftime('%B %d, %Y at %I:%M %p')}",
                     url=f"/calendar?appointment={appointment.id}",
                     metadata={
-                        "date": appointment.appointment_date.isoformat(),
-                        "time": str(appointment.appointment_time),
+                        "date": appointment.start_time.date().isoformat(),
+                        "time": appointment.start_time.time().isoformat(),
                         "status": appointment.status,
                     },
                     score=1.0 if q.lower() in appointment.service_name.lower() else 0.5
@@ -467,7 +467,7 @@ async def recent_searches(
                     id=appointment.id,
                     type="appointment",
                     title=f"{appointment.service_name}",
-                    subtitle=f"{appointment.appointment_date.strftime('%B %d, %Y')}",
+                    subtitle=f"{appointment.start_time.strftime('%B %d, %Y at %I:%M %p')}",
                     url=f"/calendar?appointment={appointment.id}",
                     metadata={"recent": True},
                     score=0.9

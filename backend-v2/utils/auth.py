@@ -73,34 +73,21 @@ async def get_current_user(
     """Get the current authenticated user from JWT token with blacklist checking."""
     token = credentials.credentials
     
-    # DEVELOPMENT: Handle dev bypass token
-    if settings.environment == "development" and token == "dev-token-bypass":
-        # Create or get dev user
+    # DEVELOPMENT AUTHENTICATION BYPASS (Only for development environment)
+    if token == "dev-token-bypass" and settings.environment in ["development", "dev"]:
+        # Get the actual dev user from database
         dev_user = db.query(User).filter(User.email == "dev@bookedbarber.com").first()
-        if not dev_user:
-            dev_user = User(
-                email="dev@bookedbarber.com",
-                name="Dev User",
-                role="admin",
-                unified_role="super_admin",
-                hashed_password=get_password_hash("dev"),
-                is_active=True
-            )
-            db.add(dev_user)
-            db.commit()
-            db.refresh(dev_user)
-        else:
-            # Update existing dev user to ensure admin role and unified role
-            needs_update = False
-            if dev_user.role != "admin":
-                dev_user.role = "admin"
-                needs_update = True
-            if dev_user.unified_role != "super_admin":
-                dev_user.unified_role = "super_admin"
-                needs_update = True
-            if needs_update:
-                db.commit()
-                db.refresh(dev_user)
+        if dev_user:
+            return dev_user
+        
+        # Fallback: Create development super admin user if not found in DB
+        dev_user = User(
+            id=999999,
+            email="dev@bookedbarber.com",
+            role="super_admin",
+            is_active=True,
+            shop_id=None  # Super admin can access all shops
+        )
         return dev_user
     
     # Check if token is blacklisted first
@@ -180,22 +167,21 @@ async def get_current_user_optional(
     except ValueError:
         return None
     
-    # DEVELOPMENT: Handle dev bypass token
-    if settings.environment == "development" and token == "dev-token-bypass":
-        # Create or get dev user
+    # DEVELOPMENT AUTHENTICATION BYPASS (Only for development environment)
+    if token == "dev-token-bypass" and settings.environment in ["development", "dev"]:
+        # Get the actual dev user from database
         dev_user = db.query(User).filter(User.email == "dev@bookedbarber.com").first()
-        if not dev_user:
-            dev_user = User(
-                email="dev@bookedbarber.com",
-                name="Dev User",
-                role="admin",
-                unified_role="super_admin",
-                hashed_password=get_password_hash("dev"),
-                is_active=True
-            )
-            db.add(dev_user)
-            db.commit()
-            db.refresh(dev_user)
+        if dev_user:
+            return dev_user
+        
+        # Fallback: Create development super admin user if not found in DB
+        dev_user = User(
+            id=999999,
+            email="dev@bookedbarber.com",
+            role="super_admin",
+            is_active=True,
+            shop_id=None  # Super admin can access all shops
+        )
         return dev_user
         
     try:

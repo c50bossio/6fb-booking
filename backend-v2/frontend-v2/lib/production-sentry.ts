@@ -84,7 +84,7 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN &&
         event.contexts.business = extractBusinessContext();
         event.contexts.six_figure_barber = {
           methodology_version: '2.0',
-          business_focus: determineBusiness Focus(event),
+          business_focus: determineBusinessFocus(event),
           revenue_impact: assessRevenueImpact(event),
           client_impact: assessClientImpact(event)
         };

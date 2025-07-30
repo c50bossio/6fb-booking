@@ -793,6 +793,99 @@ class ROITrackingService:
             self.logger.error(f"Error predicting future ROI: {str(e)}")
             return {'error': str(e)}
     
+    # Additional methods for integration with AI Orchestrator
+    
+    async def get_roi_insights(self, user_id: str) -> Dict:
+        """Get ROI insights for AI dashboard integration"""
+        try:
+            # Get all strategy outcomes for user
+            strategy_outcomes = self.db.query(StrategyOutcome).filter(
+                StrategyOutcome.user_id == user_id
+            ).all()
+            
+            if not strategy_outcomes:
+                return {'message': 'No ROI tracking data available'}
+            
+            # Calculate summary insights
+            total_strategies = len(strategy_outcomes)
+            completed_strategies = len([s for s in strategy_outcomes if s.completion_date])
+            active_strategies = len([s for s in strategy_outcomes if s.implementation_status == 'active'])
+            
+            # Calculate average ROI
+            roi_values = [s.roi_percentage for s in strategy_outcomes if s.roi_percentage is not None]
+            avg_roi = sum(roi_values) / len(roi_values) if roi_values else 0
+            
+            # Find best performing strategy
+            best_strategy = max(strategy_outcomes, key=lambda s: s.roi_percentage or 0) if strategy_outcomes else None
+            
+            return {
+                'total_strategies_tracked': total_strategies,
+                'active_strategies': active_strategies,
+                'completed_strategies': completed_strategies,
+                'average_roi': avg_roi,
+                'best_performing_strategy': {
+                    'title': best_strategy.strategy_title,
+                    'roi': best_strategy.roi_percentage,
+                    'type': best_strategy.strategy_type
+                } if best_strategy and best_strategy.roi_percentage else None,
+                'roi_trend': 'positive' if avg_roi > 0 else 'neutral'
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting ROI insights: {str(e)}")
+            return {}
+    
+    async def track_strategy_implementation(self, user_id: str, strategy: Dict) -> str:
+        """Track new strategy implementation"""
+        try:
+            strategy_id = str(uuid4())
+            
+            # Create strategy outcome record
+            strategy_outcome = StrategyOutcome(
+                user_id=user_id,
+                strategy_id=strategy_id,
+                strategy_title=strategy.get('title', 'AI Generated Strategy'),
+                strategy_description=strategy.get('description', ''),
+                strategy_type=strategy.get('type', 'general'),
+                implementation_status='active',
+                implementation_date=datetime.now()
+            )
+            
+            self.db.add(strategy_outcome)
+            self.db.commit()
+            
+            # Capture baseline metrics
+            await self.capture_baseline_metrics(user_id, strategy_id)
+            
+            return strategy_id
+            
+        except Exception as e:
+            self.logger.error(f"Error tracking strategy implementation: {str(e)}")
+            return ""
+    
+    async def calculate_strategy_roi(self, user_id: str, strategy_id: str) -> Optional['StrategyOutcome']:
+        """Calculate and return strategy ROI"""
+        try:
+            strategy_outcome = self.db.query(StrategyOutcome).filter(
+                and_(
+                    StrategyOutcome.user_id == user_id,
+                    StrategyOutcome.strategy_id == strategy_id
+                )
+            ).first()
+            
+            if strategy_outcome and strategy_outcome.baseline_metrics:
+                roi_result = await self.calculate_current_roi(user_id, strategy_id)
+                
+                if 'error' not in roi_result:
+                    strategy_outcome.roi_percentage = roi_result.get('overall_roi', 0)
+                    self.db.commit()
+            
+            return strategy_outcome
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating strategy ROI: {str(e)}")
+            return None
+    
     # Private helper methods
     
     def _analyze_roi_trend(self, time_series: List[Dict]) -> Dict:

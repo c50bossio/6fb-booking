@@ -28,6 +28,8 @@ from models.business_intelligence_agents import (
 from services.business_intelligence_agent_service import BusinessIntelligenceAgentService
 from services.business_calendar_metadata_service import BusinessCalendarMetadataService
 from services.ai_memory_service import AIMemoryService
+from services.vector_knowledge_service import VectorKnowledgeService
+from services.roi_tracking_service import ROITrackingService
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +94,8 @@ class AIOrchestrator:
         self.bi_service = BusinessIntelligenceAgentService(db)
         self.calendar_service = BusinessCalendarMetadataService(db)
         self.memory_service = AIMemoryService(db)
+        self.vector_service = VectorKnowledgeService(db)
+        self.roi_service = ROITrackingService(db)
         
         # Active conversation contexts
         self.conversations: Dict[str, ConversationContext] = {}
@@ -202,8 +206,8 @@ class AIOrchestrator:
             # Identify relevant agents for complex query
             relevant_agents = await self._identify_relevant_agents(complex_query)
             
-            # Get business context
-            business_context = await self._get_relevant_business_context(user_id, complex_query)
+            # Get business context including vector knowledge
+            business_context = await self._get_comprehensive_business_context(user_id, complex_query)
             
             # Coordinate responses from multiple agents
             agent_responses = []
@@ -636,14 +640,439 @@ Recent Business Performance (Last 30 Days):
             if insights:
                 conversation.business_context['last_insights'] = datetime.now().isoformat()
     
-    # Additional helper methods would be implemented here for:
-    # - _identify_relevant_agents
-    # - _synthesize_multi_agent_response
-    # - _measure_current_performance
-    # - _calculate_performance_change
-    # - _get_active_strategies
-    # - _store_business_insight
-    # - _get_revenue_context
-    # - _get_client_context
-    # - _get_appointment_context
-    # - etc.
+    async def _get_comprehensive_business_context(self, user_id: str, query: str) -> Dict:
+        """Get comprehensive business context including vector knowledge"""
+        try:
+            # Initialize knowledge base if not exists
+            await self.vector_service.initialize_user_knowledge_base(user_id)
+            
+            # Get relevant knowledge from vector database
+            relevant_knowledge = await self.vector_service.retrieve_relevant_knowledge(
+                user_id=user_id,
+                query=query,
+                doc_types=['business_data', 'strategy', 'conversation'],
+                limit=5
+            )
+            
+            # Get basic business context
+            basic_context = await self._get_relevant_business_context(user_id, query)
+            
+            # Get ROI insights
+            roi_insights = await self.roi_service.get_roi_insights(user_id)
+            
+            # Combine all context
+            comprehensive_context = {
+                **basic_context,
+                'vector_knowledge': relevant_knowledge,
+                'roi_insights': roi_insights,
+                'knowledge_summary': await self.vector_service.get_knowledge_summary(user_id)
+            }
+            
+            return comprehensive_context
+            
+        except Exception as e:
+            self.logger.error(f"Error getting comprehensive business context: {str(e)}")
+            # Fallback to basic context
+            return await self._get_relevant_business_context(user_id, query)
+    
+    async def enhance_response_with_context(self, user_id: str, query: str, base_response: str) -> str:
+        """Enhance AI response with contextual business insights"""
+        try:
+            # Get contextual insights from current situation
+            current_situation = await self._analyze_business_performance(user_id)
+            
+            if current_situation:
+                contextual_insights = await self.vector_service.generate_contextual_insights(
+                    user_id=user_id,
+                    current_situation=current_situation
+                )
+                
+                if contextual_insights:
+                    enhanced_response = base_response + "\n\n**Based on your business data:**\n"
+                    for insight in contextual_insights[:3]:  # Top 3 insights
+                        enhanced_response += f"• {insight['description']}\n"
+                    
+                    return enhanced_response
+            
+            return base_response
+            
+        except Exception as e:
+            self.logger.error(f"Error enhancing response with context: {str(e)}")
+            return base_response
+    
+    async def track_strategy_effectiveness(self, user_id: str, strategy: Dict) -> str:
+        """Track a new strategy for ROI measurement"""
+        try:
+            # Start ROI tracking
+            strategy_id = await self.roi_service.track_strategy_implementation(user_id, strategy)
+            
+            # Update vector knowledge with strategy
+            await self.vector_service.update_knowledge_from_interaction(
+                user_id=user_id,
+                interaction_data={
+                    'query': f"New strategy: {strategy.get('title', 'Unknown')}",
+                    'response': f"Started tracking {strategy.get('type', 'general')} strategy",
+                    'strategy_id': strategy_id,
+                    'effectiveness': 1.0  # High importance for strategy tracking
+                }
+            )
+            
+            return strategy_id
+            
+        except Exception as e:
+            self.logger.error(f"Error tracking strategy effectiveness: {str(e)}")
+            return ""
+    
+    async def complete_strategy_with_outcome(self, user_id: str, strategy_id: str, outcome: Dict) -> bool:
+        """Complete strategy tracking with outcome measurement"""
+        try:
+            # Calculate final ROI
+            roi_result = await self.roi_service.calculate_strategy_roi(user_id, strategy_id)
+            
+            if roi_result:
+                # Update vector knowledge with outcome
+                strategy_data = {
+                    'id': strategy_id,
+                    'title': roi_result.strategy_title,
+                    'type': 'completed_strategy'
+                }
+                
+                outcome_data = {
+                    'success': roi_result.roi_percentage > 0,
+                    'roi_percentage': roi_result.roi_percentage,
+                    'metrics': roi_result.success_metrics,
+                    'confidence': roi_result.confidence_score
+                }
+                
+                await self.vector_service.update_knowledge_from_strategy_outcome(
+                    user_id=user_id,
+                    strategy=strategy_data,
+                    outcome=outcome_data
+                )
+                
+                return True
+            
+            return False
+            
+        except Exception as e:
+            self.logger.error(f"Error completing strategy with outcome: {str(e)}")
+            return False
+    
+    async def _identify_relevant_agents(self, complex_query: str) -> List[str]:
+        """Identify which agents are relevant for a complex query"""
+        query_lower = complex_query.lower()
+        relevant_agents = []
+        
+        # Score each agent based on keyword matching
+        agent_scores = {}
+        for agent_type, keywords in self.agent_routing.items():
+            score = sum(1 for keyword in keywords if keyword in query_lower)
+            if score > 0:
+                agent_scores[agent_type] = score
+        
+        # Return agents with scores above threshold, max 3 agents
+        sorted_agents = sorted(agent_scores.items(), key=lambda x: x[1], reverse=True)
+        relevant_agents = [agent[0] for agent in sorted_agents[:3] if agent[1] > 0]
+        
+        # Ensure at least one agent
+        if not relevant_agents:
+            relevant_agents = ['growth']  # Default agent
+        
+        return relevant_agents
+    
+    async def _synthesize_multi_agent_response(self, query: str, agent_responses: List[AIResponse], 
+                                             business_context: Dict) -> AIResponse:
+        """Synthesize responses from multiple agents into cohesive answer"""
+        try:
+            # Combine content from all agents
+            combined_content = f"Based on comprehensive analysis of your business:\n\n"
+            
+            for i, response in enumerate(agent_responses, 1):
+                agent_name = response.agent_id.title() + " Coach"
+                combined_content += f"**{agent_name}:**\n{response.content}\n\n"
+            
+            # Combine suggestions (remove duplicates)
+            all_suggestions = []
+            for response in agent_responses:
+                all_suggestions.extend(response.suggestions)
+            unique_suggestions = list(dict.fromkeys(all_suggestions))  # Remove duplicates
+            
+            # Combine actions
+            all_actions = []
+            for response in agent_responses:
+                all_actions.extend(response.actions)
+            
+            # Create synthesis
+            combined_content += "**Strategic Synthesis:**\n"
+            combined_content += "Your business would benefit from a coordinated approach addressing multiple areas simultaneously. "
+            combined_content += "I recommend prioritizing the highest-impact strategies while maintaining focus on your core strengths."
+            
+            return AIResponse(
+                content=combined_content,
+                agent_id="multi_agent",
+                suggestions=unique_suggestions[:5],  # Top 5 suggestions
+                actions=all_actions,
+                metrics=business_context.get('recent_metrics', {})
+            )
+            
+        except Exception as e:
+            self.logger.error(f"Error synthesizing multi-agent response: {str(e)}")
+            return AIResponse(
+                content="I've analyzed your business from multiple perspectives. Let me provide you with a comprehensive strategy.",
+                agent_id="multi_agent"
+            )
+    
+    async def _measure_current_performance(self, user_id: str, metrics: List[str]) -> Dict:
+        """Measure current performance for specified metrics"""
+        try:
+            performance = {}
+            recent_metrics = await self._get_recent_business_metrics(user_id)
+            
+            for metric in metrics:
+                if metric in recent_metrics:
+                    performance[metric] = recent_metrics[metric]
+            
+            return performance
+            
+        except Exception as e:
+            self.logger.error(f"Error measuring current performance: {str(e)}")
+            return {}
+    
+    async def _calculate_performance_change(self, baseline_metrics: Dict, current_metrics: Dict) -> Dict:
+        """Calculate performance change between baseline and current metrics"""
+        try:
+            changes = {}
+            
+            for metric, current_value in current_metrics.items():
+                baseline_value = baseline_metrics.get(metric, 0)
+                if baseline_value > 0:
+                    change_percentage = ((current_value - baseline_value) / baseline_value) * 100
+                    changes[metric] = {
+                        'baseline': baseline_value,
+                        'current': current_value,
+                        'absolute_change': current_value - baseline_value,
+                        'percentage_change': change_percentage
+                    }
+                else:
+                    changes[metric] = {
+                        'baseline': 0,
+                        'current': current_value,
+                        'absolute_change': current_value,
+                        'percentage_change': 100 if current_value > 0 else 0
+                    }
+            
+            return changes
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating performance change: {str(e)}")
+            return {}
+    
+    async def _get_active_strategies(self, user_id: str) -> Dict:
+        """Get active strategies being tracked for user"""
+        try:
+            # This would query the database for active strategies
+            # For now, return empty dict as placeholder
+            return {}
+            
+        except Exception as e:
+            self.logger.error(f"Error getting active strategies: {str(e)}")
+            return {}
+    
+    async def _store_business_insight(self, user_id: str, insight: 'BusinessInsight') -> bool:
+        """Store business insight in database"""
+        try:
+            # Create business insight record
+            db_insight = BusinessInsight(
+                user_id=user_id,
+                insight_type=insight.insight_type,
+                title=insight.title,
+                description=insight.description,
+                priority=insight.priority,
+                data_confidence=insight.confidence_score,
+                implementation_difficulty=insight.implementation_difficulty,
+                expected_roi=insight.expected_roi
+            )
+            
+            self.db.add(db_insight)
+            self.db.commit()
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error storing business insight: {str(e)}")
+            return False
+    
+    async def _get_revenue_context(self, user_id: str) -> Dict:
+        """Get revenue-specific context for user"""
+        try:
+            # Get detailed revenue data
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=90)
+            
+            payments = self.db.query(Payment).filter(
+                and_(
+                    Payment.user_id == user_id,
+                    Payment.created_at >= start_date,
+                    Payment.status == "completed"
+                )
+            ).all()
+            
+            if not payments:
+                return {'message': 'No recent revenue data available'}
+            
+            # Analyze revenue patterns
+            monthly_revenue = {}
+            service_revenue = {}
+            
+            for payment in payments:
+                month_key = payment.created_at.strftime('%Y-%m')
+                monthly_revenue[month_key] = monthly_revenue.get(month_key, 0) + float(payment.amount)
+                
+                service = payment.description or "Unknown Service"
+                service_revenue[service] = service_revenue.get(service, 0) + float(payment.amount)
+            
+            return {
+                'total_revenue_90d': sum(float(p.amount) for p in payments),
+                'payment_count': len(payments),
+                'average_payment': sum(float(p.amount) for p in payments) / len(payments),
+                'monthly_breakdown': monthly_revenue,
+                'service_breakdown': service_revenue,
+                'highest_revenue_service': max(service_revenue.items(), key=lambda x: x[1]) if service_revenue else None
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting revenue context: {str(e)}")
+            return {}
+    
+    async def _get_client_context(self, user_id: str) -> Dict:
+        """Get client-specific context for user"""
+        try:
+            # Get client behavior data
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=180)
+            
+            client_appointments = self.db.query(Client, func.count(Appointment.id).label('appointment_count')).join(
+                Appointment, Client.id == Appointment.client_id
+            ).filter(
+                and_(
+                    Appointment.barber_id == user_id,
+                    Appointment.start_time >= start_date
+                )
+            ).group_by(Client.id).all()
+            
+            if not client_appointments:
+                return {'message': 'No recent client data available'}
+            
+            # Analyze client patterns
+            total_clients = len(client_appointments)
+            repeat_clients = len([c for c in client_appointments if c[1] > 1])
+            high_value_clients = len([c for c in client_appointments if c[1] >= 5])
+            
+            appointment_counts = [c[1] for c in client_appointments]
+            avg_appointments_per_client = sum(appointment_counts) / len(appointment_counts)
+            
+            return {
+                'total_clients_180d': total_clients,
+                'repeat_clients': repeat_clients,
+                'retention_rate': (repeat_clients / total_clients * 100) if total_clients > 0 else 0,
+                'high_value_clients': high_value_clients,
+                'avg_appointments_per_client': avg_appointments_per_client,
+                'client_loyalty_score': (high_value_clients / total_clients * 100) if total_clients > 0 else 0
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting client context: {str(e)}")
+            return {}
+    
+    async def _get_appointment_context(self, user_id: str) -> Dict:
+        """Get appointment-specific context for user"""
+        try:
+            # Get appointment scheduling data
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=90)
+            
+            appointments = self.db.query(Appointment).filter(
+                and_(
+                    Appointment.barber_id == user_id,
+                    Appointment.start_time >= start_date
+                )
+            ).all()
+            
+            if not appointments:
+                return {'message': 'No recent appointment data available'}
+            
+            # Analyze appointment patterns
+            total_appointments = len(appointments)
+            completed = len([a for a in appointments if a.status == "completed"])
+            cancelled = len([a for a in appointments if a.status == "cancelled"])
+            no_show = len([a for a in appointments if a.status == "no_show"])
+            
+            # Time-based analysis
+            hour_counts = {}
+            day_counts = {}
+            
+            for appointment in appointments:
+                hour = appointment.start_time.hour
+                day = appointment.start_time.strftime('%A')
+                
+                hour_counts[hour] = hour_counts.get(hour, 0) + 1
+                day_counts[day] = day_counts.get(day, 0) + 1
+            
+            peak_hour = max(hour_counts.items(), key=lambda x: x[1]) if hour_counts else None
+            peak_day = max(day_counts.items(), key=lambda x: x[1]) if day_counts else None
+            
+            return {
+                'total_appointments_90d': total_appointments,
+                'completion_rate': (completed / total_appointments * 100) if total_appointments > 0 else 0,
+                'cancellation_rate': (cancelled / total_appointments * 100) if total_appointments > 0 else 0,
+                'no_show_rate': (no_show / total_appointments * 100) if total_appointments > 0 else 0,
+                'peak_booking_hour': f"{peak_hour[0]}:00" if peak_hour else None,
+                'peak_booking_day': peak_day[0] if peak_day else None,
+                'scheduling_efficiency': (completed / (completed + cancelled + no_show) * 100) if (completed + cancelled + no_show) > 0 else 0
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting appointment context: {str(e)}")
+            return {}
+    
+    async def _generate_revenue_insight(self, user_id: str, performance_data: Dict) -> 'BusinessInsight':
+        """Generate revenue optimization insight"""
+        from models.business_intelligence_agents import BusinessInsight, InsightPriority
+        
+        return BusinessInsight(
+            insight_type="revenue_optimization",
+            title="Revenue Growth Opportunity Identified",
+            description="Based on your current average transaction value, there's significant opportunity to increase revenue through premium pricing strategies and service upselling.",
+            priority=InsightPriority.HIGH,
+            confidence_score=0.8,
+            implementation_difficulty="medium",
+            expected_roi=25.0
+        )
+    
+    async def _generate_retention_insight(self, user_id: str, performance_data: Dict) -> 'BusinessInsight':
+        """Generate client retention insight"""
+        from models.business_intelligence_agents import BusinessInsight, InsightPriority
+        
+        return BusinessInsight(
+            insight_type="client_retention",
+            title="Client Retention Enhancement Needed",
+            description="Your client retention rate shows room for improvement. Implementing a loyalty program and personalized follow-up system could significantly increase repeat bookings.",
+            priority=InsightPriority.HIGH,
+            confidence_score=0.7,
+            implementation_difficulty="medium",
+            expected_roi=30.0
+        )
+    
+    async def _generate_efficiency_insight(self, user_id: str, performance_data: Dict) -> 'BusinessInsight':
+        """Generate operational efficiency insight"""
+        from models.business_intelligence_agents import BusinessInsight, InsightPriority
+        
+        return BusinessInsight(
+            insight_type="operational_efficiency",
+            title="Schedule Optimization Opportunity",
+            description="Your appointment scheduling shows inefficiencies that could be optimized. Better time management and booking policies could increase your daily capacity by 15-20%.",
+            priority=InsightPriority.MEDIUM,
+            confidence_score=0.6,
+            implementation_difficulty="low",
+            expected_roi=20.0
+        )

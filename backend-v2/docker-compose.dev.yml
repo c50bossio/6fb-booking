@@ -8,6 +8,24 @@
 
 services:
   # =============================================================================
+  # Redis Cache & Session Store (Development)
+  # =============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: bookedbarber-redis-dev
+    command: redis-server --requirepass devpassword
+    ports:
+      - "6379:6379"
+    networks:
+      - bookedbarber-dev-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # =============================================================================
   # FastAPI Backend Service (Development)
   # =============================================================================
   backend:
@@ -19,6 +37,9 @@ services:
     environment:
       # SQLite Database (Development)
       DATABASE_URL: sqlite:///./6fb_booking.db
+      
+      # Redis Configuration
+      REDIS_URL: redis://:devpassword@redis:6379/0
       
       # Application Settings
       ENVIRONMENT: development
@@ -48,6 +69,9 @@ services:
       - "8000:8000"
     networks:
       - bookedbarber-dev-network
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
