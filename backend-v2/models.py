@@ -361,6 +361,8 @@ class Appointment(Base):
     recurring_series = relationship("RecurringAppointmentSeries", back_populates="appointments")
     # Upselling tracking
     upsell_conversions = relationship("UpsellConversion", back_populates="appointment")
+    # Reminder system relationships
+    reminder_schedules = relationship("ReminderSchedule", back_populates="appointment", cascade="all, delete-orphan")
 
 class Payment(Base):
     __tablename__ = "payments"
@@ -591,6 +593,9 @@ class Client(Base):
     six_fb_crm_behavior_analytics = relationship("SixFBClientBehaviorAnalytics", back_populates="client", cascade="all, delete-orphan")
     six_fb_crm_communication_profiles = relationship("SixFBClientCommunicationProfile", back_populates="client", cascade="all, delete-orphan")
     six_fb_crm_tier_history = relationship("SixFBClientValueTierHistory", back_populates="client", cascade="all, delete-orphan")
+    
+    # Reminder system relationships
+    reminder_preferences = relationship("ReminderPreference", back_populates="client", uselist=False, cascade="all, delete-orphan")
     
     @property
     def name(self) -> str:
@@ -3522,3 +3527,17 @@ class PricingIntelligenceDashboard(Base):
         Index('idx_pricing_dashboard_review', 'next_review_date'),
         Index('idx_pricing_dashboard_freshness', 'data_freshness_timestamp'),
     )
+
+
+# Import reminder models to ensure they are registered with SQLAlchemy
+try:
+    from models.reminder_models import (
+        ReminderPreference,
+        ReminderSchedule,
+        ReminderDelivery,
+        ReminderTemplate,
+        ReminderAnalytics
+    )
+except ImportError:
+    # Models may not be available in all environments
+    pass

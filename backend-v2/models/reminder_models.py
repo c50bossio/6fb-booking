@@ -2,13 +2,13 @@
 SQLAlchemy models for the appointment reminder system
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, Time, Text, Numeric, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, Time, Text, Numeric, ForeignKey, Index, JSON
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import datetime
 
-from core.database import Base
+from db import Base
 
 
 class ReminderPreference(Base):
@@ -72,7 +72,7 @@ class ReminderDelivery(Base):
     channel = Column(String(10), nullable=False, index=True)  # 'sms', 'email', 'push'
     provider = Column(String(20))  # 'twilio', 'sendgrid', 'fcm'
     provider_message_id = Column(String(100), index=True)
-    provider_response = Column(JSONB)  # Full provider response for debugging
+    provider_response = Column(JSON)  # Full provider response for debugging
     delivered_at = Column(DateTime(timezone=True), index=True)
     client_response = Column(String(20))  # 'confirmed', 'rescheduled', 'cancelled'
     response_at = Column(DateTime(timezone=True))
@@ -102,14 +102,14 @@ class ReminderTemplate(Base):
     channel = Column(String(10), nullable=False)  # 'sms', 'email', 'push'
     subject_template = Column(Text)  # For email subject lines
     body_template = Column(Text, nullable=False)
-    variables = Column(JSONB)  # Available template variables and descriptions
-    shop_id = Column(Integer, ForeignKey("shops.id", ondelete="CASCADE"))  # Null = default template
+    variables = Column(JSON)  # Available template variables and descriptions
+    shop_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"))  # Null = default template
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Relationships
-    shop = relationship("Shop")
+    shop = relationship("Organization")
     
     # Unique constraint for template name per shop
     __table_args__ = (
@@ -127,8 +127,8 @@ class ReminderAnalytics(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     date = Column(Date, nullable=False, index=True)
-    shop_id = Column(Integer, ForeignKey("shops.id", ondelete="CASCADE"), index=True)
-    barber_id = Column(Integer, ForeignKey("barbers.id", ondelete="CASCADE"), index=True)
+    shop_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
+    barber_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     reminder_type = Column(String(20), nullable=False)
     channel = Column(String(10), nullable=False)
     total_sent = Column(Integer, default=0)
@@ -141,8 +141,8 @@ class ReminderAnalytics(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
-    shop = relationship("Shop")
-    barber = relationship("Barber")
+    shop = relationship("Organization")
+    barber = relationship("User")
     
     # Unique constraint for daily analytics
     __table_args__ = (

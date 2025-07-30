@@ -65,7 +65,7 @@ def upgrade():
         sa.Column('channel', sa.String(10), nullable=False),  # 'sms', 'email', 'push'
         sa.Column('provider', sa.String(20), nullable=True),  # 'twilio', 'sendgrid', 'fcm'
         sa.Column('provider_message_id', sa.String(100), nullable=True),
-        sa.Column('provider_response', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column('provider_response', sa.Text(), nullable=True),
         sa.Column('delivered_at', sa.TIMESTAMP(), nullable=True),
         sa.Column('client_response', sa.String(20), nullable=True),  # 'confirmed', 'rescheduled', 'cancelled'
         sa.Column('response_at', sa.TIMESTAMP(), nullable=True),
@@ -89,7 +89,7 @@ def upgrade():
         sa.Column('channel', sa.String(10), nullable=False),  # 'sms', 'email', 'push'
         sa.Column('subject_template', sa.Text(), nullable=True),  # For email
         sa.Column('body_template', sa.Text(), nullable=False),
-        sa.Column('variables', postgresql.JSONB(astext_type=sa.Text()), nullable=True),  # Available template variables
+        sa.Column('variables', sa.Text(), nullable=True),  # Available template variables (JSON string)
         sa.Column('shop_id', sa.Integer(), nullable=True),  # Null = default, specific shop = custom
         sa.Column('is_active', sa.Boolean(), nullable=True, default=True),
         sa.Column('created_at', sa.TIMESTAMP(), nullable=True, default=sa.text('CURRENT_TIMESTAMP')),

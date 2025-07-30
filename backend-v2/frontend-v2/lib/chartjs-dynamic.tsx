@@ -3,95 +3,171 @@
 import dynamic from 'next/dynamic';
 import React from 'react';
 
-// Dynamic import wrapper for Chart.js to prevent SSR issues
-export const ChartJS = dynamic(
-  () => import('chart.js').then(mod => ({ default: mod.Chart })),
+// Loading component for charts
+const ChartSkeleton = () => (
+  <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center animate-pulse">
+    <div className="text-gray-400">Loading chart...</div>
+  </div>
+);
+
+// Dynamic imports for recharts components (lighter and more performant)
+export const LineChart = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.LineChart })),
   { 
     ssr: false,
-    loading: () => <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading chart...</div>
+    loading: () => <ChartSkeleton />
   }
 );
 
-// Export Chart for compatibility
-export const Chart = ChartJS;
-
-// Chart.js components
-export const CategoryScale = dynamic(() => import('chart.js').then(mod => ({ default: mod.CategoryScale })), { ssr: false });
-export const LinearScale = dynamic(() => import('chart.js').then(mod => ({ default: mod.LinearScale })), { ssr: false });
-export const PointElement = dynamic(() => import('chart.js').then(mod => ({ default: mod.PointElement })), { ssr: false });
-export const LineElement = dynamic(() => import('chart.js').then(mod => ({ default: mod.LineElement })), { ssr: false });
-export const BarElement = dynamic(() => import('chart.js').then(mod => ({ default: mod.BarElement })), { ssr: false });
-export const Title = dynamic(() => import('chart.js').then(mod => ({ default: mod.Title })), { ssr: false });
-export const Tooltip = dynamic(() => import('chart.js').then(mod => ({ default: mod.Tooltip })), { ssr: false });
-export const Legend = dynamic(() => import('chart.js').then(mod => ({ default: mod.Legend })), { ssr: false });
-export const ArcElement = dynamic(() => import('chart.js').then(mod => ({ default: mod.ArcElement })), { ssr: false });
-export const Filler = dynamic(() => import('chart.js').then(mod => ({ default: mod.Filler })), { ssr: false });
-
-// React Chart.js 2 components
 export const Line = dynamic(
-  () => import('react-chartjs-2').then(mod => ({ default: mod.Line })),
+  () => import('recharts').then(mod => ({ default: mod.Line })),
+  { ssr: false }
+);
+
+export const BarChart = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.BarChart })),
   { 
     ssr: false,
-    loading: () => <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading line chart...</div>
+    loading: () => <ChartSkeleton />
   }
 );
 
 export const Bar = dynamic(
-  () => import('react-chartjs-2').then(mod => ({ default: mod.Bar })),
-  { 
-    ssr: false,
-    loading: () => <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading bar chart...</div>
-  }
+  () => import('recharts').then(mod => ({ default: mod.Bar })),
+  { ssr: false }
 );
 
-export const Doughnut = dynamic(
-  () => import('react-chartjs-2').then(mod => ({ default: mod.Doughnut })),
+export const PieChart = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.PieChart })),
   { 
     ssr: false,
-    loading: () => <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading doughnut chart...</div>
+    loading: () => <ChartSkeleton />
   }
 );
 
 export const Pie = dynamic(
-  () => import('react-chartjs-2').then(mod => ({ default: mod.Pie })),
+  () => import('recharts').then(mod => ({ default: mod.Pie })),
+  { ssr: false }
+);
+
+export const AreaChart = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.AreaChart })),
   { 
     ssr: false,
-    loading: () => <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading pie chart...</div>
+    loading: () => <ChartSkeleton />
   }
 );
 
-export const Radar = dynamic(
-  () => import('react-chartjs-2').then(mod => ({ default: mod.Radar })),
-  { 
-    ssr: false,
-    loading: () => <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading radar chart...</div>
-  }
+export const Area = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.Area })),
+  { ssr: false }
 );
 
-export const PolarArea = dynamic(
-  () => import('react-chartjs-2').then(mod => ({ default: mod.PolarArea })),
-  { 
-    ssr: false,
-    loading: () => <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading polar area chart...</div>
-  }
+export const ResponsiveContainer = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.ResponsiveContainer })),
+  { ssr: false }
 );
 
-export const Bubble = dynamic(
-  () => import('react-chartjs-2').then(mod => ({ default: mod.Bubble })),
-  { 
-    ssr: false,
-    loading: () => <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading bubble chart...</div>
-  }
+export const XAxis = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.XAxis })),
+  { ssr: false }
 );
 
-export const Scatter = dynamic(
-  () => import('react-chartjs-2').then(mod => ({ default: mod.Scatter })),
-  { 
-    ssr: false,
-    loading: () => <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading scatter chart...</div>
-  }
+export const YAxis = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.YAxis })),
+  { ssr: false }
 );
+
+export const CartesianGrid = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.CartesianGrid })),
+  { ssr: false }
+);
+
+export const Tooltip = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.Tooltip })),
+  { ssr: false }
+);
+
+export const Legend = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.Legend })),
+  { ssr: false }
+);
+
+export const Cell = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.Cell })),
+  { ssr: false }
+);
+
+// Backwards compatibility aliases for Chart.js migration
+export const Chart = LineChart; // Default to LineChart
+export const Doughnut = PieChart; // Doughnut is similar to Pie
+
+// Mock Chart.js registration function for compatibility
+export const register = (...args: any[]) => {
+  // No-op for recharts compatibility
+};
+
+// Export ChartJS as alias for backwards compatibility
+export const ChartJS = {
+  register
+};
+
+// Compatibility scale exports (no-ops for recharts)
+export const CategoryScale = () => null;
+export const LinearScale = () => null;
+export const PointElement = () => null;
+export const LineElement = () => null;
+export const BarElement = () => null;
+export const ArcElement = () => null;
+export const Title = () => null;
+export const Filler = () => null;
 
 // Export types for TypeScript compatibility
-export type ChartOptions = any; // Dynamic type import
-export type ChartData = any; // Dynamic type import
+export type ChartOptions = any;
+export type ChartData = {
+  labels: string[];
+  datasets: Array<{
+    label: string;
+    data: number[];
+    backgroundColor?: string | string[];
+    borderColor?: string | string[];
+    [key: string]: any;
+  }>;
+};
+
+// Utility function to convert Chart.js data format to recharts format
+export const convertChartJSDataToRecharts = (chartJSData: ChartData) => {
+  const { labels, datasets } = chartJSData;
+  
+  return labels.map((label, index) => {
+    const dataPoint: any = { name: label };
+    
+    datasets.forEach((dataset, datasetIndex) => {
+      dataPoint[dataset.label || `dataset${datasetIndex}`] = dataset.data[index] || 0;
+    });
+    
+    return dataPoint;
+  });
+};
+
+// Default export for compatibility
+export default {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  AreaChart,
+  Area,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  Cell,
+  Chart,
+  ChartJS,
+  convertChartJSDataToRecharts
+};
