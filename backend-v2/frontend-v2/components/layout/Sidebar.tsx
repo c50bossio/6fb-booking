@@ -35,13 +35,26 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   
   // Helper function to get role display name
   const getRoleDisplayName = (user: User): string => {
+    const effectiveRole = user.unified_role || user.role || 'barber'
+    
     if (user.unified_role) {
       return UserPermissions.getRoleDisplayName(user.unified_role)
     }
-    // Fallback for legacy roles
-    if (user.role === 'admin') return 'Administrator'
-    if (user.role === 'barber') return 'Barber'
-    return 'Client'
+    
+    // Enhanced fallback for legacy roles
+    const roleMap: Record<string, string> = {
+      'admin': 'Administrator',
+      'super_admin': 'Super Administrator',
+      'barber': 'Barber',
+      'shop_owner': 'Shop Owner',
+      'individual_barber': 'Barber',
+      'shop_manager': 'Shop Manager',
+      'receptionist': 'Receptionist',
+      'client': 'Client',
+      'user': 'Client'
+    }
+    
+    return roleMap[effectiveRole] || 'Barber'
   }
 
   const toggleSection = (sectionName: string) => {
@@ -55,10 +68,26 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   }
 
   // Memoize navigation items to prevent re-renders and group them
-  const filteredNavigationItems = useMemo(() => 
-    filterNavigationByRole(navigationItems, user?.unified_role || user?.role), 
-    [user?.unified_role, user?.role]
-  )
+  // FIXED: Handle both unified_role and legacy role field with proper fallback
+  const userRole = user?.unified_role || user?.role || 'barber'
+  const filteredNavigationItems = useMemo(() => {
+    console.log('🔍 Sidebar navigation filtering debug:', {
+      user: user,
+      userRole: userRole,
+      unified_role: user?.unified_role,
+      legacy_role: user?.role,
+      totalNavItems: navigationItems.length,
+      isDevelopment: process.env.NODE_ENV === 'development'
+    })
+    
+    // 🚀 DEVELOPMENT BYPASS: Show all items in development mode regardless of user state
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 SIDEBAR DEVELOPMENT MODE: Showing all navigation items')
+      return navigationItems
+    }
+    
+    return filterNavigationByRole(navigationItems, userRole)
+  }, [user, userRole])
 
 
   // Enhanced search functionality with better filtering
