@@ -1,0 +1,631 @@
+# =============================================================================
+# BookedBarber V2 - Advanced Auto-Scaling and Load Balancing
+# =============================================================================
+# 📈 Horizontal Pod Autoscaler (HPA) for dynamic scaling
+# 📊 Vertical Pod Autoscaler (VPA) for resource optimization
+# 🎯 Custom metrics and predictive scaling
+# ⚖️ Advanced load balancing with multiple algorithms
+# =============================================================================
+
+---
+# Metrics Server (Required for HPA)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: metrics-server
+  namespace: kube-system
+  labels:
+    k8s-app: metrics-server
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:aggregated-metrics-reader
+  labels:
+    k8s-app: metrics-server
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: metrics-server:system:auth-delegator
+  labels:
+    k8s-app: metrics-server
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: metrics-server
+  namespace: kube-system
+
+---
+# Backend HPA with Custom Metrics
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bookedbarber-backend-hpa
+  namespace: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-backend
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  
+  # Custom metric: Request rate
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  
+  # Custom metric: Response time
+  - type: Pods
+    pods:
+      metric:
+        name: http_request_duration_p95
+      target:
+        type: AverageValue
+        averageValue: "500m"
+  
+  # External metric: Queue depth
+  - type: External
+    external:
+      metric:
+        name: sqs_queue_depth
+        selector:
+          matchLabels:
+            queue: booking-processing
+      target:
+        type: AverageValue
+        averageValue: "10"
+  
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Min
+    
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 4
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+# Frontend HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bookedbarber-frontend-hpa
+  namespace: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-frontend
+  minReplicas: 2
+  maxReplicas: 15
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+  
+  # Custom metric: Active connections
+  - type: Pods
+    pods:
+      metric:
+        name: nginx_active_connections
+      target:
+        type: AverageValue
+        averageValue: "500"
+  
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Percent
+        value: 30
+        periodSeconds: 60
+    
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Percent
+        value: 200
+        periodSeconds: 30
+
+---
+# Vertical Pod Autoscaler for Backend
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: bookedbarber-backend-vpa
+  namespace: production
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-backend
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: bookedbarber-backend
+      minAllowed:
+        cpu: 100m
+        memory: 256Mi
+      maxAllowed:
+        cpu: 4000m
+        memory: 8Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+
+---
+# Vertical Pod Autoscaler for Frontend
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: bookedbarber-frontend-vpa
+  namespace: production
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bookedbarber-frontend
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: bookedbarber-frontend
+      minAllowed:
+        cpu: 100m
+        memory: 256Mi
+      maxAllowed:
+        cpu: 2000m
+        memory: 4Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+
+---
+# Cluster Autoscaler Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-autoscaler-status
+  namespace: kube-system
+  labels:
+    k8s-app: cluster-autoscaler
+data:
+  nodes.max: "50"
+  nodes.min: "3"
+  scale-down-delay-after-add: "10m"
+  scale-down-unneeded-time: "10m"
+  scale-down-utilization-threshold: "0.5"
+  skip-nodes-with-local-storage: "false"
+  skip-nodes-with-system-pods: "false"
+
+---
+# Pod Disruption Budget for Backend
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bookedbarber-backend-pdb
+  namespace: production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: bookedbarber-backend
+
+---
+# Pod Disruption Budget for Frontend
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bookedbarber-frontend-pdb
+  namespace: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: bookedbarber-frontend
+
+---
+# KEDA (Kubernetes Event-Driven Autoscaler) for advanced scaling
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: bookedbarber-backend-keda
+  namespace: production
+spec:
+  scaleTargetRef:
+    name: bookedbarber-backend
+  pollingInterval: 15
+  cooldownPeriod: 300
+  minReplicaCount: 3
+  maxReplicaCount: 25
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      name: bookedbarber-backend-hpa-keda
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+          policies:
+          - type: Percent
+            value: 50
+            periodSeconds: 60
+        scaleUp:
+          stabilizationWindowSeconds: 60
+          policies:
+          - type: Percent
+            value: 100
+            periodSeconds: 30
+  triggers:
+  # Prometheus metrics trigger
+  - type: prometheus
+    metadata:
+      serverAddress: http://prometheus.monitoring.svc.cluster.local:9090
+      metricName: http_requests_per_second_avg
+      threshold: '100'
+      query: rate(http_requests_total{job="bookedbarber-backend"}[2m])
+  
+  # Redis queue depth trigger
+  - type: redis
+    metadata:
+      address: redis.production.svc.cluster.local:6379
+      listName: booking_queue
+      listLength: '10'
+      enableTLS: 'false'
+  
+  # PostgreSQL connection trigger
+  - type: postgresql
+    metadata:
+      connection: postgresql://postgres:5432/bookedbarber?sslmode=require
+      query: "SELECT count(*) FROM pg_stat_activity WHERE state = 'active'"
+      targetQueryValue: '20'
+    authenticationRef:
+      name: postgres-credentials
+
+---
+# Service Monitor for Prometheus to scrape custom metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: bookedbarber-backend-metrics
+  namespace: production
+  labels:
+    app: bookedbarber-backend
+spec:
+  selector:
+    matchLabels:
+      app: bookedbarber-backend
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+
+---
+# Load Balancing Service with Session Affinity
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookedbarber-backend-lb
+  namespace: production
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/health"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "10"
+    service.beta.kubernetes.io/aws-load-balancer-healthy-threshold: "2"
+    service.beta.kubernetes.io/aws-load-balancer-unhealthy-threshold: "3"
+spec:
+  type: LoadBalancer
+  selector:
+    app: bookedbarber-backend
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  - port: 443
+    targetPort: 8000
+    protocol: TCP
+    name: https
+
+---
+# Ingress with Advanced Load Balancing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bookedbarber-ingress-advanced
+  namespace: production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    
+    # Load balancing algorithms
+    nginx.ingress.kubernetes.io/load-balance: "ewma"  # Exponentially Weighted Moving Average
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"  # Consistent hashing
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    
+    # Connection limits
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    
+    # Circuit breaker
+    nginx.ingress.kubernetes.io/upstream-max-fails: "3"
+    nginx.ingress.kubernetes.io/upstream-fail-timeout: "30s"
+    
+    # Health checks
+    nginx.ingress.kubernetes.io/health-check-path: "/health"
+    nginx.ingress.kubernetes.io/health-check-interval: "10s"
+    
+    # Performance optimizations
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    
+    # Caching
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+      }
+      
+      location /api/v2/ {
+        proxy_cache bookedbarber_cache;
+        proxy_cache_valid 200 5m;
+        proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+        proxy_cache_background_update on;
+        proxy_cache_lock on;
+        add_header X-Cache-Status $upstream_cache_status;
+      }
+
+spec:
+  tls:
+  - hosts:
+    - bookedbarber.com
+    - api.bookedbarber.com
+    - app.bookedbarber.com
+    secretName: bookedbarber-tls
+  rules:
+  - host: bookedbarber.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bookedbarber-frontend
+            port:
+              number: 3000
+  - host: api.bookedbarber.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bookedbarber-backend-lb
+            port:
+              number: 80
+
+---
+# Network Policies for Load Balancer Security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: load-balancer-security
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: bookedbarber-backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090  # Metrics endpoint
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: production
+    ports:
+    - protocol: TCP
+      port: 5432  # PostgreSQL
+    - protocol: TCP
+      port: 6379  # Redis
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443  # External HTTPS
+    - protocol: TCP
+      port: 53   # DNS
+    - protocol: UDP
+      port: 53   # DNS
+
+---
+# Custom Resource for Predictive Scaling
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: predictive-scaling-config
+  namespace: production
+data:
+  config.yaml: |
+    predictiveScaling:
+      enabled: true
+      schedulingWindow: 24h
+      forecastingHorizon: 4h
+      scaleUpBuffer: 20%
+      scaleDownBuffer: 10%
+      
+      patterns:
+      # Business hours scaling
+      - name: business-hours
+        schedule: "0 8 * * 1-5"  # 8 AM, Monday-Friday
+        replicas: 8
+        duration: 10h
+        
+      # Evening peak
+      - name: evening-peak
+      schedule: "0 18 * * 1-5"  # 6 PM, Monday-Friday
+        replicas: 12
+        duration: 4h
+      
+      # Weekend scaling
+      - name: weekend
+        schedule: "0 10 * * 6,0"  # 10 AM, Saturday-Sunday
+        replicas: 6
+        duration: 8h
+      
+      # Holiday/special events
+      - name: special-events
+        manual: true
+        replicas: 20
+        
+      metrics:
+      - name: historical_cpu_usage
+        weight: 0.3
+      - name: historical_request_rate
+        weight: 0.4
+      - name: business_metrics
+        weight: 0.3
+
+---
+# CronJob for Predictive Scaling Analysis
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: predictive-scaling-analyzer
+  namespace: production
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: predictive-scaling-sa
+          containers:
+          - name: analyzer
+            image: bookedbarber/predictive-scaler:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Analyzing scaling patterns..."
+              
+              # Fetch historical metrics from Prometheus
+              PROMETHEUS_URL="http://prometheus.monitoring.svc.cluster.local:9090"
+              
+              # Analyze CPU patterns
+              CPU_PATTERN=$(curl -s "${PROMETHEUS_URL}/api/v1/query_range?query=rate(container_cpu_usage_seconds_total[5m])&start=$(date -d '7 days ago' +%s)&end=$(date +%s)&step=3600")
+              
+              # Analyze request patterns
+              REQUEST_PATTERN=$(curl -s "${PROMETHEUS_URL}/api/v1/query_range?query=rate(http_requests_total[5m])&start=$(date -d '7 days ago' +%s)&end=$(date +%s)&step=3600")
+              
+              # Generate scaling recommendations
+              python3 /app/predictive_scaler.py \
+                --cpu-pattern="$CPU_PATTERN" \
+                --request-pattern="$REQUEST_PATTERN" \
+                --config-file="/etc/config/config.yaml"
+              
+              echo "Predictive scaling analysis completed"
+            volumeMounts:
+            - name: config
+              mountPath: /etc/config
+            resources:
+              limits:
+                memory: 512Mi
+                cpu: 250m
+              requests:
+                memory: 256Mi
+                cpu: 100m
+            env:
+            - name: KUBERNETES_NAMESPACE
+              value: production
+          volumes:
+          - name: config
+            configMap:
+              name: predictive-scaling-config
+          restartPolicy: OnFailure

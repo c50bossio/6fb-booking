@@ -17,7 +17,7 @@ services:
     environment:
       POSTGRES_DB: bookedbarber_v2
       POSTGRES_USER: bookedbarber
-      POSTGRES_PASSWORD: bookedbarber_secure_password_2025
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -40,7 +40,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: bookedbarber-redis
-    command: redis-server --appendonly yes --requirepass bookedbarber_redis_password_2025
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     ports:
@@ -77,7 +77,7 @@ services:
       DATABASE_URL: sqlite:///./shared/6fb_booking.db
       
       # Redis Configuration
-      REDIS_URL: redis://:bookedbarber_redis_password_2025@redis:6379/0
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
       
       # Application Settings
       ENVIRONMENT: development
@@ -86,8 +86,8 @@ services:
       HOST: 0.0.0.0
       
       # JWT and Security
-      SECRET_KEY: bookedbarber_jwt_super_secret_key_2025_change_in_production
-      JWT_SECRET_KEY: bookedbarber_jwt_super_secret_key_2025_change_in_production
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_ALGORITHM: HS256
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 30
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: 7
@@ -109,6 +109,42 @@ services:
       # Analytics & Tracking
       GOOGLE_ANALYTICS_ID: G-YOUR_GA4_MEASUREMENT_ID
       META_PIXEL_ID: your_meta_pixel_id
+      
+      # AI Business Calendar Configuration
+      AI_BUSINESS_INTELLIGENCE_ENABLED: "true"
+      AI_COACHING_ENABLED: "true"
+      AI_AGENT_RESPONSE_TIMEOUT: "30000"
+      AI_AGENT_MAX_TOKENS: "4000"
+      AI_AGENT_DEFAULT_MODEL: "claude-3-sonnet"
+      
+      # Business Intelligence Features
+      ENABLE_FINANCIAL_COACH: "true"
+      ENABLE_GROWTH_STRATEGIST: "true"
+      ENABLE_OPERATIONS_OPTIMIZER: "true"
+      ENABLE_BRAND_DEVELOPER: "true"
+      
+      # Performance and Rate Limiting
+      AI_CHAT_RATE_LIMIT: "20"
+      AI_INSIGHTS_CACHE_TTL: "300"
+      BUSINESS_METRICS_REFRESH_INTERVAL: "3600"
+      
+      # Six Figure Barber Methodology Compliance
+      SIX_FIGURE_BARBER_TRACKING_ENABLED: "true"
+      COMPLIANCE_SCORING_ENABLED: "true"
+      AUTOMATED_COACHING_TRIGGERS: "true"
+      
+      # AI Chat Interface Configuration
+      CHAT_MESSAGE_HISTORY_LIMIT: "100"
+      CHAT_SESSION_TIMEOUT: "1800000"
+      ENABLE_CHAT_SUGGESTIONS: "true"
+      ENABLE_TYPING_INDICATORS: "true"
+      
+      # Enhanced Google Calendar Business Intelligence
+      GOOGLE_CALENDAR_BUSINESS_METADATA_ENABLED: "true"
+      GOOGLE_CALENDAR_SYNC_INTERVAL: "300"
+      GOOGLE_CALENDAR_CONFLICT_RESOLUTION: "smart"
+      ENABLE_EXTERNAL_CALENDAR_EVENTS: "true"
+      CALENDAR_BUSINESS_INSIGHTS_ENABLED: "true"
       
       # Health Checks
       HEALTH_CHECK_ENABLED: "true"
@@ -150,8 +186,8 @@ services:
       target: development
       args:
         # Build-time environment variables (browser-accessible URLs)
-        NEXT_PUBLIC_API_URL: http://localhost:8000
-        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+        NEXT_PUBLIC_API_URL: http://backend:8000
+        NEXT_PUBLIC_API_BASE_URL: http://backend:8000/api/v2
         NEXT_PUBLIC_ENVIRONMENT: development
         NODE_ENV: development
     container_name: bookedbarber-frontend
@@ -165,8 +201,8 @@ services:
           cpus: '0.75'
     environment:
       # Runtime environment variables (browser-accessible URLs)
-      NEXT_PUBLIC_API_URL: http://localhost:8000
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v2
+      NEXT_PUBLIC_API_URL: http://backend:8000
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8000/api/v2
       NEXT_PUBLIC_ENVIRONMENT: development
       NODE_ENV: development
       PORT: 3000
@@ -188,6 +224,29 @@ services:
       NEXT_PUBLIC_SHOW_TEST_DATA: "true"
       NEXT_PUBLIC_ENABLE_ANALYTICS: "true"
       NEXT_PUBLIC_ENABLE_ERROR_TRACKING: "true"
+      
+      # AI Business Calendar Features
+      NEXT_PUBLIC_ENABLE_AI_BUSINESS_CALENDAR: "true"
+      NEXT_PUBLIC_ENABLE_AI_COACHING_CHAT: "true"
+      NEXT_PUBLIC_ENABLE_BUSINESS_INTELLIGENCE: "true"
+      NEXT_PUBLIC_ENABLE_SIX_FIGURE_BARBER_TRACKING: "true"
+      
+      # AI Agents Configuration
+      NEXT_PUBLIC_ENABLE_FINANCIAL_COACH: "true"
+      NEXT_PUBLIC_ENABLE_GROWTH_STRATEGIST: "true"
+      NEXT_PUBLIC_ENABLE_OPERATIONS_OPTIMIZER: "true"
+      NEXT_PUBLIC_ENABLE_BRAND_DEVELOPER: "true"
+      
+      # AI Chat Interface Settings
+      NEXT_PUBLIC_AI_CHAT_MAX_MESSAGES: "100"
+      NEXT_PUBLIC_AI_CHAT_TIMEOUT: "1800000"
+      NEXT_PUBLIC_ENABLE_CHAT_SUGGESTIONS: "true"
+      NEXT_PUBLIC_ENABLE_TYPING_INDICATORS: "true"
+      
+      # Google Calendar Enhanced Features
+      NEXT_PUBLIC_ENABLE_CALENDAR_BUSINESS_INSIGHTS: "true"
+      NEXT_PUBLIC_ENABLE_CALENDAR_METADATA_SYNC: "true"
+      NEXT_PUBLIC_CALENDAR_SYNC_INTERVAL: "300000"
       
       # Debug Dashboard Components
       NEXT_PUBLIC_DEBUG_DASHBOARD: "true"

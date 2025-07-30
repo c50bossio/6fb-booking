@@ -46,13 +46,17 @@ export function AppLayout({ children }: AppLayoutProps) {
     const loadUser = async () => {
       const routeIsProtected = isProtectedRoute(pathname)
       
-      if (!routeIsProtected) {
+      // CRITICAL: Completely skip all authentication logic for public routes AND login page
+      if (!routeIsProtected || pathname === '/login') {
         setLoading(false)
+        setUser(null)
+        setError(null)
         return
       }
 
       // Check if we have authentication data in storage
-      const hasToken = localStorage.getItem('token')
+      // FIXED: Use consistent token naming - check access_token first, then fallback to legacy token
+      const hasToken = localStorage.getItem('access_token') || localStorage.getItem('token')
       const hasUserRole = localStorage.getItem('user_role')
       
       if (process.env.NODE_ENV === 'development') {
@@ -104,10 +108,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
 
     // Only run if mounted to prevent hydration issues
-    if (mounted) {
+    // CRITICAL: Only run auth logic for protected routes (excluding login)
+    if (mounted && !isPublicRoute && pathname !== '/login') {
       loadUser()
+    } else if (mounted && (isPublicRoute || pathname === '/login')) {
+      // For public routes and login page, immediately set clean state
+      setLoading(false)
+      setUser(null)
+      setError(null)
     }
-  }, [pathname, mounted])
+  }, [pathname, mounted, isPublicRoute])
 
   // Auto-collapse sidebar on mobile - simplified
   useEffect(() => {

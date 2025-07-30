@@ -23,7 +23,7 @@ import {
   Area,
   ComposedChart,
   ReferenceLine
-} from 'recharts';
+} from '@/lib/recharts-dynamic';
 import { 
   TrendingUp, 
   TrendingDown, 

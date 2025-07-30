@@ -1,8 +1,7 @@
 import { Appointment } from '@/types/appointment'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
-import jsPDF from 'jspdf'
-import 'jspdf-autotable'
 
+// Dynamic imports for browser-only libraries
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: any) => jsPDF
@@ -193,6 +192,12 @@ export async function generatePDF(
   template: ExportTemplate = 'client-report',
   includeOptions: ExportConfig['includeOptions']
 ): Promise<Blob> {
+  // Dynamic import to prevent SSR issues
+  const [{ default: jsPDF }, _] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable')
+  ])
+  
   const doc = new jsPDF()
   
   // Set professional styling

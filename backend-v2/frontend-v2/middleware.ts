@@ -1,215 +1,78 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { enhancedAuthMiddleware } from './lib/auth-middleware'
-
-/**
- * Enhanced Next.js Middleware with Homepage Consolidation Enforcement
- * 
- * This middleware enforces the homepage consolidation plan by:
- * 1. Redirecting forbidden routes to their correct destinations
- * 2. Blocking access to deprecated/demo routes
- * 3. Ensuring consistent routing across the application
- * 4. Managing authentication flows
- * 
- * Part of the permanent homepage consolidation enforcement infrastructure.
- */
-
-// ==================== ROUTE DEFINITIONS ====================
-
-// List of routes that don't require authentication
-const publicRoutes = [
-  '/',
-  '/login',
-  '/register',
-  '/check-email',
-  '/verify-email',
-  '/forgot-password',
-  '/reset-password',
-  '/book',
-  '/terms',
-  '/privacy', 
-  '/cookies',
-  '/offline',
-  '/calendar-showcase',
-  '/calendar', // Allow calendar to always show full interface
-  '/demo', // Allow all demo routes for development and testing
-  '/test-modal', // Temporary for testing ShareBookingModal
-  '/service-worker.js',
-  '/manifest.json',
-  '/icon', // PWA icon endpoint (with dynamic sizing)
-  '/apple-icon', // Apple-specific icon endpoint
-  '/favicon.ico', // Legacy favicon
-]
-
-// List of routes that require admin role
-const adminRoutes = ['/admin']
-
-// Forbidden routes that should redirect (Homepage consolidation enforcement)
-const FORBIDDEN_ROUTES: Record<string, string> = {
-  // V1 routes (redirect to V2)
-  '/auth/signup': '/register',
-  '/auth/signin': '/login',
-  '/auth/login': '/login',
-  
-  // Deprecated demo routes only
-  '/try-demo': '/',
-  '/live-demo': '/',
-  
-  // Old booking routes
-  '/booking': '/book',
-  '/bookings/new': '/book',
-  
-  // Misc redirects
-  '/signup': '/register',
-  '/signin': '/login',
-  '/trial': '/register'
-}
-
-// ==================== MIDDLEWARE FUNCTION ====================
 
 export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname
-  
-  // ==================== HOMEPAGE CONSOLIDATION ENFORCEMENT ====================
-  
-  // Check if this route should be redirected (permanent homepage consolidation)
-  const redirectTarget = FORBIDDEN_ROUTES[path]
-  if (redirectTarget) {
-    const url = new URL(redirectTarget, request.url)
-    
-    // Log redirect for debugging (development only)
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔀 Homepage Consolidation Redirect: ${path} → ${redirectTarget}`)
-    }
-    
-    return NextResponse.redirect(url, 301) // Permanent redirect
-  }
-  
-  // Block access to deprecated demo routes only
-  const blockedDemoRoutes = ['/try-demo', '/live-demo']
-  // Allow all /demo/* routes for development and showcasing
-  
-  if (blockedDemoRoutes.some(route => path.startsWith(route))) {
-    const url = new URL('/', request.url)
-    url.searchParams.set('error', 'demo_disabled')
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🚫 Blocked deprecated demo route: ${path} → /`)
-    }
-    
-    return NextResponse.redirect(url, 301)
-  }
-  
-  // ==================== ENHANCED AUTHENTICATION HANDLING ====================
-  
-  // Try enhanced auth middleware first (role-based access control)
-  const enhancedResponse = enhancedAuthMiddleware(request)
-  if (enhancedResponse) {
-    return enhancedResponse
-  }
-  
-  // Fallback to basic authentication handling
-  // Check for secure auth cookies that our authentication system actually sets
-  const accessTokenCookie = request.cookies.get('access_token')?.value
-  const refreshTokenCookie = request.cookies.get('refresh_token')?.value
-  const authHeader = request.headers.get('authorization')
-  const hasToken = accessTokenCookie || refreshTokenCookie || authHeader?.startsWith('Bearer ')
-  
-  // DEBUG: Log cookie detection
-  if (process.env.NODE_ENV === 'development' && path.includes('/dashboard')) {
-    console.log(`🔍 MIDDLEWARE DEBUG for ${path}:`)
-    console.log(`   access_token cookie: ${accessTokenCookie ? 'FOUND' : 'MISSING'}`)
-    console.log(`   refresh_token cookie: ${refreshTokenCookie ? 'FOUND' : 'MISSING'}`)
-    console.log(`   hasToken: ${hasToken}`)
-    console.log(`   All cookies: ${Array.from(request.cookies.keys()).join(', ')}`)
-  }
-
-  // Check if the route is public
-  const isPublicRoute = publicRoutes.some(route => path === route || path.startsWith(route + '/'))
-  
-  // Check if the route is admin-only
-  const isAdminRoute = adminRoutes.some(route => path === route || path.startsWith(route + '/'))
-
-  // Protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/appointments', '/clients', '/analytics', '/settings']
-  const isProtectedRoute = protectedRoutes.some(route => path === route || path.startsWith(route + '/'))
-  
-  // Simplified auth page handling - always allow access to login/register
-  // Let the frontend handle auth state validation
-  if (path === '/login' || path === '/register') {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔓 Allowing access to auth page: ${path}`)
-    }
-    // Don't redirect - let users access login page directly
-  }
-  
-  // Redirect unauthenticated users from protected pages (to login)
-  if (!hasToken && isProtectedRoute) {
-    const url = new URL('/login', request.url)
-    url.searchParams.set('redirect', path) // Remember where they wanted to go
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔐 Unauthenticated user redirected to login: ${path} → /login`)
-    }
-    return NextResponse.redirect(url)
-  }
-  
-  // Only redirect if explicitly trying to access admin without any auth indication
-  if (isAdminRoute && !hasToken && !isPublicRoute) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // ==================== SECURITY HEADERS ====================
-  
   const response = NextResponse.next()
   
-  // Add service worker headers for proper caching
-  if (path === '/service-worker.js') {
-    response.headers.set('Service-Worker-Allowed', '/')
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
-  }
+  // SECURITY FIX: Comprehensive security headers implementation
   
-  // Add PWA headers for manifest
-  if (path === '/manifest.json') {
-    response.headers.set('Content-Type', 'application/manifest+json')
-  }
+  // Content Security Policy - Strict policy for production security
+  const cspHeader = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: https: blob:",
+    "connect-src 'self' https://api.stripe.com https://analytics.google.com https://www.google-analytics.com https://api.anthropic.com https://api.openai.com wss:",
+    "frame-src 'self' https://js.stripe.com https://connect.facebook.net",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests"
+  ].join('; ')
   
-  // Add security headers
+  response.headers.set('Content-Security-Policy', cspHeader)
+  
+  // HTTP Strict Transport Security (HSTS)
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
+  
+  // Prevent clickjacking attacks
   response.headers.set('X-Frame-Options', 'DENY')
+  
+  // Prevent MIME type sniffing
   response.headers.set('X-Content-Type-Options', 'nosniff')
+  
+  // XSS Protection (legacy but still valuable)
+  response.headers.set('X-XSS-Protection', '1; mode=block')
+  
+  // Referrer Policy - Limit referrer information leakage
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   
-  // ==================== DEVELOPMENT DEBUGGING ====================
+  // Permissions Policy - Disable dangerous features
+  response.headers.set('Permissions-Policy', [
+    'camera=()',
+    'microphone=()',
+    'geolocation=(self)',
+    'payment=(self)',
+    'usb=()',
+    'magnetometer=()',
+    'accelerometer=()',
+    'gyroscope=()'
+  ].join(', '))
   
-  if (process.env.NODE_ENV === 'development') {
-    // Enhanced debugging with role and token info
-    const userRoleCookie = request.cookies.get('user_role')?.value
-    const accessTokenCookie = request.cookies.get('access_token')?.value
-    
-    // Add debug headers
-    response.headers.set('X-Debug-Route', path)
-    response.headers.set('X-Debug-Auth', hasToken ? 'true' : 'false')
-    response.headers.set('X-Debug-Role', userRoleCookie || 'none')
-    response.headers.set('X-Debug-Access-Token-Present', accessTokenCookie ? 'true' : 'false')
-    
-    // Enhanced logging for authentication debugging
-    if (path.includes('/calendar') || path.includes('/dashboard')) {
-      console.log(`🔍 ${request.method} ${path} [${hasToken ? 'AUTH' : 'ANON'}] Role: ${userRoleCookie || 'none'}`)
-      
-      if (accessTokenCookie) {
-        try {
-          // Quick JWT payload inspection for debugging
-          const payload = JSON.parse(Buffer.from(accessTokenCookie.split('.')[1], 'base64').toString())
-          console.log(`🔑 Token Info: sub=${payload.sub}, role=${payload.role || 'missing'}, exp=${payload.exp}`)
-        } catch (e) {
-          console.log(`⚠️ Token parsing failed: ${e}`)
-        }
-      }
-    } else {
-      // Normal logging for other routes
-      console.log(`📍 ${request.method} ${path} [${hasToken ? 'AUTH' : 'ANON'}]`)
-    }
+  // Cross-Origin Embedder Policy
+  response.headers.set('Cross-Origin-Embedder-Policy', 'credentialless')
+  
+  // Cross-Origin Opener Policy  
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+  
+  // Cross-Origin Resource Policy
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin')
+  
+  // Remove server identification headers for security
+  response.headers.delete('Server')
+  response.headers.delete('X-Powered-By')
+  
+  // Cache control for sensitive content
+  if (request.nextUrl.pathname.includes('/admin') || 
+      request.nextUrl.pathname.includes('/dashboard') ||
+      request.nextUrl.pathname.includes('/api')) {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
   }
-
+  
   return response
 }
 
@@ -218,12 +81,10 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes)
-     * - _next (all Next.js internal routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - icon (PWA icons)
-     * - apple-icon (Apple icons)
-     * - public folder
      */
-    '/((?!api|_next|favicon\\.ico|icon|apple-icon|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }

@@ -46,9 +46,29 @@ jobs:
         run: |
           cd backend-v2/frontend-v2
           npm run build
+        env:
+          # AI Business Calendar Features (Frontend)
+          NEXT_PUBLIC_ENABLE_AI_BUSINESS_CALENDAR: true
+          NEXT_PUBLIC_ENABLE_AI_COACHING_CHAT: true
+          NEXT_PUBLIC_ENABLE_BUSINESS_INTELLIGENCE: true
+          NEXT_PUBLIC_ENABLE_SIX_FIGURE_BARBER_TRACKING: true
+          # AI Agents Configuration (Frontend)
+          NEXT_PUBLIC_ENABLE_FINANCIAL_COACH: true
+          NEXT_PUBLIC_ENABLE_GROWTH_STRATEGIST: true
+          NEXT_PUBLIC_ENABLE_OPERATIONS_OPTIMIZER: true
+          NEXT_PUBLIC_ENABLE_BRAND_DEVELOPER: true
+          # AI Chat Interface Settings (Frontend)
+          NEXT_PUBLIC_AI_CHAT_MAX_MESSAGES: 100
+          NEXT_PUBLIC_AI_CHAT_TIMEOUT: 1800000
+          NEXT_PUBLIC_ENABLE_CHAT_SUGGESTIONS: true
+          NEXT_PUBLIC_ENABLE_TYPING_INDICATORS: true
+          # Google Calendar Enhanced Features (Frontend)
+          NEXT_PUBLIC_ENABLE_CALENDAR_BUSINESS_INSIGHTS: true
+          NEXT_PUBLIC_ENABLE_CALENDAR_METADATA_SYNC: true
+          NEXT_PUBLIC_CALENDAR_SYNC_INTERVAL: 300000
           
       - name: Deploy to Vercel (Staging)
-        uses: vercel/action@v1
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -91,9 +111,29 @@ jobs:
         run: |
           cd backend-v2/frontend-v2
           npm run build
+        env:
+          # AI Business Calendar Features (Frontend)
+          NEXT_PUBLIC_ENABLE_AI_BUSINESS_CALENDAR: true
+          NEXT_PUBLIC_ENABLE_AI_COACHING_CHAT: true
+          NEXT_PUBLIC_ENABLE_BUSINESS_INTELLIGENCE: true
+          NEXT_PUBLIC_ENABLE_SIX_FIGURE_BARBER_TRACKING: true
+          # AI Agents Configuration (Frontend)
+          NEXT_PUBLIC_ENABLE_FINANCIAL_COACH: true
+          NEXT_PUBLIC_ENABLE_GROWTH_STRATEGIST: true
+          NEXT_PUBLIC_ENABLE_OPERATIONS_OPTIMIZER: true
+          NEXT_PUBLIC_ENABLE_BRAND_DEVELOPER: true
+          # AI Chat Interface Settings (Frontend)
+          NEXT_PUBLIC_AI_CHAT_MAX_MESSAGES: 100
+          NEXT_PUBLIC_AI_CHAT_TIMEOUT: 1800000
+          NEXT_PUBLIC_ENABLE_CHAT_SUGGESTIONS: true
+          NEXT_PUBLIC_ENABLE_TYPING_INDICATORS: true
+          # Google Calendar Enhanced Features (Frontend)
+          NEXT_PUBLIC_ENABLE_CALENDAR_BUSINESS_INSIGHTS: true
+          NEXT_PUBLIC_ENABLE_CALENDAR_METADATA_SYNC: true
+          NEXT_PUBLIC_CALENDAR_SYNC_INTERVAL: 300000
           
       - name: Deploy to Vercel (Production)
-        uses: vercel/action@v1
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -135,9 +175,29 @@ jobs:
         run: |
           cd backend-v2/frontend-v2
           npm run build
+        env:
+          # AI Business Calendar Features (Frontend)
+          NEXT_PUBLIC_ENABLE_AI_BUSINESS_CALENDAR: true
+          NEXT_PUBLIC_ENABLE_AI_COACHING_CHAT: true
+          NEXT_PUBLIC_ENABLE_BUSINESS_INTELLIGENCE: true
+          NEXT_PUBLIC_ENABLE_SIX_FIGURE_BARBER_TRACKING: true
+          # AI Agents Configuration (Frontend)
+          NEXT_PUBLIC_ENABLE_FINANCIAL_COACH: true
+          NEXT_PUBLIC_ENABLE_GROWTH_STRATEGIST: true
+          NEXT_PUBLIC_ENABLE_OPERATIONS_OPTIMIZER: true
+          NEXT_PUBLIC_ENABLE_BRAND_DEVELOPER: true
+          # AI Chat Interface Settings (Frontend)
+          NEXT_PUBLIC_AI_CHAT_MAX_MESSAGES: 100
+          NEXT_PUBLIC_AI_CHAT_TIMEOUT: 1800000
+          NEXT_PUBLIC_ENABLE_CHAT_SUGGESTIONS: true
+          NEXT_PUBLIC_ENABLE_TYPING_INDICATORS: true
+          # Google Calendar Enhanced Features (Frontend)
+          NEXT_PUBLIC_ENABLE_CALENDAR_BUSINESS_INSIGHTS: true
+          NEXT_PUBLIC_ENABLE_CALENDAR_METADATA_SYNC: true
+          NEXT_PUBLIC_CALENDAR_SYNC_INTERVAL: 300000
           
       - name: Deploy Preview to Vercel
-        uses: vercel/action@v1
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}

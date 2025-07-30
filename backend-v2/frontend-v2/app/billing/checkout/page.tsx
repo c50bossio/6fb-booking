@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
@@ -21,7 +21,7 @@ interface CheckoutState {
   retryCount?: number
 }
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [user, setUser] = useState<User | null>(null)
@@ -404,5 +404,24 @@ export default function CheckoutPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center space-y-4">
+              <div className="h-8 w-8 animate-spin mx-auto border-4 border-blue-600 border-t-transparent rounded-full"></div>
+              <p className="text-gray-600 dark:text-gray-300">Loading checkout...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    }>
+      <CheckoutPageContent />
+    </Suspense>
   )
 }

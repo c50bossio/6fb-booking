@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Auth Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .error {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .log-entry {
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 4px;
+        }
+        .log-info { background: #dbeafe; }
+        .log-success { background: #d1fae5; }
+        .log-error { background: #fee2e2; }
+    </style>
+</head>
+<body>
+    <h1>Simple Authentication Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Login Test</h2>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="checkTokens()">Check Tokens</button>
+        <button onclick="testDashboard()">Test Dashboard Access</button>
+        <button onclick="clearAuth()">Clear Auth</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Current Auth State</h2>
+        <pre id="auth-state">Click "Check Tokens" to see current state</pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test Log</h2>
+        <div id="test-log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('test-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function testLogin() {
+            log('Starting login test...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v2/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@bookedbarber.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('Login successful!', 'success');
+                    
+                    // Store tokens
+                    if (data.access_token) {
+                        localStorage.setItem('access_token', data.access_token);
+                        localStorage.setItem('token', data.access_token); // Legacy support
+                        log('Stored access_token in localStorage', 'success');
+                    }
+                    
+                    if (data.refresh_token) {
+                        localStorage.setItem('refresh_token', data.refresh_token);
+                        log('Stored refresh_token in localStorage', 'success');
+                    }
+                    
+                    // Set cookies too
+                    document.cookie = `access_token=${data.access_token}; path=/; max-age=${15 * 60}; samesite=lax`;
+                    document.cookie = `refresh_token=${data.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
+                    log('Set authentication cookies', 'success');
+                    
+                    document.getElementById('login-result').innerHTML = 
+                        '<span class="success">✓ Login successful!</span>';
+                    
+                    // Automatically check tokens
+                    checkTokens();
+                } else {
+                    log(`Login failed: ${data.detail || 'Unknown error'}`, 'error');
+                    document.getElementById('login-result').innerHTML = 
+                        `<span class="error">✗ Login failed: ${data.detail}</span>`;
+                }
+            } catch (error) {
+                log(`Network error: ${error.message}`, 'error');
+                document.getElementById('login-result').innerHTML = 
+                    `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        function checkTokens() {
+            log('Checking authentication tokens...', 'info');
+            
+            const state = {
+                localStorage: {
+                    access_token: localStorage.getItem('access_token'),
+                    token: localStorage.getItem('token'),
+                    refresh_token: localStorage.getItem('refresh_token'),
+                    user: localStorage.getItem('user')
+                },
+                cookies: document.cookie,
+                cookiesParsed: {}
+            };
+            
+            // Parse cookies
+            document.cookie.split(';').forEach(cookie => {
+                const [name, value] = cookie.trim().split('=');
+                if (name) state.cookiesParsed[name] = value;
+            });
+            
+            document.getElementById('auth-state').textContent = 
+                JSON.stringify(state, null, 2);
+            
+            if (state.localStorage.access_token) {
+                log('Authentication tokens found', 'success');
+            } else {
+                log('No authentication tokens found', 'error');
+            }
+        }
+
+        async function testDashboard() {
+            log('Testing dashboard access...', 'info');
+            
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            
+            if (!token) {
+                log('No token found - please login first', 'error');
+                return;
+            }
+            
+            try {
+                // Test API authentication
+                const response = await fetch('http://localhost:8000/api/v2/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    log(`API auth successful! User: ${user.email}`, 'success');
+                    log('You can now navigate to http://localhost:3000/dashboard', 'success');
+                    
+                    // Open dashboard in new tab
+                    window.open('http://localhost:3000/dashboard', '_blank');
+                } else {
+                    log(`API auth failed: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`API error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearAuth() {
+            log('Clearing authentication...', 'info');
+            
+            // Clear localStorage
+            ['access_token', 'token', 'refresh_token', 'user'].forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            // Clear cookies
+            ['access_token', 'token', 'refresh_token', 'csrf_token'].forEach(name => {
+                document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=lax`;
+            });
+            
+            log('Authentication cleared', 'success');
+            checkTokens();
+        }
+        
+        // Check tokens on load
+        window.onload = () => {
+            log('Page loaded - ready for testing', 'info');
+        };
+    </script>
+</body>
+</html>

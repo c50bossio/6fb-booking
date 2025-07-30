@@ -1,0 +1,524 @@
+# =============================================================================
+# BookedBarber V2 - Production-Hardened Docker Compose
+# =============================================================================
+# 🔒 Security-first architecture with encrypted secrets
+# ⚡ Optimized for performance and scalability
+# 🛡️ Enterprise-grade security controls
+# =============================================================================
+
+services:
+  # =============================================================================
+  # PostgreSQL Database - Production Hardened
+  # =============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: bookedbarber-postgres-prod
+    environment:
+      POSTGRES_DB_FILE: /run/secrets/postgres_db
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      # Performance optimizations
+      POSTGRES_SHARED_PRELOAD_LIBRARIES: "pg_stat_statements"
+      POSTGRES_LOG_STATEMENT: "all"
+      POSTGRES_LOG_MIN_DURATION_STATEMENT: 1000
+    secrets:
+      - postgres_db
+      - postgres_user
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./database/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./database/init-prod.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "127.0.0.1:5432:5432"  # Bind only to localhost
+    networks:
+      - bookedbarber-backend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+      - /var/run/postgresql:noexec,nosuid,size=100m
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $(cat /run/secrets/postgres_user) -d $(cat /run/secrets/postgres_db)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # =============================================================================
+  # Redis Cache - Production Hardened
+  # =============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: bookedbarber-redis-prod
+    command: >
+      redis-server
+      --requirepass-file /run/secrets/redis_password
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --tcp-keepalive 300
+      --timeout 300
+    secrets:
+      - redis_password
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    ports:
+      - "127.0.0.1:6379:6379"  # Bind only to localhost
+    networks:
+      - bookedbarber-backend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "$(cat /run/secrets/redis_password)", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # =============================================================================
+  # FastAPI Backend - Production Optimized
+  # =============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+      target: production
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    image: bookedbarber/backend-v2:latest
+    container_name: bookedbarber-backend-prod
+    environment:
+      # Database Configuration
+      DATABASE_URL_FILE: /run/secrets/database_url
+      
+      # Redis Configuration  
+      REDIS_URL_FILE: /run/secrets/redis_url
+      
+      # Application Settings
+      ENVIRONMENT: production
+      DEBUG: "false"
+      PORT: 8000
+      HOST: 0.0.0.0
+      WORKERS: 4
+      
+      # Security Settings
+      SECRET_KEY_FILE: /run/secrets/app_secret_key
+      JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: 7
+      
+      # Security Headers
+      SECURE_SSL_REDIRECT: "true"
+      SECURE_HSTS_SECONDS: 31536000
+      SECURE_HSTS_INCLUDE_SUBDOMAINS: "true"
+      SECURE_CONTENT_TYPE_NOSNIFF: "true"
+      SECURE_BROWSER_XSS_FILTER: "true"
+      
+      # Monitoring
+      SENTRY_DSN_FILE: /run/secrets/sentry_dsn
+      SENTRY_ENVIRONMENT: production
+      
+      # External Services (via secrets)
+      STRIPE_SECRET_KEY_FILE: /run/secrets/stripe_secret_key
+      GOOGLE_CLIENT_SECRET_FILE: /run/secrets/google_client_secret
+      SENDGRID_API_KEY_FILE: /run/secrets/sendgrid_api_key
+      TWILIO_AUTH_TOKEN_FILE: /run/secrets/twilio_auth_token
+      ANTHROPIC_API_KEY_FILE: /run/secrets/anthropic_api_key
+      OPENAI_API_KEY_FILE: /run/secrets/openai_api_key
+      VOYAGE_API_KEY_FILE: /run/secrets/voyage_api_key
+      
+      # AI Business Calendar Configuration
+      AI_BUSINESS_INTELLIGENCE_ENABLED: "true"
+      AI_COACHING_ENABLED: "true"
+      AI_AGENT_RESPONSE_TIMEOUT: "30000"
+      AI_AGENT_MAX_TOKENS: "4000"
+      AI_AGENT_DEFAULT_MODEL: "claude-3-sonnet"
+      
+      # Business Intelligence Features
+      ENABLE_FINANCIAL_COACH: "true"
+      ENABLE_GROWTH_STRATEGIST: "true"
+      ENABLE_OPERATIONS_OPTIMIZER: "true"
+      ENABLE_BRAND_DEVELOPER: "true"
+      
+      # Performance and Rate Limiting
+      AI_CHAT_RATE_LIMIT: "20"
+      AI_INSIGHTS_CACHE_TTL: "300"
+      BUSINESS_METRICS_REFRESH_INTERVAL: "3600"
+      
+      # Six Figure Barber Methodology Compliance
+      SIX_FIGURE_BARBER_TRACKING_ENABLED: "true"
+      COMPLIANCE_SCORING_ENABLED: "true"
+      AUTOMATED_COACHING_TRIGGERS: "true"
+      
+      # AI Chat Interface Configuration
+      CHAT_MESSAGE_HISTORY_LIMIT: "100"
+      CHAT_SESSION_TIMEOUT: "1800000"
+      ENABLE_CHAT_SUGGESTIONS: "true"
+      ENABLE_TYPING_INDICATORS: "true"
+      
+      # Enhanced Google Calendar Business Intelligence
+      GOOGLE_CALENDAR_BUSINESS_METADATA_ENABLED: "true"
+      GOOGLE_CALENDAR_SYNC_INTERVAL: "300"
+      GOOGLE_CALENDAR_CONFLICT_RESOLUTION: "smart"
+      ENABLE_EXTERNAL_CALENDAR_EVENTS: "true"
+      CALENDAR_BUSINESS_INSIGHTS_ENABLED: "true"
+      
+    secrets:
+      - database_url
+      - redis_url
+      - app_secret_key
+      - jwt_secret_key
+      - sentry_dsn
+      - stripe_secret_key
+      - google_client_secret
+      - sendgrid_api_key
+      - twilio_auth_token
+      - anthropic_api_key
+      - openai_api_key
+      - voyage_api_key
+    volumes:
+      - ./logs:/app/logs:rw
+      - ./uploads:/app/uploads:rw
+      - /app/shared  # Anonymous volume for temporary files
+    ports:
+      - "127.0.0.1:8000:8000"  # Bind only to localhost
+    networks:
+      - bookedbarber-backend
+      - bookedbarber-frontend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "1000:1000"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+      replicas: 2  # Load balancing
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health", "--max-time", "5"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+
+  # =============================================================================
+  # Next.js Frontend - Production Optimized
+  # =============================================================================
+  frontend:
+    build:
+      context: ./frontend-v2
+      dockerfile: Dockerfile.optimized
+      target: production
+      args:
+        NODE_ENV: production
+        NEXT_TELEMETRY_DISABLED: 1
+        BUILDKIT_INLINE_CACHE: 1
+    image: bookedbarber/frontend-v2:latest
+    container_name: bookedbarber-frontend-prod
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      
+      # Internal service communication
+      NEXT_INTERNAL_API_URL: http://backend:8000
+      
+      # Public environment variables (safe for browser)
+      NEXT_PUBLIC_API_URL: https://api.bookedbarber.com
+      NEXT_PUBLIC_API_BASE_URL: https://api.bookedbarber.com/api/v2
+      NEXT_PUBLIC_ENVIRONMENT: production
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_FILE: /run/secrets/stripe_publishable_key
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID_FILE: /run/secrets/google_client_id
+      
+      # Feature flags for production
+      NEXT_PUBLIC_ENABLE_DEBUG_PANEL: "false"
+      NEXT_PUBLIC_SHOW_TEST_DATA: "false"
+      NEXT_PUBLIC_ENABLE_ANALYTICS: "true"
+      NEXT_PUBLIC_ENABLE_ERROR_TRACKING: "true"
+      
+      # AI Business Calendar Features
+      NEXT_PUBLIC_ENABLE_AI_BUSINESS_CALENDAR: "true"
+      NEXT_PUBLIC_ENABLE_AI_COACHING_CHAT: "true"
+      NEXT_PUBLIC_ENABLE_BUSINESS_INTELLIGENCE: "true"
+      NEXT_PUBLIC_ENABLE_SIX_FIGURE_BARBER_TRACKING: "true"
+      
+      # AI Agents Configuration
+      NEXT_PUBLIC_ENABLE_FINANCIAL_COACH: "true"
+      NEXT_PUBLIC_ENABLE_GROWTH_STRATEGIST: "true"
+      NEXT_PUBLIC_ENABLE_OPERATIONS_OPTIMIZER: "true"
+      NEXT_PUBLIC_ENABLE_BRAND_DEVELOPER: "true"
+      
+      # AI Chat Interface Settings
+      NEXT_PUBLIC_AI_CHAT_MAX_MESSAGES: "100"
+      NEXT_PUBLIC_AI_CHAT_TIMEOUT: "1800000"
+      NEXT_PUBLIC_ENABLE_CHAT_SUGGESTIONS: "true"
+      NEXT_PUBLIC_ENABLE_TYPING_INDICATORS: "true"
+      
+      # Google Calendar Enhanced Features
+      NEXT_PUBLIC_ENABLE_CALENDAR_BUSINESS_INSIGHTS: "true"
+      NEXT_PUBLIC_ENABLE_CALENDAR_METADATA_SYNC: "true"
+      NEXT_PUBLIC_CALENDAR_SYNC_INTERVAL: "300000"
+      
+      # Security
+      NEXT_PUBLIC_CSP_ENABLED: "true"
+      NEXT_PUBLIC_HSTS_ENABLED: "true"
+      
+    secrets:
+      - stripe_publishable_key
+      - google_client_id
+    volumes:
+      - frontend_cache:/app/.next/cache:rw
+    ports:
+      - "127.0.0.1:3000:3000"  # Bind only to localhost
+    networks:
+      - bookedbarber-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+      - /app/.next/cache:noexec,nosuid,size=500m
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+      replicas: 2  # Load balancing
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # =============================================================================
+  # Nginx Reverse Proxy & Load Balancer
+  # =============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: bookedbarber-nginx-prod
+    volumes:
+      - ./nginx/nginx-prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx:rw
+      - ./nginx/security-headers.conf:/etc/nginx/security-headers.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - bookedbarber-frontend
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "nginx:nginx"
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:noexec,nosuid,size=100m
+      - /var/run:noexec,nosuid,size=100m
+      - /tmp:noexec,nosuid,size=100m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # Monitoring & Observability Stack
+  # =============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: bookedbarber-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks:
+      - bookedbarber-monitoring
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "nobody:nobody"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: bookedbarber-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD_FILE=/run/secrets/grafana_admin_password
+      - GF_SECURITY_DISABLE_GRAVATAR=true
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_STRICT_TRANSPORT_SECURITY=true
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+    secrets:
+      - grafana_admin_password
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "127.0.0.1:3001:3000"
+    networks:
+      - bookedbarber-monitoring
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "472:472"
+
+# =============================================================================
+# Docker Secrets (Production)
+# =============================================================================
+secrets:
+  postgres_db:
+    external: true
+  postgres_user:
+    external: true
+  postgres_password:
+    external: true
+  redis_password:
+    external: true
+  database_url:
+    external: true
+  redis_url:
+    external: true
+  app_secret_key:
+    external: true
+  jwt_secret_key:
+    external: true
+  sentry_dsn:
+    external: true
+  stripe_secret_key:
+    external: true
+  stripe_publishable_key:
+    external: true
+  google_client_secret:
+    external: true
+  google_client_id:
+    external: true
+  sendgrid_api_key:
+    external: true
+  twilio_auth_token:
+    external: true
+  anthropic_api_key:
+    external: true
+  openai_api_key:
+    external: true
+  voyage_api_key:
+    external: true
+  grafana_admin_password:
+    external: true
+
+# =============================================================================
+# Named Volumes for Data Persistence
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/bookedbarber/data/postgres
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/bookedbarber/data/redis
+  frontend_cache:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# =============================================================================
+# Network Segmentation (Zero Trust Architecture)
+# =============================================================================
+networks:
+  bookedbarber-backend:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  bookedbarber-frontend:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+  bookedbarber-monitoring:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24

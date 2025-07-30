@@ -33,7 +33,7 @@ def extract_endpoints_from_file(filepath):
 # Main execution
 router_files = []
 for file in os.listdir('routers'):
-    if file.endswith('.py') and file \!= '__init__.py':
+    if file.endswith('.py') and file != '__init__.py':
         router_files.append(os.path.join('routers', file))
 
 # Main router inclusion mapping from main.py
@@ -117,4 +117,3 @@ for filepath in sorted(router_files):
 print("=== ALL API ENDPOINTS ===")
 for endpoint in sorted(all_endpoints, key=lambda x: x['path']):
     print(f"{endpoint['method']} {endpoint['path']} (file: {endpoint['file']})")
-EOF < /dev/null

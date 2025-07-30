@@ -1,75 +1,160 @@
-# BookedBarber V2 Backend - Optimized Multi-Stage Production Build
-FROM python:3.11-slim as base
+# =============================================================================
+# BookedBarber V2 Backend - Production-Hardened Multi-Stage Dockerfile
+# =============================================================================
+# 🔒 Security-first approach with minimal attack surface
+# ⚡ Optimized for size and performance
+# 🚀 Production-ready with health checks and monitoring
+# =============================================================================
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+# Build stage - compile dependencies and prepare application
+FROM python:3.11-slim as builder
 
-# Create app user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install build dependencies in a single layer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     gcc \
     g++ \
     libpq-dev \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    libmagic1 \
+    libmagic-dev \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Development stage
-FROM base as development
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-WORKDIR /app
-COPY . .
-RUN chown -R appuser:appuser /app
-USER appuser
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Create a non-root user for building
+RUN useradd --create-home --shell /bin/bash builder
+USER builder
+WORKDIR /home/builder
 
-# Production dependencies stage
-FROM base as prod-deps
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Set up Python virtual environment
+RUN python -m venv /home/builder/venv
+ENV PATH="/home/builder/venv/bin:$PATH"
 
-# Production stage
-FROM python:3.11-slim as production
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/home/appuser/.local/bin:$PATH"
+# Upgrade pip and install wheel for faster builds
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Security updates and minimal packages
-RUN apt-get update && apt-get install -y \
+# Copy requirements and install dependencies
+COPY --chown=builder:builder requirements.txt .
+RUN pip install --no-cache-dir --retries 3 --timeout 30 -r requirements.txt
+
+# Production base image - minimal and secure
+FROM python:3.11-slim as base
+
+# Security hardening - create non-root user
+RUN groupadd -r -g 1000 bookedbarber && \
+    useradd -r -g bookedbarber -u 1000 -d /app -s /bin/bash bookedbarber
+
+# Install only runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    libmagic1 \
     curl \
+    tini \
+    ca-certificates \
     && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Create app user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Copy virtual environment from builder
+COPY --from=builder --chown=bookedbarber:bookedbarber /home/builder/venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
 
-# Copy dependencies from prod-deps stage
-COPY --from=prod-deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=prod-deps /usr/local/bin /usr/local/bin
+# Development stage
+FROM base as development
 
-# Set working directory
+# Install development tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    vim \
+    less \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy application code
-COPY --chown=appuser:appuser . .
+COPY --chown=bookedbarber:bookedbarber . .
 
-# Switch to non-root user
-USER appuser
+# Create necessary directories
+RUN mkdir -p /app/logs /app/uploads /app/shared /app/temp && \
+    chown -R bookedbarber:bookedbarber /app
+
+USER bookedbarber
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health --max-time 5 || exit 1
 
-# Expose port
 EXPOSE 8000
 
-# Run application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+# Use tini as PID 1 for proper signal handling
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app"]
+
+# Production stage - optimized and hardened
+FROM base as production
+
+WORKDIR /app
+
+# Copy application code with proper ownership
+COPY --chown=bookedbarber:bookedbarber . .
+
+# Create necessary directories with secure permissions
+RUN mkdir -p /app/logs /app/uploads /app/temp && \
+    chown -R bookedbarber:bookedbarber /app && \
+    chmod -R 750 /app && \
+    chmod -R 755 /app/logs /app/uploads
+
+# Remove sensitive files that shouldn't be in production
+RUN rm -rf /app/tests /app/.git /app/docs /app/README.md /app/.*cache* || true
+
+# Switch to non-root user
+USER bookedbarber
+
+# Production health check with comprehensive validation
+HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=5 \
+    CMD curl -f http://localhost:8000/health --max-time 5 && \
+        curl -f http://localhost:8000/health/database --max-time 3 && \
+        curl -f http://localhost:8000/health/redis --max-time 3 || exit 1
+
+# Security labels
+LABEL security.scan="enabled" \
+      security.non-root="true" \
+      security.readonly="recommended" \
+      org.opencontainers.image.title="BookedBarber Backend V2" \
+      org.opencontainers.image.description="Production-hardened FastAPI backend" \
+      org.opencontainers.image.vendor="BookedBarber" \
+      org.opencontainers.image.authors="dev@bookedbarber.com" \
+      org.opencontainers.image.source="https://github.com/bookedbarber/platform"
+
+EXPOSE 8000
+
+# Use tini for proper signal handling and zombie reaping
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Production command with optimizations
+CMD ["uvicorn", "main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "4", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--max-requests", "1000", \
+     "--max-requests-jitter", "100", \
+     "--preload", \
+     "--log-level", "info", \
+     "--access-log", \
+     "--use-colors"]
+
+# Testing stage for CI/CD
+FROM development as testing
+
+# Install testing dependencies
+RUN pip install --no-cache-dir pytest pytest-cov pytest-asyncio pytest-mock
+
+# Copy test files
+COPY --chown=bookedbarber:bookedbarber tests/ tests/
+
+USER bookedbarber
+
+# Default test command
+CMD ["pytest", "-v", "--cov=.", "--cov-report=xml", "--cov-report=html", "--cov-report=term-missing"]

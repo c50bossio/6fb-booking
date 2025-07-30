@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-07-29T15:28:30.527524",
+  "tests": {
+    "api_response_times": {
+      "passed": false,
+      "timestamp": "2025-07-29T15:28:31.679952"
+    },
+    "caching_mechanisms": {
+      "passed": false,
+      "timestamp": "2025-07-29T15:28:31.686850"
+    },
+    "database_performance": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:28:31.716725"
+    },
+    "bundle_size": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:28:31.717087"
+    },
+    "memory_usage": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:28:31.721282"
+    },
+    "concurrent_requests": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:28:31.751864"
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 4,
+    "failed": 2,
+    "performance_issues": [
+      "/api/v2/auth/login: 223.5ms (limit: 200ms)",
+      "Response compression not enabled"
+    ]
+  }
+}

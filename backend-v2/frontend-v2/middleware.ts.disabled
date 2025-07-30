@@ -1,0 +1,10 @@
+// Temporarily remove middleware to fix SSR "global is not defined" error
+// The middleware is causing issues with Edge Runtime and SSR
+
+// export function middleware(request: NextRequest) {
+//   return NextResponse.next()
+// }
+
+// export const config = {
+//   matcher: [],
+// }

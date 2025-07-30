@@ -1,0 +1,444 @@
+# ================================================================================
+# AI Business Calendar - Staging Docker Compose Configuration
+# ================================================================================
+# 🧪 Staging environment for testing and validation
+# 🔍 Production-like setup with observability and debugging enabled
+# 📊 Full monitoring stack for performance testing
+# ================================================================================
+
+version: '3.8'
+
+services:
+  # ================================================================================
+  # PostgreSQL Database
+  # ================================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-calendar-postgres-staging
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ai_business_calendar_staging
+      POSTGRES_USER: ai_calendar_staging_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ai_calendar_staging_secure_password_2025}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      POSTGRES_MAX_CONNECTIONS: 100
+      POSTGRES_SHARED_BUFFERS: 128MB
+      POSTGRES_EFFECTIVE_CACHE_SIZE: 512MB
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./database/init-ai-calendar.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./database/test-data.sql:/docker-entrypoint-initdb.d/test-data.sql:ro
+    ports:
+      - "5433:5432"
+    networks:
+      - ai-calendar-staging-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_calendar_staging_user -d ai_business_calendar_staging"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # ================================================================================
+  # Redis Cache
+  # ================================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ai-calendar-redis-staging
+    restart: unless-stopped
+    command: >
+      redis-server 
+      --appendonly yes 
+      --requirepass ${REDIS_PASSWORD:-ai_calendar_redis_staging_password_2025}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_staging_data:/data
+    ports:
+      - "6380:6379"
+    networks:
+      - ai-calendar-staging-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: '0.5'
+        reservations:
+          memory: 192M
+          cpus: '0.25'
+
+  # ================================================================================
+  # AI Business Calendar Backend
+  # ================================================================================
+  ai-calendar-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai-calendar.staging
+      target: staging
+      args:
+        - BUILD_ENV=staging
+        - PYTHON_VERSION=3.11
+    image: ai-business-calendar:staging
+    container_name: ai-calendar-backend-staging
+    restart: unless-stopped
+    environment:
+      # Database Configuration
+      DATABASE_URL: postgresql://ai_calendar_staging_user:${POSTGRES_PASSWORD:-ai_calendar_staging_secure_password_2025}@postgres:5432/ai_business_calendar_staging
+      DATABASE_POOL_SIZE: 10
+      DATABASE_MAX_OVERFLOW: 15
+      
+      # Redis Configuration
+      REDIS_URL: redis://:${REDIS_PASSWORD:-ai_calendar_redis_staging_password_2025}@redis:6379/0
+      
+      # Application Settings
+      ENVIRONMENT: staging
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+      PORT: 8000
+      HOST: 0.0.0.0
+      
+      # AI Provider Configuration (Test Keys)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-sk-ant-test-key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-test-key}
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-test-key}
+      
+      # Security Configuration (Staging Keys)
+      SECRET_KEY: ${SECRET_KEY:-ai_calendar_staging_secret_key_2025_not_for_production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-ai_calendar_staging_jwt_secret_key_2025}
+      
+      # External Services (Test/Staging Keys)
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_staging_key}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-pk_test_staging_key}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-SG.test_staging_key}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-test_staging_token}
+      
+      # Monitoring Configuration
+      SENTRY_DSN: ${SENTRY_DSN:-https://staging-dsn@sentry.io/project}
+      SENTRY_ENVIRONMENT: staging
+      
+      # Feature Flags (All enabled for testing)
+      FEATURE_AI_CALENDAR_ENABLED: "true"
+      FEATURE_BUSINESS_INTELLIGENCE_ENABLED: "true"
+      FEATURE_PREDICTIVE_ANALYTICS_ENABLED: "true"
+      AI_AGENT_ORCHESTRATOR_ENABLED: "true"
+      
+      # Debug Settings
+      SWAGGER_UI_ENABLED: "true"
+      DEBUG_TOOLBAR_ENABLED: "true"
+      API_DOCS_ENABLED: "true"
+      
+      # Performance Settings
+      WORKERS: 2
+      WORKER_CLASS: uvicorn.workers.UvicornWorker
+      WORKER_CONNECTIONS: 500
+      MAX_REQUESTS: 500
+      MAX_REQUESTS_JITTER: 50
+      TIMEOUT: 60
+      
+      # Health Checks
+      HEALTH_CHECK_ENABLED: "true"
+      HEALTH_CHECK_DATABASE: "true"
+      HEALTH_CHECK_REDIS: "true"
+      HEALTH_CHECK_EXTERNAL_SERVICES: "false"
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - ai_calendar_staging_cache:/app/cache
+      - ai_calendar_staging_models:/app/models
+      # Live code sync for staging testing
+      - .:/app
+      - /app/__pycache__
+    ports:
+      - "8001:8000"
+    networks:
+      - ai-calendar-staging-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health", "--max-time", "10"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # ================================================================================
+  # AI Agent Orchestrator (Staging)
+  # ================================================================================
+  ai-agent-orchestrator:
+    build:
+      context: ./ai-agents
+      dockerfile: Dockerfile.orchestrator.staging
+    image: ai-agent-orchestrator:staging
+    container_name: ai-calendar-agent-orchestrator-staging
+    restart: unless-stopped
+    environment:
+      # AI Configuration (Test Keys)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-sk-ant-test-key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-test-key}
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-test-key}
+      
+      # Queue Configuration
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-ai_calendar_redis_staging_password_2025}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-ai_calendar_redis_staging_password_2025}@redis:6379/2
+      
+      # Agent Settings (Reduced for staging)
+      AI_AGENT_MAX_CONCURRENT: 5
+      AI_AGENT_QUEUE_SIZE: 50
+      AI_AGENT_TIMEOUT_SECONDS: 90
+      AI_AGENT_RETRY_ATTEMPTS: 3
+      
+      # Debug Settings
+      LOG_LEVEL: DEBUG
+      DEBUG_MODE: "true"
+      
+      # Performance Settings
+      WORKERS: 1
+      CONCURRENCY: 5
+    volumes:
+      - ai_agent_staging_logs:/app/logs
+      - ai_calendar_staging_models:/app/models
+      # Live code sync for development
+      - ./ai-agents:/app
+    networks:
+      - ai-calendar-staging-network
+    depends_on:
+      redis:
+        condition: service_healthy
+      ai-calendar-backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # ================================================================================
+  # Celery Worker (Staging)
+  # ================================================================================
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai-calendar.staging
+      target: staging
+    image: ai-business-calendar:staging
+    container_name: ai-calendar-celery-worker-staging
+    restart: unless-stopped
+    command: celery -A main.celery worker --loglevel=debug --concurrency=2
+    environment:
+      # Database Configuration
+      DATABASE_URL: postgresql://ai_calendar_staging_user:${POSTGRES_PASSWORD:-ai_calendar_staging_secure_password_2025}@postgres:5432/ai_business_calendar_staging
+      
+      # Queue Configuration
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-ai_calendar_redis_staging_password_2025}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-ai_calendar_redis_staging_password_2025}@redis:6379/2
+      
+      # Worker Settings
+      CELERY_WORKER_CONCURRENCY: 2
+      CELERY_TASK_SOFT_TIME_LIMIT: 600
+      CELERY_TASK_TIME_LIMIT: 900
+      CELERY_WORKER_MAX_TASKS_PER_CHILD: 100
+      
+      # AI Configuration (Test Keys)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-sk-ant-test-key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-test-key}
+      
+      # Debug Settings
+      LOG_LEVEL: DEBUG
+    volumes:
+      - ./logs:/app/logs
+      - ai_calendar_staging_cache:/app/cache
+      - .:/app
+    networks:
+      - ai-calendar-staging-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # ================================================================================
+  # Nginx (Staging)
+  # ================================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: ai-calendar-nginx-staging
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx-ai-calendar-staging.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "8080:80"
+      - "8443:443"
+    networks:
+      - ai-calendar-staging-network
+    depends_on:
+      - ai-calendar-backend
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+
+  # ================================================================================
+  # Monitoring (Simplified for Staging)
+  # ================================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ai-calendar-prometheus-staging
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus-staging.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_staging_data:/prometheus
+    ports:
+      - "9091:9090"
+    networks:
+      - ai-calendar-staging-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai-calendar-grafana-staging
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "true"
+      GF_SECURITY_DISABLE_GRAVATAR: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "true"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "true"
+    volumes:
+      - grafana_staging_data:/var/lib/grafana
+      - ./monitoring/grafana-dashboards-staging:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana-datasources-staging:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3002:3000"
+    networks:
+      - ai-calendar-staging-network
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  # ================================================================================
+  # Testing & QA Tools
+  # ================================================================================
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai-calendar.testing
+    image: ai-business-calendar:testing
+    container_name: ai-calendar-test-runner
+    profiles: ["testing"]
+    environment:
+      DATABASE_URL: postgresql://ai_calendar_staging_user:${POSTGRES_PASSWORD:-ai_calendar_staging_secure_password_2025}@postgres:5432/ai_business_calendar_staging
+      REDIS_URL: redis://:${REDIS_PASSWORD:-ai_calendar_redis_staging_password_2025}@redis:6379/0
+      ENVIRONMENT: testing
+      LOG_LEVEL: DEBUG
+    volumes:
+      - .:/app
+      - test_results:/app/test-results
+      - test_coverage:/app/coverage
+    networks:
+      - ai-calendar-staging-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["python", "-m", "pytest", "/app/tests", "-v", "--cov=/app", "--cov-report=html:/app/coverage"]
+
+# ================================================================================
+# Named Volumes for Data Persistence
+# ================================================================================
+volumes:
+  postgres_staging_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/postgres-staging
+  redis_staging_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/redis-staging
+  ai_calendar_staging_cache:
+    driver: local
+  ai_calendar_staging_models:
+    driver: local
+  ai_agent_staging_logs:
+    driver: local
+  prometheus_staging_data:
+    driver: local
+  grafana_staging_data:
+    driver: local
+  test_results:
+    driver: local
+  test_coverage:
+    driver: local
+
+# ================================================================================
+# Networks
+# ================================================================================
+networks:
+  ai-calendar-staging-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.26.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: ai-calendar-staging-br0

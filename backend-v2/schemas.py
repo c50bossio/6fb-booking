@@ -148,7 +148,7 @@ class TestDataCustomization(BaseModel):
     
     @field_validator('vip_client_percentage', 'new_client_percentage')
     @classmethod
-    def validate_percentages(cls, v, values):
+    def validate_percentages(cls, v, info):
         if v < 0 or v > 100:
             raise ValueError('Percentages must be between 0 and 100')
         return v
@@ -702,18 +702,18 @@ class ServiceCreate(ServiceBase):
     
     @field_validator('package_item_ids')
     @classmethod
-    def validate_package_items(cls, v, values):
-        if v and not values.get('is_package'):
+    def validate_package_items(cls, v, info):
+        if v and not info.data.get('is_package'):
             raise ValueError('Package items can only be set for package services')
         return v
     
     @field_validator('min_price', 'max_price')
     @classmethod
-    def validate_price_range(cls, v, values):
-        if 'base_price' in values:
-            if values.get('min_price') and values['min_price'] > values['base_price']:
+    def validate_price_range(cls, v, info):
+        if info.data.get('base_price'):
+            if info.data.get('min_price') and info.data['min_price'] > info.data['base_price']:
                 raise ValueError('Min price cannot be greater than base price')
-            if values.get('max_price') and values['max_price'] < values['base_price']:
+            if info.data.get('max_price') and info.data['max_price'] < info.data['base_price']:
                 raise ValueError('Max price cannot be less than base price')
         return v
 
@@ -998,8 +998,8 @@ class BarberAvailabilityBase(BaseModel):
 
     @field_validator('end_time')
     @classmethod
-    def validate_time_range(cls, v, values):
-        if 'start_time' in values and v <= values['start_time']:
+    def validate_time_range(cls, v, info):
+        if info.data.get('start_time') and v <= info.data['start_time']:
             raise ValueError('End time must be after start time')
         return v
 
@@ -1032,8 +1032,8 @@ class BarberTimeOffBase(BaseModel):
 
     @field_validator('end_date')
     @classmethod
-    def validate_date_range(cls, v, values):
-        if 'start_date' in values and v < values['start_date']:
+    def validate_date_range(cls, v, info):
+        if info.data.get('start_date') and v < info.data['start_date']:
             raise ValueError('End date must be after start date')
         return v
 
@@ -1112,8 +1112,8 @@ class RecurringPatternBase(BaseModel):
 
     @field_validator('days_of_week')
     @classmethod
-    def validate_days_of_week(cls, v, values):
-        if v and values.get('pattern_type') in ['weekly', 'biweekly']:
+    def validate_days_of_week(cls, v, info):
+        if v and info.data.get('pattern_type') in ['weekly', 'biweekly']:
             if not all(0 <= day <= 6 for day in v):
                 raise ValueError('Days of week must be between 0 (Monday) and 6 (Sunday)')
         return v
@@ -1491,8 +1491,8 @@ class DateRange(BaseModel):
     
     @field_validator('end_date')
     @classmethod
-    def validate_date_range(cls, v, values):
-        if 'start_date' in values and v < values['start_date']:
+    def validate_date_range(cls, v, info):
+        if info.data.get('start_date') and v < info.data.get('start_date'):
             raise ValueError('End date must be after start date')
         return v
 
@@ -2255,8 +2255,8 @@ class MarketingCampaignCreate(BaseModel):
     
     @field_validator('subject')
     @classmethod
-    def validate_subject(cls, v, values):
-        if values.get('campaign_type') == 'email' and not v:
+    def validate_subject(cls, v, info):
+        if info.data.get('campaign_type') == 'email' and not v:
             raise ValueError('Subject is required for email campaigns')
         return v
 

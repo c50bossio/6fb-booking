@@ -1,0 +1,136 @@
+# =============================================================================
+# BookedBarber V2 - Centralized Logging Stack
+# =============================================================================
+# 📊 Fluent-bit for log collection and processing
+# 🔍 Elasticsearch for log storage and search
+# 📈 Kibana for log visualization and analysis
+# =============================================================================
+
+services:
+  # =============================================================================
+  # Fluent-bit Log Collector
+  # =============================================================================
+  fluent-bit:
+    image: fluent/fluent-bit:2.2
+    container_name: bookedbarber-fluent-bit
+    volumes:
+      - ./config/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./config/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      - ./logs:/logs:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - bookedbarber-network
+      - logging-network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # =============================================================================
+  # Elasticsearch for Log Storage
+  # =============================================================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: bookedbarber-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1g"
+      - cluster.name=bookedbarber-logs
+      - node.name=bookedbarber-es-node
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "127.0.0.1:9200:9200"
+    networks:
+      - logging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # =============================================================================
+  # Kibana for Log Visualization
+  # =============================================================================
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: bookedbarber-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=bookedbarber-kibana
+      - SERVER_HOST=0.0.0.0
+      - XPACK_SECURITY_ENABLED=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${KIBANA_ENCRYPTION_KEY:-changeme-32-character-secret-key-here}
+    ports:
+      - "127.0.0.1:5601:5601"
+    networks:
+      - logging-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # =============================================================================
+  # Log Retention and Cleanup Service
+  # =============================================================================
+  log-curator:
+    image: untergeek/curator:8.0.12
+    container_name: bookedbarber-log-curator
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - LOG_RETENTION_DAYS=30
+    volumes:
+      - ./config/curator.yml:/curator/config.yml:ro
+      - ./config/curator-actions.yml:/curator/actions.yml:ro
+    networks:
+      - logging-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo '0 2 * * * curator --config /curator/config.yml /curator/actions.yml' | crontab - &&
+        crond -f -l 2
+      "
+
+networks:
+  bookedbarber-network:
+    external: true
+  logging-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  elasticsearch_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/elasticsearch

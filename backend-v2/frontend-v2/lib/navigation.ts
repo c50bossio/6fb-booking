@@ -99,6 +99,18 @@ export function filterNavigationByRole(
   items: NavigationItem[],
   userRole?: string | null
 ): NavigationItem[] {
+  // 🚀 DEVELOPMENT BYPASS: Show all features in development mode
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔧 DEVELOPMENT MODE: Showing all navigation items bypassing role restrictions')
+    console.log('🔍 Navigation filtering debug:', {
+      userRole,
+      totalItems: items.length,
+      developmentBypass: true
+    })
+    console.log('✅ All navigation items available:', items.map(item => item.name))
+    return items
+  }
+  
   // Always show core navigation items for authenticated users
   const coreItems = [
     items.find(item => item.name === 'Dashboard'),
@@ -134,13 +146,11 @@ export function filterNavigationByRole(
   // Get equivalent roles for the user's role
   const equivalentRoles = roleMapping[userRole] || [userRole]
   
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 Navigation filtering debug:', {
-      userRole,
-      equivalentRoles,
-      totalItems: items.length
-    })
-  }
+  console.log('🔍 Navigation filtering debug:', {
+    userRole,
+    equivalentRoles,
+    totalItems: items.length
+  })
   
   // Filter items based on role permissions - be more permissive
   const roleItems = items.filter(item => {
@@ -150,7 +160,7 @@ export function filterNavigationByRole(
     // Check if any of the item's required roles match the user's equivalent roles
     const hasAccess = item.roles.some(role => equivalentRoles.includes(role))
     
-    if (process.env.NODE_ENV === 'development' && !hasAccess) {
+    if (!hasAccess) {
       console.log('❌ Access denied for:', item.name, 'requires:', item.roles, 'user has:', equivalentRoles)
     }
     
@@ -163,9 +173,7 @@ export function filterNavigationByRole(
   
   const finalItems = [...coreItems, ...additionalItems]
   
-  if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Final navigation items:', finalItems.map(item => item.name))
-  }
+  console.log('✅ Final navigation items:', finalItems.map(item => item.name))
   
   return finalItems
 }

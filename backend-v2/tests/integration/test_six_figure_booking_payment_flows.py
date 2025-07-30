@@ -27,7 +27,7 @@ from httpx import AsyncClient
 from sqlalchemy.orm import Session
 
 from main import app
-from models import User, Appointment, Payment, Commission, StripeAccount
+from models import User, Appointment, Payment
 from services.stripe_integration_service import StripeIntegrationService
 from services.booking_service import BookingService
 from services.payment_service import PaymentService

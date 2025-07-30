@@ -1,0 +1,507 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaos-safety-config
+  namespace: chaos-engineering
+  labels:
+    component: safety-controls
+    sre-enabled: "true"
+data:
+  safety-rules.yml: |
+    # Chaos Engineering Safety Rules for Six Figure Barber Platform
+    # These rules protect business operations during chaos experiments
+    
+    global:
+      safety_mode: "business-safe"
+      environment: "production"
+      business_hours:
+        timezone: "America/New_York"
+        start: "09:00"
+        end: "18:00"
+        days: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+      
+    # Revenue Protection Thresholds
+    business_thresholds:
+      booking_rate_drop_limit: 10  # Maximum % drop in booking rate
+      payment_failure_rate_limit: 2  # Maximum % increase in payment failures
+      uptime_minimum: 99.95  # Minimum uptime during experiments (%)
+      response_time_maximum: 3000  # Maximum response time in ms
+      error_rate_maximum: 0.5  # Maximum error rate increase (%)
+      
+    # Automated Safety Triggers
+    safety_triggers:
+      revenue_impact:
+        - metric: "sixfb_booking_rate"
+          threshold_drop: 10
+          action: "abort_experiment"
+          priority: "p0"
+        - metric: "sixfb_payment_success_rate"
+          threshold_drop: 5
+          action: "abort_experiment"
+          priority: "p0"
+        - metric: "sixfb_revenue_per_minute"
+          threshold_drop: 15
+          action: "abort_experiment"
+          priority: "p0"
+          
+      customer_experience:
+        - metric: "sre_uptime_percentage"
+          threshold_below: 99.95
+          action: "abort_experiment"
+          priority: "p0"
+        - metric: "http_request_duration_p95"
+          threshold_above: 3000
+          action: "pause_experiment"
+          priority: "p1"
+        - metric: "http_request_duration_p99"
+          threshold_above: 5000
+          action: "abort_experiment"
+          priority: "p0"
+          
+      system_health:
+        - metric: "sre_error_rate"
+          threshold_above: 0.005
+          action: "abort_experiment"
+          priority: "p0"
+        - metric: "circuit_breaker_open_count"
+          threshold_above: 2
+          action: "pause_experiment"
+          priority: "p1"
+        - metric: "database_connection_failures"
+          threshold_above: 1
+          action: "abort_experiment"
+          priority: "p0"
+    
+    # Protected Services (Never subject to chaos)
+    protected_services:
+      - name: "payment-processor"
+        reason: "Direct revenue impact"
+        protection_level: "absolute"
+      - name: "stripe-webhook-handler"
+        reason: "Payment completion critical"
+        protection_level: "absolute"
+      - name: "booking-confirmation"
+        reason: "Customer experience critical"
+        protection_level: "high"
+      - name: "sms-notifications"
+        reason: "Customer communication"
+        protection_level: "high"
+      - name: "email-service"
+        reason: "Business communication"
+        protection_level: "medium"
+    
+    # Experiment Categories and Risk Levels
+    experiment_categories:
+      low_risk:
+        - "pod-restart"
+        - "memory-stress-non-critical"
+        - "cpu-stress-non-critical"
+        - "network-delay-minor"
+        approval_required: false
+        business_hours_allowed: true
+        max_duration: "10m"
+        
+      medium_risk:
+        - "pod-kill-single"
+        - "network-partition-temporary"
+        - "disk-stress"
+        - "database-connection-limit"
+        approval_required: true
+        business_hours_allowed: false
+        max_duration: "5m"
+        
+      high_risk:
+        - "pod-kill-multiple"
+        - "network-partition-extended"
+        - "database-failover"
+        - "cache-flush"
+        approval_required: true
+        business_hours_allowed: false
+        max_duration: "2m"
+        executive_approval: true
+    
+    # Staging Environment Rules
+    staging_environment:
+      allow_destructive_tests: true
+      business_hours_restrictions: false
+      approval_bypass: true
+      max_experiment_duration: "30m"
+      parallel_experiments: 5
+      
+    # Production Environment Rules  
+    production_environment:
+      allow_destructive_tests: false
+      business_hours_restrictions: true
+      approval_required: true
+      max_experiment_duration: "10m"
+      parallel_experiments: 1
+      executive_approval_for_high_risk: true
+      
+  approval-workflows.yml: |
+    # Approval Workflows for Chaos Experiments
+    
+    workflows:
+      low_risk_approval:
+        auto_approve: true
+        conditions:
+          - "experiment_category == 'low_risk'"
+          - "business_hours == false OR experiment_category.business_hours_allowed == true"
+          - "current_incidents == 0"
+        
+      medium_risk_approval:
+        auto_approve: false
+        required_approvers:
+          - role: "sre_engineer"
+            minimum: 1
+        conditions:
+          - "experiment_category == 'medium_risk'"
+          - "business_hours == false"
+          - "current_incidents == 0"
+          - "system_health_score > 95"
+        
+      high_risk_approval:
+        auto_approve: false
+        required_approvers:
+          - role: "sre_lead"
+            minimum: 1
+          - role: "engineering_manager"
+            minimum: 1
+          - role: "executive"
+            minimum: 1
+            condition: "experiment_category.executive_approval == true"
+        conditions:
+          - "experiment_category == 'high_risk'"
+          - "business_hours == false"
+          - "current_incidents == 0"
+          - "system_health_score > 98"
+          - "advance_notice >= 24h"
+    
+    notification_channels:
+      sre_team: "sre@bookedbarber.com"
+      engineering_team: "engineering@bookedbarber.com"
+      executive_team: "executives@bookedbarber.com"
+      slack_sre: "#sre-alerts"
+      slack_engineering: "#engineering-alerts"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaos-safety-controller
+  namespace: chaos-engineering
+  labels:
+    app: chaos-safety-controller
+    component: safety-controls
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: chaos-safety-controller
+  template:
+    metadata:
+      labels:
+        app: chaos-safety-controller
+        component: safety-controls
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: chaos-controller-manager
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: safety-controller
+        image: bookedbarber/chaos-safety-controller:v1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: metrics
+        - containerPort: 9090
+          name: api
+        env:
+        - name: PROMETHEUS_URL
+          value: "http://sre-prometheus.sre-monitoring.svc.cluster.local:9090"
+        - name: ALERTMANAGER_URL
+          value: "http://sre-alertmanager.sre-monitoring.svc.cluster.local:9093"
+        - name: SAFETY_CONFIG_PATH
+          value: "/etc/safety/safety-rules.yml"
+        - name: APPROVAL_CONFIG_PATH
+          value: "/etc/safety/approval-workflows.yml"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: SENDGRID_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sendgrid-secrets
+              key: api-key
+              optional: true
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: slack-secrets
+              key: webhook-url
+              optional: true
+        command:
+        - /app/chaos-safety-controller
+        args:
+        - --metrics-addr=0.0.0.0:8080
+        - --api-addr=0.0.0.0:9090
+        - --config-reload-interval=30s
+        - --safety-check-interval=10s
+        - --prometheus-query-timeout=30s
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9090
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 9090
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: safety-config
+          mountPath: /etc/safety
+          readOnly: true
+        - name: tmp-volume
+          mountPath: /tmp
+      volumes:
+      - name: safety-config
+        configMap:
+          name: chaos-safety-config
+      - name: tmp-volume
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - chaos-safety-controller
+              topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaos-safety-controller
+  namespace: chaos-engineering
+  labels:
+    app: chaos-safety-controller
+    component: safety-controls
+spec:
+  selector:
+    app: chaos-safety-controller
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: metrics
+  - port: 9090
+    targetPort: 9090
+    name: api
+  type: ClusterIP
+---
+# Chaos Safety Alert Rules
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaos-safety-alert-rules
+  namespace: sre-monitoring
+  labels:
+    component: chaos-safety-alerts
+data:
+  chaos-safety.yml: |
+    groups:
+    - name: chaos.safety
+      interval: 10s
+      rules:
+      # Experiment Safety Violations
+      - alert: ChaosExperimentSafetyViolation
+        expr: chaos_safety_violation_total > 0
+        for: 0s
+        labels:
+          severity: critical
+          priority: p0
+          component: chaos-engineering
+        annotations:
+          summary: "Chaos experiment safety violation detected"
+          description: "Safety controller detected violation: {{ $labels.violation_type }}"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/chaos-safety-violation"
+          action: "Experiment automatically terminated"
+          
+      # Business Impact During Experiments
+      - alert: ChaosBusinessImpactDetected
+        expr: (rate(sixfb_booking_created[2m]) < on() (chaos_experiment_baseline_booking_rate * 0.9)) and on() (chaos_experiment_active == 1)
+        for: 1m
+        labels:
+          severity: critical
+          priority: p0
+          business_impact: "high"
+        annotations:
+          summary: "Business impact detected during chaos experiment"
+          description: "Booking rate dropped by >10% during active experiment"
+          business_impact: "Potential revenue loss"
+          action: "Experiment termination triggered"
+          
+      - alert: ChaosPaymentImpactDetected
+        expr: (rate(sixfb_payment_failed[2m]) > on() (chaos_experiment_baseline_payment_failure_rate * 1.5)) and on() (chaos_experiment_active == 1)
+        for: 30s
+        labels:
+          severity: critical
+          priority: p0
+          business_impact: "high"
+        annotations:
+          summary: "Payment system impact detected during chaos experiment"
+          description: "Payment failure rate increased >50% during experiment"
+          business_impact: "Direct revenue impact"
+          action: "Experiment termination triggered"
+          
+      # Unauthorized Experiments
+      - alert: UnauthorizedChaosExperiment
+        expr: chaos_experiment_unauthorized_total > 0
+        for: 0s
+        labels:
+          severity: critical
+          priority: p0
+          security: "high"
+        annotations:
+          summary: "Unauthorized chaos experiment detected"
+          description: "Experiment started without proper approval: {{ $labels.experiment_name }}"
+          security_impact: "Potential system disruption"
+          action: "Experiment forcefully terminated"
+          
+      # Safety Controller Health
+      - alert: ChaosSafetyControllerDown
+        expr: up{job="chaos-safety-controller"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          priority: p0
+        annotations:
+          summary: "Chaos safety controller is down"
+          description: "Safety monitoring for chaos experiments is unavailable"
+          runbook: "https://docs.bookedbarber.com/sre/runbooks/chaos-safety-controller-down"
+          impact: "No safety monitoring for chaos experiments"
+          
+    - name: chaos.operations
+      interval: 30s
+      rules:
+      # Long Running Experiments
+      - alert: ChaosExperimentTooLong
+        expr: chaos_experiment_duration_seconds > 600
+        for: 0s
+        labels:
+          severity: warning
+          priority: p1
+        annotations:
+          summary: "Chaos experiment running too long"
+          description: "Experiment {{ $labels.experiment_name }} has been running for >10 minutes"
+          action: "Review experiment status and consider termination"
+          
+      # Multiple Concurrent Experiments
+      - alert: TooManyConcurrentChaosExperiments
+        expr: count(chaos_experiment_active == 1) > 1
+        for: 1m
+        labels:
+          severity: warning
+          priority: p2
+        annotations:
+          summary: "Multiple chaos experiments running concurrently"
+          description: "{{ $value }} experiments are running simultaneously"
+          risk: "Increased system instability"
+          
+      # Business Hours Experiment Warning
+      - alert: ChaosExperimentDuringBusinessHours
+        expr: (chaos_experiment_active == 1) and on() (business_hours_active == 1)
+        for: 0s
+        labels:
+          severity: warning
+          priority: p1
+          business_impact: "medium"
+        annotations:
+          summary: "Chaos experiment running during business hours"
+          description: "Experiment {{ $labels.experiment_name }} is active during peak hours"
+          business_impact: "Potential customer experience impact"
+          recommendation: "Consider rescheduling to off-hours"
+---
+# Network Policy for Chaos Engineering
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: chaos-engineering-network-policy
+  namespace: chaos-engineering
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: sre-monitoring
+    - namespaceSelector:
+        matchLabels:
+          name: bookedbarber-v2
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9090
+    - protocol: TCP
+      port: 2333
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: sre-monitoring
+    ports:
+    - protocol: TCP
+      port: 9090
+    - protocol: TCP
+      port: 9093
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: bookedbarber-v2
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 5432
+    - protocol: TCP
+      port: 6379
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80

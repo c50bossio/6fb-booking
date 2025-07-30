@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import {
-  Chart as ChartJS,
+  ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
@@ -12,9 +12,11 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-  Filler
-} from 'chart.js'
-import { Line, Bar, Doughnut } from 'react-chartjs-2'
+  Filler,
+  Line,
+  Bar,
+  Doughnut
+} from '@/lib/chartjs-dynamic'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ProgressIndicator } from '@/components/ui/ProgressIndicator'
@@ -22,18 +24,20 @@ import { CalendarIcon, ArrowTrendingUpIcon, UserIcon, ClockIcon } from '@heroico
 import { cn } from '@/lib/utils'
 
 // Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  Filler
-)
+if (typeof window !== 'undefined') {
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+    Filler
+  )
+}
 
 interface AnalyticsData {
   revenue: {

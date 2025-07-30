@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 # Import tracking models to register them with SQLAlchemy
-from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks, smart_insights, pwa, cache_performance, realtime_calendar  # calendar_export temporarily disabled due to icalendar import issue
+from routers import auth, auth_simple, appointments, payments, clients, users, timezones, services, barber_availability, recurring_appointments, webhooks, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health, pricing_validation, six_fb_compliance, commission_rates, exports, locations, products, social_auth, search, franchise_networks, smart_insights, pwa, cache_performance, realtime_calendar, ai_business_calendar, business_intelligence_agents  # calendar_export temporarily disabled due to icalendar import issue
+from routers import ai_dashboard_router
 
 # Import V2 webhook endpoints
 from api.v2.endpoints import google_calendar_webhook
@@ -12,7 +13,7 @@ from api.v2.endpoints import google_calendar_webhook
 from routers import unified_analytics
 
 # Import V2 API endpoints for Six Figure Barber enhancements
-from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization, six_figure_barber_analytics, six_figure_barber_crm, analytics
+from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization, six_figure_barber_analytics, six_figure_barber_crm, analytics, customer_retention, dynamic_pricing, ai_orchestrator
 # Import enhanced Six Figure Barber analytics
 from routers import six_figure_enhanced_analytics
 # Import deployment test endpoint
@@ -31,6 +32,7 @@ from middleware.enhanced_security import EnhancedSecurityMiddleware, WebhookSecu
 from middleware.configuration_security import ConfigurationSecurityMiddleware, configuration_reporter
 from middleware.cache_middleware import SmartCacheMiddleware
 from middleware.csrf_middleware import CSRFMiddleware
+from middleware.api_rate_limiting_middleware import APIRateLimitingMiddleware
 import logging
 import sys
 
@@ -51,7 +53,13 @@ if validation_result.get('critical_missing', 0) > 0:
     sys.exit(1)
 
 # Create database tables
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Database table creation warning (likely duplicate index): {e}")
+    # Continue startup - tables likely already exist
 
 # Define lifespan context manager for startup/shutdown
 @asynccontextmanager
@@ -250,9 +258,11 @@ if ENVIRONMENT == "development" and ENABLE_DEVELOPMENT_MODE:
     # Add smart cache middleware for development
     app.add_middleware(SmartCacheMiddleware, enable_cache=True)
     
+    # Add API rate limiting middleware for public API endpoints
+    app.add_middleware(APIRateLimitingMiddleware)
+    
     # Add CSRF protection middleware (essential for security)
-    # TEMPORARILY DISABLED for debugging login issue
-    # app.add_middleware(CSRFMiddleware)
+    app.add_middleware(CSRFMiddleware)
     
     # Only essential middleware for development
     app.add_middleware(SecurityHeadersMiddleware)
@@ -309,9 +319,11 @@ else:
     # Add MFA enforcement middleware for admin operations
     app.add_middleware(MFAEnforcementMiddleware)
 
+    # Add API rate limiting middleware for public API endpoints
+    app.add_middleware(APIRateLimitingMiddleware)
+    
     # Add CSRF protection middleware (before other security middleware)
-    # TEMPORARILY DISABLED for debugging login issue
-    # app.add_middleware(CSRFMiddleware)
+    app.add_middleware(CSRFMiddleware)
     
     # Add enhanced security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
@@ -499,6 +511,14 @@ app.include_router(products.router)  # Product management and Shopify integratio
 # Include public routes (no authentication required)
 app.include_router(services_public_router, prefix="/api/v2")
 
+# Include Public API for third-party integrations
+from api.v2.endpoints.public_api import router as public_api_router
+app.include_router(public_api_router, prefix="/api/v2")
+
+# Include Developer Portal for third-party integration documentation and tools
+from api.v2.endpoints.developer_portal import router as developer_portal_router
+app.include_router(developer_portal_router, prefix="/api/v2")
+
 # V2 API endpoints for Six Figure Barber enhancements
 app.include_router(client_lifecycle.router, prefix="/api/v2")  # Client lifecycle management
 app.include_router(booking_intelligence.router, prefix="/api/v2")  # AI-powered booking intelligence
@@ -508,6 +528,8 @@ app.include_router(calendar_revenue_optimization.router, prefix="/api/v2")  # Ca
 app.include_router(six_figure_barber_analytics.router, prefix="/api/v2")  # Six Figure Barber methodology core analytics
 app.include_router(six_figure_barber_crm.router, prefix="/api/v2")  # Six Figure Barber CRM system
 app.include_router(analytics.router, prefix="/api/v2")  # Comprehensive Six Figure Barber Analytics Dashboard
+app.include_router(customer_retention.router, prefix="/api/v2")  # Customer retention and loyalty program system
+app.include_router(dynamic_pricing.router, prefix="/api/v2")  # Dynamic pricing intelligence and KPI recommendations
 app.include_router(six_figure_enhanced_analytics.router)  # Enhanced Six Figure Barber Analytics with Advanced Features
 app.include_router(smart_insights.router)  # Smart Insights Hub - intelligent consolidation of all analytics
 app.include_router(search.router, prefix="/api/v2")  # Global search functionality
@@ -518,7 +540,11 @@ app.include_router(search_health.router)  # Search health endpoints (includes /a
 # Real-time calendar WebSocket and API endpoints
 app.include_router(realtime_calendar.router)  # Real-time calendar updates (includes WebSocket and API endpoints)
 # app.include_router(calendar_export.router)  # Calendar export and sync functionality (temporarily disabled due to icalendar import issue)
+app.include_router(ai_business_calendar.router)  # AI Business Calendar with Google Calendar sync and business intelligence
+app.include_router(business_intelligence_agents.router)  # Business Intelligence AI Agents for coaching and insights
 
+app.include_router(ai_dashboard_router.router)  # Unified AI Dashboard with orchestrator, memory, vector knowledge, strategy engine, and ROI tracking
+app.include_router(ai_orchestrator.router, prefix="/api/v2")  # AI Orchestrator API endpoints for unified dashboard
 # DEPLOYMENT TEST ENDPOINT - Remove after deployment verification
 app.include_router(test_deployment_router, prefix="/api/v2")
 

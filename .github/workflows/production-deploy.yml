@@ -1,0 +1,434 @@
+name: Production Deployment Pipeline
+
+on:
+  push:
+    branches: [production, main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      force_deploy:
+        description: 'Force deployment (skip some checks)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend-v2
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend-v2
+
+jobs:
+  # Security and vulnerability scanning
+  security-scan:
+    name: Security & Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Run Trivy vulnerability scanner (Backend)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: './backend-v2'
+        format: 'sarif'
+        output: 'trivy-backend-results.sarif'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Run Trivy vulnerability scanner (Frontend)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: './backend-v2/frontend-v2'
+        format: 'sarif'
+        output: 'trivy-frontend-results.sarif'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: '.'
+
+    - name: Run Secrets Scanner
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+    - name: Dependency Check (Backend)
+      working-directory: ./backend-v2
+      run: |
+        pip install safety
+        safety check --json --output safety-report.json
+        
+    - name: Dependency Check (Frontend)
+      working-directory: ./backend-v2/frontend-v2
+      run: |
+        npm audit --json > npm-audit-report.json
+        npm audit --audit-level high
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports
+        path: |
+          trivy-*-results.sarif
+          backend-v2/safety-report.json
+          backend-v2/frontend-v2/npm-audit-report.json
+
+  # Build optimized Docker images
+  build-images:
+    name: Build Production Images
+    runs-on: ubuntu-latest
+    needs: security-scan
+    if: success() || github.event.inputs.force_deploy == 'true'
+    
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    outputs:
+      backend-digest: ${{ steps.build-backend.outputs.digest }}
+      frontend-digest: ${{ steps.build-frontend.outputs.digest }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: network=host
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: |
+          ${{ env.BACKEND_IMAGE }}
+          ${{ env.FRONTEND_IMAGE }}
+        tags: |
+          type=ref,event=branch
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push backend image
+      id: build-backend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend-v2
+        file: ./backend-v2/Dockerfile.optimized
+        target: production
+        push: true
+        tags: |
+          ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          ${{ env.BACKEND_IMAGE }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+        labels: |
+          org.opencontainers.image.title=BookedBarber Backend V2
+          org.opencontainers.image.description=Production FastAPI backend
+          org.opencontainers.image.version=${{ github.sha }}
+          org.opencontainers.image.created=${{ steps.meta.outputs.created }}
+          org.opencontainers.image.revision=${{ github.sha }}
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
+
+    - name: Build and push frontend image  
+      id: build-frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend-v2/frontend-v2
+        file: ./backend-v2/frontend-v2/Dockerfile.optimized
+        target: production
+        push: true
+        tags: |
+          ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          ${{ env.FRONTEND_IMAGE }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+        labels: |
+          org.opencontainers.image.title=BookedBarber Frontend V2
+          org.opencontainers.image.description=Production Next.js frontend
+          org.opencontainers.image.version=${{ github.sha }}
+          org.opencontainers.image.created=${{ steps.meta.outputs.created }}
+          org.opencontainers.image.revision=${{ github.sha }}
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
+
+    - name: Scan backend image with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-backend-image.sarif'
+
+    - name: Scan frontend image with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-frontend-image.sarif'
+
+    - name: Upload image scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-*-image.sarif'
+
+  # Deploy to staging for validation
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-images
+    if: github.event.inputs.environment == 'staging' || github.ref == 'refs/heads/staging'
+    environment: staging
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      uses: azure/k8s-set-context@v3
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.STAGING_KUBECONFIG }}
+
+    - name: Deploy with Helm
+      run: |
+        helm upgrade --install bookedbarber-staging ./k8s/helm-chart \
+          --namespace staging \
+          --create-namespace \
+          --set image.backend.tag=${{ github.sha }} \
+          --set image.frontend.tag=${{ github.sha }} \
+          --set environment=staging \
+          --set ingress.host=staging.bookedbarber.com \
+          --values ./k8s/helm-chart/values-staging.yaml \
+          --wait --timeout=10m
+
+    - name: Run staging smoke tests
+      run: |
+        kubectl wait --for=condition=available --timeout=300s deployment/bookedbarber-backend -n staging
+        kubectl wait --for=condition=available --timeout=300s deployment/bookedbarber-frontend -n staging
+        
+        # Health check
+        curl -f https://staging.bookedbarber.com/api/health --max-time 30
+        curl -f https://staging.bookedbarber.com/ --max-time 30
+
+  # Deploy to production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-images, deploy-staging]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
+    environment: production
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure kubectl for production
+      uses: azure/k8s-set-context@v3  
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.PRODUCTION_KUBECONFIG }}
+
+    - name: Pre-deployment backup
+      run: |
+        # Create database backup
+        kubectl create job --from=cronjob/database-backup manual-backup-$(date +%s) -n production
+        
+        # Wait for backup to complete
+        kubectl wait --for=condition=complete --timeout=600s job/manual-backup-* -n production
+
+    - name: Blue-Green Deployment with Helm
+      run: |
+        # Deploy to green environment
+        helm upgrade --install bookedbarber-green ./k8s/helm-chart \
+          --namespace production \
+          --set image.backend.tag=${{ github.sha }} \
+          --set image.frontend.tag=${{ github.sha }} \
+          --set environment=production \
+          --set deployment.color=green \
+          --set ingress.host=bookedbarber.com \
+          --values ./k8s/helm-chart/values-production.yaml \
+          --wait --timeout=15m
+
+    - name: Production health checks
+      run: |
+        # Wait for deployment to be ready
+        kubectl wait --for=condition=available --timeout=600s deployment/bookedbarber-backend-green -n production
+        kubectl wait --for=condition=available --timeout=600s deployment/bookedbarber-frontend-green -n production
+        
+        # Comprehensive health checks
+        for i in {1..10}; do
+          if curl -f https://bookedbarber.com/api/health --max-time 10; then
+            echo "✅ Health check $i passed"
+            break
+          else
+            echo "⚠️ Health check $i failed, retrying..."
+            sleep 30
+          fi
+        done
+
+    - name: Switch traffic to green (Blue-Green cutover)
+      run: |
+        # Update ingress to point to green
+        kubectl patch ingress bookedbarber-ingress -n production -p '{"spec":{"rules":[{"host":"bookedbarber.com","http":{"paths":[{"path":"/","pathType":"Prefix","backend":{"service":{"name":"bookedbarber-green","port":{"number":80}}}}]}}]}}'
+        
+        # Wait for propagation
+        sleep 60
+        
+        # Final verification
+        curl -f https://bookedbarber.com/api/health --max-time 10
+
+    - name: Cleanup old blue deployment
+      run: |
+        # Keep blue deployment for 1 hour for potential rollback
+        kubectl scale deployment bookedbarber-backend-blue --replicas=1 -n production || true
+        kubectl scale deployment bookedbarber-frontend-blue --replicas=1 -n production || true
+
+    - name: Run database migrations
+      run: |
+        kubectl create job --from=deployment/bookedbarber-backend-green migration-$(date +%s) -n production
+        kubectl wait --for=condition=complete --timeout=300s job/migration-* -n production
+
+    - name: Post-deployment verification
+      run: |
+        # Performance check
+        curl -w "@curl-format.txt" -o /dev/null -s https://bookedbarber.com/
+        
+        # Feature smoke tests
+        python3 ./scripts/production-smoke-tests.py
+
+  # Monitoring and alerting setup
+  post-deploy-monitoring:
+    name: Setup Monitoring & Alerts
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: success()
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Update monitoring dashboards
+      run: |
+        # Update Grafana dashboards
+        curl -X POST \
+          -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d @./monitoring/grafana-dashboard.json \
+          https://monitoring.bookedbarber.com/api/dashboards/db
+
+    - name: Configure alerts
+      run: |
+        # Update Prometheus alert rules
+        kubectl apply -f ./monitoring/prometheus-alerts.yaml -n monitoring
+
+    - name: Test alerting
+      run: |
+        # Trigger test alert to verify notification channels
+        curl -X POST \
+          -H "Content-Type: application/json" \
+          -d '{"receiver":"test","status":"firing","alerts":[{"status":"firing","labels":{"alertname":"DeploymentTest"},"annotations":{"summary":"Test alert from deployment pipeline"}}],"groupLabels":{"alertname":"DeploymentTest"}}' \
+          https://monitoring.bookedbarber.com/api/v1/alerts
+
+  # Rollback capability
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    if: failure() && github.ref == 'refs/heads/main'
+    needs: [deploy-production]
+    environment: production
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      uses: azure/k8s-set-context@v3
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.PRODUCTION_KUBECONFIG }}
+
+    - name: Rollback to previous version
+      run: |
+        # Switch traffic back to blue
+        kubectl patch ingress bookedbarber-ingress -n production -p '{"spec":{"rules":[{"host":"bookedbarber.com","http":{"paths":[{"path":"/","pathType":"Prefix","backend":{"service":{"name":"bookedbarber-blue","port":{"number":80}}}}]}}]}}'
+        
+        # Scale blue back up
+        kubectl scale deployment bookedbarber-backend-blue --replicas=3 -n production
+        kubectl scale deployment bookedbarber-frontend-blue --replicas=3 -n production
+        
+        # Remove failed green deployment
+        helm uninstall bookedbarber-green -n production
+
+    - name: Notify rollback
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        text: |
+          🚨 **Production Rollback Executed**
+          
+          📊 **Details:**
+          - Commit: ${{ github.sha }}
+          - Branch: ${{ github.ref_name }}
+          - Reason: Deployment failure
+          
+          🔄 **Actions Taken:**
+          - Traffic switched back to blue environment
+          - Failed green deployment removed
+          - System restored to previous state
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Success notification
+  deployment-success:
+    name: Deployment Success Notification
+    runs-on: ubuntu-latest
+    needs: [deploy-production, post-deploy-monitoring]
+    if: success()
+
+    steps:
+    - name: Notify successful deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: |
+          🚀 **Production Deployment Successful!**
+          
+          📊 **Deployment Details:**
+          - Commit: ${{ github.sha }}
+          - Branch: ${{ github.ref_name }}
+          - Backend Image: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          - Frontend Image: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          
+          ✅ **Verifications Completed:**
+          - Security scans passed
+          - Health checks passed
+          - Database migrations applied
+          - Monitoring configured
+          
+          🔗 **Links:**
+          - Frontend: https://bookedbarber.com
+          - API: https://bookedbarber.com/api/health
+          - Monitoring: https://monitoring.bookedbarber.com
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}

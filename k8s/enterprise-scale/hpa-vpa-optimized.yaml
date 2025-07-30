@@ -1,0 +1,618 @@
+# =============================================================================
+# BookedBarber V2 - Advanced Auto-scaling Configuration
+# =============================================================================
+# 🚀 Horizontal Pod Autoscaler (HPA) with custom metrics
+# 📊 Vertical Pod Autoscaler (VPA) for resource optimization
+# ⚡ Multi-dimensional scaling with business metrics
+# =============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookedbarber-production
+  labels:
+    name: bookedbarber-production
+    environment: production
+
+---
+# =============================================================================
+# Custom Metrics API Configuration
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: custom-metrics-apiserver
+  namespace: bookedbarber-production
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: custom-metrics-server-resources
+rules:
+- apiGroups:
+  - custom.metrics.k8s.io
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: custom-metrics:system:auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: custom-metrics-apiserver
+  namespace: bookedbarber-production
+
+---
+# =============================================================================
+# Backend HPA - Multi-metric Scaling
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: bookedbarber-production
+  labels:
+    app: backend-v2
+    component: autoscaling
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-v2
+  minReplicas: 3
+  maxReplicas: 50
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  
+  # Request rate scaling (custom metric)
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  
+  # Response time scaling (custom metric)
+  - type: Pods
+    pods:
+      metric:
+        name: http_request_duration_p95
+      target:
+        type: AverageValue
+        averageValue: "500m"  # 500ms
+  
+  # Database connection scaling (custom metric)
+  - type: Pods
+    pods:
+      metric:
+        name: database_connections_per_pod
+      target:
+        type: AverageValue
+        averageValue: "10"
+  
+  # Business metric scaling - booking rate
+  - type: Pods
+    pods:
+      metric:
+        name: booking_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "5"
+  
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 4
+        periodSeconds: 15
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Min
+
+---
+# =============================================================================
+# Frontend HPA - Traffic-based Scaling
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: bookedbarber-production
+  labels:
+    app: frontend-v2
+    component: autoscaling
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-v2
+  minReplicas: 2
+  maxReplicas: 30
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+  
+  # Request rate scaling
+  - type: Pods
+    pods:
+      metric:
+        name: nginx_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "50"
+  
+  # Active connections scaling
+  - type: Pods
+    pods:
+      metric:
+        name: nginx_active_connections
+      target:
+        type: AverageValue
+        averageValue: "100"
+  
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Percent
+        value: 200
+        periodSeconds: 15
+      - type: Pods
+        value: 6
+        periodSeconds: 15
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Percent
+        value: 20
+        periodSeconds: 60
+      selectPolicy: Min
+
+---
+# =============================================================================
+# Backend VPA - Resource Optimization
+# =============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: backend-vpa
+  namespace: bookedbarber-production
+  labels:
+    app: backend-v2
+    component: vpa
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-v2
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: backend
+      minAllowed:
+        cpu: 100m
+        memory: 256Mi
+      maxAllowed:
+        cpu: 4000m
+        memory: 8Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+
+---
+# =============================================================================
+# Frontend VPA - Resource Optimization
+# =============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: frontend-vpa
+  namespace: bookedbarber-production
+  labels:
+    app: frontend-v2
+    component: vpa
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-v2
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: frontend
+      minAllowed:
+        cpu: 50m
+        memory: 128Mi
+      maxAllowed:
+        cpu: 2000m
+        memory: 4Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+
+---
+# =============================================================================
+# Database Connection Pool Scaler
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pgbouncer-hpa
+  namespace: bookedbarber-production
+  labels:
+    app: pgbouncer
+    component: autoscaling
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pgbouncer
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Pods
+    pods:
+      metric:
+        name: pgbouncer_active_clients
+      target:
+        type: AverageValue
+        averageValue: "50"
+  - type: Pods
+    pods:
+      metric:
+        name: pgbouncer_waiting_clients
+      target:
+        type: AverageValue
+        averageValue: "5"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 120
+
+---
+# =============================================================================
+# Redis Cluster Scaling
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: redis-hpa
+  namespace: bookedbarber-production
+  labels:
+    app: redis
+    component: autoscaling
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: redis-cluster
+  minReplicas: 3
+  maxReplicas: 9  # Redis cluster nodes (must be multiple of 3)
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 75
+  - type: Pods
+    pods:
+      metric:
+        name: redis_connected_clients
+      target:
+        type: AverageValue
+        averageValue: "100"
+  - type: Pods
+    pods:
+      metric:
+        name: redis_ops_per_second
+      target:
+        type: AverageValue
+        averageValue: "1000"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 3  # Scale by 3 for Redis cluster
+        periodSeconds: 180
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+      - type: Pods
+        value: 3
+        periodSeconds: 300
+
+---
+# =============================================================================
+# Custom Metrics Configuration
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-metrics-config
+  namespace: bookedbarber-production
+data:
+  config.yaml: |
+    # Custom metrics for HPA
+    metrics:
+      # HTTP Request Rate
+      - name: http_requests_per_second
+        query: 'rate(http_requests_total[1m])'
+        
+      # HTTP Response Time P95
+      - name: http_request_duration_p95
+        query: 'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[1m]))'
+        
+      # Database Connections per Pod
+      - name: database_connections_per_pod
+        query: 'pg_stat_activity_count / scalar(count(up{job="bookedbarber-backend"}))'
+        
+      # Booking Requests Rate
+      - name: booking_requests_per_second
+        query: 'rate(booking_attempts_total[1m])'
+        
+      # Nginx Requests per Second
+      - name: nginx_requests_per_second
+        query: 'rate(nginx_http_requests_total[1m])'
+        
+      # Nginx Active Connections
+      - name: nginx_active_connections
+        query: 'nginx_connections_active'
+        
+      # PgBouncer Metrics
+      - name: pgbouncer_active_clients
+        query: 'pgbouncer_pools_cl_active'
+        
+      - name: pgbouncer_waiting_clients
+        query: 'pgbouncer_pools_cl_waiting'
+        
+      # Redis Metrics
+      - name: redis_connected_clients
+        query: 'redis_connected_clients'
+        
+      - name: redis_ops_per_second
+        query: 'rate(redis_commands_processed_total[1m])'
+
+---
+# =============================================================================
+# Cluster Autoscaler Configuration
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-autoscaler-status
+  namespace: kube-system
+data:
+  nodes.max: "100"
+  nodes.min: "3"
+  scale-down-delay-after-add: "10m"
+  scale-down-unneeded-time: "10m"
+  scale-down-utilization-threshold: "0.5"
+  skip-nodes-with-local-storage: "false"
+  skip-nodes-with-system-pods: "false"
+
+---
+# =============================================================================
+# Pod Disruption Budgets
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-pdb
+  namespace: bookedbarber-production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: backend-v2
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: bookedbarber-production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: frontend-v2
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: postgres-pdb
+  namespace: bookedbarber-production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: postgres
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: redis-pdb
+  namespace: bookedbarber-production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: redis
+
+---
+# =============================================================================
+# Priority Classes for Pod Scheduling
+# =============================================================================
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: critical-priority
+value: 1000
+globalDefault: false
+description: "Critical system pods that must be scheduled first"
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 500
+globalDefault: false
+description: "High priority application pods"
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: normal-priority
+value: 100
+globalDefault: true
+description: "Normal priority application pods"
+
+---
+# =============================================================================
+# Resource Quotas and Limits
+# =============================================================================
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-quota
+  namespace: bookedbarber-production
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: 200Gi
+    limits.cpu: "200"
+    limits.memory: 400Gi
+    persistentvolumeclaims: "20"
+    pods: "100"
+    services: "20"
+    secrets: "50"
+    configmaps: "50"
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mem-limit-range
+  namespace: bookedbarber-production
+spec:
+  limits:
+  - default:
+      memory: "2Gi"
+      cpu: "1000m"
+    defaultRequest:
+      memory: "512Mi"
+      cpu: "200m"
+    type: Container
+  - max:
+      memory: "8Gi"
+      cpu: "4000m"
+    min:
+      memory: "64Mi"
+      cpu: "50m"
+    type: Container
+
+---
+# =============================================================================
+# Network Policies for Scaling Security
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-autoscaling-policy
+  namespace: bookedbarber-production
+spec:
+  podSelector:
+    matchLabels:
+      app: backend-v2
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend-v2
+    - podSelector:
+        matchLabels:
+          app: nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379

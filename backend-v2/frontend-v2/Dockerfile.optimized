@@ -1,58 +1,151 @@
-# BookedBarber V2 Frontend - Optimized Multi-Stage Production Build
-FROM node:18-alpine as base
+# =============================================================================
+# BookedBarber V2 Frontend - Production-Hardened Multi-Stage Dockerfile
+# =============================================================================
+# 🔒 Security-first approach with minimal attack surface
+# ⚡ Optimized for size and performance with advanced caching
+# 🚀 Production-ready with health checks and monitoring
+# =============================================================================
 
-# Install dependencies for building
-RUN apk add --no-cache libc6-compat
+# Build stage - compile and optimize assets
+FROM node:18-alpine as builder
+
+# Install security updates
+RUN apk update && apk upgrade && apk add --no-cache dumb-init libc6-compat
+
+# Create non-root user for building
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies with security audit
+RUN npm ci --only=production --ignore-scripts && \
+    npm audit --audit-level=high && \
+    npm cache clean --force
+
+# Copy source files
+COPY --chown=nextjs:nodejs . .
+
+# Build application with optimizations
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV GENERATE_SOURCEMAP=false
+
+RUN npm run build && \
+    rm -rf .next/cache && \
+    rm -rf node_modules && \
+    npm ci --only=production --ignore-scripts
 
 # Development stage
-FROM base as development
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-EXPOSE 3000
-CMD ["npm", "run", "dev"]
+FROM node:18-alpine as development
 
-# Dependencies stage
-FROM base as deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
-
-# Builder stage
-FROM base as builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-ENV NEXT_TELEMETRY_DISABLED 1
-RUN npm run build
-
-# Production stage
-FROM node:18-alpine as production
-WORKDIR /app
+# Install security updates and development tools
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+    dumb-init \
+    curl \
+    bash \
+    git \
+    libc6-compat
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
-# Copy built application
-COPY --from=builder /app/public ./public
+WORKDIR /app
+
+# Copy package files and install all dependencies
+COPY package*.json ./
+RUN npm ci && npm cache clean --force
+
+# Copy source files
+COPY --chown=nextjs:nodejs . .
+
+USER nextjs
+
+# Health check for development
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health --max-time 5 || exit 1
+
+EXPOSE 3000
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "run", "dev"]
+
+# Production runtime stage - minimal and secure
+FROM node:18-alpine as production
+
+# Install security updates only
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+    dumb-init \
+    curl \
+    tini && \
+    rm -rf /var/cache/apk/*
+
+# Create non-root user with specific UID/GID
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+
+WORKDIR /app
+
+# Copy built application from builder stage
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Create necessary directories with secure permissions
+RUN mkdir -p /app/logs /app/temp && \
+    chown -R nextjs:nodejs /app && \
+    chmod -R 750 /app && \
+    chmod -R 755 /app/public
 
 # Switch to non-root user
 USER nextjs
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
+# Production health check with comprehensive validation
+HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=5 \
+    CMD curl -f http://localhost:3000/api/health --max-time 5 && \
+        curl -f http://localhost:3000/ --max-time 3 || exit 1
 
-# Expose port
+# Security and metadata labels
+LABEL security.scan="enabled" \
+      security.non-root="true" \
+      security.readonly="true" \
+      org.opencontainers.image.title="BookedBarber Frontend V2" \
+      org.opencontainers.image.description="Production-hardened Next.js frontend" \
+      org.opencontainers.image.vendor="BookedBarber" \
+      org.opencontainers.image.authors="dev@bookedbarber.com" \
+      org.opencontainers.image.source="https://github.com/bookedbarber/platform"
+
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+# Environment variables for production
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
 
-# Run application
+# Use tini for proper signal handling and zombie reaping
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "server.js"]
+
+# Testing stage for CI/CD
+FROM development as testing
+
+# Install testing dependencies
+RUN npm install --save-dev \
+    @testing-library/react \
+    @testing-library/jest-dom \
+    jest \
+    jest-environment-jsdom
+
+# Copy test files
+COPY --chown=nextjs:nodejs __tests__/ __tests__/
+COPY --chown=nextjs:nodejs jest.config.js ./
+
+USER nextjs
+
+# Default test command
+CMD ["npm", "test"]

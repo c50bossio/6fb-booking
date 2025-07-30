@@ -1,0 +1,45 @@
+{
+  "root_group": {
+    "duration": 120000,
+    "checks": 485,
+    "iterations": 950
+  },
+  "metrics": {
+    "http_req_duration": {
+      "values": {
+        "avg": 245.5,
+        "min": 89.2,
+        "max": 1250.8,
+        "p(90)": 456.7,
+        "p(95)": 623.4,
+        "p(99)": 980.1,
+        "count": 950
+      }
+    },
+    "http_req_failed": {
+      "values": {
+        "rate": 0.008,
+        "passes": 942,
+        "fails": 8
+      }
+    },
+    "http_reqs": {
+      "values": {
+        "count": 950,
+        "rate": 7.9
+      }
+    },
+    "checks": {
+      "values": {
+        "passes": 465,
+        "fails": 20
+      }
+    },
+    "vus": {
+      "values": {
+        "max": 100,
+        "min": 0
+      }
+    }
+  }
+}

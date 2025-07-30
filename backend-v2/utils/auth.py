@@ -73,6 +73,23 @@ async def get_current_user(
     """Get the current authenticated user from JWT token with blacklist checking."""
     token = credentials.credentials
     
+    # DEVELOPMENT AUTHENTICATION BYPASS (Only for development environment)
+    if token == "dev-token-bypass" and settings.environment in ["development", "dev"]:
+        # Get the actual dev user from database
+        dev_user = db.query(User).filter(User.email == "dev@bookedbarber.com").first()
+        if dev_user:
+            return dev_user
+        
+        # Fallback: Create development super admin user if not found in DB
+        dev_user = User(
+            id=999999,
+            email="dev@bookedbarber.com",
+            role="super_admin",
+            is_active=True,
+            shop_id=None  # Super admin can access all shops
+        )
+        return dev_user
+    
     # Check if token is blacklisted first
     from services.token_blacklist import is_token_blacklisted
     if is_token_blacklisted(token):
@@ -149,6 +166,23 @@ async def get_current_user_optional(
             return None
     except ValueError:
         return None
+    
+    # DEVELOPMENT AUTHENTICATION BYPASS (Only for development environment)
+    if token == "dev-token-bypass" and settings.environment in ["development", "dev"]:
+        # Get the actual dev user from database
+        dev_user = db.query(User).filter(User.email == "dev@bookedbarber.com").first()
+        if dev_user:
+            return dev_user
+        
+        # Fallback: Create development super admin user if not found in DB
+        dev_user = User(
+            id=999999,
+            email="dev@bookedbarber.com",
+            role="super_admin",
+            is_active=True,
+            shop_id=None  # Super admin can access all shops
+        )
+        return dev_user
         
     try:
         payload = decode_token(token)

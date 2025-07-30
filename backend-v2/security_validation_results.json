@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-07-29T15:26:30.000358",
+  "tests": {
+    "api_key_exposure": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:26:30.030227"
+    },
+    "csrf_protection": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:26:30.286001"
+    },
+    "authentication_flows": {
+      "passed": false,
+      "timestamp": "2025-07-29T15:26:30.291799"
+    },
+    "input_validation": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:26:30.321292"
+    },
+    "data_encryption": {
+      "passed": true,
+      "timestamp": "2025-07-29T15:26:30.325532"
+    }
+  },
+  "summary": {
+    "total": 5,
+    "passed": 4,
+    "failed": 1,
+    "critical_issues": [
+      "Protected endpoint accessible without auth: /api/v2/users/profile"
+    ]
+  }
+}

@@ -1,459 +1,360 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getProfile, resendVerification } from '@/lib/api'
-import { useSecureAuth } from '@/hooks/useSecureAuth'
-import { getDefaultDashboard } from '@/lib/routeGuards'
-import { secureAuth } from '@/lib/secure-auth'
-import { useAsyncOperation } from '@/lib/useAsyncOperation'
-import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Logo } from '@/components/ui/Logo'
-import { useFormValidation, validators } from '@/hooks/useFormValidation'
-import { ValidatedInput, PasswordStrengthIndicator } from '@/components/forms/ValidatedInput'
-import { Form, FormField, FormActions, FormError } from '@/components/forms/Form'
-import { Mail, Lock } from 'lucide-react'
-import { RateLimitIndicator, useRateLimit } from '@/components/auth/RateLimitIndicator'
+import Image from 'next/image'
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { EnhancedRememberMe } from '@/components/auth/RememberMe'
-import { trustDevice, generateDeviceFingerprint } from '@/lib/device-fingerprint'
 import { SocialLoginGroup } from '@/components/auth/SocialLoginButton'
-import { useToast } from '@/hooks/use-toast'
-import { getBusinessContextError, formatErrorForToast } from '@/lib/error-messages'
 
-function LoginContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { toast } = useToast()
+export default function LoginPage() {
+  const [email, setEmail] = useState('admin@bookedbarber.com')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
-  const [verificationError, setVerificationError] = useState(false)
-  const [showResendButton, setShowResendButton] = useState(false)
-  
-  const [loginState, loginActions] = useAsyncOperation()
-  const [resendState, resendActions] = useAsyncOperation()
-  const rateLimit = useRateLimit('login-rate-limit')
-  
-  // Use only the login function to avoid auth checks on login page
-  const [authLoading, setAuthLoading] = useState(false)
-  
-  const secureLogin = async (email: string, password: string) => {
-    setAuthLoading(true)
-    try {
-      const userData = await secureAuth.login({ email, password })
-      return userData
-    } finally {
-      setAuthLoading(false)
-    }
-  }
-
-  // Initialize form validation
-  const {
-    values,
-    errors,
-    isFormValid,
-    isFormDirty,
-    getFieldProps,
-    validateForm,
-    setIsSubmitting,
-  } = useFormValidation({
-    email: {
-      value: '',
-      rules: [
-        validators.required('Email is required'),
-        validators.email('Please enter a valid email address'),
-      ],
-    },
-    password: {
-      value: '',
-      rules: [
-        validators.required('Password is required'),
-        validators.minLength(6, 'Password must be at least 6 characters'),
-      ],
-    },
-  })
+  const [resetSuccess, setResetSuccess] = useState(false)
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
   useEffect(() => {
-    if (searchParams.get('registered') === 'true') {
-      setSuccessMessage('Registration successful! Please check your email to verify your account before signing in.')
-    } else if (searchParams.get('reset') === 'true') {
-      setSuccessMessage('Password reset successful! Please sign in with your new password.')
-    } else if (searchParams.get('verified') === 'true') {
-      setSuccessMessage('Email verified successfully! You can now sign in to your account.')
+    // Check for password reset success
+    if (searchParams?.get('reset') === 'true') {
+      setResetSuccess(true)
     }
   }, [searchParams])
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email) {
+      setEmailError('Email is required')
+      return false
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address')
+      return false
+    }
+    setEmailError('')
+    return true
+  }
+
+  const validatePassword = (password: string) => {
+    if (!password) {
+      setPasswordError('Password is required')
+      return false
+    }
+    if (password.length < 3) {
+      setPasswordError('Password must be at least 3 characters')
+      return false
+    }
+    setPasswordError('')
+    return true
+  }
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setEmail(value)
+    if (emailError) {
+      validateEmail(value)
+    }
+  }
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setPassword(value)
+    if (passwordError) {
+      validatePassword(value)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Check if rate limited
-    if (rateLimit.isLocked) {
+    
+    // Clear previous errors
+    setError('')
+    
+    // Validate form
+    const isEmailValid = validateEmail(email)
+    const isPasswordValid = validatePassword(password)
+    
+    if (!isEmailValid || !isPasswordValid) {
       return
     }
 
-    // Validate form before submission
-    const isValid = await validateForm()
-    if (!isValid) {
-      return
-    }
+    setLoading(true)
 
     try {
-      setIsSubmitting(true)
-      
-      // Use secure authentication
-      await secureLogin(values.email, values.password)
-      
-      // Handle device trust if remember me is checked
-      if (rememberMe) {
-        try {
-          const deviceId = await generateDeviceFingerprint()
-          // Note: We'll need the user ID from the secure auth response
-          // For now, we'll skip device trust or implement it differently
-          console.log('Device trust will be implemented with secure auth')
-        } catch (error) {
-          console.error('Failed to trust device:', error)
-          // Continue with login even if device trust fails
+      const response = await fetch('/api/v2/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Store tokens in both localStorage and cookies for compatibility (SSR safe)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('access_token', data.access_token)
+          localStorage.setItem('token', data.access_token) // Legacy support
+          if (data.refresh_token) {
+            localStorage.setItem('refresh_token', data.refresh_token)
+          }
         }
-      }
-      
-      // Successful login - redirect to dashboard
-      const dashboardUrl = '/dashboard'
-      
-      // Use router for navigation
-      router.push(dashboardUrl)
-      
-      // Reset rate limit on successful login
-      rateLimit.resetAttempts()
-    } catch (err: any) {
-      // Increment rate limit attempts on failed login
-      rateLimit.incrementAttempts()
-      
-      // Generate enhanced error message with safe error handling
-      let enhancedError
-      try {
-        enhancedError = getBusinessContextError('login', err, {
-          userType: 'client', // Most common case
-          feature: 'authentication'
-        })
-      } catch (errorProcessingError) {
-        console.error('Error processing error message:', errorProcessingError)
-        enhancedError = { message: 'Login failed. Please try again.' }
-      }
-      
-      // Handle specific error cases with enhanced messaging
-      if (err.status === 403 || err.message?.includes('Email address not verified') || err.message?.includes('not verified')) {
-        setVerificationError(true)
-        setShowResendButton(true)
         
-        // Show user-friendly verification error
-        toast({
-          title: 'Email Verification Required',
-          description: 'Please check your email and click the verification link to activate your account.',
-          variant: 'destructive'
-        })
+        // Also set cookies to match middleware expectations (SSR safe)
+        if (typeof document !== 'undefined') {
+          document.cookie = `access_token=${data.access_token}; path=/; max-age=${15 * 60}; samesite=lax`
+          if (data.refresh_token) {
+            document.cookie = `refresh_token=${data.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`
+          }
+        }
+        
+        // Redirect to dashboard (SSR safe)
+        if (typeof window !== 'undefined') {
+          window.location.href = '/dashboard'
+        }
       } else {
-        setVerificationError(false)
-        setShowResendButton(false)
-        
-        // Show enhanced error message via toast (API layer already shows toast, but we can provide additional context)
-        console.error('Enhanced login error:', enhancedError)
+        const errorData = await response.json()
+        setError(errorData.detail || 'Login failed')
       }
-      
-      console.error('Login failed:', err)
+    } catch (err) {
+      setError('Connection failed - make sure backend is running')
     } finally {
-      setIsSubmitting(false)
+      setLoading(false)
     }
   }
 
-  const handleResendVerification = async () => {
-    if (!values.email) {
-      return
-    }
-
-    try {
-      await resendActions.execute(() => resendVerification(values.email))
-      setSuccessMessage('Verification email sent! Please check your email and click the verification link.')
-      setVerificationError(false)
-      setShowResendButton(false)
-    } catch (error: any) {
-      // Generate enhanced error message for resend verification with safe error handling
-      let enhancedError
+  // Development bypass function (for development only)
+  const handleDevelopmentBypass = async () => {
+    if (typeof window !== 'undefined') {
       try {
-        enhancedError = getBusinessContextError('resend_verification', error, {
-          userType: 'client',
-          feature: 'email_verification'
-        })
-      } catch (errorProcessingError) {
-        console.error('Error processing resend verification error:', errorProcessingError)
-        enhancedError = { message: 'Failed to send verification email. Please try again.' }
+        // Create a mock user session for development
+        const mockUserData = {
+          id: 1,
+          email: 'dev@bookedbarber.com',
+          name: 'Dev User',
+          role: 'barber',
+          access_token: 'dev-token-bypass',
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+        }
+        
+        // Set tokens in both localStorage and cookies for compatibility
+        localStorage.setItem('dev_bypass', 'true')
+        localStorage.setItem('access_token', mockUserData.access_token)
+        localStorage.setItem('token', mockUserData.access_token) // Legacy support
+        localStorage.setItem('user', JSON.stringify(mockUserData))
+        
+        // Set cookies for SSR compatibility  
+        document.cookie = `access_token=${mockUserData.access_token}; path=/; max-age=${24 * 60 * 60}; samesite=lax`
+        document.cookie = `dev_bypass=true; path=/; max-age=${24 * 60 * 60}; samesite=lax`
+        
+        // Navigate to dashboard
+        window.location.href = '/dashboard'
+      } catch (error) {
+        console.error('Dev bypass failed:', error)
+        setError('Development bypass failed - please try regular login')
       }
-      
-      // Show enhanced error message with safe formatting
-      try {
-        toast(formatErrorForToast(enhancedError))
-      } catch (toastError) {
-        console.error('Error showing toast:', toastError)
-        toast({
-          title: 'Error',
-          description: enhancedError.message || 'An error occurred. Please try again.',
-          variant: 'destructive'
-        })
-      }
-      
-      console.error('Resend verification failed:', error)
-      console.error('Enhanced resend error:', enhancedError)
     }
   }
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden">
-      {/* Premium Background with Glassmorphism Support */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800" />
-      
-      {/* Floating Accent Elements for Depth */}
-      <div className="absolute top-1/4 -left-16 w-32 h-32 bg-gradient-to-r from-teal-400/20 to-blue-500/10 rounded-full blur-3xl animate-pulse hidden lg:block" />
-      <div className="absolute bottom-1/4 -right-16 w-40 h-40 bg-gradient-to-r from-blue-500/10 to-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000 hidden lg:block" />
-      
-      <div className="relative z-10 max-w-md w-full space-y-8">
-        {/* Enhanced Header with 2025 Typography */}
-        <div className="text-center space-y-6">
-          <div className="relative">
-            <Logo variant="mono" size="lg" className="mx-auto drop-shadow-sm" href="/" />
-            {/* Subtle glow effect - positioned behind logo with pointer-events-none */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-teal-500/5 to-transparent rounded-full blur-xl pointer-events-none -z-10" />
-          </div>
-          
-          <div className="space-y-3">
-            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent leading-tight tracking-tight">
-              Welcome Back
-            </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-              Sign in to your <span className="text-slate-900 dark:text-white font-semibold">BookedBarber</span> account
-            </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 font-sans">
+      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
+        {/* Brand Header */}
+        <div className="text-center mb-8">
+          <div className="mb-4">
+            <Image 
+              src="/images/logos/bookedbarber-main-logo.png" 
+              alt="BookedBarber Logo" 
+              width={128}
+              height={128}
+              className="mx-auto drop-shadow-lg rounded-2xl"
+              priority
+            />
           </div>
         </div>
 
-        {/* Enhanced Glassmorphism Card */}
-        <div className="relative">
-          {/* Simplified Card Background */}
-          <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-white/20 dark:border-gray-700/20 shadow-lg shadow-black/5 dark:shadow-black/10" />
+        {/* Password Reset Success Message */}
+        {resetSuccess && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-start">
+            <svg className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+            </svg>
+            <div>
+              <strong className="font-semibold">Password Reset Successful</strong>
+              <div className="mt-1">You can now sign in with your new password.</div>
+            </div>
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit}>
+          <div className="mb-5">
+            <label className="block mb-2 text-slate-700 text-sm font-semibold">
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={handleEmailChange}
+              className={`w-full px-4 py-3 bg-slate-50 text-slate-900 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 ${
+                emailError 
+                  ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                  : 'border-slate-200 focus:ring-teal-500 focus:border-teal-500 hover:border-slate-300'
+              }`}
+              placeholder="your@email.com"
+              aria-invalid={emailError ? 'true' : 'false'}
+              aria-describedby={emailError ? 'email-error' : undefined}
+            />
+            {emailError && (
+              <p id="email-error" className="mt-2 text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                </svg>
+                {emailError}
+              </p>
+            )}
+          </div>
           
-          <Card className="relative bg-transparent border-0 shadow-none rounded-3xl">
-          <CardContent>
-            <Form onSubmit={handleSubmit} isSubmitting={loginState.loading}>
-              {successMessage && (
-                <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage('')} />
-              )}
-              
-              {loginState.error && (
-                <FormError error={loginState.error} />
-              )}
-
-              {verificationError && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                        Email Verification Required
-                      </h3>
-                      <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                        Please verify your email address before signing in. Check your inbox for a verification email.
-                      </p>
-                      {showResendButton && (
-                        <div className="mt-3">
-                          <LoadingButton
-                            onClick={handleResendVerification}
-                            loading={resendState.loading}
-                            loadingText="Sending..."
-                            variant="secondary"
-                            size="sm"
-                          >
-                            Resend Verification Email
-                          </LoadingButton>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {resendState.error && (
-                <FormError error={resendState.error} />
-              )}
-
-              {/* Rate Limiting Indicator */}
-              {(rateLimit.attempts > 0 || rateLimit.isLocked) && (
-                <RateLimitIndicator
-                  attempts={rateLimit.attempts}
-                  maxAttempts={rateLimit.maxAttempts}
-                  lockedUntil={rateLimit.lockedUntil}
-                  variant="embedded"
-                  showWarning={true}
-                />
-              )}
-
-              {/* Enhanced Premium Form Fields */}
-              <div className="space-y-6">
-                <FormField>
-                  <div className="relative group">
-                    <ValidatedInput
-                      id="email"
-                      type="email"
-                      label="Email address"
-                      placeholder="Enter your email"
-                      leftIcon={<Mail className="h-4 w-4 text-teal-500 dark:text-teal-400 group-focus-within:text-teal-600 dark:group-focus-within:text-teal-300 transition-colors duration-200" />}
-                      showPasswordToggle={false}
-                      helperText="Use the email associated with your BookedBarber account"
-                      className="rounded-2xl border-slate-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-500 dark:focus-within:border-teal-400 transition-all duration-300 shadow-sm hover:shadow-md group"
-                      {...getFieldProps('email')}
-                    />
-                    {/* Premium Focus Ring */}
-                    <div className="absolute inset-0 rounded-2xl ring-0 group-focus-within:ring-2 group-focus-within:ring-teal-500/20 transition-all duration-300 pointer-events-none" />
-                  </div>
-                </FormField>
-
-                <FormField>
-                  <div className="relative group">
-                    <ValidatedInput
-                      id="password"
-                      type="password"
-                      label="Password"
-                      placeholder="Enter your password"
-                      leftIcon={<Lock className="h-4 w-4 text-teal-500 dark:text-teal-400 group-focus-within:text-teal-600 dark:group-focus-within:text-teal-300 transition-colors duration-200" />}
-                      showPasswordToggle
-                      className="rounded-2xl border-slate-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-500 dark:focus-within:border-teal-400 transition-all duration-300 shadow-sm hover:shadow-md group"
-                      {...getFieldProps('password')}
-                    />
-                    {/* Premium Focus Ring */}
-                    <div className="absolute inset-0 rounded-2xl ring-0 group-focus-within:ring-2 group-focus-within:ring-teal-500/20 transition-all duration-300 pointer-events-none" />
-                  </div>
-                </FormField>
-              </div>
-
-              {/* Enhanced Remember Me & Forgot Password Section */}
-              <div className="flex items-center justify-between pt-2">
-                <EnhancedRememberMe
-                  value={rememberMe}
-                  onChange={setRememberMe}
-                  className="flex-1 text-slate-600 dark:text-slate-300"
-                />
-                <Link 
-                  href="/forgot-password" 
-                  className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 ml-4 transition-colors duration-200 hover:underline decoration-teal-500/30 underline-offset-4"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
-              {/* Enhanced Premium Submit Button */}
-              <FormActions className="pt-6" align="center">
-                <div className="relative group">
-                  <Button
-                    type="submit"
-                    loading={loginState.loading}
-                    loadingText="Signing in..."
-                    fullWidth
-                    size="lg"
-                    disabled={!isFormValid || loginState.loading || authLoading || rateLimit.isLocked}
-                    className="relative rounded-2xl bg-gradient-to-r from-teal-600 to-teal-700 dark:from-teal-500 dark:to-teal-600 hover:from-teal-700 hover:to-teal-800 dark:hover:from-teal-600 dark:hover:to-teal-700 text-white font-semibold py-4 px-6 shadow-md shadow-teal-500/20 dark:shadow-teal-400/15 transition-all duration-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    
-                    <span className="relative z-10 flex items-center justify-center">
-                      {rateLimit.isLocked ? (
-                        <>
-                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                          </svg>
-                          Account Locked
-                        </>
-                      ) : (loginState.loading || authLoading) ? (
-                        <>
-                          <svg className="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          Signing in...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                          </svg>
-                          Sign in to your account
-                        </>
-                      )}
-                    </span>
-                  </Button>
-                </div>
-              </FormActions>
-
-              {/* Enhanced Footer Links */}
-              <div className="text-center space-y-4 pt-8">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="w-full border-t border-slate-200 dark:border-gray-700" />
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white/80 dark:bg-gray-800/80 text-slate-500 dark:text-slate-400 backdrop-blur-sm rounded-full">
-                      New to BookedBarber?
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
-                    Don't have an account?{' '}
-                    <Link 
-                      href="/register" 
-                      className="font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors duration-200 hover:underline decoration-teal-500/30 underline-offset-4"
-                    >
-                      Create your account
-                    </Link>
-                  </p>
-                  
-                  <Link 
-                    href="/" 
-                    className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors duration-200 group"
-                  >
-                    <svg className="w-4 h-4 mr-2 group-hover:-translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Back to home
-                  </Link>
-                </div>
-              </div>
-
-              <SocialLoginGroup 
-                onError={(error) => {
-                  // Generate enhanced error message for social login
-                  const enhancedError = getBusinessContextError('social_login', error, {
-                    userType: 'client',
-                    feature: 'social_authentication'
-                  })
-                  
-                  // Show enhanced error message
-                  toast(formatErrorForToast(enhancedError))
-                }}
+          <div className="mb-6">
+            <label className="block mb-2 text-slate-700 text-sm font-semibold">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={handlePasswordChange}
+                className={`w-full px-4 py-3 pr-12 bg-slate-50 text-slate-900 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 ${
+                  passwordError 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-slate-200 focus:ring-teal-500 focus:border-teal-500 hover:border-slate-300'
+                }`}
+                placeholder="Enter your password"
+                aria-invalid={passwordError ? 'true' : 'false'}
+                aria-describedby={passwordError ? 'password-error' : undefined}
               />
-            </Form>
-          </CardContent>
-        </Card>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus:text-teal-600 transition-colors duration-200"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+            {passwordError && (
+              <p id="password-error" className="mt-2 text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                </svg>
+                {passwordError}
+              </p>
+            )}
+          </div>
+
+          {/* Remember Me Checkbox */}
+          <div className="mb-6">
+            <EnhancedRememberMe 
+              value={rememberMe} 
+              onChange={setRememberMe}
+            />
+          </div>
+
+          {error && (
+            <div className="p-4 mb-6 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start">
+              <svg className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
+              </svg>
+              <div>
+                <strong className="font-semibold">Login Failed</strong>
+                <div className="mt-1">{error}</div>
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-4 px-6 rounded-lg text-white font-semibold text-lg transition-all duration-200 mb-6 shadow-lg transform ${
+              loading 
+                ? 'bg-slate-400 cursor-not-allowed' 
+                : 'bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 active:transform active:scale-95'
+            }`}
+          >
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                Signing In...
+              </div>
+            ) : (
+              'Sign In to Your Account'
+            )}
+          </button>
+
+          {/* Development Bypass Button (only for development) */}
+          {process.env.NODE_ENV === 'development' && (
+            <button
+              type="button"
+              onClick={handleDevelopmentBypass}
+              className="w-full py-3 px-4 rounded-lg text-slate-600 bg-slate-100 hover:bg-slate-200 font-medium text-sm transition-colors duration-200 mb-4 border-2 border-dashed border-slate-300"
+            >
+              🚀 Dev Bypass - Go to Dashboard
+            </button>
+          )}
+        </form>
+
+        {/* Social Login Options */}
+        <SocialLoginGroup 
+          providers={['google', 'facebook', 'apple']}
+          onError={(error) => setError(error.message)}
+        />
+
+        <div className="border-t border-slate-200 pt-6 mt-6">
+          <div className="text-center space-y-3">
+            <p className="text-sm text-slate-500">
+              Need help accessing your account?
+            </p>
+            <div className="flex justify-center space-x-4">
+              <Link 
+                href="/forgot-password" 
+                className="text-teal-600 hover:text-teal-700 text-sm font-medium transition-colors duration-200"
+              >
+                Forgot Password
+              </Link>
+              <span className="text-slate-300">•</span>
+              <Link 
+                href="#" 
+                className="text-teal-600 hover:text-teal-700 text-sm font-medium transition-colors duration-200"
+              >
+                Contact Support
+              </Link>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-6 text-center">
+          <a 
+            href="/" 
+            className="inline-flex items-center text-slate-500 text-sm hover:text-slate-700 transition-colors duration-200 group"
+          >
+            <svg className="w-4 h-4 mr-1 group-hover:-translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Homepage
+          </a>
         </div>
       </div>
-    </main>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p className="text-gray-600">Loading...</p></div>}>
-      <LoginContent />
-    </Suspense>
+    </div>
   )
 }

@@ -47,15 +47,16 @@ def create_simple_test_user():
         hashed_pwd = hash_password("testpassword123")
         
         cursor.execute("""
-            INSERT INTO users (email, name, hashed_password, role, is_active, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO users (email, name, hashed_password, role, unified_role, is_active, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             "test_claude@example.com",
             "Claude Test",
             hashed_pwd,
             "barber",
+            "barber",  # unified_role - required field
             1,  # is_active = True
-            datetime.utcnow().isoformat()
+            datetime.now().isoformat()  # Using datetime.now() instead of deprecated utcnow()
         ))
         
         user_id = cursor.lastrowid
@@ -131,8 +132,8 @@ def create_test_appointments(cursor, user_id):
                 cursor.execute("""
                     INSERT INTO appointments (
                         user_id, barber_id, service_name, start_time, 
-                        duration_minutes, price, status, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        duration_minutes, price, status, created_at, version
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     user_id,  # user_id (client)
                     user_id,  # barber_id (same user for test)
@@ -141,7 +142,8 @@ def create_test_appointments(cursor, user_id):
                     apt_data["duration_minutes"],
                     apt_data["price"],
                     apt_data["status"],
-                    datetime.utcnow().isoformat()
+                    datetime.now().isoformat(),
+                    1  # version - required field
                 ))
                 created_count += 1
             except Exception as e:

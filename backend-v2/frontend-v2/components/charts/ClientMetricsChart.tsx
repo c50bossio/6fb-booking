@@ -12,12 +12,13 @@ import {
   Tooltip,
   Legend,
   ChartOptions
-} from 'chart.js'
+} from '@/lib/chartjs-dynamic'
 import { Doughnut, Bar } from 'react-chartjs-2'
 import { ClientMetrics } from '@/services/analytics_service'
 
-ChartJS.register(
-  CategoryScale,
+if (typeof window !== 'undefined') {
+  ChartJS.register(
+    CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
@@ -25,7 +26,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend
-)
+  )
+}
 
 interface ClientMetricsChartProps {
   metrics: ClientMetrics

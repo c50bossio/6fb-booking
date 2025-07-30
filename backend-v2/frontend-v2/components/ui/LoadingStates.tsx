@@ -871,13 +871,5 @@ const indeterminateCSS = `
 }
 `
 
-// Add the CSS to the document head if not already present
-if (typeof document !== 'undefined') {
-  const styleId = 'loading-states-css'
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement('style')
-    style.id = styleId
-    style.textContent = indeterminateCSS
-    document.head.appendChild(style)
-  }
-}
+// REMOVED: All module-level CSS injection that causes SSR errors
+// CSS will be injected by components when they mount on client-side

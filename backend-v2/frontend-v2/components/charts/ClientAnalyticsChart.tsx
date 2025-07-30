@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from '@/lib/recharts-dynamic'
 
 interface ClientAnalyticsData {
   retention_metrics: {

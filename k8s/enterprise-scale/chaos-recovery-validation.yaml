@@ -1,0 +1,604 @@
+# Chaos Engineering Recovery Validation and Reporting System
+# Validates system recovery after experiments and generates comprehensive reports
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaos-recovery-config
+  namespace: chaos-engineering
+  labels:
+    component: recovery-validation
+    sre-enabled: "true"
+data:
+  recovery-validation.yml: |
+    # Recovery Validation Configuration
+    recovery_validation:
+      enabled: true
+      validation_timeout: "10m"
+      retry_interval: "30s"
+      max_retry_attempts: 20
+      
+    # Recovery Checks
+    recovery_checks:
+      system_health:
+        - name: "service_availability"
+          description: "All critical services are responding"
+          check_type: "http_endpoint"
+          targets:
+            - "http://backend-service.bookedbarber-v2.svc.cluster.local:8000/health"
+            - "http://frontend-service.bookedbarber-v2.svc.cluster.local:3000/api/health"
+          expected_status: 200
+          timeout: "30s"
+          
+        - name: "database_connectivity"
+          description: "Database connections are healthy"
+          check_type: "prometheus_query"
+          query: "sre_database_status"
+          expected_value: 1
+          tolerance: 0
+          
+        - name: "cache_connectivity"
+          description: "Redis cache is accessible"
+          check_type: "prometheus_query"
+          query: "redis_connected_clients"
+          expected_minimum: 1
+          
+      business_metrics:
+        - name: "booking_rate_recovery"
+          description: "Booking creation rate returned to baseline"
+          check_type: "prometheus_query"
+          query: "rate(sixfb_booking_created[2m])"
+          baseline_query: "chaos_experiment_baseline_booking_rate"
+          tolerance_percentage: 15
+          
+        - name: "payment_success_rate"
+          description: "Payment processing is normal"
+          check_type: "prometheus_query"
+          query: "rate(sixfb_payment_success[2m])"
+          baseline_query: "chaos_experiment_baseline_payment_success_rate"
+          tolerance_percentage: 10
+          
+        - name: "response_time_recovery"
+          description: "API response times are within normal range"
+          check_type: "prometheus_query"
+          query: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[2m]))"
+          baseline_query: "chaos_experiment_baseline_response_time"
+          tolerance_percentage: 25
+          
+      infrastructure_checks:
+        - name: "pod_readiness"
+          description: "All pods are ready and healthy"
+          check_type: "kubernetes_query"
+          query: "kube_pod_status_ready{namespace='bookedbarber-v2', condition='true'}"
+          expected_minimum_percentage: 95
+          
+        - name: "circuit_breaker_status"
+          description: "Circuit breakers are closed"
+          check_type: "prometheus_query"
+          query: "circuit_breaker_state"
+          expected_value: 0
+          
+        - name: "error_rate_normalization"
+          description: "Error rates have returned to normal"
+          check_type: "prometheus_query"
+          query: "rate(http_requests_total{status=~'5..'}[2m])"
+          expected_maximum: 0.001
+          
+    # Recovery Validation Stages
+    validation_stages:
+      immediate:
+        description: "Immediate post-experiment validation"
+        delay: "30s"
+        timeout: "2m"
+        checks:
+          - "service_availability"
+          - "database_connectivity"
+          - "cache_connectivity"
+          
+      short_term:
+        description: "Short-term recovery validation"
+        delay: "2m"
+        timeout: "5m"
+        checks:
+          - "pod_readiness"
+          - "circuit_breaker_status"
+          - "error_rate_normalization"
+          
+      business_recovery:
+        description: "Business metrics recovery validation"
+        delay: "5m"
+        timeout: "10m"
+        checks:
+          - "booking_rate_recovery"
+          - "payment_success_rate"
+          - "response_time_recovery"
+          
+    # Reporting Configuration
+    reporting:
+      enabled: true
+      formats: ["json", "html", "pdf"]
+      storage_path: "/reports"
+      retention_days: 90
+      
+      report_sections:
+        - "experiment_summary"
+        - "impact_analysis"
+        - "recovery_timeline"
+        - "lessons_learned"
+        - "recommendations"
+        
+      distribution:
+        email:
+          enabled: true
+          recipients:
+            - "sre@bookedbarber.com"
+            - "engineering@bookedbarber.com"
+        slack:
+          enabled: true
+          channel: "#sre-reports"
+        dashboard:
+          enabled: true
+          
+  report-templates.yml: |
+    # Report Templates
+    templates:
+      experiment_summary:
+        title: "Chaos Experiment Summary"
+        content: |
+          ## Experiment Details
+          - **Experiment Name**: {{ .experiment_name }}
+          - **Category**: {{ .experiment_category }}
+          - **Risk Level**: {{ .risk_level }}
+          - **Start Time**: {{ .start_time }}
+          - **End Time**: {{ .end_time }}
+          - **Duration**: {{ .duration }}
+          - **Status**: {{ .final_status }}
+          
+          ## Objectives
+          {{ .experiment_objectives }}
+          
+          ## Target Services
+          {{ range .target_services }}
+          - {{ . }}
+          {{ end }}
+          
+      impact_analysis:
+        title: "Business and Technical Impact Analysis"
+        content: |
+          ## Business Impact
+          - **Customer Impact Score**: {{ .customer_impact_score }}%
+          - **Estimated Revenue Impact**: ${{ .estimated_revenue_impact }}
+          - **Booking Rate Change**: {{ .booking_rate_change }}%
+          - **Payment Failure Rate Change**: {{ .payment_failure_change }}%
+          
+          ## Technical Impact
+          - **System Health Score**: {{ .system_health_score }}%
+          - **Response Time Change**: {{ .response_time_change }}%
+          - **Error Rate Change**: {{ .error_rate_change }}%
+          - **Service Availability**: {{ .service_availability }}%
+          
+          ## Timeline of Impact
+          {{ range .impact_timeline }}
+          - **{{ .timestamp }}**: {{ .event }} (Impact: {{ .impact_level }})
+          {{ end }}
+          
+      recovery_timeline:
+        title: "Recovery Timeline and Validation"
+        content: |
+          ## Recovery Stages
+          
+          ### Immediate Recovery (0-2 minutes)
+          {{ range .immediate_recovery }}
+          - **{{ .check_name }}**: {{ .status }} ({{ .duration }})
+            - Result: {{ .result }}
+            - Expected: {{ .expected }}
+          {{ end }}
+          
+          ### Short-term Recovery (2-5 minutes)
+          {{ range .short_term_recovery }}
+          - **{{ .check_name }}**: {{ .status }} ({{ .duration }})
+            - Result: {{ .result }}
+            - Expected: {{ .expected }}
+          {{ end }}
+          
+          ### Business Recovery (5-10 minutes)
+          {{ range .business_recovery }}
+          - **{{ .check_name }}**: {{ .status }} ({{ .duration }})
+            - Result: {{ .result }}
+            - Expected: {{ .expected }}
+          {{ end }}
+          
+          ## Recovery Summary
+          - **Total Recovery Time**: {{ .total_recovery_time }}
+          - **Recovery Success Rate**: {{ .recovery_success_rate }}%
+          - **Failed Checks**: {{ .failed_checks_count }}
+          
+      lessons_learned:
+        title: "Lessons Learned and Insights"
+        content: |
+          ## Key Findings
+          {{ range .key_findings }}
+          - {{ . }}
+          {{ end }}
+          
+          ## System Weaknesses Identified
+          {{ range .weaknesses }}
+          - **{{ .component }}**: {{ .description }}
+            - Severity: {{ .severity }}
+            - Recommendation: {{ .recommendation }}
+          {{ end }}
+          
+          ## System Strengths Validated
+          {{ range .strengths }}
+          - **{{ .component }}**: {{ .description }}
+          {{ end }}
+          
+          ## Unexpected Behaviors
+          {{ range .unexpected_behaviors }}
+          - {{ .description }}
+            - Impact: {{ .impact }}
+            - Root Cause: {{ .root_cause }}
+          {{ end }}
+          
+      recommendations:
+        title: "Recommendations and Action Items"
+        content: |
+          ## Immediate Actions Required
+          {{ range .immediate_actions }}
+          - **{{ .title }}**
+            - Priority: {{ .priority }}
+            - Owner: {{ .owner }}
+            - Due Date: {{ .due_date }}
+            - Description: {{ .description }}
+          {{ end }}
+          
+          ## System Improvements
+          {{ range .system_improvements }}
+          - **{{ .title }}**
+            - Impact: {{ .impact }}
+            - Effort: {{ .effort }}
+            - Timeline: {{ .timeline }}
+            - Description: {{ .description }}
+          {{ end }}
+          
+          ## Future Experiment Recommendations
+          {{ range .future_experiments }}
+          - **{{ .experiment_name }}**
+            - Objective: {{ .objective }}
+            - Risk Level: {{ .risk_level }}
+            - Suggested Timeline: {{ .timeline }}
+          {{ end }}
+          
+          ## Monitoring Enhancements
+          {{ range .monitoring_enhancements }}
+          - **{{ .metric_name }}**
+            - Description: {{ .description }}
+            - Alert Threshold: {{ .threshold }}
+            - Business Justification: {{ .justification }}
+          {{ end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaos-recovery-validator
+  namespace: chaos-engineering
+  labels:
+    app: chaos-recovery-validator
+    component: recovery-validation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chaos-recovery-validator
+  template:
+    metadata:
+      labels:
+        app: chaos-recovery-validator
+        component: recovery-validation
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: chaos-controller-manager
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: recovery-validator
+        image: bookedbarber/chaos-recovery-validator:v1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: metrics
+        - containerPort: 9090
+          name: api
+        env:
+        - name: PROMETHEUS_URL
+          value: "http://sre-prometheus.sre-monitoring.svc.cluster.local:9090"
+        - name: KUBERNETES_API_URL
+          value: "https://kubernetes.default.svc"
+        - name: CHAOS_DASHBOARD_URL
+          value: "http://chaos-dashboard.chaos-engineering.svc.cluster.local:2333"
+        - name: RECOVERY_CONFIG_PATH
+          value: "/etc/recovery/recovery-validation.yml"
+        - name: REPORT_TEMPLATES_PATH
+          value: "/etc/recovery/report-templates.yml"
+        - name: REPORTS_STORAGE_PATH
+          value: "/reports"
+        - name: SENDGRID_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sendgrid-secrets
+              key: api-key
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: slack-secrets
+              key: webhook-url
+        command:
+        - /app/recovery-validator
+        args:
+        - --metrics-addr=0.0.0.0:8080
+        - --api-addr=0.0.0.0:9090
+        - --validation-check-interval=30s
+        - --report-generation-interval=1h
+        - --log-level=info
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9090
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 9090
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: recovery-config
+          mountPath: /etc/recovery
+          readOnly: true
+        - name: reports-storage
+          mountPath: /reports
+        - name: tmp-volume
+          mountPath: /tmp
+      volumes:
+      - name: recovery-config
+        configMap:
+          name: chaos-recovery-config
+      - name: reports-storage
+        persistentVolumeClaim:
+          claimName: chaos-reports-storage
+      - name: tmp-volume
+        emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chaos-reports-storage
+  namespace: chaos-engineering
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: gp3-encrypted
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaos-recovery-validator
+  namespace: chaos-engineering
+  labels:
+    app: chaos-recovery-validator
+    component: recovery-validation
+spec:
+  selector:
+    app: chaos-recovery-validator
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: metrics
+  - port: 9090
+    targetPort: 9090
+    name: api
+  type: ClusterIP
+---
+# Report Generation CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: chaos-report-generator
+  namespace: chaos-engineering
+  labels:
+    component: recovery-validation
+spec:
+  schedule: "0 8 * * 1"  # Weekly reports on Monday at 8 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: chaos-controller-manager
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            fsGroup: 1001
+          containers:
+          - name: report-generator
+            image: bookedbarber/chaos-report-generator:v1.0.0
+            imagePullPolicy: Always
+            env:
+            - name: RECOVERY_VALIDATOR_URL
+              value: "http://chaos-recovery-validator.chaos-engineering.svc.cluster.local:9090"
+            - name: PROMETHEUS_URL
+              value: "http://sre-prometheus.sre-monitoring.svc.cluster.local:9090"
+            - name: CHAOS_DASHBOARD_URL
+              value: "http://chaos-dashboard.chaos-engineering.svc.cluster.local:2333"
+            - name: REPORTS_STORAGE_PATH
+              value: "/reports"
+            - name: REPORT_PERIOD_DAYS
+              value: "7"
+            - name: SENDGRID_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sendgrid-secrets
+                  key: api-key
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: slack-secrets
+                  key: webhook-url
+            command:
+            - /app/generate-report
+            args:
+            - --report-type=weekly
+            - --include-trends=true
+            - --include-recommendations=true
+            - --send-notifications=true
+            resources:
+              requests:
+                cpu: 250m
+                memory: 512Mi
+              limits:
+                cpu: 500m
+                memory: 1Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            volumeMounts:
+            - name: reports-storage-job
+              mountPath: /reports
+            - name: tmp-volume
+              mountPath: /tmp
+          volumes:
+          - name: reports-storage-job
+            persistentVolumeClaim:
+              claimName: chaos-reports-storage
+          - name: tmp-volume
+            emptyDir: {}
+---
+# Disaster Recovery Test Validator
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: chaos-dr-test-validator
+  namespace: chaos-engineering
+  labels:
+    component: recovery-validation
+spec:
+  schedule: "0 2 1 * *"  # Monthly on the 1st at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: chaos-controller-manager
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            fsGroup: 1001
+          containers:
+          - name: dr-test-validator
+            image: bookedbarber/chaos-dr-validator:v1.0.0
+            imagePullPolicy: Always
+            env:
+            - name: PROMETHEUS_URL
+              value: "http://sre-prometheus.sre-monitoring.svc.cluster.local:9090"
+            - name: KUBERNETES_API_URL
+              value: "https://kubernetes.default.svc"
+            - name: RECOVERY_VALIDATOR_URL
+              value: "http://chaos-recovery-validator.chaos-engineering.svc.cluster.local:9090"
+            - name: REPORTS_STORAGE_PATH
+              value: "/reports"
+            - name: DR_TEST_SCENARIOS
+              value: "database-failover,multi-pod-failure,network-partition,cache-failure"
+            command:
+            - /app/validate-dr-procedures
+            args:
+            - --test-disaster-recovery-plans
+            - --validate-backup-procedures
+            - --test-failover-mechanisms
+            - --generate-dr-report
+            resources:
+              requests:
+                cpu: 250m
+                memory: 512Mi
+              limits:
+                cpu: 500m
+                memory: 1Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            volumeMounts:
+            - name: reports-storage-dr
+              mountPath: /reports
+            - name: tmp-volume
+              mountPath: /tmp
+          volumes:
+          - name: reports-storage-dr
+            persistentVolumeClaim:
+              claimName: chaos-reports-storage
+          - name: tmp-volume
+            emptyDir: {}
+---
+# Recovery Validation Webhook
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaos-recovery-webhook
+  namespace: chaos-engineering
+  labels:
+    app: chaos-recovery-webhook
+    component: recovery-validation
+spec:
+  selector:
+    app: chaos-recovery-validator
+  ports:
+  - port: 443
+    targetPort: 9443
+    name: webhook
+  type: ClusterIP
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionWebhook
+metadata:
+  name: chaos-recovery-validation
+webhooks:
+- name: recovery-validation.chaos-mesh.org
+  clientConfig:
+    service:
+      name: chaos-recovery-webhook
+      namespace: chaos-engineering
+      path: "/validate-recovery"
+  rules:
+  - operations: ["UPDATE"]
+    apiGroups: ["chaos-mesh.org"]
+    apiVersions: ["v1alpha1"]
+    resources: ["*"]
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  failurePolicy: Ignore  # Don't block experiment completion if webhook fails

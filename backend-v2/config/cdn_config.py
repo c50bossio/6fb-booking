@@ -65,16 +65,17 @@ class CDNConfig(BaseSettings):
     pixel_minification: bool = True
     
     model_config = ConfigDict(
-        env_prefix = "CDN_"
-        case_sensitive = False
+        env_prefix="CDN_",
+        case_sensitive=False
+    )
     
     @field_validator('cdn_url')
-    def validate_cdn_url(cls, v, values):
+    def validate_cdn_url(cls, v, info):
         """Generate CDN URL based on provider."""
         if v:
             return v
         
-        provider = values.get('cdn_provider', '').lower()
+        provider = info.data.get('cdn_provider', '').lower()
         
         if provider == 'cloudflare':
             # CloudFlare uses your domain with their proxy
@@ -218,7 +219,7 @@ location /static {{
     # Serve pre-compressed files if available
     gzip_static on;
 }}
-)
+
 location /tracking {{
     expires 1h;
     add_header Cache-Control "{self.cache_control_tracking}";

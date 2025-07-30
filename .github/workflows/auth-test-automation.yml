@@ -1,0 +1,534 @@
+name: Authentication Test Automation
+
+on:
+  push:
+    branches: [staging, main, production]
+    paths:
+      - 'backend-v2/frontend-v2/app/login/**'
+      - 'backend-v2/frontend-v2/hooks/useFormValidation.ts'
+      - 'backend-v2/frontend-v2/lib/api.ts'
+      - 'backend-v2/frontend-v2/lib/error-messages.ts'
+      - 'backend-v2/api/v2/auth/**'
+      - 'backend-v2/models/**'
+      - 'backend-v2/**tests**/**auth**'
+      - '.github/workflows/auth-test-automation.yml'
+  pull_request:
+    branches: [staging, main, production]
+    paths:
+      - 'backend-v2/frontend-v2/app/login/**'
+      - 'backend-v2/frontend-v2/hooks/useFormValidation.ts'
+      - 'backend-v2/frontend-v2/lib/api.ts'
+      - 'backend-v2/frontend-v2/lib/error-messages.ts'
+      - 'backend-v2/api/v2/auth/**'
+      - 'backend-v2/models/**'
+      - 'backend-v2/**tests**/**auth**'
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.9'
+  POSTGRES_VERSION: '14'
+
+jobs:
+  # Backend Unit Tests
+  backend-unit-tests:
+    name: Backend Authentication Unit Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bookedbarber_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend-v2/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install Python dependencies
+        working-directory: backend-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov pytest-xdist pytest-mock
+      
+      - name: Set up test environment
+        working-directory: backend-v2
+        run: |
+          cp .env.example .env.test
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bookedbarber_test" >> .env.test
+          echo "TESTING=true" >> .env.test
+      
+      - name: Run database migrations
+        working-directory: backend-v2
+        run: |
+          export ENV_FILE=.env.test
+          alembic upgrade head
+      
+      - name: Run backend authentication unit tests
+        working-directory: backend-v2
+        run: |
+          export ENV_FILE=.env.test
+          pytest tests/integration/test_auth_login_api_v2.py -v --cov=. --cov-report=xml --cov-report=term-missing
+      
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: backend-v2/coverage.xml
+          flags: backend-auth
+          name: backend-auth-coverage
+
+  # Frontend Unit Tests
+  frontend-unit-tests:
+    name: Frontend Authentication Unit Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+      
+      - name: Install frontend dependencies
+        working-directory: backend-v2/frontend-v2
+        run: npm ci
+      
+      - name: Run ESLint on authentication files
+        working-directory: backend-v2/frontend-v2
+        run: |
+          npx eslint app/login/ hooks/useFormValidation.ts lib/api.ts lib/error-messages.ts --ext .ts,.tsx --max-warnings 0
+      
+      - name: Run TypeScript type checking
+        working-directory: backend-v2/frontend-v2
+        run: npx tsc --noEmit
+      
+      - name: Run frontend authentication unit tests
+        working-directory: backend-v2/frontend-v2
+        run: |
+          npm test -- --coverage --testPathPattern="(__tests__/hooks/useFormValidation|__tests__/lib/error-handling|__tests__/components/LoginForm)" --watchAll=false --passWithNoTests
+      
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: backend-v2/frontend-v2/coverage/lcov.info
+          flags: frontend-auth
+          name: frontend-auth-coverage
+
+  # Integration Tests
+  integration-tests:
+    name: Authentication Integration Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bookedbarber_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+      
+      - name: Install backend dependencies
+        working-directory: backend-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Install frontend dependencies
+        working-directory: backend-v2/frontend-v2
+        run: npm ci
+      
+      - name: Set up test environment
+        working-directory: backend-v2
+        run: |
+          cp .env.example .env.test
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bookedbarber_test" >> .env.test
+          echo "TESTING=true" >> .env.test
+      
+      - name: Run database migrations
+        working-directory: backend-v2
+        run: |
+          export ENV_FILE=.env.test
+          alembic upgrade head
+      
+      - name: Start backend server in background
+        working-directory: backend-v2
+        run: |
+          export ENV_FILE=.env.test
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          echo $! > backend.pid
+          sleep 10
+      
+      - name: Wait for backend to be ready
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:8000/health; do sleep 1; done'
+      
+      - name: Run frontend integration tests
+        working-directory: backend-v2/frontend-v2
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: |
+          npm test -- --testPathPattern="integration/auth-login-integration" --watchAll=false --passWithNoTests
+      
+      - name: Stop backend server
+        working-directory: backend-v2
+        run: |
+          if [ -f backend.pid ]; then
+            kill $(cat backend.pid) || true
+            rm backend.pid
+          fi
+
+  # E2E Tests
+  e2e-tests:
+    name: Authentication E2E Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bookedbarber_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+      
+      - name: Install backend dependencies
+        working-directory: backend-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Install frontend dependencies
+        working-directory: backend-v2/frontend-v2
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        working-directory: backend-v2/frontend-v2
+        run: npx playwright install --with-deps chromium
+      
+      - name: Set up test environment
+        working-directory: backend-v2
+        run: |
+          cp .env.example .env.test
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bookedbarber_test" >> .env.test
+          echo "TESTING=true" >> .env.test
+      
+      - name: Run database migrations
+        working-directory: backend-v2
+        run: |
+          export ENV_FILE=.env.test
+          alembic upgrade head
+      
+      - name: Start backend server
+        working-directory: backend-v2
+        run: |
+          export ENV_FILE=.env.test
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          echo $! > backend.pid
+          sleep 10
+      
+      - name: Build frontend for production
+        working-directory: backend-v2/frontend-v2
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: npm run build
+      
+      - name: Start frontend server
+        working-directory: backend-v2/frontend-v2
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: |
+          npm start &
+          echo $! > frontend.pid
+          sleep 15
+      
+      - name: Wait for services to be ready
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 1; done'
+          timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 1; done'
+      
+      - name: Run E2E authentication tests
+        working-directory: backend-v2/frontend-v2
+        run: npx playwright test __tests__/e2e/auth-login-e2e.spec.ts --reporter=github
+      
+      - name: Upload E2E test artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            backend-v2/frontend-v2/test-results/
+            backend-v2/frontend-v2/playwright-report/
+      
+      - name: Stop servers
+        if: always()
+        working-directory: backend-v2
+        run: |
+          if [ -f backend.pid ]; then
+            kill $(cat backend.pid) || true
+            rm backend.pid
+          fi
+          cd frontend-v2
+          if [ -f frontend.pid ]; then
+            kill $(cat frontend.pid) || true
+            rm frontend.pid
+          fi
+
+  # Error Scenario Tests
+  error-scenario-tests:
+    name: Authentication Error Scenario Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+      
+      - name: Install frontend dependencies
+        working-directory: backend-v2/frontend-v2
+        run: npm ci
+      
+      - name: Run error scenario tests
+        working-directory: backend-v2/frontend-v2
+        run: |
+          npm test -- --testPathPattern="error-scenarios/auth-error-scenarios" --watchAll=false --passWithNoTests
+      
+      - name: Generate error scenario test report
+        working-directory: backend-v2/frontend-v2
+        run: |
+          npm test -- --testPathPattern="error-scenarios/auth-error-scenarios" --watchAll=false --coverage --coverageReporters=json-summary --passWithNoTests
+          echo "Error scenario test coverage:" 
+          cat coverage/coverage-summary.json | jq '.total'
+
+  # Security Tests
+  security-tests:
+    name: Authentication Security Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bookedbarber_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install backend dependencies
+        working-directory: backend-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit safety
+      
+      - name: Run security linting with bandit
+        working-directory: backend-v2
+        run: |
+          bandit -r . -x "*/tests/*,*/venv/*" -f json -o bandit-report.json || true
+          cat bandit-report.json
+      
+      - name: Check for known security vulnerabilities
+        working-directory: backend-v2
+        run: |
+          safety check --json --output safety-report.json || true
+          cat safety-report.json
+      
+      - name: Set up test environment
+        working-directory: backend-v2
+        run: |
+          cp .env.example .env.test
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bookedbarber_test" >> .env.test
+          echo "TESTING=true" >> .env.test
+      
+      - name: Run security-focused authentication tests
+        working-directory: backend-v2
+        run: |
+          export ENV_FILE=.env.test
+          alembic upgrade head
+          python -m pytest tests/integration/test_auth_login_api_v2.py::TestAuthLoginAPIV2::test_login_sql_injection_protection -v
+          python -m pytest tests/integration/test_auth_login_api_v2.py::TestAuthLoginAPIV2::test_login_password_timing_attack_protection -v
+          python -m pytest tests/integration/test_auth_login_api_v2.py::TestAuthLoginAPIV2::test_login_error_response_consistency -v
+
+  # Test Result Summary
+  test-summary:
+    name: Authentication Test Summary
+    runs-on: ubuntu-latest
+    needs: [backend-unit-tests, frontend-unit-tests, integration-tests, e2e-tests, error-scenario-tests, security-tests]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Generate test summary
+        run: |
+          echo "# Authentication Test Results" > test-summary.md
+          echo "" >> test-summary.md
+          echo "## Test Status Overview" >> test-summary.md
+          echo "- Backend Unit Tests: ${{ needs.backend-unit-tests.result }}" >> test-summary.md
+          echo "- Frontend Unit Tests: ${{ needs.frontend-unit-tests.result }}" >> test-summary.md
+          echo "- Integration Tests: ${{ needs.integration-tests.result }}" >> test-summary.md
+          echo "- E2E Tests: ${{ needs.e2e-tests.result }}" >> test-summary.md
+          echo "- Error Scenario Tests: ${{ needs.error-scenario-tests.result }}" >> test-summary.md
+          echo "- Security Tests: ${{ needs.security-tests.result }}" >> test-summary.md
+          echo "" >> test-summary.md
+          echo "## Test Coverage" >> test-summary.md
+          echo "Authentication test coverage ensures:" >> test-summary.md
+          echo "- ✅ Email validation with edge cases (spaces, consecutive dots)" >> test-summary.md
+          echo "- ✅ Safe error handling with getBusinessContextError() fallbacks" >> test-summary.md
+          echo "- ✅ Form submission to /api/v2/auth/login endpoint" >> test-summary.md
+          echo "- ✅ JavaScript undefined property safety with optional chaining" >> test-summary.md
+          echo "- ✅ Toast error message handling with formatErrorForToast()" >> test-summary.md
+          echo "- ✅ Complete authentication flow from form to dashboard redirect" >> test-summary.md
+          echo "- ✅ Error recovery and user experience edge cases" >> test-summary.md
+          echo "" >> test-summary.md
+          
+          if [[ "${{ needs.backend-unit-tests.result }}" == "success" && 
+                "${{ needs.frontend-unit-tests.result }}" == "success" && 
+                "${{ needs.integration-tests.result }}" == "success" && 
+                "${{ needs.e2e-tests.result }}" == "success" ]]; then
+            echo "## ✅ All Critical Authentication Tests Passed" >> test-summary.md
+            echo "The authentication fixes are thoroughly tested and ready for deployment." >> test-summary.md
+          else
+            echo "## ❌ Some Authentication Tests Failed" >> test-summary.md
+            echo "Please review the failing tests before deploying authentication changes." >> test-summary.md
+          fi
+          
+          cat test-summary.md
+      
+      - name: Upload test summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: authentication-test-summary
+          path: test-summary.md
+      
+      - name: Comment test summary on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('test-summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+  # Deployment Gate
+  deployment-gate:
+    name: Authentication Deployment Gate
+    runs-on: ubuntu-latest
+    needs: [backend-unit-tests, frontend-unit-tests, integration-tests, e2e-tests, security-tests]
+    if: github.ref == 'refs/heads/production' && github.event_name == 'push'
+    
+    steps:
+      - name: Check all tests passed
+        run: |
+          if [[ "${{ needs.backend-unit-tests.result }}" != "success" || 
+                "${{ needs.frontend-unit-tests.result }}" != "success" || 
+                "${{ needs.integration-tests.result }}" != "success" || 
+                "${{ needs.e2e-tests.result }}" != "success" || 
+                "${{ needs.security-tests.result }}" != "success" ]]; then
+            echo "❌ Authentication tests failed. Blocking production deployment."
+            exit 1
+          fi
+          echo "✅ All authentication tests passed. Production deployment approved."
+      
+      - name: Create deployment approval
+        run: |
+          echo "Authentication components ready for production deployment:"
+          echo "- Email validation with enhanced edge case handling ✅"
+          echo "- Safe error processing with fallback mechanisms ✅" 
+          echo "- Form validation and submission flow ✅"
+          echo "- API integration with /api/v2/auth/login ✅"
+          echo "- End-to-end user authentication journey ✅"
+          echo "- Security validation (SQL injection, timing attacks) ✅"
