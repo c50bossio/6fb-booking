@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { EnhancedRememberMe } from '@/components/auth/RememberMe'
 import { SocialLoginGroup } from '@/components/auth/SocialLoginButton'
@@ -145,20 +146,16 @@ export default function LoginPage() {
       <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-teal-600 to-teal-700 rounded-full mb-4 shadow-lg">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 6c0-1.5 1.5-3 3-3s3 1.5 3 3v6c0 1.5-1.5 3-3 3s-3-1.5-3-3V6z"/>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6c0-1.5 1.5-3 3-3s3 1.5 3 3v6c0 1.5-1.5 3-3 3s-3-1.5-3-3V6z"/>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12l6-6"/>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 12l6 6"/>
-            </svg>
+          <div className="mb-4">
+            <Image 
+              src="/images/logos/bookedbarber-main-logo.png" 
+              alt="BookedBarber Logo" 
+              width={128}
+              height={128}
+              className="mx-auto drop-shadow-lg"
+              priority
+            />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-2 tracking-wide">
-            BOOKEDBARBER
-          </h1>
-          <p className="text-slate-500 text-sm font-medium">
-            Six Figure Barber Platform
-          </p>
         </div>
 
         {/* Password Reset Success Message */}
