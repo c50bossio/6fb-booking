@@ -497,6 +497,10 @@ app.include_router(products.router)  # Product management and Shopify integratio
 # Include public routes (no authentication required)
 app.include_router(services_public_router, prefix="/api/v2")
 
+# Include Public API for third-party integrations
+from api.v2.endpoints.public_api import router as public_api_router
+app.include_router(public_api_router, prefix="/api/v2")
+
 # V2 API endpoints for Six Figure Barber enhancements
 app.include_router(client_lifecycle.router, prefix="/api/v2")  # Client lifecycle management
 app.include_router(booking_intelligence.router, prefix="/api/v2")  # AI-powered booking intelligence
