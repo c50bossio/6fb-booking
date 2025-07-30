@@ -55,7 +55,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       }
 
       // Check if we have authentication data in storage
-      const hasToken = localStorage.getItem('token')
+      // FIXED: Use consistent token naming - check access_token first, then fallback to legacy token
+      const hasToken = localStorage.getItem('access_token') || localStorage.getItem('token')
       const hasUserRole = localStorage.getItem('user_role')
       
       if (process.env.NODE_ENV === 'development') {

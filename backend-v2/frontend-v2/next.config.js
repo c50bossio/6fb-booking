@@ -44,7 +44,8 @@ const nextConfig = {
   },
   // Performance optimizations
   experimental: {
-    optimizeCss: true,
+    // Disabled optimizeCss due to critters module issue
+    // optimizeCss: true,
     gzipSize: true,
   },
   // Bundle optimization
@@ -61,11 +62,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://www.google-analytics.com https://www.googletagmanager.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://connect.facebook.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
-              "connect-src 'self' https://api.stripe.com https://www.google-analytics.com",
+              "connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 http://localhost:* http://127.0.0.1:* http://backend:8000 http://bookedbarber-backend:8000 https://api.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://connect.facebook.net wss: ws:",
               "frame-src 'self' https://js.stripe.com",
               "object-src 'none'",
               "base-uri 'self'",
@@ -96,10 +97,11 @@ const nextConfig = {
   },
   // API rewrites to proxy backend calls
   async rewrites() {
+    const backendUrl = process.env.DOCKER_BACKEND_URL || 'http://127.0.0.1:8000';
     return [
       {
         source: '/api/v2/:path*',
-        destination: 'http://localhost:8000/api/v2/:path*',
+        destination: `${backendUrl}/api/v2/:path*`,
       },
     ];
   },

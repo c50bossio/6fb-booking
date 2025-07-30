@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+</head>
+<body>
+    <h1>Login Test</h1>
+    <button id="testLogin">Test Login API</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('testLogin').onclick = async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/v2/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@bookedbarber.com',
+                        password: 'password123'
+                    }),
+                    credentials: 'include'
+                });
+                
+                const data = await response.text();
+                
+                resultDiv.innerHTML = `
+                    <h3>Response:</h3>
+                    <p>Status: ${response.status} ${response.statusText}</p>
+                    <p>Body: ${data}</p>
+                `;
+                
+                if (response.ok) {
+                    // Try to parse as JSON
+                    try {
+                        const json = JSON.parse(data);
+                        if (json.access_token) {
+                            resultDiv.innerHTML += '<p style="color: green;"><strong>SUCCESS! Got access token</strong></p>';
+                            localStorage.setItem('access_token', json.access_token);
+                        }
+                    } catch (e) {
+                        resultDiv.innerHTML += '<p>Could not parse as JSON</p>';
+                    }
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>

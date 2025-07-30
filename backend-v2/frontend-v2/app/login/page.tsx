@@ -132,12 +132,35 @@ export default function LoginPage() {
   }
 
   // Development bypass function (for development only)
-  const handleDevelopmentBypass = () => {
+  const handleDevelopmentBypass = async () => {
     if (typeof window !== 'undefined') {
-      // Set a temporary dev token in localStorage for development
-      localStorage.setItem('dev_bypass', 'true')
-      localStorage.setItem('access_token', 'dev-token-bypass')
-      window.location.href = '/dashboard'
+      try {
+        // Create a mock user session for development
+        const mockUserData = {
+          id: 1,
+          email: 'dev@bookedbarber.com',
+          name: 'Dev User',
+          role: 'barber',
+          access_token: 'dev-token-bypass',
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+        }
+        
+        // Set tokens in both localStorage and cookies for compatibility
+        localStorage.setItem('dev_bypass', 'true')
+        localStorage.setItem('access_token', mockUserData.access_token)
+        localStorage.setItem('token', mockUserData.access_token) // Legacy support
+        localStorage.setItem('user', JSON.stringify(mockUserData))
+        
+        // Set cookies for SSR compatibility  
+        document.cookie = `access_token=${mockUserData.access_token}; path=/; max-age=${24 * 60 * 60}; samesite=lax`
+        document.cookie = `dev_bypass=true; path=/; max-age=${24 * 60 * 60}; samesite=lax`
+        
+        // Navigate to dashboard
+        window.location.href = '/dashboard'
+      } catch (error) {
+        console.error('Dev bypass failed:', error)
+        setError('Development bypass failed - please try regular login')
+      }
     }
   }
 

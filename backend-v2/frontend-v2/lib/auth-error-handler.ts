@@ -60,10 +60,13 @@ export function handleAuthError(
 
   // Clear stored tokens and role information
   if (clearTokens && typeof window !== 'undefined') {
+    // FIXED: Clear BOTH access_token (new) and token (legacy) to prevent auth mismatch
+    localStorage.removeItem('access_token')
     localStorage.removeItem('token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user_role')
     // Clear cookies too
+    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
     document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
   }

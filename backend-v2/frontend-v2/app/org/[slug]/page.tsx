@@ -69,9 +69,48 @@ export default function OrganizationLandingPageRoute() {
   const router = useRouter()
   const slug = params.slug as string
   
+  // Define protected routes that should not be handled by this dynamic route
+  const protectedRoutes = [
+    'login', 'register', 'forgot-password', 'reset-password', 
+    'dashboard', 'admin', 'settings', 'analytics', 'calendar',
+    'clients', 'services', 'finance', 'marketing', 'bookings',
+    'notifications', 'profile', 'help', 'support', 'privacy',
+    'terms', 'cookies', 'api', 'auth', 'verification', 'invite',
+    'demo', 'test', 'embed', 'export', 'import', 'offline',
+    'pwa', 'logout', 'check-email', 'verify-email'
+  ]
+
   const [landingData, setLandingData] = useState<LandingPageData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // If this is a protected route, show not found error to prevent conflict
+  if (protectedRoutes.includes(slug)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center space-y-4 max-w-md mx-auto px-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-blue-800 mb-2">Route Reserved</h2>
+            <p className="text-blue-600 mb-4">
+              This path is reserved for system functionality. Please use the specific page instead.
+            </p>
+            <button 
+              onClick={() => router.push(`/${slug}`)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors mr-2"
+            >
+              Go to {slug.charAt(0).toUpperCase() + slug.slice(1)}
+            </button>
+            <button 
+              onClick={() => router.push('/')}
+              className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+            >
+              Go to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   useEffect(() => {
     const fetchLandingPageData = async () => {
