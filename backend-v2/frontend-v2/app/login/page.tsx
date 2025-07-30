@@ -152,7 +152,7 @@ export default function LoginPage() {
               alt="BookedBarber Logo" 
               width={128}
               height={128}
-              className="mx-auto drop-shadow-lg"
+              className="mx-auto drop-shadow-lg rounded-2xl"
               priority
             />
           </div>
