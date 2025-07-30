@@ -1,9 +1,10 @@
 """
-Incident Response Orchestrator for BookedBarber V2
+Enhanced Incident Response Orchestrator for 6fb-booking Platform
 
-Automated incident response system with <30 second response time,
-intelligent workflow execution, and comprehensive incident management
-for achieving security excellence.
+Comprehensive incident response system designed to achieve 99.9%+ uptime
+with automated response procedures, zero revenue-impacting incidents,
+and intelligent workflow execution for all types of incidents including
+security, performance, availability, and business-critical issues.
 """
 
 import json

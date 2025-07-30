@@ -397,7 +397,7 @@ function extractBusinessContext(): Record<string, any> {
   };
 }
 
-function determineBusiness Focus(event: any): string {
+function determineBusinessFocus(event: any): string {
   const url = event.request?.url || window.location.pathname;
   
   if (url.includes('/booking') || url.includes('/appointment')) {

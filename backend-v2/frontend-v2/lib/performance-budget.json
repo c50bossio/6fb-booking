@@ -1,0 +1,28 @@
+{
+  "budgets": [
+    {
+      "name": "bundle-size",
+      "type": "bundle",
+      "maximumError": "5mb",
+      "maximumWarning": "4mb"
+    },
+    {
+      "name": "vendor-chunk",
+      "type": "initial",
+      "maximumError": "2mb",
+      "maximumWarning": "1.5mb"
+    },
+    {
+      "name": "async-chunks",
+      "type": "anyComponentStyle",
+      "maximumError": "500kb",
+      "maximumWarning": "300kb"
+    }
+  ],
+  "thresholds": {
+    "fcp": 2500,
+    "lcp": 4000,
+    "fid": 100,
+    "cls": 0.1
+  }
+}

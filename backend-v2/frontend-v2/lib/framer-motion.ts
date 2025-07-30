@@ -2,50 +2,62 @@
 import React from 'react';
 
 // Basic motion component fallback with animation prop support
+const MotionDiv = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'> & {
+  initial?: any;
+  animate?: any;
+  exit?: any;
+  variants?: any;
+  transition?: any;
+  whileHover?: any;
+  whileTap?: any;
+  drag?: any;
+  dragConstraints?: any;
+  dragElastic?: any;
+  onDrag?: any;
+  onDragEnd?: any;
+  onDragStart?: any;
+}>((props, ref) => {
+  const { initial, animate, exit, variants, transition, whileHover, whileTap, drag, dragConstraints, dragElastic, onDrag, onDragEnd, onDragStart, ...htmlProps } = props;
+  return React.createElement('div', { ...htmlProps, ref });
+});
+MotionDiv.displayName = 'motion.div';
+
+const MotionSpan = React.forwardRef<HTMLSpanElement, React.ComponentProps<'span'> & {
+  initial?: any;
+  animate?: any;
+  exit?: any;
+  variants?: any;
+}>((props, ref) => {
+  const { initial, animate, exit, variants, ...htmlProps } = props;
+  return React.createElement('span', { ...htmlProps, ref });
+});
+MotionSpan.displayName = 'motion.span';
+
+const MotionButton = React.forwardRef<HTMLButtonElement, React.ComponentProps<'button'> & {
+  initial?: any;
+  animate?: any;
+  exit?: any;
+  variants?: any;
+  whileHover?: any;
+  whileTap?: any;
+}>((props, ref) => {
+  const { initial, animate, exit, variants, whileHover, whileTap, ...htmlProps } = props;
+  return React.createElement('button', { ...htmlProps, ref });
+});
+MotionButton.displayName = 'motion.button';
+
 export const motion = {
-  div: React.forwardRef<HTMLDivElement, React.ComponentProps<'div'> & {
-    initial?: any;
-    animate?: any;
-    exit?: any;
-    variants?: any;
-    transition?: any;
-    whileHover?: any;
-    whileTap?: any;
-    drag?: any;
-    dragConstraints?: any;
-    dragElastic?: any;
-    onDrag?: any;
-    onDragEnd?: any;
-    onDragStart?: any;
-  }>((props, ref) => {
-    const { initial, animate, exit, variants, transition, whileHover, whileTap, drag, dragConstraints, dragElastic, onDrag, onDragEnd, onDragStart, ...htmlProps } = props;
-    return React.createElement('div', { ...htmlProps, ref });
-  }),
-  span: React.forwardRef<HTMLSpanElement, React.ComponentProps<'span'> & {
-    initial?: any;
-    animate?: any;
-    exit?: any;
-    variants?: any;
-  }>((props, ref) => {
-    const { initial, animate, exit, variants, ...htmlProps } = props;
-    return React.createElement('span', { ...htmlProps, ref });
-  }),
-  button: React.forwardRef<HTMLButtonElement, React.ComponentProps<'button'> & {
-    initial?: any;
-    animate?: any;
-    exit?: any;
-    variants?: any;
-    whileHover?: any;
-    whileTap?: any;
-  }>((props, ref) => {
-    const { initial, animate, exit, variants, whileHover, whileTap, ...htmlProps } = props;
-    return React.createElement('button', { ...htmlProps, ref });
-  })
+  div: MotionDiv,
+  span: MotionSpan,
+  button: MotionButton
 };
 
 // Basic animation utilities
-export const AnimatePresence = ({ children }: { children: React.ReactNode }) => 
+const AnimatePresenceComponent = ({ children }: { children: React.ReactNode }) => 
   React.createElement('div', {}, children);
+AnimatePresenceComponent.displayName = 'AnimatePresence';
+
+export const AnimatePresence = AnimatePresenceComponent;
 
 export const useAnimation = () => ({
   start: (config?: any) => {},
