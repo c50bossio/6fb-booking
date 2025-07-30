@@ -108,6 +108,80 @@ class BusinessAnalyzer:
             ).all()
             
             if not payments:
+                return {'status': 'insufficient_data', 'opportunities': []}
+            
+            # Calculate key metrics
+            total_revenue = sum(float(p.amount) for p in payments)
+            avg_transaction = total_revenue / len(payments)
+            
+            # Analyze trends (compare to previous period)
+            prev_start = start_date - timedelta(days=period_days)
+            prev_payments = self.db.query(Payment).filter(
+                and_(
+                    Payment.user_id == user_id,
+                    Payment.created_at >= prev_start,
+                    Payment.created_at < start_date,
+                    Payment.status == "completed"
+                )
+            ).all()
+            
+            prev_revenue = sum(float(p.amount) for p in prev_payments) if prev_payments else 0
+            growth_rate = ((total_revenue - prev_revenue) / prev_revenue * 100) if prev_revenue > 0 else 0
+            
+            # Identify opportunities
+            opportunities = []
+            
+            # Low average transaction opportunity
+            if avg_transaction < 75:
+                opportunities.append({
+                    'type': 'pricing_optimization',
+                    'description': 'Average transaction value is below industry benchmark',
+                    'potential_impact': 'high',
+                    'suggested_increase': min(25, (85 - avg_transaction))
+                })
+            
+            # Revenue decline opportunity
+            if growth_rate < -5:
+                opportunities.append({
+                    'type': 'revenue_recovery',
+                    'description': 'Revenue decline detected compared to previous period',
+                    'potential_impact': 'critical',
+                    'growth_needed': abs(growth_rate) + 10
+                })
+            
+            # Service diversification opportunity
+            service_analysis = self._analyze_service_diversity(payments)
+            if service_analysis['diversity_score'] < 0.6:
+                opportunities.append({
+                    'type': 'service_expansion',
+                    'description': 'Limited service variety detected',
+                    'potential_impact': 'medium',
+                    'recommendations': service_analysis['recommendations']
+                })
+            
+            return {
+                'status': 'analyzed',
+                'total_revenue': total_revenue,
+                'avg_transaction': avg_transaction,
+                'growth_rate': growth_rate,
+                'opportunities': opportunities,
+                'analysis_confidence': min(1.0, len(payments) / 50)  # More data = higher confidence
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing revenue performance: {str(e)}")
+            return {'status': 'error', 'opportunities': []}
+            
+            # Get revenue data
+            payments = self.db.query(Payment).filter(
+                and_(
+                    Payment.user_id == user_id,
+                    Payment.created_at >= start_date,
+                    Payment.status == "completed"
+                )
+            ).all()
+            
+            if not payments:
                 return {'total_revenue': 0, 'opportunities': []}
             
             # Calculate metrics

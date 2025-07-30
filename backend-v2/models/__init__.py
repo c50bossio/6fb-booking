@@ -172,6 +172,12 @@ from .message_queue import (
     MessagePriority, QueueMetrics, MessageTemplate
 )
 
+# Reminder System Models
+from .reminder_models import (
+    ReminderPreference, ReminderSchedule, ReminderTemplate,
+    ReminderDelivery, ReminderAnalytics
+)
+
 # Weekly Insights Models
 from .weekly_insights import (
     WeeklyInsight, WeeklyRecommendation, InsightEmailDelivery, InsightTemplate,
@@ -304,6 +310,8 @@ __all__ = [
     # Location Models
     'Location', 'BarbershopLocation', 'BarberLocation', 'ChairInventory', 'ChairAssignmentHistory',
     'CompensationPlan', 'CompensationModel', 'LocationStatus', 'ChairStatus', 'ChairType',
+    # Reminder System Models
+    'ReminderPreference', 'ReminderSchedule', 'ReminderTemplate', 'ReminderDelivery', 'ReminderAnalytics',
     # Weekly Insights Models
     'WeeklyInsight', 'WeeklyRecommendation', 'InsightEmailDelivery', 'InsightTemplate',
     'RecommendationCategory', 'InsightMetric', 'WeeklyInsightArchive',

@@ -13,7 +13,7 @@ from api.v2.endpoints import google_calendar_webhook
 from routers import unified_analytics
 
 # Import V2 API endpoints for Six Figure Barber enhancements
-from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization, six_figure_barber_analytics, six_figure_barber_crm, analytics, customer_retention, dynamic_pricing
+from api.v2.endpoints import client_lifecycle, booking_intelligence, upselling, ai_upselling, calendar_revenue_optimization, six_figure_barber_analytics, six_figure_barber_crm, analytics, customer_retention, dynamic_pricing, ai_orchestrator
 # Import enhanced Six Figure Barber analytics
 from routers import six_figure_enhanced_analytics
 # Import deployment test endpoint
@@ -544,6 +544,7 @@ app.include_router(ai_business_calendar.router)  # AI Business Calendar with Goo
 app.include_router(business_intelligence_agents.router)  # Business Intelligence AI Agents for coaching and insights
 
 app.include_router(ai_dashboard_router.router)  # Unified AI Dashboard with orchestrator, memory, vector knowledge, strategy engine, and ROI tracking
+app.include_router(ai_orchestrator.router, prefix="/api/v2")  # AI Orchestrator API endpoints for unified dashboard
 # DEPLOYMENT TEST ENDPOINT - Remove after deployment verification
 app.include_router(test_deployment_router, prefix="/api/v2")
 
