@@ -1,0 +1,245 @@
+# Alertmanager Configuration for BookingBridge
+# Production alerting and notification routing
+
+global:
+  # SMTP server configuration for email alerts
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@bookingbridge.com'
+  smtp_auth_username: 'alerts@bookingbridge.com'
+  smtp_auth_password: 'your-email-password'
+  smtp_require_tls: true
+
+# Define notification templates
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing rules for alerts
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'default-receiver'
+  routes:
+    # Critical alerts go to multiple channels
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 5s
+      repeat_interval: 30m
+
+    # System alerts go to infrastructure team
+    - match_re:
+        service: system|database|redis
+      receiver: 'infrastructure-team'
+      group_wait: 30s
+      repeat_interval: 2h
+
+    # Application alerts go to development team
+    - match_re:
+        service: backend|frontend|celery
+      receiver: 'development-team'
+      group_wait: 30s
+      repeat_interval: 1h
+
+    # Business metric alerts go to business team
+    - match_re:
+        service: attribution|integration
+      receiver: 'business-team'
+      group_wait: 1m
+      repeat_interval: 4h
+
+    # Security alerts get immediate attention
+    - match:
+        service: security
+      receiver: 'security-team'
+      group_wait: 0s
+      repeat_interval: 15m
+
+# Inhibition rules to reduce noise
+inhibit_rules:
+  # Inhibit warning if critical is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+  # Inhibit backend alerts if service is down
+  - source_match:
+      alertname: 'BackendServiceDown'
+    target_match_re:
+      alertname: 'High.*|Slow.*'
+    equal: ['instance']
+
+# Receivers define notification channels
+receivers:
+  # Default receiver
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'alerts@bookingbridge.com'
+        subject: '[BookingBridge] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Instance: {{ .Labels.instance }}
+          Severity: {{ .Labels.severity }}
+          {{ end }}
+
+  # Critical alerts - multiple channels
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'critical@bookingbridge.com'
+        subject: '[CRITICAL] BookingBridge Alert'
+        body: |
+          🚨 CRITICAL ALERT 🚨
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+          
+          Please investigate immediately!
+    
+    # Slack webhook for critical alerts
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#critical-alerts'
+        title: 'Critical Alert - BookingBridge'
+        text: |
+          {{ range .Alerts }}
+          🚨 *{{ .Annotations.summary }}*
+          
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          *Instance:* {{ .Labels.instance }}
+          *Severity:* {{ .Labels.severity }}
+          {{ end }}
+        color: 'danger'
+    
+    # PagerDuty for critical alerts (optional)
+    pagerduty_configs:
+      - routing_key: 'YOUR_PAGERDUTY_INTEGRATION_KEY'
+        description: '{{ .GroupLabels.alertname }}'
+
+  # Infrastructure team
+  - name: 'infrastructure-team'
+    email_configs:
+      - to: 'infrastructure@bookingbridge.com'
+        subject: '[Infrastructure] {{ .GroupLabels.alertname }}'
+        body: |
+          Infrastructure Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Instance: {{ .Labels.instance }}
+          Severity: {{ .Labels.severity }}
+          {{ end }}
+    
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#infrastructure'
+        title: 'Infrastructure Alert'
+        text: |
+          {{ range .Alerts }}
+          ⚠️ *{{ .Annotations.summary }}*
+          
+          *Service:* {{ .Labels.service }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+        color: 'warning'
+
+  # Development team
+  - name: 'development-team'
+    email_configs:
+      - to: 'development@bookingbridge.com'
+        subject: '[Development] {{ .GroupLabels.alertname }}'
+        body: |
+          Application Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Instance: {{ .Labels.instance }}
+          Severity: {{ .Labels.severity }}
+          {{ end }}
+    
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#development'
+        title: 'Application Alert'
+        text: |
+          {{ range .Alerts }}
+          🔧 *{{ .Annotations.summary }}*
+          
+          *Service:* {{ .Labels.service }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+        color: 'warning'
+
+  # Business team
+  - name: 'business-team'
+    email_configs:
+      - to: 'business@bookingbridge.com'
+        subject: '[Business Metrics] {{ .GroupLabels.alertname }}'
+        body: |
+          Business Metrics Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Severity: {{ .Labels.severity }}
+          {{ end }}
+    
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#business-metrics'
+        title: 'Business Metrics Alert'
+        text: |
+          {{ range .Alerts }}
+          📊 *{{ .Annotations.summary }}*
+          
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          {{ end }}
+        color: 'good'
+
+  # Security team
+  - name: 'security-team'
+    email_configs:
+      - to: 'security@bookingbridge.com'
+        subject: '[SECURITY] BookingBridge Alert'
+        body: |
+          🔒 SECURITY ALERT 🔒
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+          
+          This requires immediate attention!
+    
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#security-alerts'
+        title: 'Security Alert - BookingBridge'
+        text: |
+          {{ range .Alerts }}
+          🔒 *SECURITY ALERT*
+          
+          *{{ .Annotations.summary }}*
+          
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+        color: 'danger'

@@ -42,11 +42,30 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Import and include API routers
+try:
+    from app.api.v1.endpoints.integrations import router as integrations_router
+    app.include_router(integrations_router, prefix="/api/v1")
+    logger.info("Integrations API endpoints loaded successfully")
+except ImportError as e:
+    logger.warning(f"Could not load integrations router: {e}")
+except Exception as e:
+    logger.error(f"Error loading integrations router: {e}")
+
+try:
+    from app.api.v1.endpoints.oauth import router as oauth_router
+    app.include_router(oauth_router, prefix="/api/v1")
+    logger.info("OAuth API endpoints loaded successfully")
+except ImportError as e:
+    logger.warning(f"Could not load OAuth router: {e}")
+except Exception as e:
+    logger.error(f"Error loading OAuth router: {e}")
 
 # In-memory cache for performance optimization
 cache = {}

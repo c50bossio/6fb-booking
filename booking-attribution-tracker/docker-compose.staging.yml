@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  backend:
+    image: bookingbridge-backend:staging
+    container_name: bookingbridge-backend-staging
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env.staging
+    volumes:
+      - ./backend:/app
+      - ./backend/booking_attribution_tracker.db:/app/booking_attribution_tracker.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: bookingbridge-frontend:staging
+    container_name: bookingbridge-frontend-staging
+    ports:
+      - "3001:80"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+      - NODE_ENV=development
+    restart: unless-stopped
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    container_name: bookingbridge-redis-staging
+    ports:
+      - "6380:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  default:
+    name: bookingbridge-staging

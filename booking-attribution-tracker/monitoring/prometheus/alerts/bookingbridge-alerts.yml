@@ -1,0 +1,310 @@
+# BookingBridge Alerting Rules
+# Production alerts for critical system health and business metrics
+
+groups:
+  # System Health Alerts
+  - name: system_health
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% on {{ $labels.instance }} for more than 5 minutes"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% on {{ $labels.instance }} for more than 5 minutes"
+
+      # Disk Space Warning
+      - alert: DiskSpaceWarning
+        expr: 100 - ((node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"}) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Disk space running low"
+          description: "Disk usage is above 80% on {{ $labels.instance }}"
+
+      # Disk Space Critical
+      - alert: DiskSpaceCritical
+        expr: 100 - ((node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"}) * 100) > 90
+        for: 5m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Critical disk space shortage"
+          description: "Disk usage is above 90% on {{ $labels.instance }}"
+
+  # Application Health Alerts
+  - name: application_health
+    rules:
+      # Backend Service Down
+      - alert: BackendServiceDown
+        expr: up{job="bookingbridge-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: backend
+        annotations:
+          summary: "BookingBridge backend service is down"
+          description: "Backend service {{ $labels.instance }} has been down for more than 1 minute"
+
+      # Frontend Service Down
+      - alert: FrontendServiceDown
+        expr: up{job="bookingbridge-frontend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: frontend
+        annotations:
+          summary: "BookingBridge frontend service is down"
+          description: "Frontend service {{ $labels.instance }} has been down for more than 1 minute"
+
+      # High HTTP Error Rate
+      - alert: HighHTTPErrorRate
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High HTTP error rate detected"
+          description: "HTTP 5xx error rate is above 5% for {{ $labels.instance }}"
+
+      # High Response Time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is above 2 seconds for {{ $labels.instance }}"
+
+      # Too Many Pods Restarting
+      - alert: PodsRestarting
+        expr: increase(kube_pod_container_status_restarts_total[1h]) > 5
+        for: 0m
+        labels:
+          severity: warning
+          service: kubernetes
+        annotations:
+          summary: "Pod is restarting frequently"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted {{ $value }} times in the last hour"
+
+  # Database Alerts
+  - name: database_health
+    rules:
+      # PostgreSQL Down
+      - alert: PostgreSQLDown
+        expr: up{job="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL database {{ $labels.instance }} has been down for more than 1 minute"
+
+      # High Database Connections
+      - alert: HighDatabaseConnections
+        expr: (pg_stat_database_numbackends / pg_settings_max_connections) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connections are above 80% of maximum on {{ $labels.instance }}"
+
+      # Database Locks
+      - alert: DatabaseLocks
+        expr: pg_locks_count > 50
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High number of database locks"
+          description: "Database has {{ $value }} locks on {{ $labels.instance }}"
+
+      # Slow Queries
+      - alert: SlowQueries
+        expr: rate(pg_stat_statements_mean_time_ms[5m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query time is above 1 second on {{ $labels.instance }}"
+
+  # Redis Alerts
+  - name: redis_health
+    rules:
+      # Redis Down
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis service is down"
+          description: "Redis service {{ $labels.instance }} has been down for more than 1 minute"
+
+      # High Redis Memory Usage
+      - alert: HighRedisMemoryUsage
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis memory usage is above 90% on {{ $labels.instance }}"
+
+      # Redis Replication Lag
+      - alert: RedisReplicationLag
+        expr: redis_replication_lag_seconds > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis replication lag"
+          description: "Redis replication lag is {{ $value }} seconds on {{ $labels.instance }}"
+
+  # Business Logic Alerts
+  - name: business_metrics
+    rules:
+      # Low Attribution Match Rate
+      - alert: LowAttributionMatchRate
+        expr: (rate(attribution_matches_total{confidence="high"}[1h]) / rate(attribution_attempts_total[1h])) * 100 < 70
+        for: 15m
+        labels:
+          severity: warning
+          service: attribution
+        annotations:
+          summary: "Low attribution match rate"
+          description: "High-confidence attribution match rate is below 70% ({{ $value }}%)"
+
+      # High Failed API Calls to External Services
+      - alert: HighExternalAPIFailures
+        expr: (rate(external_api_requests_total{status="error"}[5m]) / rate(external_api_requests_total[5m])) * 100 > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: integration
+        annotations:
+          summary: "High external API failure rate"
+          description: "External API failure rate for {{ $labels.service }} is above 10%"
+
+      # Webhook Processing Delays
+      - alert: WebhookProcessingDelay
+        expr: histogram_quantile(0.95, rate(webhook_processing_duration_seconds_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: webhooks
+        annotations:
+          summary: "Webhook processing delays"
+          description: "95th percentile webhook processing time is above 30 seconds"
+
+      # Too Many Authentication Failures
+      - alert: HighAuthenticationFailures
+        expr: rate(authentication_failures_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Authentication failure rate is {{ $value }} per second - possible brute force attack"
+
+  # Celery Worker Alerts
+  - name: celery_health
+    rules:
+      # Celery Worker Down
+      - alert: CeleryWorkerDown
+        expr: up{job="celery-worker"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: celery
+        annotations:
+          summary: "Celery worker is down"
+          description: "Celery worker {{ $labels.instance }} has been down for more than 2 minutes"
+
+      # High Task Queue Length
+      - alert: HighTaskQueueLength
+        expr: celery_queue_length > 1000
+        for: 10m
+        labels:
+          severity: warning
+          service: celery
+        annotations:
+          summary: "High Celery task queue length"
+          description: "Celery queue {{ $labels.queue }} has {{ $value }} pending tasks"
+
+      # High Task Failure Rate
+      - alert: HighTaskFailureRate
+        expr: (rate(celery_task_total{state="FAILURE"}[5m]) / rate(celery_task_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: celery
+        annotations:
+          summary: "High Celery task failure rate"
+          description: "Celery task failure rate is above 5%"
+
+  # External Service Health
+  - name: external_services
+    rules:
+      # Facebook API Down
+      - alert: FacebookAPIDown
+        expr: probe_success{instance="https://graph.facebook.com/v18.0/me"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: facebook-api
+        annotations:
+          summary: "Facebook API is unreachable"
+          description: "Facebook Graph API has been unreachable for more than 5 minutes"
+
+      # Google Ads API Down
+      - alert: GoogleAdsAPIDown
+        expr: probe_success{instance="https://googleads.googleapis.com/v16/customers"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: google-ads-api
+        annotations:
+          summary: "Google Ads API is unreachable"
+          description: "Google Ads API has been unreachable for more than 5 minutes"
+
+      # Square API Down
+      - alert: SquareAPIDown
+        expr: probe_success{instance="https://connect.squareup.com/v2/locations"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: square-api
+        annotations:
+          summary: "Square API is unreachable"
+          description: "Square API has been unreachable for more than 5 minutes"
